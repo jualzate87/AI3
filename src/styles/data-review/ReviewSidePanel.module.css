@@ -1,0 +1,158 @@
+/* Shared right-rail chassis — Comments + Review summary.
+   Fills the unified DataReview right rail (not a fixed overlay). */
+
+@keyframes sidePanelFadeIn {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+@keyframes sidePanelFadeOut {
+  from { opacity: 1; }
+  to   { opacity: 0; }
+}
+
+.shell {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  height: 100%;
+  min-height: 0;
+  min-width: 0;
+  background: var(--color-container-background-primary, #ffffff);
+  overflow: hidden;
+  animation: sidePanelFadeIn 180ms cubic-bezier(0, 0, 0.25, 1);
+}
+
+.shellClosing {
+  animation: sidePanelFadeOut 160ms cubic-bezier(0.35, 0, 0.25, 1) forwards;
+  pointer-events: none;
+}
+
+/* Header chrome — matches AI Review 60px bar */
+.header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-component-gap-medium, 8px);
+  height: 60px;
+  min-height: 60px;
+  padding: 0 var(--space-container-padding-large, 24px);
+  border-bottom: 1px solid var(--color-container-border-primary, #d4d7dc);
+  flex-shrink: 0;
+  box-sizing: border-box;
+}
+
+.headerText {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+  flex: 1;
+}
+
+.title {
+  margin: 0;
+  font-family: var(--font-family-component);
+  font-size: var(--font-size-component-medium, 16px);
+  font-weight: var(--font-weight-component-bold, 600);
+  color: var(--color-text-primary, #393a3d);
+  line-height: 1.3;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.subtitleRow {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: var(--space-component-gap-medium, 8px);
+  min-width: 0;
+}
+
+.subtitle {
+  margin: 0;
+  font-family: var(--font-family-body);
+  font-size: var(--font-size-body-4, 12px);
+  font-weight: var(--font-weight-body, 400);
+  color: var(--color-text-secondary, #5d686f);
+  line-height: 1.3;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.closeBtn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  border: none;
+  border-radius: 4px;
+  background: transparent;
+  color: var(--color-text-secondary, #5d686f);
+  cursor: pointer;
+  padding: 0;
+  flex-shrink: 0;
+}
+
+.closeBtn:hover {
+  background: var(--color-container-background-secondary, #f4f5f8);
+  color: var(--color-text-primary, #393a3d);
+}
+
+.body {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.scroll {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+}
+
+.footer {
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: var(--space-component-gap-medium, 8px);
+  padding: var(--space-container-padding-large, 24px);
+  border-top: 1px solid var(--color-divider-tertiary, #d4d7dc);
+  background: var(--color-container-background-primary, #ffffff);
+}
+
+.footerSpacer {
+  flex: 1;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .shell,
+  .shellClosing {
+    animation: none;
+  }
+}
+
+
+.shellEnterFromRight {
+  animation: summaryPanelSlideIn var(--duration-progress-moderate, 1000ms)
+    var(--ease-appear-emphasize, cubic-bezier(0.15, 1.4, 0.25, 1)) both;
+}
+
+@keyframes summaryPanelSlideIn {
+  from {
+    opacity: 0;
+    transform: translateX(100%);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}

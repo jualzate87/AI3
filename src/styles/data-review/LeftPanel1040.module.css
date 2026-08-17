@@ -1,0 +1,2385 @@
+/* ── Left panel — HTML table 1040 ── */
+
+.leftPanel {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  overflow: hidden;
+  background: #ffffff;
+}
+
+/* Scrollable viewer */
+.documentViewer {
+  flex: 1;
+  background: #ffffff;
+  overflow-y: auto;
+  overflow-x: auto;
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+  padding: 32px 24px;
+}
+
+/* Form document — scaled to fill panel */
+.formDoc {
+  width: 100%;
+  max-width: 900px;
+  background: #ffffff;
+  border: 1px solid #d4d7dc;
+  border-radius: 4px;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.08);
+  font-family: var(--font-family-component);
+  font-size: 95%;
+  /* Allow shrink so dual-panel Summary doesn't force page overflow;
+     wide value columns scroll inside .documentViewer instead. */
+  flex-shrink: 1;
+  min-width: 0;
+  padding-bottom: 24px;
+  overflow: hidden;
+}
+
+/* ── IRS Header ── */
+.irsHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 8px 12px 6px;
+  border-bottom: 2px solid #000;
+  background: #eef3f7;
+}
+
+.irsLeft  { display: flex; flex-direction: column; gap: 2px; }
+.irsDept  { font-size: 12px; color: #444; line-height: 1.3; }
+.irsTitle { font-size: 13px; color: #1a1a1a; line-height: 1.4; }
+.irsTitle strong { font-weight: 800; font-size: 18px; }
+
+.irsRight  { display: flex; flex-direction: column; align-items: flex-end; gap: 2px; }
+.irsYear   { font-size: 28px; font-weight: 800; color: #1a1a1a; letter-spacing: -1px; line-height: 1; }
+.irsOmb    { font-size: 12px; color: #666; }
+
+/* ── Taxpayer info grid ── */
+.infoGrid { border-bottom: 1px solid #d4d7dc; }
+
+.infoRow {
+  display: flex;
+  border-bottom: 1px solid #e8eaed;
+}
+.infoRow:last-child { border-bottom: none; }
+
+.infoField {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  padding: 4px 8px;
+  border-right: 1px solid #e8eaed;
+  min-width: 0;
+}
+.infoField:last-child { border-right: none; }
+
+.infoLabel {
+  font-size: 12px;
+  color: #888;
+  line-height: 1.3;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.infoValue {
+  font-size: 12px;
+  color: #1a1a1a;
+  font-weight: 500;
+  letter-spacing: 0.01em;
+}
+
+/* ── Filing status ── */
+.filingStatus {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 5px 10px;
+  border-bottom: 1px solid #e8eaed;
+  flex-wrap: wrap;
+}
+
+.filingLabel {
+  font-size: 12px;
+  font-weight: 500;
+  color: #393a3d;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  white-space: nowrap;
+}
+
+.filingOption {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 12px;
+  color: #393a3d;
+  cursor: default;
+}
+
+.filingOption input[type="radio"] {
+  accent-color: #205ea3;
+  width: 11px;
+  height: 11px;
+  flex-shrink: 0;
+}
+
+
+/* ── Field type legend ── */
+.legend {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 4px 10px 4px;
+  background: #f7f9fb;
+  border-bottom: 1px solid #e8eaed;
+}
+
+.legendItem {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  font-family: var(--font-family-component);
+  font-size: var(--font-size-component-x-small);
+  font-weight: var(--font-weight-component-semibold);
+  color: var(--color-text-secondary);
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+}
+
+.legendSwatch {
+  display: inline-block;
+  width: 20px;
+  height: 10px;
+  border-radius: 2px;
+  flex-shrink: 0;
+}
+
+/* Source swatch — mirrors .valueBoxSource */
+.legendSwatchSource {
+  background: #f0f6ff;
+  border: 1px solid #93c5fd;
+}
+
+/* Calc swatch — mirrors .valueBoxCalc */
+.legendSwatchCalc {
+  background: #f7f9fb;
+  border: 1px dashed #adb9c2;
+}
+
+/* ── Divider row ── */
+.dividerRow td { padding: 0; }
+.dividerLine {
+  height: 2px;
+  background: #c8d3da;
+  margin: 1px 0;
+}
+
+/* ── Column headers ── */
+.colHeaders {
+  display: grid;
+  grid-template-columns: 28px minmax(140px, 1fr) 40px minmax(260px, 320px);
+  padding: 3px 0;
+  background: #f7f9fb;
+  border-bottom: 1px solid #d4d7dc;
+}
+
+.colLine, .colLineR {
+  font-family: var(--font-family-component);
+  font-size: var(--font-size-component-x-small);
+  font-weight: var(--font-weight-component-semibold);
+  color: var(--color-text-secondary);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  text-align: center;
+  padding: 2px 4px;
+}
+
+.colDesc {
+  font-family: var(--font-family-component);
+  font-size: var(--font-size-component-x-small);
+  font-weight: var(--font-weight-component-semibold);
+  color: var(--color-text-secondary);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  padding: 2px 8px;
+}
+
+.colVal {
+  font-family: var(--font-family-component);
+  font-size: var(--font-size-component-x-small);
+  font-weight: var(--font-weight-component-semibold);
+  color: var(--color-text-secondary);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  padding: 2px 8px;
+  text-align: right;
+}
+
+/* Amount + Prep/Rev column header (schedule / form output tables) */
+.colValWithAttest {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 4px;
+  padding: 2px 8px;
+  min-width: 0;
+}
+
+.colValAmount {
+  flex: 1;
+  min-width: 0;
+  font-family: var(--font-family-component);
+  font-size: var(--font-size-component-x-small);
+  font-weight: var(--font-weight-component-semibold);
+  color: var(--color-text-secondary);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  text-align: right;
+}
+
+.colValActionGroup {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-shrink: 0;
+}
+
+.colValActionSpacer {
+  width: 62px; /* comment + flag — aligns with .outputRowEndActionsCommentFlag */
+  flex-shrink: 0;
+}
+
+.colValAttestGroup {
+  display: flex;
+  align-items: center;
+  gap: 0;
+  flex-shrink: 0;
+}
+
+.colValAttestLabel {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  box-sizing: border-box;
+  font-family: var(--font-family-component);
+  font-size: var(--font-size-component-x-small);
+  font-weight: var(--font-weight-component-semibold);
+  color: var(--color-text-secondary);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.lineNote {
+  display: block;
+  font-family: var(--font-family-body);
+  font-size: var(--font-size-body-3);
+  font-weight: var(--font-weight-body);
+  line-height: var(--line-height-body);
+  color: var(--color-text-secondary);
+  margin-top: 2px;
+}
+
+/* ── Main table ── */
+.table {
+  width: 100%;
+  border-collapse: collapse;
+  table-layout: fixed;
+}
+
+/* ── Rows ── */
+.row {
+  border-bottom: 1px solid #eef0f2;
+  transition: background 100ms ease;
+}
+
+.rowClickable { cursor: pointer; }
+.rowClickable:hover { background: #f4f7fb; }
+
+.rowBold .cellLabelPrimary {
+  font-weight: var(--font-weight-component-bold);
+  color: var(--color-text-primary);
+}
+
+.rowShaded { background: #f7f9fb; }
+
+.rowSubdued { opacity: 0.45; }
+.rowSubdued .valueBox { border-color: #e8eaed; }
+
+.rowIndent .cellLabel { padding-left: 22px !important; }
+
+/* Selected row — orange left accent (issue field) */
+.rowSelected {
+  background: rgba(201, 80, 15, 0.03) !important;
+  box-shadow: inset 3px 0 0 #c9500f;
+}
+
+/* Selected row — blue left accent (generic field click / popover) */
+.rowSelectedBlue {
+  background: rgba(32, 94, 163, 0.03) !important;
+  box-shadow: inset 3px 0 0 #205ea3;
+}
+
+/* Reviewed row — green left accent */
+.rowReviewed {
+  box-shadow: inset 3px 0 0 var(--color-ui-positive, #108000);
+}
+
+.rowCommentOpen {
+  background: rgba(32, 94, 163, 0.04) !important;
+}
+
+/* ── YoY row tints — shown when YoY panel is open ── */
+/* Red: > 30% change — noticeable, needs attention */
+.rowYoyRed {
+  background: rgba(179, 38, 30, 0.05) !important;
+  box-shadow: inset 3px 0 0 #b3261e;
+}
+/* Orange: 5–30% change — moderate variation */
+.rowYoyOrange {
+  background: rgba(229, 161, 78, 0.08) !important;
+  box-shadow: inset 3px 0 0 #E5A14E;
+}
+/* Grey: < 5% change — within normal range */
+.rowYoyGrey {
+  background: rgba(138, 155, 165, 0.06) !important;
+  box-shadow: inset 3px 0 0 #8a9ba5;
+}
+
+/* "Amount you owe" — final result row, neutral emphasis (matches summary) */
+.rowOwe {
+  background: var(--color-container-background-secondary);
+  border-top: 2px solid var(--color-divider-secondary);
+}
+.rowOwe .cellLabel {
+  color: var(--color-text-primary);
+  padding-top: 8px;
+  padding-bottom: 8px;
+}
+.rowOwe .cellLine,
+.rowOwe .cellLineRight,
+.rowOwe .cellValue {
+  padding-top: 8px;
+  padding-bottom: 8px;
+}
+
+/* Divider above the owe row — single solid rule, clean */
+.oweDividerRow td {
+  padding: 0;
+  height: 3px;
+  background: var(--color-divider-secondary);
+}
+
+/* Section header */
+.sectionHeader td { padding: 8px 10px 3px; }
+.sectionTitle {
+  font-size: 12px;
+  font-weight: 500;
+  color: #5d686f;
+  text-transform: uppercase;
+  letter-spacing: 0.7px;
+}
+
+/* ── Cells ── */
+.cellLine {
+  width: 28px;
+  font-family: var(--font-family-component);
+  font-size: var(--font-size-body-3);
+  font-weight: var(--font-weight-component);
+  color: var(--color-text-tertiary);
+  text-align: center;
+  padding: 5px 2px;
+  vertical-align: top;
+  white-space: nowrap;
+}
+
+.cellLineRight {
+  width: 40px;
+  font-family: var(--font-family-component);
+  font-size: var(--font-size-body-3);
+  font-weight: var(--font-weight-component);
+  color: var(--color-text-tertiary);
+  text-align: center;
+  padding: 5px 2px;
+  vertical-align: top;
+  white-space: nowrap;
+}
+
+.cellLabel {
+  font-family: var(--font-family-component);
+  font-size: var(--font-size-component-medium);
+  font-weight: var(--font-weight-component);
+  color: var(--color-text-primary);
+  padding: 5px 6px;
+  vertical-align: top;
+  line-height: var(--line-height-component);
+  min-width: 0;
+}
+
+/* Inner wrapper — primary label + secondary note stack vertically */
+.cellLabelInner {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 2px;
+  min-width: 0;
+}
+
+.cellLabelPrimary {
+  font-family: inherit;
+  font-size: inherit;
+  font-weight: inherit;
+  color: inherit;
+  line-height: inherit;
+}
+
+.cellValue {
+  width: auto;
+  min-width: 260px;
+  padding: 4px 6px 4px 0;
+  vertical-align: middle;
+}
+
+/* ── Value box — always visible container, color-coded by kind ── */
+.valueBox {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 4px;
+  padding: 2px 7px;
+  border-radius: 3px;
+  min-height: 22px;
+  min-width: 80px;
+  flex: 1;
+  border: 1px solid #e0e4e8;   /* default: plain outline for any non-empty field */
+  background: #ffffff;
+  transition: border-color 100ms ease, background 100ms ease;
+  box-sizing: border-box;
+}
+
+/* Empty box — dashed ghost so user sees it's a fillable field */
+.valueBoxEmpty {
+  border: 1px dashed #d4d7dc;
+  background: transparent;
+  min-width: 60px;
+}
+
+/*
+ * SOURCE fields — value imported from documents (W-2, 1099, etc.)
+ * Blue tint + solid blue border → "this came from a document"
+ */
+/* Source — blue tint + solid blue border */
+.valueBoxSource {
+  background: #f0f6ff;
+  border: 1px solid #93c5fd;
+}
+
+/* Calc — neutral grey + dashed border */
+.valueBoxCalc {
+  background: #f7f9fb;
+  border: 1px dashed #adb9c2;
+}
+
+/* Selected — orange override regardless of kind (issue field) */
+.valueBoxSelected {
+  background: rgba(201, 80, 15, 0.06) !important;
+  border: 2px solid #c9500f !important;
+}
+
+/* Selected — blue override (generic field click / popover) */
+.valueBoxSelectedBlue {
+  background: rgba(32, 94, 163, 0.06) !important;
+  border: 2px solid #205ea3 !important;
+}
+
+.valueNum {
+  font-size: 12px;
+  font-weight: 500;
+  white-space: nowrap;
+  letter-spacing: 0.01em;
+  color: #393a3d;   /* default for rows with no kind */
+}
+
+/* Source: bold blue — came from a document */
+.valueNumSource {
+  color: #1d4ed8;
+  font-weight: 500;
+}
+
+/* Calc: muted grey italic — derived on-form */
+.valueNumCalc {
+  color: #5d686f;
+  font-style: italic;
+}
+
+/* Selected: orange (issue field) */
+.valueNumSelected {
+  color: #c9500f !important;
+  font-style: normal !important;
+}
+
+/* Selected: blue (generic field click) */
+.valueNumSelectedBlue {
+  color: #205ea3 !important;
+  font-style: normal !important;
+}
+
+/* Reviewed: green value number */
+.valueNumReviewed {
+  color: var(--color-ui-positive, #108000);
+}
+
+
+/* ── YoY badges ── */
+.badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 1px 5px;
+  border-radius: 100px;
+  font-size: 12px;
+  font-weight: 500;
+  color: #ffffff;
+  white-space: nowrap;
+  flex-shrink: 0;
+  line-height: 1.4;
+}
+
+.badgeGrey   { background: #a08c6e; }
+.badgeOrange { background: #E5A14E; }
+.badgeRed    { background: #b3261e; }
+
+/* ── Reviewed state (AI review) ── */
+.reviewedIcon {
+  display: inline-flex;
+  color: var(--color-ui-positive, #108000);
+  flex-shrink: 0;
+  line-height: 1;
+}
+
+/* Reviewed value box override — green border */
+.valueBoxReviewed {
+  border-color: var(--color-ui-positive, #108000) !important;
+  background: #f0faf4 !important;
+}
+
+/* ── Manually checked state (preparer verified) ── */
+.valueBoxChecked {
+  border-color: var(--color-ui-positive, #108000) !important;
+  background: #f0faf4 !important;
+}
+
+.valueBoxCommentOpen {
+  border-color: #205ea3 !important;
+  border-width: 2px !important;
+}
+
+.valueNumChecked {
+  color: var(--color-ui-positive, #108000);
+}
+
+.checkedIcon {
+  display: inline-flex;
+  color: #0f766e;
+  flex-shrink: 0;
+  line-height: 1;
+}
+
+/* ── Hover check button ── */
+.checkBtn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 26px;
+  height: 26px;
+  background: none;
+  border: 1px solid #c3ced5;
+  border-radius: 5px;
+  cursor: pointer;
+  padding: 0;
+  color: #5d686f;
+  flex-shrink: 0;
+  transition: color 100ms ease, background 100ms, border-color 100ms;
+}
+.checkBtn svg {
+  width: 16px;
+  height: 16px;
+}
+
+.checkBtn:hover {
+  color: #0f766e;
+  background: rgba(15, 118, 110, 0.08);
+  border-color: #0f766e;
+}
+
+/* Active state — shown when field is already checked (to allow uncheck) */
+.checkBtnActive {
+  color: #0f766e;
+  border-color: #0f766e;
+}
+
+/* C2: reviewer checks — blue so both actors stay visible */
+.checkBtnReviewer,
+.checkBtnReviewer.checkBtnActive {
+  color: #205ea3;
+  border-color: #205ea3;
+  background: rgba(32, 94, 163, 0.08);
+}
+.checkBtnReviewer:hover {
+  color: #205ea3;
+  background: rgba(32, 94, 163, 0.14);
+  border-color: #205ea3;
+}
+.checkedIconReviewer {
+  display: inline-flex;
+  color: #205ea3;
+  flex-shrink: 0;
+  line-height: 1;
+}
+.valueBoxCheckedReviewer {
+  border-color: #205ea3 !important;
+  background: #f0f6fc !important;
+}
+.valueNumCheckedReviewer {
+  color: #205ea3;
+}
+
+/* Dual-slot: preparer verified + reviewer confirmed */
+.valueBoxCheckedDual {
+  border-color: #205ea3 !important;
+  background: linear-gradient(90deg, #e6f6ef 0%, #eef5fb 100%) !important;
+}
+.valueNumCheckedDual {
+  color: var(--color-text-primary, #393a3d);
+}
+.checkedIconDual {
+  display: inline-flex;
+  flex-shrink: 0;
+  line-height: 1;
+}
+.checkTrail {
+  font-family: var(--font-family-component);
+  font-size: var(--font-size-component-x-small);
+  font-weight: var(--font-weight-component-semibold);
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+  letter-spacing: 0.02em;
+  color: var(--color-text-primary, #393a3d);
+}
+.checkBtnDualPending {
+  border-style: dashed;
+}
+
+.reconfirmBadge {
+  display: inline-block;
+  margin-left: var(--space-inline-small, 8px);
+  padding: 0 var(--space-inline-x-small, 6px);
+  border-radius: var(--radius-small, 4px);
+  font-family: var(--font-family-component);
+  font-size: var(--font-size-component-x-small);
+  font-weight: var(--font-weight-component-semibold);
+  color: var(--color-text-primary, #393a3d);
+  background: var(--color-input-background-warning);
+  border: 1px solid var(--color-input-border-warning);
+  white-space: nowrap;
+}
+
+.rowNeedsReconfirm .valueBoxChecked,
+.rowNeedsReconfirm .valueBoxCheckedDual {
+  border-color: var(--color-input-border-warning);
+}
+
+.summarySubRowStale {
+  background: var(--color-input-background-warning);
+}
+.summarySubRowStale.summarySubRowChecked {
+  background: var(--color-input-background-warning);
+}
+
+/* Pass 2 open-items focus — dim rows that aren't in the focus set */
+.rowDimmed {
+  opacity: 0.35;
+  pointer-events: none;
+}
+
+/* ── 1040 field-level comment button ── */
+.cellValueInner {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 6px;
+}
+
+/* Amount + info icon — kept together before prep/rev attest columns */
+.cellValueAmountGroup {
+  display: inline-flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 2px;
+  flex-shrink: 0;
+}
+
+/* Prep / Rev columns on Form 1040 output rows — mirrors Return Summary */
+/* Prep / Rev + comment/flag on Form 1040 and schedule output rows */
+.formRowActions {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 6px;
+  width: 138px;
+  flex-shrink: 0;
+}
+
+.formAttestGroup {
+  display: flex;
+  align-items: center;
+  gap: 0;
+  flex-shrink: 0;
+}
+.formAttestGroup .summaryAttestCol {
+  width: 32px;
+  height: 32px;
+}
+
+.commentBtn1040 {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 26px;
+  height: 26px;
+  border: 1px solid #c3ced5;
+  border-radius: 5px;
+  background: none;
+  color: #5d686f;
+  cursor: pointer;
+  flex-shrink: 0;
+  transition: background 100ms, color 100ms, border-color 100ms;
+}
+.commentBtn1040 svg {
+  width: 16px;
+  height: 16px;
+}
+
+.commentBtn1040:hover,
+.commentBtn1040Active {
+  background: #e8f0f6;
+  color: #205ea3;
+  border-color: #205ea3;
+}
+
+/* ── 1040 comment popover (same style as DetailFields popover) ── */
+.commentPopover1040 {
+  position: fixed;
+  width: 280px;
+  background: #ffffff;
+  border: 1px solid #c3ced5;
+  border-radius: 8px;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.12);
+  padding: 12px;
+  z-index: 100;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.commentPopoverCtx {
+  display: flex;
+  align-items: center;
+}
+
+.commentPopoverChip {
+  display: inline-block;
+  font-family: var(--font-family-component);
+  font-size: 12px;
+  font-weight: 500;
+  color: #205ea3;
+  background: #e8f0f6;
+  border: 1px solid #b8d0e8;
+  border-radius: 12px;
+  padding: 2px 10px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 100%;
+}
+
+.commentPopoverInput {
+  font-family: var(--font-family-component);
+  font-size: 14px;
+  font-weight: 400;
+  line-height: 1.4;
+  color: #21262a;
+  background: #f4f5f8;
+  border: 1px solid #c3ced5;
+  border-radius: 4px;
+  padding: 8px;
+  resize: none;
+  outline: none;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.commentPopoverInput:focus {
+  border-color: #205ea3;
+  background: #fff;
+}
+
+.flagNoteMeta {
+  font-family: var(--font-family-component);
+  font-size: var(--font-size-component-x-small);
+  font-weight: var(--font-weight-component);
+  color: var(--color-text-secondary);
+  padding: 0 2px 4px;
+  line-height: 1.3;
+}
+
+.commentPopoverActions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 6px;
+}
+
+.commentPopoverCancel {
+  font-family: var(--font-family-component);
+  font-size: 13px;
+  font-weight: 500;
+  color: #5d686f;
+  background: none;
+  border: 1px solid #c3ced5;
+  border-radius: 4px;
+  padding: 4px 12px;
+  height: 28px;
+  cursor: pointer;
+}
+
+.commentPopoverCancel:hover {
+  background: #f0f4f6;
+}
+
+.commentPopoverPost {
+  font-family: var(--font-family-component);
+  font-size: 13px;
+  font-weight: 500;
+  color: #fff;
+  background: #c3ced5;
+  border: none;
+  border-radius: 4px;
+  padding: 4px 12px;
+  height: 28px;
+  cursor: not-allowed;
+  transition: background 120ms;
+}
+
+.commentPopoverPostActive {
+  background: #205ea3;
+  cursor: pointer;
+}
+
+.commentPopoverPostActive:hover {
+  background: #174a82;
+}
+
+/* ── View toggle ── */
+.viewToggle {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: var(--space-inline-small, 8px);
+  padding: var(--space-container-padding-x-small, 10px) var(--space-container-padding-small, 16px);
+  flex-shrink: 0;
+  background: var(--color-container-background-primary, #fff);
+  border-bottom: 1px solid var(--color-divider-tertiary, #e8eaed);
+}
+
+.viewToggleLeft {
+  display: flex;
+  align-items: center;
+  gap: var(--space-inline-small, 8px);
+  flex: 1;
+  min-width: 0;
+}
+
+.hideOutputsBtn {
+  display: inline-flex !important;
+  align-items: center;
+  gap: var(--space-inline-x-small, 6px);
+  flex-shrink: 0;
+  white-space: nowrap;
+}
+
+.formNavDropdown {
+  flex-shrink: 0;
+  max-width: 360px;
+}
+
+.outputPanelHeader {
+  display: flex;
+  align-items: center;
+  gap: var(--space-inline-small, 8px);
+  width: 100%;
+  max-width: 960px;
+  margin: 0 auto 12px;
+  box-sizing: border-box;
+}
+
+.formOutputColumn {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  width: 100%;
+  max-width: 960px;
+  min-width: 0;
+}
+
+.formNavLabel {
+  font-family: var(--font-family-component);
+  font-size: 12px;
+  font-weight: 600;
+  color: #6b6c72;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.formNavSelect {
+  flex: 1;
+  max-width: 360px;
+  font-family: var(--font-family-component);
+  font-size: 13px;
+  font-weight: 500;
+  color: #1a1a1a;
+  background: #f0f2f5;
+  border: 1px solid #d4d7dc;
+  border-radius: 6px;
+  padding: 6px 10px;
+  cursor: pointer;
+}
+
+.formNavSelect:focus {
+  outline: 2px solid #2ca01c;
+  outline-offset: 1px;
+}
+
+.viewTogglePill {
+  display: inline-flex;
+  background: #f0f2f5;
+  border-radius: 8px;
+  padding: 3px;
+  gap: 2px;
+}
+
+.viewToggleTab {
+  font-family: var(--font-family-component) !important;
+  font-size: 13px;
+  font-weight: 500;
+  color: #5d686f;
+  background: transparent;
+  border: none;
+  border-radius: 6px;
+  padding: 5px 16px;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: background 120ms ease, color 120ms ease, box-shadow 120ms ease;
+  line-height: 1.4;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.tabDot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: #0077c5;
+  flex-shrink: 0;
+}
+
+.viewToggleTab:hover {
+  color: #21262a;
+  background: rgba(255,255,255,0.6);
+}
+
+.viewToggleTabActive {
+  background: #ffffff;
+  color: #21262a;
+  font-weight: 600;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.10), 0 0 0 0.5px rgba(0,0,0,0.06);
+}
+
+/* ── Chevron (shared) ── */
+.tvChevron {
+  color: #93a3ab;
+  display: inline-flex;
+  align-items: center;
+  transition: transform 160ms ease;
+  flex-shrink: 0;
+}
+.tvChevronOpen { transform: rotate(180deg); }
+
+/* ── Summary view ── */
+.summaryWrapper {
+  flex: 1;
+  min-width: 0;
+  overflow-y: auto;
+  /* No horizontal page/panel scroll — columns compress via @container rules */
+  overflow-x: hidden;
+  padding: 40px 32px 32px;
+  background: #f4f6f8;
+  container-type: inline-size;
+  container-name: summary;
+}
+
+.controlWrapper {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  padding: 40px 32px 32px 60px;
+  background: #f4f6f8;
+}
+
+.summaryCard {
+  background: #fff;
+  border: 1px solid #eef0f3;
+  border-radius: 12px;
+  box-shadow: 0 1px 3px rgba(28,32,42,0.06), 0 1px 2px rgba(28,32,42,0.03);
+  min-width: 0;
+  width: 100%;
+  box-sizing: border-box;
+  /* visible so row-action tooltips aren’t clipped before the portal paints */
+  overflow: visible;
+}
+
+.summaryCardHeader {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: var(--space-inline-small, 8px);
+  padding: 14px 20px 10px;
+  box-sizing: border-box;
+}
+
+.summaryCardHeaderTitles {
+  display: flex;
+  align-items: baseline;
+  flex-wrap: wrap;
+  gap: var(--space-inline-small, 8px);
+  min-width: 0;
+}
+
+.summaryCardLabel {
+  font-family: var(--font-family-component);
+  font-size: var(--font-size-component-x-small); /* 12px */
+  font-weight: var(--font-weight-component-bold); /* 600 */
+  color: #393a3d;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+.summaryCardSub {
+  font-family: var(--font-family-component);
+  font-size: var(--font-size-component-x-small); /* 12px */
+  font-weight: var(--font-weight-component); /* 400 */
+  color: var(--color-text-secondary);
+}
+
+/*
+ * Typography rule: ALL value columns use the same font-size and weight.
+ * Only COLOR differentiates them — current year = dark, prior = muted, diff = colored.
+ *
+ * Column widths (fixed, px) + ~80px gap so numeric cols use available width
+ * instead of clustering on the right.
+ * Both header and data rows share these widths/gaps exactly.
+ */
+.summaryColHeaders {
+  display: flex;
+  align-items: center;
+  padding: 5px 32px;
+  border-top: 1px solid #f1f3f7;
+  background: #fafbfc;
+  gap: 40px; /* matches gap between .summaryRowLeft and .summaryRowRight */
+}
+
+/* Spacer stretches to fill the same space as .summaryRowLeft in data rows */
+.summaryColSpacer {
+  flex: 1;
+  min-width: 0;
+}
+
+/* Group the 4 col labels to mirror .summaryRowRight layout exactly */
+.summaryColValues {
+  display: flex;
+  align-items: center;
+  gap: 80px; /* matches .summaryRowRight gap */
+  flex-shrink: 0;
+}
+
+/* Width set via column modifier classes to match value columns exactly */
+.summaryColLabel {
+  font-family: var(--font-family-component);
+  font-size: var(--font-size-component-x-small); /* 12px */
+  font-weight: var(--font-weight-component-semibold); /* 500 */
+  color: var(--color-text-secondary); /* #6B6C72 — 4.6:1 on white, AA */
+  text-transform: uppercase;
+  letter-spacing: 0.6px;
+  text-align: right;
+  white-space: nowrap;
+  flex-shrink: 0;
+  box-sizing: border-box;
+}
+
+/* Must match .summaryCurrVal / .summaryPriorVal / .summaryDiffVal / .summaryPctVal / .summaryRowEndActions */
+.summaryColCurr { width: 108px; }
+.summaryColPrior { width: 80px; }
+.summaryColDiff { width: 72px; }
+.summaryColPct { width: 52px; }
+.summaryColCheckGroup {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 6px;
+  width: 138px; /* comment + flag spacer + prep + rev */
+  flex-shrink: 0;
+}
+/* Align Prep/Rev headers with the last two action slots (after comment + flag) */
+.summaryColCheckSpacer {
+  width: 62px; /* 28px + 6px gap + 28px */
+  flex-shrink: 0;
+}
+.summaryColCheckLabel {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  padding: 0;
+  box-sizing: border-box;
+  text-align: center;
+  font-family: var(--font-family-component);
+  font-size: var(--font-size-component-x-small);
+  font-weight: var(--font-weight-component-semibold);
+  color: var(--color-text-secondary);
+  text-transform: uppercase;
+  letter-spacing: 0.6px;
+}
+
+.outputFormsSignoffBtn,
+.formSignoffBtn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  flex-shrink: 0;
+  border: 1px solid var(--color-divider-tertiary);
+  border-radius: 6px;
+  padding: 6px 12px;
+  background: var(--color-container-background-primary);
+  font-family: var(--font-family-component);
+  font-size: var(--font-size-component-small);
+  font-weight: var(--font-weight-component-semibold);
+  color: var(--color-action-standard);
+  cursor: pointer;
+  white-space: nowrap;
+}
+.outputFormsSignoffBtn:hover:not(:disabled),
+.formSignoffBtn:hover:not(:disabled) {
+  border-color: var(--color-action-standard);
+  background: #eef5fb;
+}
+.outputFormsSignoffBtnDone,
+.formSignoffBtnDone {
+  border-color: var(--color-action-success, #00856d);
+  color: var(--color-action-success, #00856d);
+  background: #e8f5ef;
+  cursor: pointer;
+}
+
+.formSignoffToolbar {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 8px;
+  padding: 8px 16px 0;
+  flex-shrink: 0;
+}
+
+.summarySignoffRow {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  padding: 0 16px 8px;
+  border-bottom: 1px solid var(--color-divider-tertiary);
+}
+
+.summaryBody {
+  border-top: 1px solid #f1f3f7;
+}
+
+/* ── Section rows (Income, Deductions, …) ── */
+.summarySectionRow {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 32px;
+  background: #f7f8fa;
+  border: none;
+  border-top: 1px solid #eef0f3;
+  cursor: pointer;
+  text-align: left;
+  gap: 40px;
+  box-sizing: border-box;
+}
+.summarySectionRow:focus-visible {
+  outline: 2px solid var(--color-action-standard, #0077c5);
+  outline-offset: -2px;
+}
+/* Section totals share the same value-col gap as sub-rows */
+.summarySectionRow:first-child { border-top: none; }
+.summarySectionRow:hover { background: #f0f2f5; }
+
+.summaryRowLeft {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex: 1;
+  min-width: 0;
+}
+
+.summaryChevron {
+  display: flex;
+  align-items: center;
+  color: var(--color-text-secondary);
+  flex-shrink: 0;
+  transition: transform 160ms ease;
+}
+.summaryChevronOpen { transform: rotate(90deg); }
+
+.summarySectionLabel {
+  font-family: var(--font-family-component);
+  font-size: var(--font-size-component-small); /* 14px */
+  font-weight: var(--font-weight-component-bold); /* 600 */
+  color: #1c202a;
+}
+
+/* ── Value columns — ALL share the same font-size/weight; only color varies ── */
+.summaryRowRight {
+  display: flex;
+  align-items: center;
+  gap: 80px;
+  flex-shrink: 0;
+}
+
+/* Current year — value + info icon; comments live in end actions */
+.summaryCurrVal {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 2px;
+  width: 108px;
+  flex-shrink: 0;
+  overflow: visible;
+}
+
+.summaryCurrValText {
+  font-family: var(--font-family-component);
+  font-size: var(--font-size-component-small); /* 14px */
+  font-weight: var(--font-weight-component-bold); /* 600 */
+  color: #1c202a;
+  font-variant-numeric: tabular-nums;
+  text-align: right;
+  white-space: nowrap;
+  line-height: var(--line-height-component);
+}
+
+/* Modifiers apply to the inner text span */
+.summaryCurrValCalc {
+  color: #6b6c72;
+  font-style: italic;
+  font-weight: var(--font-weight-component-semibold); /* 500 */
+}
+.summaryCurrValBlue   { color: #0265ac; }
+.summaryCurrValOrange { color: #c9500f; }
+.summaryCurrValClickable {
+  cursor: pointer;
+  border-radius: 4px;
+  padding: 1px 4px;
+  transition: background 80ms ease;
+}
+.summaryCurrValClickable:hover { background: #e0ecf8; }
+
+/* Info icon — always-visible affordance for source / breakdown flyouts */
+.summaryInfoBtn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  width: 20px;
+  height: 20px;
+  margin-left: 2px;
+  padding: 0;
+  border: none;
+  border-radius: 4px;
+  background: transparent;
+  color: var(--color-action-standard, #0077c5);
+  cursor: pointer;
+}
+.summaryInfoBtn:hover,
+.summaryInfoBtnActive {
+  background: #e0ecf8;
+  color: #0265ac;
+}
+
+/* Coach tip anchor around the first Summary (i) affordance */
+.summaryInfoCoachAnchor {
+  display: inline-flex;
+  align-items: center;
+  flex-shrink: 0;
+}
+
+/* End-of-row actions: comment + flag + prep check + rev check */
+.summaryRowEndActions,
+.outputRowEndActions {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 6px;
+  width: 138px; /* 2 × 28px + 2 × 32px + 3 × 6px gap */
+  flex-shrink: 0;
+}
+
+/* Form 1040 / schedule rows — comment + flag only (attest slots follow in same row) */
+.outputRowEndActionsCommentFlag {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 6px;
+  width: 62px; /* 2 × 28px + 1 × 6px gap */
+  flex-shrink: 0;
+}
+
+/* Prep / Rev attest slots — icon-only checks, not bordered action buttons */
+.summaryAttestCol {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  flex-shrink: 0;
+  padding: 0;
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  box-sizing: border-box;
+  transition: color 100ms ease, opacity 100ms ease;
+}
+.summaryAttestColEmpty {
+  opacity: 0.45;
+}
+.summaryAttestColPrepEmpty {
+  color: var(--color-action-success, #00856d);
+}
+.summaryAttestColRevEmpty {
+  color: #205ea3;
+}
+.summaryAttestColPrepActive {
+  opacity: 1;
+  color: var(--color-action-success, #00856d);
+}
+.summaryAttestColRevActive {
+  opacity: 1;
+  color: #205ea3;
+}
+.summaryAttestCol:hover:not(:disabled):not(.summaryAttestColReadonly).summaryAttestColEmpty {
+  opacity: 0.75;
+}
+.summaryAttestColReadonly {
+  cursor: default;
+  pointer-events: none;
+}
+.summaryAttestColReadonly.summaryAttestColEmpty {
+  opacity: 0.35;
+}
+.summaryAttestCol:disabled {
+  cursor: default;
+}
+.summaryAttestSlot {
+  display: inline-flex;
+  width: 32px;
+  height: 32px;
+  flex-shrink: 0;
+  visibility: hidden;
+  pointer-events: none;
+}
+
+/* Shared secondary icon-button look for comment / flag / check */
+.summaryActionBtn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  padding: 0;
+  flex-shrink: 0;
+  border: 1px solid var(--color-border-secondary, #c3ced5);
+  border-radius: 6px;
+  background: var(--color-container-background-primary, #ffffff);
+  color: var(--color-text-secondary, #6b6c72);
+  cursor: pointer;
+  box-sizing: border-box;
+  transition: background 100ms ease, border-color 100ms ease, color 100ms ease;
+}
+.summaryActionBtn svg {
+  width: 16px;
+  height: 16px;
+  flex-shrink: 0;
+  pointer-events: none;
+}
+.summaryActionBtn:hover {
+  background: #e0ecf8;
+  border-color: var(--color-action-standard, #0077c5);
+  color: var(--color-action-standard, #0077c5);
+}
+.summaryActionBtnActive {
+  background: #e0ecf8;
+  border-color: var(--color-action-standard, #0077c5);
+  color: var(--color-action-standard, #0077c5);
+}
+.summaryActionBtnChecked {
+  border-color: var(--color-action-success, #00856d);
+  color: var(--color-action-success, #00856d);
+  background: #e6f6ef;
+}
+.summaryActionBtnReviewer {
+  border-color: #205ea3;
+  color: #205ea3;
+  background: #eef5fb;
+}
+.summaryActionBtnDualPending {
+  border-style: dashed;
+}
+.summaryActionBtnReadonly {
+  opacity: 0.45;
+  cursor: default;
+}
+.summaryActionBtnReadonly:hover {
+  background: var(--color-container-background-primary, #ffffff);
+  border-color: var(--color-border-secondary, #c3ced5);
+  color: var(--color-text-secondary, #6b6c72);
+}
+/* User flag ON — orange active state (paired with default .summaryActionBtn when off) */
+.summaryActionBtnFlag {
+  position: relative;
+  border-color: var(--color-container-border-attention);
+  color: var(--color-ui-attention);
+  background: var(--color-input-background-warning);
+}
+.summaryActionBtnFlag:hover {
+  background: var(--color-input-background-warning);
+  border-color: var(--color-ui-attention-hover);
+  color: var(--color-ui-attention-hover);
+}
+/* Small orange dot when a flag note is stored */
+.flagNoteChip {
+  border-color: var(--color-container-border-attention);
+  background: var(--color-input-background-warning);
+  color: var(--color-ui-attention);
+}
+/* Invisible equal-size slot when flag/comment/check is absent */
+.summaryActionBtnSlot {
+  display: inline-flex;
+  width: 28px;
+  height: 28px;
+  flex-shrink: 0;
+  visibility: hidden;
+  pointer-events: none;
+}
+
+/* Prior year — same size/weight as current, secondary text color */
+.summaryPriorVal {
+  font-family: var(--font-family-component);
+  font-size: var(--font-size-component-small); /* 14px — same as current */
+  font-weight: var(--font-weight-component-semibold); /* 500 */
+  color: var(--color-text-secondary); /* #6B6C72 — AA compliant */
+  font-variant-numeric: tabular-nums;
+  text-align: right;
+  width: 80px;
+  flex-shrink: 0;
+  white-space: nowrap;
+  line-height: var(--line-height-component);
+}
+
+/* Change $ — secondary color when no direction; colored when directional */
+.summaryDiffVal {
+  font-family: var(--font-family-component);
+  font-size: var(--font-size-component-small); /* 14px — same as current */
+  font-weight: var(--font-weight-component-semibold); /* 500 */
+  font-variant-numeric: tabular-nums;
+  text-align: right;
+  width: 72px;
+  flex-shrink: 0;
+  color: var(--color-text-secondary); /* #6B6C72 — AA compliant */
+  white-space: nowrap;
+  line-height: var(--line-height-component);
+}
+
+/* Change % — secondary color when no direction; colored when directional */
+.summaryPctVal {
+  font-family: var(--font-family-component);
+  font-size: var(--font-size-component-small); /* 14px — same as current */
+  font-weight: var(--font-weight-component-semibold); /* 500 */
+  font-variant-numeric: tabular-nums;
+  text-align: right;
+  width: 52px;
+  flex-shrink: 0;
+  color: var(--color-text-secondary); /* #6B6C72 — AA compliant */
+  white-space: nowrap;
+  line-height: var(--line-height-component);
+}
+
+.summaryDiffPos { color: #287f39; }
+.summaryDiffNeg { color: #c55a1b; }
+
+/* ── Sub-rows — indented, same value typography, white bg ── */
+.summarySubRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 8px 32px 8px 52px; /* 52px left = 32px margin + 20px indent */
+  border-top: 1px solid #f1f3f7;
+  gap: 40px;
+  transition: background 80ms;
+  background: #fff;
+}
+.summarySubRowClickable { cursor: pointer; }
+.summarySubRowClickable:hover { background: #f8f9fb; }
+.summarySubRowBlue   { background: #f0f5ff; }
+.summarySubRowOrange { background: #fff8f3; }
+.summarySubRowReviewed { opacity: 0.65; }
+.summarySubRowChecked .summaryCurrValText {
+  color: var(--color-ui-positive, #108000);
+}
+
+.summarySubLabelGroup {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  min-width: 0;
+}
+
+/* Sub-row field name — component-small (14px), normal weight */
+.summarySubLabel {
+  font-family: var(--font-family-component);
+  font-size: var(--font-size-component-small); /* 14px */
+  font-weight: var(--font-weight-component); /* 400 */
+  color: #393a3d;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  line-height: var(--line-height-component);
+}
+.summarySubLabelCalc {
+  color: #6b6c72;
+  font-style: italic;
+}
+
+/* Sub-row values: same shared typography — no separate class needed.
+   summaryCurrVal / summaryPriorVal / summaryDiffVal / summaryPctVal apply directly */
+
+/* Sub-row line note — secondary text on its own line when present */
+.summarySubNote {
+  font-family: var(--font-family-body);
+  font-size: var(--font-size-body-3);
+  font-weight: var(--font-weight-body);
+  color: var(--color-text-secondary);
+  line-height: var(--line-height-body);
+}
+
+.summaryReviewedIcon {
+  color: #287f39;
+  display: inline-flex;
+  align-items: center;
+}
+
+.summaryHoverActions {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  margin-left: 4px;
+}
+
+/* Amount owed row — neutral emphasis (no alert orange) */
+.summaryOweRow {
+  background: var(--color-container-background-secondary);
+  border-top: 2px solid var(--color-divider-secondary);
+  padding-left: 32px;
+}
+.summaryOweRow:hover { background: var(--color-container-background-tertiary); }
+
+/* ── Tax control view ── */
+
+/* Tax control unlock modal body */
+.controlModalBody {
+  margin: 0;
+  font-family: var(--font-family-component);
+  font-size: 16px;
+  color: var(--color-text-primary, #21262a);
+  line-height: 1.5;
+}
+
+/* Control view card — success state */
+.controlCardSuccess {
+  border-color: #00856d !important;
+  box-shadow: 0 0 0 2px rgba(0, 133, 109, 0.15);
+}
+
+/* Instruction callout — info page message */
+.controlInstruction {
+  margin: 0 16px 16px;
+  padding: 12px 14px;
+  background: #e6f4ff;
+  border: 1px solid #b3d9f7;
+  border-left: 3px solid #0077c5;
+  border-radius: 6px;
+  font-family: var(--font-family-component);
+  font-size: 13px;
+  color: #004a80;
+  line-height: 1.55;
+  display: flex;
+  gap: 10px;
+  align-items: flex-start;
+}
+.controlInstructionIcon {
+  flex-shrink: 0;
+  margin-top: 1px;
+}
+.controlInstructionBody {
+  flex: 1;
+}
+.controlInstructionBody strong {
+  display: block;
+  color: #003d6b;
+  font-weight: 700;
+  margin-bottom: 3px;
+}
+
+/* Column header row */
+.controlColHeaders {
+  display: flex;
+  align-items: center;
+  padding: 4px 16px 6px;
+  gap: 8px;
+  border-bottom: 1px solid #e8eff3;
+}
+.controlColLine {
+  width: 36px;
+  font-family: var(--font-family-component);
+  font-size: 11px;
+  font-weight: 600;
+  color: #6b7a82;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  flex-shrink: 0;
+}
+.controlColItem {
+  flex: 1;
+  font-family: var(--font-family-component);
+  font-size: 11px;
+  font-weight: 600;
+  color: #6b7a82;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+.controlColSystem {
+  width: 118px;
+  font-family: var(--font-family-component);
+  font-size: 11px;
+  font-weight: 600;
+  color: #6b7a82;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  text-align: right;
+  flex-shrink: 0;
+}
+.controlColSource {
+  width: 96px;
+  margin-left: 60px;
+  font-family: var(--font-family-component);
+  font-size: 11px;
+  font-weight: 600;
+  color: #6b7a82;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  text-align: right;
+  flex-shrink: 0;
+}
+.controlColMatch {
+  width: 28px;
+  flex-shrink: 0;
+}
+
+/* Each reconciliation row */
+.controlRow {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 16px;
+  border-bottom: 1px solid #f0f4f7;
+}
+.controlRow:last-child { border-bottom: none; }
+.controlRow:hover { background: #f8fbfc; }
+
+.controlLineNum {
+  width: 36px;
+  font-family: var(--font-family-component);
+  font-size: 12px;
+  color: #8fa3af;
+  font-weight: 500;
+  flex-shrink: 0;
+}
+.controlLabel {
+  flex: 1;
+  font-family: var(--font-family-component);
+  font-size: 14px;
+  font-weight: 500;
+  color: #2d4a5e;
+}
+.controlSystemVal {
+  width: 92px;
+  font-family: var(--font-family-component);
+  font-size: 14px;
+  font-weight: 600;
+  color: #1a3347;
+  text-align: right;
+  flex-shrink: 0;
+}
+
+/* System column — value + info breakdown trigger */
+.controlSystemCell {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 4px;
+  width: 118px;
+  flex-shrink: 0;
+}
+
+.controlSystemBtn {
+  padding: 2px 4px;
+  border: 1px dashed #adb9c2;
+  border-radius: 4px;
+  background: #f7f9fb;
+  font-family: var(--font-family-component);
+  font-size: 14px;
+  font-weight: 600;
+  color: #1a3347;
+  text-align: right;
+  cursor: pointer;
+  transition: background 0.15s, border-color 0.15s;
+}
+
+.controlSystemBtn:hover,
+.controlSystemBtnActive {
+  background: #eef6fc;
+  border-color: #0077c5;
+  color: #0077c5;
+}
+
+.controlSystemBtnTotal {
+  font-weight: 700;
+  border-style: solid;
+  border-color: #c5d3db;
+  background: var(--color-page-background-secondary, #f4f5f8);
+}
+
+.controlInfoBtn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 22px;
+  height: 22px;
+  padding: 0;
+  border: none;
+  border-radius: 50%;
+  background: transparent;
+  color: #8fa3af;
+  cursor: pointer;
+  flex-shrink: 0;
+  transition: color 0.15s, background 0.15s;
+}
+
+.controlInfoBtn:hover,
+.controlInfoBtnActive {
+  color: #0077c5;
+  background: #eef6fc;
+}
+
+/* Source doc input */
+.controlInput {
+  width: 96px;
+  margin-left: 60px;
+  padding: 5px 8px;
+  border: 1.5px solid #c5d3db;
+  border-radius: 5px;
+  font-family: var(--font-family-component);
+  font-size: 14px;
+  text-align: right;
+  color: #1a3347;
+  background: #fff;
+  outline: none;
+  flex-shrink: 0;
+  transition: border-color 0.15s;
+}
+.controlInput:focus {
+  border-color: #0077c5;
+  box-shadow: 0 0 0 2px rgba(0,119,197,0.15);
+}
+.controlInputOk {
+  border-color: #00856d;
+  background: #f0fff8;
+}
+.controlInputFail {
+  border-color: #d92b2b;
+  background: #fff5f5;
+}
+
+/* Multi-doc popover trigger button */
+.controlMultiBtn {
+  width: 120px;
+  margin-left: 36px;
+  padding: 5px 8px;
+  border: 1.5px solid var(--color-border-accent, #0077c5);
+  border-radius: 5px;
+  font-family: var(--font-family-component);
+  font-size: var(--font-size-component-x-small, 12px);
+  text-align: right;
+  color: var(--color-text-accent, #0077c5);
+  background: var(--color-container-background-accent, #f0f8ff);
+  cursor: pointer;
+  flex-shrink: 0;
+  transition: background 0.15s, border-color 0.15s;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.controlMultiBtn:hover {
+  background: #dceef9;
+}
+.controlMultiBtnNeedsEntry {
+  text-align: center;
+  font-weight: var(--font-weight-component-semibold, 500);
+  border-style: dashed;
+}
+
+/* Match indicator */
+.controlMatch {
+  width: 28px;
+  text-align: center;
+  flex-shrink: 0;
+  font-size: 16px;
+  line-height: 1;
+}
+.controlMatchOk {
+  color: #00856d;
+  font-weight: 700;
+}
+.controlMatchFail {
+  color: #d92b2b;
+  font-weight: 700;
+}
+
+/* Success footer */
+.controlFooter {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 12px 16px;
+  background: #ecfff7;
+  border-top: 1px solid #b3ead8;
+  border-radius: 0 0 8px 8px;
+  font-family: var(--font-family-component);
+  font-size: 13px;
+  font-weight: 600;
+  color: #00614f;
+}
+
+/* ── Tax control — expanded rows ── */
+
+.controlSectionHeader {
+  padding: 8px 16px 4px;
+  font-family: var(--font-family-component);
+  font-size: 11px;
+  font-weight: 700;
+  color: #6b7a82;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  background: #f5f8fa;
+  border-top: 1px solid #e8eff3;
+  border-bottom: 1px solid #e8eff3;
+}
+
+/* Label group: label + description stacked */
+.controlLabelGroup {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  min-width: 0;
+}
+.controlEditedBadge {
+  display: inline-flex;
+  align-items: center;
+  margin-left: 6px;
+  padding: 1px 6px;
+  border-radius: 4px;
+  font-family: var(--font-family-component);
+  font-size: var(--font-size-component-x-small);
+  font-weight: var(--font-weight-component-semibold);
+  color: var(--color-text-secondary);
+  background: var(--color-container-background-secondary);
+  border: 1px solid var(--color-divider-tertiary);
+}
+
+.controlLabelText {
+  font-family: var(--font-family-component);
+  font-size: 13px;
+  font-weight: 500;
+  color: #2d4a5e;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+.controlDesc {
+  font-family: var(--font-family-component);
+  font-size: 12px;
+  color: #6b7a82;
+  line-height: 1.4;
+  white-space: normal;
+}
+
+/* Arrow icon inside clickable label */
+.controlNavIcon {
+  color: #0077c5;
+  opacity: 0;
+  transition: opacity 0.15s;
+  flex-shrink: 0;
+}
+.controlRowClickable:hover .controlNavIcon {
+  opacity: 1;
+}
+
+/* Total rows — bold, neutral blue-tint to differentiate from regular rows */
+.controlRowTotal {
+  background: var(--color-page-background-secondary, #f4f5f8);
+  border-top: 1px solid var(--color-container-border-primary, #d4d7dc);
+}
+.controlRowTotal:hover {
+  background: #eceef1;
+}
+.controlRowTotal .controlLabelText {
+  font-weight: 700;
+  color: #1a3347;
+}
+.controlRowTotal .controlSystemVal {
+  font-weight: 700;
+}
+
+/* Clickable rows — show pointer + subtle hover */
+.controlRowClickable {
+  cursor: pointer;
+}
+.controlRowClickable:hover {
+  background: #f0f7ff;
+}
+.controlRowClickable:hover .controlLabelText {
+  color: #0077c5;
+}
+
+/* Blank rows (N/A — not on this return) */
+.controlRowBlank {
+  opacity: 0.5;
+  cursor: default;
+}
+.controlInputBlank {
+  width: 96px;
+  margin-left: 60px;
+  padding: 5px 8px;
+  font-family: var(--font-family-component);
+  font-size: 13px;
+  color: #8fa3af;
+  text-align: right;
+  flex-shrink: 0;
+}
+.summaryOweLabel {
+  font-family: var(--font-family-component);
+  font-size: var(--font-size-component-small); /* 14px */
+  font-weight: var(--font-weight-component-bold); /* 600 */
+  color: var(--color-text-primary);
+}
+/* summaryOweAmt kept as a hook; CY total uses .summaryCurrValText (primary), not alert orange */
+
+/* Change indicators (kept for badge reuse) */
+.tvPos { color: #287f39; }
+.tvNeg { color: #955d2b; }
+
+/*
+ * When the Summary panel is narrower than 949px, keep ≥20px between the label
+ * column and CURRENT YEAR, and compress other value-column gaps to 20px so
+ * columns never overlap and the panel never needs horizontal scroll.
+ */
+@container summary (max-width: 948px) {
+  .summaryColHeaders,
+  .summarySectionRow,
+  .summarySubRow {
+    gap: 20px;
+    padding-left: 16px;
+    padding-right: 16px;
+  }
+  .summarySubRow {
+    padding-left: 36px; /* keep indent, tighter side padding */
+  }
+  .summaryColValues,
+  .summaryRowRight {
+    gap: 20px;
+  }
+  .summaryCardHeader {
+    padding-left: 16px;
+    padding-right: 16px;
+  }
+}
+
+/* ── Digitized IRS form styling (Figma form-1040-digitized) ── */
+
+.formDocDigitized {
+  max-width: 960px;
+  border: 1px solid #000;
+  border-radius: 0;
+  box-shadow: none;
+  padding-bottom: 0;
+}
+
+.formDocDigitized .summaryCardHeader {
+  border-bottom: 1px solid #000;
+  padding: 12px 16px;
+}
+
+/* Header — large form code, dept, title; OMB + IRS Use Only box */
+.irsFormCode {
+  font-family: var(--font-family-component);
+  font-size: var(--font-size-component-x-large);
+  font-weight: var(--font-weight-heading-bold);
+  color: var(--color-text-primary);
+  line-height: 1.2;
+}
+
+.irsUseOnlyBox {
+  background: #f3f4f6;
+  border: 1px solid #000;
+  border-radius: 2px;
+  padding: 6px;
+  font-family: var(--font-family-component);
+  font-size: var(--font-size-component-x-small);
+  font-weight: var(--font-weight-component-bold);
+  color: var(--color-text-primary);
+  white-space: nowrap;
+}
+
+.formDocDigitized .irsHeader {
+  padding: 16px;
+  border-bottom: 1px solid #000;
+  background: #fff;
+  align-items: flex-start;
+}
+
+.formDocDigitized .irsLeft {
+  gap: 4px;
+}
+
+.formDocDigitized .irsDept {
+  font-size: var(--font-size-component-small);
+  color: var(--color-text-secondary);
+  line-height: 1.4;
+}
+
+.formDocDigitized .irsTitle {
+  font-size: var(--font-size-component-medium);
+  font-weight: var(--font-weight-component-bold);
+  color: var(--color-text-primary);
+  line-height: 1.3;
+}
+
+.formDocDigitized .irsTitle strong {
+  font-weight: inherit;
+  font-size: inherit;
+}
+
+.formDocDigitized .irsRight {
+  gap: 2px;
+}
+
+.formDocDigitized .irsYear {
+  display: none;
+}
+
+.formDocDigitized .irsOmb {
+  font-size: 11px;
+  color: var(--color-text-secondary);
+}
+
+/* Section bars — gray bg, black top/bottom borders */
+.sectionBar {
+  background: #f3f4f6;
+  border-top: 1px solid #000;
+  border-bottom: 1px solid #000;
+  padding: 6px 12px;
+  font-family: var(--font-family-component);
+  font-size: 13px;
+  font-weight: var(--font-weight-component-semibold);
+  color: var(--color-text-primary);
+}
+
+.formDocDigitized .sectionHeader td {
+  padding: 0;
+  background: #f3f4f6;
+  border-top: 1px solid #000;
+  border-bottom: 1px solid #000;
+}
+
+.formDocDigitized .sectionTitle {
+  display: block;
+  padding: 6px 12px;
+  font-size: 13px;
+  font-weight: var(--font-weight-component-semibold);
+  color: var(--color-text-primary);
+  text-transform: none;
+  letter-spacing: normal;
+}
+
+/* Filing status — pill radio buttons */
+.formDocDigitized .filingStatus {
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 8px;
+  padding: 12px;
+  border-bottom: none;
+}
+
+.formDocDigitized .filingLabel {
+  text-transform: none;
+  font-size: 13px;
+  font-weight: var(--font-weight-component-semibold);
+  letter-spacing: normal;
+  color: var(--color-text-primary);
+}
+
+.filingOptions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  width: 100%;
+}
+
+.formDocDigitized .filingOption {
+  gap: 6px;
+  font-size: 13px;
+  font-weight: var(--font-weight-component-semibold);
+  color: var(--color-text-primary);
+  border: 1px solid #000;
+  border-radius: 16px;
+  padding: 6px 10px;
+  background: #fff;
+}
+
+.formDocDigitized .filingOption:has(input:checked) {
+  background: #f3f4f6;
+}
+
+.formDocDigitized .filingOption input[type="radio"] {
+  width: 14px;
+  height: 14px;
+  accent-color: #000;
+}
+
+/* Taxpayer fields — labeled inputs with black border, 32px height, inset shadow */
+.formDocDigitized .infoGrid {
+  border-bottom: none;
+}
+
+.formDocDigitized .infoRow {
+  display: flex;
+  gap: 20px;
+  padding: 12px;
+  border-bottom: none;
+}
+
+.formDocDigitized .infoField {
+  border-right: none;
+  padding: 0;
+  gap: 4px;
+}
+
+.formDocDigitized .infoLabel {
+  font-size: var(--font-size-component-small);
+  font-weight: var(--font-weight-component-semibold);
+  color: var(--color-text-primary);
+}
+
+.formDocDigitized .infoValue {
+  display: flex;
+  align-items: center;
+  box-sizing: border-box;
+  width: 100%;
+  height: 32px;
+  padding: 0 10px;
+  border: 1px solid #000;
+  border-radius: var(--radius-small, 4px);
+  background: #fff;
+  box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.06);
+  font-size: 13px;
+  font-weight: var(--font-weight-component-semibold);
+  color: var(--color-text-primary);
+  letter-spacing: normal;
+}
+
+/* Column headers */
+.formDocDigitized .colHeaders {
+  background: #fff;
+  border-bottom: 1px solid #000;
+  padding: 4px 0;
+}
+
+/* Field legend — less prominent but accessible */
+.formDocDigitized .legend {
+  background: transparent;
+  border-bottom: 1px solid #e8eaed;
+  opacity: 0.55;
+  padding: 3px 12px;
+}
+
+.formDocDigitized .legendItem {
+  font-size: 10px;
+  letter-spacing: 0.3px;
+}
+
+/* Income lines — blue bold line numbers, alternating row stripes */
+.formDocDigitized .cellLine,
+.formDocDigitized .cellLineRight {
+  color: #205ea3;
+  font-weight: var(--font-weight-component-bold);
+  font-size: 13px;
+}
+
+.formDocDigitized .table tbody tr.row:nth-child(even of tr.row) {
+  background: #f3f4f6;
+}
+
+.formDocDigitized .rowClickable:hover {
+  background: #e8eaed !important;
+}
+
+.formDocDigitized .rowSelected {
+  background: rgba(201, 80, 15, 0.08) !important;
+}
+
+.formDocDigitized .rowSelectedBlue {
+  background: rgba(32, 94, 163, 0.08) !important;
+}
+
+.formDocDigitized .rowShaded {
+  background: #e8eaed !important;
+}
+
+.formDocDigitized .rowBold .cellLabelPrimary {
+  font-weight: var(--font-weight-component-bold);
+}
+
+.formDocDigitized .cellLabel {
+  font-size: var(--font-size-component-small);
+  padding: 6px 8px;
+}
+
+/* Value boxes — black border, white bg, right-aligned, ~140px, 32px height */
+.formDocDigitized .valueBox {
+  width: 140px;
+  min-width: 140px;
+  max-width: 140px;
+  height: 32px;
+  min-height: 32px;
+  border: 1px solid #000;
+  border-radius: var(--radius-small, 4px);
+  background: #fff;
+  box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.06);
+  padding: 0 8px;
+  flex: 0 0 auto;
+}
+
+.formDocDigitized .valueBoxSource,
+.formDocDigitized .valueBoxCalc,
+.formDocDigitized .valueBoxEmpty {
+  background: #fff;
+  border: 1px solid #000;
+}
+
+.formDocDigitized .valueBoxEmpty {
+  border-style: solid;
+}
+
+.formDocDigitized .valueNum,
+.formDocDigitized .valueNumSource,
+.formDocDigitized .valueNumCalc {
+  color: var(--color-text-primary);
+  font-style: normal;
+  font-weight: var(--font-weight-component-semibold);
+  font-size: 13px;
+}
+
+/* Preserve selection / attest / flag highlight states */
+.formDocDigitized .valueBoxSelected {
+  background: rgba(201, 80, 15, 0.06) !important;
+  border: 2px solid #c9500f !important;
+}
+
+.formDocDigitized .valueBoxSelectedBlue {
+  background: rgba(32, 94, 163, 0.06) !important;
+  border: 2px solid #205ea3 !important;
+}
+
+.formDocDigitized .valueBoxChecked,
+.formDocDigitized .valueBoxCheckedReviewer,
+.formDocDigitized .valueBoxCheckedDual {
+  border-width: 2px;
+}
+
+.formDocDigitized .valueBoxCommentOpen {
+  border: 2px solid #205ea3 !important;
+}
+
+/* Dividers */
+.formDocDigitized .dividerLine {
+  height: 1px;
+  background: #000;
+  margin: 0;
+}
+
+.formDocDigitized .oweDividerRow td {
+  background: #000;
+  height: 1px;
+}
+
+.formDocDigitized .rowOwe {
+  border-top: 1px solid #000;
+  background: #fff;
+}
+
+/* Page footer */
+.formPageFooter {
+  text-align: center;
+  padding: 12px 16px;
+  border-top: 1px solid #000;
+  font-family: var(--font-family-component);
+  font-size: 11px;
+  font-weight: var(--font-weight-component-semibold);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--color-text-primary);
+}

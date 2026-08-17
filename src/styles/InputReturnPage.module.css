@@ -1,0 +1,160 @@
+.page {
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  background: var(--page-background-secondary, #f0f4f6);
+  font-family: var(--font-family-component);
+  overflow: hidden;
+}
+
+.body {
+  flex: 1;
+  min-height: 0;
+  overflow: hidden;
+}
+
+.contentArea {
+  display: flex;
+  flex: 1;
+  min-height: 0;
+  gap: var(--space-medium, 20px);
+  padding: var(--space-medium, 20px);
+  overflow: hidden;
+}
+
+.menuPanel {
+  width: 316px;
+  min-width: 316px;
+  flex-shrink: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-component-gap-medium, 12px);
+  background: var(--color-page-background-primary, #ffffff);
+  border: 1px solid var(--color-divider-tertiary, #c3ced5);
+  border-radius: var(--radius-medium, 4px);
+  padding: var(--space-component-padding-large, 16px);
+  overflow: hidden;
+}
+
+.menuHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.menuTitle {
+  font-size: var(--font-size-component-medium, 16px);
+  font-weight: var(--font-weight-component-bold, 600);
+  color: var(--color-text-primary, #21262a);
+}
+
+.menuBackBtn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  color: var(--color-text-primary, #21262a);
+  padding: var(--space-component-padding-small, 4px);
+}
+
+.menuTabs {
+  display: flex;
+  gap: var(--space-component-gap-small, 8px);
+}
+
+.menuTab {
+  flex: 1;
+  text-align: center;
+  padding: var(--space-component-padding-small, 8px) var(--space-component-padding-medium, 12px);
+  font-size: var(--font-size-component-small, 14px);
+  border-bottom: 2px solid transparent;
+  color: var(--color-text-secondary, #6b6c72);
+}
+
+.menuTabActive {
+  color: var(--color-action-standard, #205ea3);
+  border-bottom-color: var(--color-action-standard, #205ea3);
+  font-weight: var(--font-weight-component-semibold, 500);
+}
+
+.searchWrap {
+  display: block;
+}
+
+.searchInput {
+  width: 100%;
+  box-sizing: border-box;
+  padding: var(--space-component-padding-small, 8px) var(--space-component-padding-medium, 12px);
+  border: 1px solid var(--color-divider-tertiary, #c3ced5);
+  border-radius: var(--radius-small, 4px);
+  font-family: var(--font-family-component);
+  font-size: var(--font-size-component-small, 14px);
+}
+
+.navCategoryDisabled {
+  opacity: 0.65;
+  cursor: default;
+}
+
+.comingSoon {
+  font-size: var(--font-size-component-x-small, 12px);
+  color: var(--color-text-secondary, #6b6c72);
+}
+
+.formPanel {
+  flex: 1;
+  min-width: 0;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  background: var(--color-page-background-primary, #ffffff);
+  border: 1px solid var(--color-divider-tertiary, #c3ced5);
+  border-radius: var(--radius-medium, 4px);
+  overflow: hidden;
+}
+
+.diagnosticBanner {
+  padding: var(--space-component-padding-large, 16px);
+  border-bottom: 1px solid var(--color-divider-tertiary, #c3ced5);
+}
+
+.formScroll {
+  flex: 1;
+  min-height: 0;
+  overflow: auto;
+}
+
+.formMeta {
+  display: none;
+}
+
+.footerBar {
+  flex-shrink: 0;
+  padding: var(--space-component-padding-medium, 12px) var(--space-medium, 20px);
+  border-top: 1px solid var(--color-divider-tertiary, #c3ced5);
+  background: var(--color-page-background-primary, #ffffff);
+}
+
+.footerLink {
+  border: none;
+  background: none;
+  cursor: pointer;
+  font-family: var(--font-family-component);
+  font-size: var(--font-size-component-small, 14px);
+  color: var(--color-action-standard, #205ea3);
+  padding: 0;
+}
+
+.visuallyHidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}

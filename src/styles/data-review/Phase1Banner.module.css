@@ -1,0 +1,136 @@
+/* ProtoC — Phase 1 (Import Accuracy) + Phase 2 banner shell */
+.banner {
+  display: flex;
+  align-items: center;
+  gap: var(--space-large, 24px);
+  box-sizing: border-box;
+  padding: var(--space-medium, 16px) var(--space-large, 24px);
+  background: var(--color-container-background-primary, #ffffff);
+  border-bottom: 1px solid #C3CED5;
+  flex-shrink: 0;
+  position: relative;
+}
+
+.bannerComplete {
+  background: linear-gradient(90deg, #f0f9f4 0%, #ffffff 60%);
+  border-bottom-color: #b7e0c7;
+}
+
+.left {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex: 1;
+  min-width: 0;
+}
+
+.icon {
+  width: 26px;
+  height: 26px;
+  flex-shrink: 0;
+}
+
+.text {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.title {
+  font-family: var(--font-family-component, sans-serif);
+  font-size: 15px;
+  font-weight: 600;
+  color: #21262a;
+}
+
+.subtitle {
+  font-family: var(--font-family-component, sans-serif);
+  font-size: 13px;
+  color: #5d686f;
+  line-height: 1.4;
+}
+
+.right {
+  display: flex;
+  align-items: center;
+  gap: var(--space-large, 24px);
+  flex-shrink: 0;
+}
+
+.counter {
+  font-family: var(--font-family-component, sans-serif);
+  font-size: 13px;
+  color: #5d686f;
+  white-space: nowrap;
+}
+
+.counterNum {
+  font-size: 15px;
+  font-weight: 700;
+  color: #21262a;
+}
+
+/* Progress note as link back to AI Review when diagnostics remain */
+.counterLink {
+  font-family: var(--font-family-component, sans-serif);
+  font-size: 13px;
+  color: #105c99;
+  white-space: nowrap;
+  background: none;
+  border: none;
+  padding: 0;
+  cursor: pointer;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+
+.counterLink:hover {
+  color: #0b4573;
+}
+
+.counterLink .counterNum {
+  color: inherit;
+  font-size: 15px;
+  font-weight: 700;
+}
+
+/* Locked (hard-lock) — visible + explained */
+.lockedWrap {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 4px;
+  max-width: 340px;
+}
+
+.lockNote {
+  font-family: var(--font-family-component, sans-serif);
+  font-size: 11px;
+  color: #6b7680;
+  line-height: 1.35;
+  text-align: right;
+}
+
+.completeBadge {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 4px 10px;
+  background: #e6f6ef;
+  color: #1a8254;
+  border-radius: 999px;
+  font-family: var(--font-family-component, sans-serif);
+  font-size: 12px;
+  font-weight: 600;
+  flex-shrink: 0;
+}
+
+
+.checklistHint {
+  font-family: var(--font-family-component);
+  font-size: var(--font-size-component-small);
+  font-weight: var(--font-weight-component-semibold);
+  color: var(--color-text-secondary);
+  white-space: nowrap;
+}

@@ -1,0 +1,866 @@
+/* Smart Review Brief — phase checklist + activity log */
+
+.brief {
+  padding: 0;
+  gap: 0;
+}
+
+/* Sticky in-panel header */
+.stickyHeader {
+  position: sticky;
+  top: 0;
+  z-index: 2;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-component-gap-small, 4px);
+  padding: var(--space-container-padding-large, 24px);
+  padding-bottom: var(--space-component-gap-large, 12px);
+  background: var(--color-container-background-primary);
+  border-bottom: 1px solid var(--color-divider-tertiary);
+}
+
+.briefTitle {
+  margin: 0;
+  font-family: var(--font-family-heading);
+  font-size: var(--font-size-heading-6);
+  font-weight: var(--font-weight-heading);
+  color: var(--color-text-primary);
+  line-height: 1.25;
+}
+
+.briefMeta {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: var(--space-component-gap-medium, 8px);
+}
+
+.pass1Line {
+  font-family: var(--font-family-body);
+  font-size: var(--font-size-body-3);
+  color: var(--color-text-secondary);
+  line-height: 1.4;
+}
+
+.passBadge {
+  flex-shrink: 0;
+}
+
+.briefTabs {
+  padding: 0 var(--space-container-padding-large, 24px);
+}
+
+.tabPanel {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-large, 24px);
+  padding: var(--space-container-padding-large, 24px);
+  padding-top: var(--space-component-gap-large, 12px);
+}
+
+/* Conversational assist brief — typography only, flush with panel */
+.conversationalBrief {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-component-gap-medium, 8px);
+  padding: 0;
+  margin: 0;
+}
+
+.conversationalBriefHead {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--space-component-gap-medium, 8px);
+}
+
+.conversationalBriefIcon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  width: 32px;
+  height: 32px;
+  border-radius: var(--radius-medium, 8px);
+  background: var(--color-container-background-secondary);
+  color: var(--color-action-standard);
+}
+
+.conversationalBriefHeadText {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-component-gap-small, 4px);
+  flex: 1;
+  min-width: 0;
+}
+
+.conversationalBriefHeading {
+  margin: 0;
+  font-family: var(--font-family-heading);
+  font-size: var(--font-size-component-medium);
+  font-weight: var(--font-weight-heading);
+  color: var(--color-text-primary);
+  line-height: 1.35;
+}
+
+.conversationalBriefIntro {
+  margin: 0;
+  color: var(--color-text-secondary);
+  line-height: 1.5;
+}
+
+/* Assist-style loading state before conversational brief reveals */
+.briefLoading {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: var(--space-component-gap-medium, 8px);
+  padding: var(--space-container-padding-medium, 16px) 0;
+  min-height: 120px;
+}
+
+.briefLoadingIconRow {
+  display: flex;
+  align-items: center;
+  gap: var(--space-component-gap-small, 4px);
+}
+
+.briefLoadingAssistIcon {
+  width: 32px;
+  height: 32px;
+}
+
+.briefLoadingSparkle {
+  display: inline-flex;
+  color: var(--color-action-standard);
+  animation: briefAssistSparkle var(--duration-progress-moderate, 1000ms)
+    var(--ease-appear-emphasize, cubic-bezier(0.15, 1.4, 0.25, 1)) 2;
+}
+
+.briefLoadingShimmer {
+  width: 100%;
+  height: 8px;
+  border-radius: var(--radius-small, 4px);
+  background: linear-gradient(
+    90deg,
+    var(--color-container-background-secondary) 0%,
+    var(--color-container-background-tertiary, #e8eaed) 50%,
+    var(--color-container-background-secondary) 100%
+  );
+  background-size: 200% 100%;
+  animation: briefShimmer var(--duration-progress-moderate, 1000ms) linear infinite;
+}
+
+.briefLoadingText {
+  margin: 0;
+  font-family: var(--font-family-body);
+  font-size: var(--font-size-body-3);
+  color: var(--color-text-secondary);
+  line-height: 1.5;
+}
+
+@keyframes briefAssistSparkle {
+  0%, 100% { opacity: 0.55; transform: scale(1); }
+  50% { opacity: 1; transform: scale(1.12); }
+}
+
+@keyframes briefShimmer {
+  0% { background-position: 100% 0; }
+  100% { background-position: -100% 0; }
+}
+
+.conversationalBriefEnter .conversationalBriefHeading {
+  animation: briefContentFadeIn var(--duration-progress-moderate, 1000ms)
+    var(--ease-appear-emphasize, cubic-bezier(0.15, 1.4, 0.25, 1)) both;
+}
+
+.conversationalBriefEnter .conversationalBriefSubheading {
+  animation: briefContentFadeIn var(--duration-progress-moderate, 1000ms)
+    var(--ease-appear-emphasize, cubic-bezier(0.15, 1.4, 0.25, 1)) both;
+  animation-delay: 120ms;
+}
+
+.conversationalBriefEnter .conversationalBriefSection {
+  animation: briefContentFadeIn var(--duration-progress-moderate, 1000ms)
+    var(--ease-appear-emphasize, cubic-bezier(0.15, 1.4, 0.25, 1)) both;
+  animation-delay: 240ms;
+}
+
+.conversationalBriefEnter .conversationalBriefSynced {
+  animation: briefContentFadeIn var(--duration-progress-moderate, 1000ms)
+    var(--ease-appear-emphasize, cubic-bezier(0.15, 1.4, 0.25, 1)) both;
+  animation-delay: 360ms;
+}
+
+@keyframes briefContentFadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.conversationalBriefSubheading {
+  margin: 0;
+  font-family: var(--font-family-component);
+  font-size: var(--font-size-component-medium);
+  font-weight: var(--font-weight-component-semibold);
+  color: var(--color-text-primary);
+  line-height: 1.5;
+}
+
+.conversationalBriefSection {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-component-gap-small, 4px);
+  padding-top: var(--space-component-gap-small, 4px);
+}
+
+.conversationalBriefSectionLabel {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-component-gap-small, 4px);
+  margin: 0;
+  font-family: var(--font-family-component);
+  font-size: var(--font-size-component-small);
+  font-weight: var(--font-weight-component-semibold);
+  color: var(--color-text-primary);
+  line-height: 1.35;
+}
+
+.conversationalBriefSectionIconDone {
+  flex-shrink: 0;
+  color: var(--color-ui-positive);
+}
+
+.conversationalBriefList {
+  margin: 0;
+  padding: 0 0 0 var(--space-container-padding-medium, 16px);
+  list-style: disc;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-component-gap-small, 4px);
+}
+
+.conversationalBriefListItem {
+  padding-left: var(--space-component-gap-small, 4px);
+}
+
+.conversationalBriefListText {
+  margin: 0;
+  color: var(--color-text-primary);
+  line-height: 1.5;
+}
+
+.briefEmphasis {
+  font-weight: var(--font-weight-body-bold);
+  color: var(--color-text-primary);
+}
+
+.conversationalBriefSynced {
+  margin: 0;
+  font-family: var(--font-family-component);
+  font-size: var(--font-size-component-small);
+  color: var(--color-text-secondary);
+  line-height: 1.4;
+}
+
+/* Legacy executive brief (removed PageMessage) */
+
+/* Phase cards */
+.phaseStack {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-large, 24px);
+}
+
+.phaseCard {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-component-gap-large, 12px);
+  padding: var(--space-container-padding-medium, 16px);
+  border: 1px solid var(--color-divider-tertiary);
+  border-radius: var(--radius-medium, 8px);
+  background: var(--color-container-background-primary);
+}
+
+.phaseCardHead {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: var(--space-component-gap-medium, 8px);
+}
+
+.phaseCardHeadText {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-component-gap-small, 4px);
+  flex: 1;
+  min-width: 0;
+}
+
+.phaseCardTitle {
+  margin: 0;
+  font-family: var(--font-family-heading);
+  font-size: var(--font-size-component-small);
+  font-weight: var(--font-weight-heading);
+  color: var(--color-text-primary);
+  line-height: 1.35;
+}
+
+.phaseCardDescription {
+  margin: 0;
+  font-family: var(--font-family-body);
+  font-size: var(--font-size-body-3);
+  line-height: 1.45;
+  color: var(--color-text-secondary);
+}
+
+.phasePill {
+  flex-shrink: 0;
+}
+
+.phaseItemList {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+}
+
+.checklistRow {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-component-gap-small, 4px);
+  padding: var(--space-component-gap-large, 12px) 0;
+}
+
+.checklistRow:first-child {
+  padding-top: 0;
+}
+
+.checklistRow:last-child {
+  padding-bottom: 0;
+}
+
+.checklistRowDivider {
+  border-top: 1px solid var(--color-divider-tertiary);
+}
+
+.checklistRowMain {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: var(--space-component-gap-medium, 8px);
+}
+
+.checklistCheck {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--space-component-gap-medium, 8px);
+  flex: 1;
+  min-width: 0;
+}
+
+.checklistIconSlot {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  width: 32px;
+  min-height: 32px;
+}
+
+.checklistCheckBtn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  padding: 0;
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  color: var(--color-ui-positive);
+  box-sizing: border-box;
+  transition: color 100ms ease;
+}
+
+.checklistCheckBtnEmpty {
+  opacity: 0.45;
+  color: var(--color-ui-positive);
+}
+
+.checklistCheckBtnEmpty:hover:not(:disabled) {
+  opacity: 0.75;
+}
+
+.checklistCheckBtnActive {
+  cursor: pointer;
+  opacity: 1;
+}
+
+.checklistCheckEmptyLocked {
+  opacity: 0.35;
+  color: var(--color-text-secondary);
+}
+
+.checklistText {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.checklistTitleRow {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: var(--space-component-gap-small, 4px);
+  min-width: 0;
+}
+
+.completionTypeIcon {
+  display: inline-flex;
+  align-items: center;
+  flex-shrink: 0;
+  color: var(--color-text-secondary);
+  opacity: 0.75;
+}
+
+.checklistAttribution {
+  font-family: var(--font-family-component);
+  font-size: var(--font-size-component-x-small);
+  font-weight: var(--font-weight-component);
+  color: var(--color-text-secondary);
+  margin-left: auto;
+  flex-shrink: 0;
+}
+
+.checklistTitle {
+  font-family: var(--font-family-component);
+  font-size: var(--font-size-component-small);
+  font-weight: var(--font-weight-component-semibold);
+  color: var(--color-text-primary);
+  line-height: 1.35;
+}
+
+.checklistTitleDone {
+  text-decoration: line-through;
+  color: var(--color-text-secondary);
+  font-weight: var(--font-weight-component);
+}
+
+.checklistNote {
+  margin: 0;
+  font-family: var(--font-family-body);
+  font-size: var(--font-size-body-3);
+  line-height: 1.45;
+  color: var(--color-text-secondary);
+}
+
+.checklistNoteDone {
+  color: var(--color-text-disabled);
+}
+
+.checklistSuccessIcon {
+  display: inline-flex;
+  flex-shrink: 0;
+  color: var(--color-ui-positive);
+}
+
+.jumpLink {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-component-gap-x-small, 2px);
+  flex-shrink: 0;
+  align-self: flex-start;
+  border: none;
+  background: transparent;
+  color: var(--color-action-standard);
+  font-family: var(--font-family-component);
+  font-size: var(--font-size-action-small);
+  font-weight: var(--font-weight-component-semibold);
+  cursor: pointer;
+  padding: 2px 0;
+  white-space: nowrap;
+}
+
+.jumpLink:hover {
+  text-decoration: underline;
+}
+
+.jumpLinkIcon {
+  flex-shrink: 0;
+  color: var(--color-action-standard);
+}
+
+/* Activity log */
+.activityIntro {
+  margin: 0;
+  font-family: var(--font-family-body);
+  font-size: var(--font-size-body-3);
+  line-height: 1.45;
+  color: var(--color-text-secondary);
+}
+
+.activityStack {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-large, 24px);
+}
+
+.activityCard {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-component-gap-large, 12px);
+  padding: var(--space-container-padding-medium, 16px);
+  border: 1px solid var(--color-divider-tertiary);
+  border-radius: var(--radius-medium, 8px);
+  background: var(--color-container-background-secondary);
+}
+
+.activityCardHead {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-component-gap-medium, 8px);
+}
+
+.activityCardTitle {
+  margin: 0;
+  flex: 1;
+  font-family: var(--font-family-heading);
+  font-size: var(--font-size-component-small);
+  font-weight: var(--font-weight-heading);
+  color: var(--color-text-primary);
+}
+
+.activityBadge {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-component-gap-small, 4px);
+  flex-shrink: 0;
+  font-family: var(--font-family-component);
+  font-size: var(--font-size-component-small);
+  font-weight: var(--font-weight-component-semibold);
+  color: var(--color-ui-positive);
+}
+
+.activityList {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+}
+
+.activityEntry {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--space-component-gap-medium, 8px);
+}
+
+.activityEntryDivider {
+  padding-top: var(--space-component-gap-medium, 8px);
+  border-top: 1px solid var(--color-divider-tertiary);
+}
+
+.activityCheckIcon {
+  display: inline-flex;
+  flex-shrink: 0;
+  margin-top: 2px;
+  color: var(--color-ui-positive);
+}
+
+.activityEntryText {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.activityEntryLabel {
+  font-family: var(--font-family-component);
+  font-size: var(--font-size-component-small);
+  font-weight: var(--font-weight-component-semibold);
+  color: var(--color-text-primary);
+}
+
+.activityEntryDetail {
+  font-family: var(--font-family-body);
+  font-size: var(--font-size-body-3);
+  line-height: 1.4;
+  color: var(--color-text-secondary);
+}
+
+.activityEmpty {
+  margin: 0;
+  font-family: var(--font-family-body);
+  font-size: var(--font-size-body-3);
+  color: var(--color-text-secondary);
+  line-height: 1.45;
+}
+
+/* Footer sign-off */
+.footerWrap {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-component-gap-medium, 8px);
+  width: 100%;
+}
+
+.footerActionsRow {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: var(--space-component-gap-medium, 8px);
+  width: 100%;
+}
+
+.signOffStatusRow {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-component-gap-small, 4px);
+  width: 100%;
+}
+
+.signOffStatus {
+  font-family: var(--font-family-component);
+  font-size: var(--font-size-component-small);
+  font-weight: var(--font-weight-component-semibold);
+}
+
+.signOffStatusReady {
+  color: var(--color-ui-positive);
+}
+
+.signOffStatusPending {
+  color: var(--color-text-secondary);
+}
+
+.signOffBlocker {
+  margin: 0;
+  font-family: var(--font-family-body);
+  font-size: var(--font-size-body-3);
+  line-height: 1.45;
+  color: var(--color-text-secondary);
+}
+
+/* Embedded / overlay variants */
+.embedded {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  min-height: 0;
+  background: var(--color-container-background-primary);
+}
+
+.embeddedTitle {
+  margin: 0;
+  font-family: var(--font-family-heading);
+  font-size: var(--font-size-heading-6);
+  font-weight: var(--font-weight-heading);
+  color: var(--color-text-primary);
+}
+
+.embeddedSubtitle {
+  margin: 4px 0 0;
+  font-family: var(--font-family-body);
+  font-size: var(--font-size-body-3);
+  color: var(--color-text-secondary);
+}
+
+.embeddedFooter {
+  display: flex;
+  align-items: center;
+  gap: var(--space-component-gap-small);
+  padding: var(--space-container-padding-large, 24px);
+  border-top: 1px solid var(--color-divider-tertiary);
+  background: var(--color-container-background-primary);
+}
+
+.overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 1200;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: var(--space-container-padding-large, 24px);
+  background: var(--color-overlay);
+}
+
+.panel {
+  width: min(840px, 100%);
+  max-height: min(880px, 94vh);
+  display: flex;
+  flex-direction: column;
+  background: var(--color-container-background-primary);
+  border-radius: var(--size-border-radius-large, 8px);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.18);
+  overflow: hidden;
+}
+
+.overlayHeader {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: var(--space-component-gap-medium);
+  padding: var(--space-container-padding-large, 24px);
+  border-bottom: 1px solid var(--color-divider-tertiary);
+}
+
+.overlayClose {
+  border: none;
+  background: transparent;
+  font-size: 24px;
+  line-height: 1;
+  color: var(--color-text-secondary);
+  cursor: pointer;
+  padding: 0 4px;
+}
+
+/* End-of-pass decision (WrapUpDecision) */
+.decisionPanel {
+  width: min(560px, 100%);
+  display: flex;
+  flex-direction: column;
+  background: var(--color-container-background-primary);
+  border-radius: var(--size-border-radius-large, 8px);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.18);
+  padding: var(--space-container-padding-large, 24px);
+  gap: var(--space-large, 24px);
+}
+
+.decisionChoices {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-component-gap-small);
+}
+
+.choiceCard {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 4px;
+  text-align: left;
+  padding: 14px 16px;
+  border: 1px solid var(--color-divider-tertiary);
+  border-radius: 6px;
+  background: var(--color-container-background-secondary, #f4f5f8);
+  cursor: pointer;
+  font-family: var(--font-family-component);
+}
+
+.choiceCard:hover {
+  border-color: var(--color-action-standard);
+  background: var(--color-container-background-primary);
+}
+
+.choiceTitle {
+  font-size: var(--font-size-component-medium);
+  font-weight: var(--font-weight-component-semibold);
+  color: var(--color-text-primary);
+}
+
+.choiceBody {
+  font-size: var(--font-size-body-3);
+  color: var(--color-text-secondary);
+  line-height: 1.4;
+}
+
+/* Pass bar workflow context (DataReviewPage, SmartReturnPage) */
+.passBar {
+  display: flex;
+  align-items: center;
+  gap: var(--space-component-gap-small);
+  padding: 8px var(--space-container-padding-large, 24px);
+  background: var(--color-container-background-secondary, #eef0f3);
+  border-bottom: 1px solid var(--color-divider-tertiary);
+  font-family: var(--font-family-component);
+  font-size: var(--font-size-component-small);
+  color: var(--color-text-primary);
+}
+
+.passBarStrong {
+  font-weight: var(--font-weight-component-semibold);
+}
+
+.passBarLink {
+  margin-left: auto;
+  border: none;
+  background: transparent;
+  color: var(--color-action-standard);
+  font-family: inherit;
+  font-size: inherit;
+  font-weight: var(--font-weight-component-semibold);
+  cursor: pointer;
+  padding: 4px 8px;
+}
+
+.passBarLink + .passBarLink {
+  margin-left: 0;
+}
+
+.passBarCta {
+  margin-left: auto;
+}
+
+.filterChips {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-left: var(--space-component-gap-small);
+}
+
+.filterChip {
+  border: 1px solid var(--color-divider-tertiary);
+  background: var(--color-container-background-primary);
+  color: var(--color-text-secondary);
+  font-family: var(--font-family-component);
+  font-size: var(--font-size-component-x-small);
+  font-weight: var(--font-weight-component-semibold);
+  border-radius: 999px;
+  padding: 4px 10px;
+  cursor: pointer;
+}
+
+.filterChipActive {
+  border-color: var(--color-action-standard);
+  color: var(--color-action-standard);
+  background: rgba(44, 160, 28, 0.08);
+}
+
+
+/* Legacy classes used by WrapUpDecision */
+.title {
+  margin: 0;
+  font-family: var(--font-family-heading);
+  font-size: var(--font-size-heading-6);
+  font-weight: var(--font-weight-heading);
+  color: var(--color-text-primary);
+}
+
+.subtitle {
+  margin: 4px 0 0;
+  font-family: var(--font-family-body);
+  font-size: var(--font-size-body-3);
+  color: var(--color-text-secondary);
+}
+
+.footer {
+  display: flex;
+  align-items: center;
+  gap: var(--space-component-gap-small);
+  padding: var(--space-container-padding-large, 24px);
+  border-top: 1px solid var(--color-divider-tertiary);
+  background: var(--color-container-background-primary);
+}
+
+.footerSpacer {
+  flex: 1;
+}

@@ -1,0 +1,23 @@
+.wrap {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-component-gap-x-small, 4px);
+  padding: 0 var(--space-container-padding-small, 16px) var(--space-component-gap-small, 8px);
+}
+
+.text {
+  margin: 0;
+  font-family: var(--font-family-component);
+  font-size: var(--font-size-component-x-small, 12px);
+  line-height: 1.45;
+  color: var(--color-text-secondary, #6b6c72);
+}
+
+.label {
+  font-weight: var(--font-weight-component-semibold, 500);
+  color: var(--color-text-primary, #393a3d);
+}
+
+.source {
+  color: var(--color-text-tertiary, #8d9096);
+}
