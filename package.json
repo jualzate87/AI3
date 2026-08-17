@@ -6,7 +6,9 @@
   "scripts": {
     "dev": "vite",
     "build": "vite build",
+    "build:pages": "vite build --mode production",
     "build:dev": "vite build --mode development",
+    "preview:pages": "vite preview --base /SmartReview-AIc3/",
     "lint": "eslint .",
     "preview": "vite preview",
     "sync-tokens": "node scripts/sync-tokens.mjs",

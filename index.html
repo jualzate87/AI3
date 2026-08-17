@@ -8,13 +8,25 @@
   </head>
   <body>
     <div id="root"></div>
+    <div id="boot-fallback" hidden style="padding: 2rem; max-width: 40rem; margin: 0 auto; font-family: Avenir, Helvetica, Arial, sans-serif; line-height: 1.5;">
+      <h1 style="font-size: 1.25rem;">Prototype did not load</h1>
+      <p>
+        This usually means GitHub Pages is serving the <strong>main</strong> branch (source code)
+        instead of the built <strong>gh-pages</strong> branch, or the deploy used the wrong base path.
+      </p>
+      <p>
+        Redeploy from the project folder: <code>bash deploy.sh</code>, then in repo Settings → Pages,
+        set source to <strong>gh-pages</strong> / root.
+      </p>
+      <p>Live URL: <a href="https://jualzate87.github.io/SmartReview-AIc3/">jualzate87.github.io/SmartReview-AIc3</a></p>
+    </div>
     <script>
-      // Repair GitHub Pages path-only URLs (e.g. /SmartReview-AIc2/data-review) → #/data-review
+      // Repair GitHub Pages path-only URLs (e.g. /SmartReview-AIc3/data-review) → #/data-review
       (function () {
         var hash = window.location.hash.replace(/^#/, '')
         if (hash.length > 0 && hash.indexOf('%2F') === -1 && hash.indexOf('%2f') === -1) return
         var path = window.location.pathname
-        var routes = ['check-return/insights', 'check-return', 'import-confirmation', 'data-review', 'smart-return']
+        var routes = ['check-return/insights', 'check-return', 'input-return', 'import-confirmation', 'data-review', 'smart-return']
         for (var i = 0; i < routes.length; i++) {
           var route = routes[i]
           var suffix = '/' + route
@@ -27,6 +39,16 @@
           }
         }
       })()
+    </script>
+    <script>
+      // If React never mounts (wrong branch, 404 assets), show deploy help after a short wait.
+      window.setTimeout(function () {
+        var root = document.getElementById('root')
+        var fallback = document.getElementById('boot-fallback')
+        if (root && fallback && root.childElementCount === 0) {
+          fallback.hidden = false
+        }
+      }, 6000)
     </script>
     <script type="module" src="/src/main.tsx"></script>
   </body>

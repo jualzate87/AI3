@@ -36,8 +36,13 @@ fi
 echo "==> Pushing main to $REMOTE"
 git push -u "$REMOTE" main
 
-echo "==> Building with GitHub Pages base path"
-GITHUB_ACTIONS=true npx vite build
+echo "==> Building with GitHub Pages base path (/SmartReview-AIc3/)"
+npm run build:pages
+
+if ! grep -q '/SmartReview-AIc3/assets/' dist/index.html; then
+  echo "Build output missing /SmartReview-AIc3/ asset paths — check .env.production and vite.config.ts" >&2
+  exit 1
+fi
 
 echo "==> Publishing dist/ to gh-pages"
 REPO_ROOT="$(pwd)"

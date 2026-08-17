@@ -45,9 +45,7 @@ jobs:
         run: yarn lint
 
       - name: Build
-        run: yarn build
-        env:
-          GITHUB_ACTIONS: true
+        run: yarn build:pages
 
       - name: Test
         run: yarn test
