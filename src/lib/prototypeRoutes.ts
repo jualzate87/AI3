@@ -1,4 +1,4 @@
-/** Hash-route helpers — keep GitHub Pages base path (/SmartReview-AIc3/) in sync. */
+/** Hash-route helpers — keep GitHub Pages base path (/AI3/) in sync. */
 
 export const REVIEWER_DATA_REVIEW_PATH =
   '/data-review?entry=review-return&role=reviewer&startReview=true'

@@ -22,7 +22,9 @@ Prototype C3 extends **ProtoC2** (source-document review with import confirmatio
 | Item | Value |
 |------|-------|
 | Dev server port | **5176** |
-| GitHub Pages base | `/SmartReview-AIc3/` |
+| GitHub Pages base | `/AI3/` |
+| GitHub repo | `jualzate87/AI3` |
+| Live URL | https://jualzate87.github.io/AI3/ |
 | Package name | `smartreview-proto-c3` |
 | Session keys | `protoc3-*` (localStorage via `useSyncedReviewState`) |
 

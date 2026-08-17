@@ -1,16 +1,16 @@
 #!/usr/bin/env bash
-# Deploy SmartReview-ProtoC3 to GitHub Pages at jualzate87/SmartReview-AIc3.
+# Deploy SmartReview-ProtoC3 to GitHub Pages at jualzate87/AI3.
 #
 # Builds the app with the correct base path, force-pushes the static output to
 # the gh-pages branch, and pushes main. Run this from your own terminal if
 # agent push is blocked by intuit-git-push-guard.
 #
 # One-time setup (skip if already done):
-#   gh repo create jualzate87/SmartReview-AIc3 --public --source=. --remote=origin
-#   Then on https://github.com/jualzate87/SmartReview-AIc3/settings/pages:
+#   git remote add origin https://github.com/jualzate87/AI3.git
+#   Then on https://github.com/jualzate87/AI3/settings/pages:
 #     Source: Deploy from a branch → Branch: gh-pages / (root)
 #
-# Live URL: https://jualzate87.github.io/SmartReview-AIc3/
+# Live URL: https://jualzate87.github.io/AI3/
 
 set -euo pipefail
 cd "$(dirname "$0")"
@@ -28,25 +28,25 @@ fi
 
 REMOTE="${DEPLOY_REMOTE:-origin}"
 if ! git remote get-url "$REMOTE" >/dev/null 2>&1; then
-  echo "Remote '$REMOTE' not found. Create the GitHub repo and add it:" >&2
-  echo "  gh repo create jualzate87/SmartReview-AIc3 --public --source=. --remote=origin" >&2
+  echo "Remote '$REMOTE' not found. Add the GitHub repo:" >&2
+  echo "  git remote add origin https://github.com/jualzate87/AI3.git" >&2
   exit 1
 fi
 
 echo "==> Pushing main to $REMOTE"
 git push -u "$REMOTE" main
 
-echo "==> Building with GitHub Pages base path (/SmartReview-AIc3/)"
+echo "==> Building with GitHub Pages base path (/AI3/)"
 npm run build:pages
 
-if ! grep -q '/SmartReview-AIc3/assets/' dist/index.html; then
-  echo "Build output missing /SmartReview-AIc3/ asset paths — check .env.production and vite.config.ts" >&2
+if ! grep -q '/AI3/assets/' dist/index.html; then
+  echo "Build output missing /AI3/ asset paths — check .env.production and vite.config.ts" >&2
   exit 1
 fi
 
 echo "==> Publishing dist/ to gh-pages"
 REPO_ROOT="$(pwd)"
-WORKTREE_DIR="$(mktemp -d "${TMPDIR:-/tmp}/smartreview-protoc3-gh-pages.XXXXXX")"
+WORKTREE_DIR="$(mktemp -d "${TMPDIR:-/tmp}/smartreview-ai3-gh-pages.XXXXXX")"
 cleanup() {
   git worktree remove --force "$WORKTREE_DIR" 2>/dev/null || true
   rm -rf "$WORKTREE_DIR"
@@ -72,5 +72,5 @@ git commit -m "Deploy $(date -u +%Y-%m-%dT%H:%M:%SZ)" --allow-empty
 git push "$REMOTE" gh-pages --force
 cd "$REPO_ROOT"
 
-echo "==> Done. Site will be live at https://jualzate87.github.io/SmartReview-AIc3/"
+echo "==> Done. Site will be live at https://jualzate87.github.io/AI3/"
 echo "    (first deploy: confirm Pages source = gh-pages branch in repo settings)"

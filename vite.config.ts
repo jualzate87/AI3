@@ -6,7 +6,7 @@ export default defineConfig(({ mode }) => {
   const env = loadEnv(mode, process.cwd(), '')
   const base =
     env.VITE_BASE_PATH ||
-    (process.env.GITHUB_ACTIONS ? '/SmartReview-AIc3/' : '/')
+    (process.env.GITHUB_ACTIONS ? '/AI3/' : '/')
 
   return {
     base,
