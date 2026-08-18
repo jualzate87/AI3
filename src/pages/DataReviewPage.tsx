@@ -432,6 +432,10 @@ export default function DataReviewPage() {
   const summaryToggleTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
   /** Tracks prior right-rail open state for empty-canvas auto-restore. */
   const prevRightPanelOpenRef = useRef(false)
+  /** Populated below — lets closeRightPanel restore outputs without reordering callbacks. */
+  const handleShowSummaryRef = useRef<() => void>(() => {})
+  const show1040Ref = useRef(show1040)
+  show1040Ref.current = show1040
 
   useEffect(() => () => {
     if (summaryToggleTimerRef.current) clearTimeout(summaryToggleTimerRef.current)
@@ -501,6 +505,10 @@ export default function DataReviewPage() {
       setTimeout(() => {
         setRightPanelMode('closed')
         setRightPanelExiting(false)
+        // Belt-and-suspenders with useEffect: never leave an empty canvas.
+        if (!show1040Ref.current) {
+          handleShowSummaryRef.current()
+        }
       }, SOURCE_PANEL_EXIT_MS)
     }
   }, [rightPanelMode, setSelectedField])
@@ -1491,6 +1499,10 @@ export default function DataReviewPage() {
   const rightPanelFills = (!show1040 || leftAnimWidth !== null || diagnosticsSourceSplit) && rightPanelOpen
 
   const handleHideSummary = useCallback(() => {
+    const rightPanelClosed =
+      rightPanelMode === 'closed' && !rightPanelExiting && !panelClosing
+    if (rightPanelClosed) return
+
     const body = bodyRef.current
     const left = leftPanelRef.current
     if (!body) {
@@ -1521,7 +1533,7 @@ export default function DataReviewPage() {
       setFreezePreviewSideBySide(false)
       summaryToggleTimerRef.current = null
     }, SUMMARY_TOGGLE_MS)
-  }, [previewSideBySide, rightPanelWidth])
+  }, [previewSideBySide, rightPanelWidth, rightPanelMode, rightPanelExiting, panelClosing])
 
   /**
    * First-time only: collapse outputs and point at Show outputs when focusing
@@ -1568,16 +1580,7 @@ export default function DataReviewPage() {
       summaryToggleTimerRef.current = null
     }, SUMMARY_TOGGLE_MS)
   }, [])
-
-  const handleToggleOutputs = useCallback(() => {
-    if (show1040) {
-      if (coachTip === 'hideSummary') dismissCoachTip('hideSummary')
-      handleHideSummary()
-    } else {
-      if (coachTip === 'showOutputs') dismissCoachTip('showOutputs')
-      handleShowSummary()
-    }
-  }, [show1040, coachTip, dismissCoachTip, handleHideSummary, handleShowSummary])
+  handleShowSummaryRef.current = handleShowSummary
 
   const handleCloseSourcePanel = useCallback(() => {
     if (rightPanelMode === 'ai+sources') {
@@ -1670,17 +1673,6 @@ export default function DataReviewPage() {
           </div>
           <div className={styles.headerRight}>
             <div className={styles.headerIconGroup}>
-              <span className={styles.headerIconWrap}>
-                <IconControl
-                  label="Outputs"
-                  size="medium"
-                  selected={show1040}
-                  aria-label={show1040 ? 'Hide outputs panel' : 'Show outputs panel'}
-                  onClick={handleToggleOutputs}
-                >
-                  <Panel size="medium" />
-                </IconControl>
-              </span>
               <span className={styles.headerIconWrap}>
                 <IconControl
                   label="Comments"
