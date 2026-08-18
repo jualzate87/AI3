@@ -110,7 +110,48 @@ export const SEED_AMOUNTS: LiveAmounts = {
   charitableContributions: 1_200,
 }
 
-/** Source-true NEC Box 1 on the Summit PDF — not seeded onto the return/detail panel. */
+/** Blank return before SmartReturn import — manual entry starts empty. */
+export const PRE_IMPORT_AMOUNTS: LiveAmounts = {
+  wages: 0,
+  w2Withholding: 0,
+  interestUnwavering: 0,
+  interestHarborline: 0,
+  interestCascade: 0,
+  ordinaryDivsToken: 0,
+  ordinaryDivsNorthmark: 0,
+  ordinaryDivsBeacon: 0,
+  qualifiedDivsToken: 0,
+  qualifiedDivsNorthmark: 0,
+  qualifiedDivsBeacon: 0,
+  divWithholding: 0,
+  rWithholding: 0,
+  taxablePension: 0,
+  necIncome: 0,
+  necOnReturn: false,
+  employeeSsn: '',
+  employerEin: '',
+  box12: 0,
+  box12Rows: {
+    a: { code: '', amount: 0 },
+    b: { code: '', amount: 0 },
+    c: { code: '', amount: 0 },
+    d: { code: '', amount: 0 },
+  },
+  box13RetirementPlan: false,
+  box13StatutoryEmployee: false,
+  box13ThirdPartySickPay: false,
+  schCExpenses: 0,
+  mortgageInterest: 0,
+  saltTaxes: 0,
+  charitableContributions: 0,
+}
+
+/** Format synced amount for editable fields — blank when zero before import. */
+export function displayEditableAmount(value: number, emptyWhenZero = false): string {
+  if (emptyWhenZero && value === 0) return ''
+  return value.toLocaleString()
+}
+
 export const NEC_SOURCE_AMOUNT = 24_000
 
 /** 110% of 2024 total tax — Form 2210 safe harbor. */

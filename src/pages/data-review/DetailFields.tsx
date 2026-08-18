@@ -6,6 +6,7 @@ import { DestinationFieldLabel } from './DestinationFieldLabel'
 import FieldAnnotationButton from './FieldAnnotationButton'
 import Tooltip from './Tooltip'
 import styles from '../../styles/data-review/DetailFields.module.css'
+import { displayEditableAmount } from '../../data/liveReturn'
 import { getBox12SubRowKeys, isBox12FlagResolved } from './phase1FieldSync'
 
 function CheckIcon({ size = 14 }: { size?: number }) {
@@ -82,6 +83,8 @@ interface DetailFieldsProps {
   importReadOnly?: boolean
   /** Input return mode — plain editable fields without verify header or review flags */
   variant?: 'review' | 'input'
+  /** When true (pre-import manual entry), zero amounts render blank */
+  showEmptyWhenZero?: boolean
 }
 
 // Static non-wages fields per employer
@@ -151,9 +154,11 @@ export default function DetailFields({
   onAddFieldNote,
   importReadOnly = false,
   variant = 'review',
+  showEmptyWhenZero = false,
 }: DetailFieldsProps) {
   const employer = EMPLOYER_DATA[activeSubTab]
   const currentWages = wages[activeSubTab]
+  const fmt = (n: number) => displayEditableAmount(n, showEmptyWhenZero)
   const highlightedRef = useRef<HTMLDivElement>(null)
   const withholdingRef = useRef<HTMLDivElement>(null)
   const box12Ref = useRef<HTMLDivElement>(null)
@@ -449,7 +454,7 @@ export default function DetailFields({
           <input
             className={`${styles.fieldInput} ${styles.fieldInputSmall} ${editingField === 'wages' ? styles.fieldInputEditing : flaggedFields['wages'] && !reviewedFields?.has(`wages-${activeSubTab}`) ? styles.fieldInputHighlightedOrange : selectedField === 'wages' ? styles.fieldInputHighlighted : ''}`}
             readOnly={editingField !== 'wages'}
-            value={editingField === 'wages' ? draftValue : currentWages.toLocaleString()}
+            value={editingField === 'wages' ? draftValue : fmt(currentWages)}
             onChange={e => setDraftValue(e.target.value)}
             autoFocus={editingField === 'wages'}
             onClick={e => { e.stopPropagation(); if (!importReadOnly && editingField !== 'wages') startEdit('wages', currentWages.toString()) }}
@@ -495,7 +500,7 @@ export default function DetailFields({
           <input
             className={`${styles.fieldInput} ${styles.fieldInputSmall} ${editingField === 'withholding' ? styles.fieldInputEditing : selectedField === 'withholding' ? (highlightMode === 'orange' ? styles.fieldInputHighlightedOrange : styles.fieldInputHighlighted) : ''}`}
             readOnly={editingField !== 'withholding'}
-            value={editingField === 'withholding' ? draftValue : (fieldValues?.withholding !== undefined ? fieldValues.withholding.toLocaleString() : employer.federalTax)}
+            value={editingField === 'withholding' ? draftValue : (fieldValues?.withholding !== undefined ? fmt(fieldValues.withholding) : (showEmptyWhenZero ? '' : employer.federalTax))}
             onChange={e => setDraftValue(e.target.value)}
             autoFocus={editingField === 'withholding'}
             onClick={e => { e.stopPropagation(); if (!importReadOnly && editingField !== 'withholding') startEdit('withholding', fieldValues?.withholding?.toString() ?? employer.federalTax) }}
@@ -559,7 +564,7 @@ export default function DetailFields({
               const syncedAmt = syncedRow?.amount ?? 0
               const amtVal = syncedAmt > 0
                 ? syncedAmt.toLocaleString()
-                : (fieldOverrides[amtKey] ?? (entry.sub === 'a' && fieldValues?.box12 ? fieldValues.box12.toLocaleString() : entry.amount))
+                : (fieldOverrides[amtKey] ?? (entry.sub === 'a' && fieldValues?.box12 ? fmt(fieldValues.box12) : (showEmptyWhenZero ? '' : entry.amount)))
               const BOX12_CODES = ['', 'A','B','C','D','E','F','G','H','J','K','L','M','N','P','Q','R','S','T','V','W','AA','BB','DD','EE','FF','GG','HH']
               const commitAmt = () => {
                 if (editingField !== amtKey) return

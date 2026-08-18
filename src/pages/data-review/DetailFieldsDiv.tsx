@@ -4,7 +4,7 @@ import FieldAnnotationButton from './FieldAnnotationButton'
 import Tooltip from './Tooltip'
 import { DestinationFieldLabel } from './DestinationFieldLabel'
 import { CLIENT_ADDRESS } from '../../data/clientAddress'
-import { parseAmountDraft, type LiveAmounts } from '../../data/liveReturn'
+import { displayEditableAmount, parseAmountDraft, type LiveAmounts } from '../../data/liveReturn'
 import DocVerifyHeaderActions from './DocVerifyHeaderActions'
 import QuestionnaireFieldNote from './QuestionnaireFieldNote'
 import styles from '../../styles/data-review/DetailFields.module.css'
@@ -149,6 +149,7 @@ interface DetailFieldsDivProps {
   onAddFieldNote?: (text: string, context: string) => void
   /** Input return mode — plain editable fields without verify header */
   variant?: 'review' | 'input'
+  showEmptyWhenZero?: boolean
 }
 
 export default function DetailFieldsDiv({
@@ -174,7 +175,9 @@ export default function DetailFieldsDiv({
   flaggedFields = {},
   onAddFieldNote,
   variant = 'review',
+  showEmptyWhenZero = false,
 }: DetailFieldsDivProps) {
+  const fmt = (n: number) => displayEditableAmount(n, showEmptyWhenZero)
 
   const highlightedRef = useRef<HTMLDivElement>(null)
   const [editingField, setEditingField] = useState<string | null>(null)
@@ -254,19 +257,21 @@ export default function DetailFieldsDiv({
     const reviewedKey = reviewedKeyOverride ?? fieldKey
     const syncedAmountDisplay = (() => {
       if (!amounts) return null
-      if (fieldKey === 'fedTaxWithheld') return amounts.divWithholding.toLocaleString()
+      if (fieldKey === 'fedTaxWithheld') return fmt(amounts.divWithholding)
       if (fieldKey.startsWith('ordinaryDivs-')) {
-        if (activePayer === 'tokenFinancial') return amounts.ordinaryDivsToken.toLocaleString()
-        if (activePayer === 'northmarkIndex') return amounts.ordinaryDivsNorthmark.toLocaleString()
-        if (activePayer === 'beaconDividend') return amounts.ordinaryDivsBeacon.toLocaleString()
+        if (activePayer === 'tokenFinancial') return fmt(amounts.ordinaryDivsToken)
+        if (activePayer === 'northmarkIndex') return fmt(amounts.ordinaryDivsNorthmark)
+        if (activePayer === 'beaconDividend') return fmt(amounts.ordinaryDivsBeacon)
       }
       if (fieldKey.startsWith('qualifiedDivs-')) {
-        if (activePayer === 'northmarkIndex') return amounts.qualifiedDivsNorthmark.toLocaleString()
-        if (activePayer === 'beaconDividend') return amounts.qualifiedDivsBeacon.toLocaleString()
+        if (activePayer === 'northmarkIndex') return fmt(amounts.qualifiedDivsNorthmark)
+        if (activePayer === 'beaconDividend') return fmt(amounts.qualifiedDivsBeacon)
       }
       return null
     })()
-    const currentVal = syncedAmountDisplay ?? fieldOverrides[fieldKey] ?? defaultValue
+    const currentVal = syncedAmountDisplay !== null
+      ? syncedAmountDisplay
+      : (fieldOverrides[fieldKey] ?? (showEmptyWhenZero ? '' : defaultValue))
     const isEditing = editingField === fieldKey
     const isFlagged = !!flaggedFields[flagKey] && !reviewedFields?.has(reviewedKey)
     const isReviewed = reviewedFields?.has(reviewedKey)
@@ -432,7 +437,7 @@ export default function DetailFieldsDiv({
               <input
                 className={`${styles.fieldInput} ${styles.fieldInputSmall} ${editingField === 'qualifiedDivs' ? styles.fieldInputEditing : flaggedFields['qualifiedDivs'] && !reviewedFields?.has('qualifiedDivs') ? styles.fieldInputHighlightedOrange : selectedField === 'qualifiedDivs' ? (highlightMode === 'orange' ? styles.fieldInputHighlightedOrange : styles.fieldInputHighlighted) : ''}`}
                 readOnly={editingField !== 'qualifiedDivs'}
-                value={editingField === 'qualifiedDivs' ? draftValue : (fieldValues?.qualifiedDivs !== undefined ? fieldValues.qualifiedDivs.toLocaleString() : form.box1b_qualifiedDivs)}
+                value={editingField === 'qualifiedDivs' ? draftValue : (fieldValues?.qualifiedDivs !== undefined ? fmt(fieldValues.qualifiedDivs) : (showEmptyWhenZero ? '' : form.box1b_qualifiedDivs))}
                 onChange={e => setDraftValue(e.target.value)}
                 autoFocus={editingField === 'qualifiedDivs'}
                 onClick={e => { e.stopPropagation(); if (editingField !== 'qualifiedDivs') startEdit('qualifiedDivs', fieldValues?.qualifiedDivs?.toString() ?? form.box1b_qualifiedDivs) }}

@@ -9,6 +9,7 @@ import { H5, B2, B3 } from '@ids-ts/typography'
 import '@ids-ts/typography/dist/main.css'
 import SmartReturnHeader from './SmartReturnHeader'
 import styles from '../styles/ImportConfirmationPage.module.css'
+import { completeDocumentImport } from '../hooks/useSyncedReviewState'
 import { openHashRoute, PREPARER_DATA_REVIEW_PATH } from '../lib/prototypeRoutes'
 
 export default function ImportConfirmationPage() {
@@ -26,6 +27,10 @@ export default function ImportConfirmationPage() {
       navigate('/smart-return?role=reviewer')
     }
   }
+
+  useEffect(() => {
+    completeDocumentImport()
+  }, [])
 
   useEffect(() => {
     const el = document.documentElement

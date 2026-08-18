@@ -4,7 +4,7 @@ import FieldAnnotationButton from './FieldAnnotationButton'
 import Tooltip from './Tooltip'
 import { DestinationFieldLabel } from './DestinationFieldLabel'
 import { CLIENT_ADDRESS } from '../../data/clientAddress'
-import { parseAmountDraft, type LiveAmounts } from '../../data/liveReturn'
+import { displayEditableAmount, parseAmountDraft, type LiveAmounts } from '../../data/liveReturn'
 import DocVerifyHeaderActions from './DocVerifyHeaderActions'
 import styles from '../../styles/data-review/DetailFields.module.css'
 
@@ -70,6 +70,7 @@ interface DetailFields1099RProps {
   flaggedFields?: Record<string, string>
   /** Input return mode — plain editable fields without verify header */
   variant?: 'review' | 'input'
+  showEmptyWhenZero?: boolean
 }
 
 export default function DetailFields1099R({
@@ -93,7 +94,9 @@ export default function DetailFields1099R({
   importReadOnly = false,
   flaggedFields = {},
   variant = 'review',
+  showEmptyWhenZero = false,
 }: DetailFields1099RProps) {
+  const fmt = (n: number) => displayEditableAmount(n, showEmptyWhenZero)
   const highlightedRef = useRef<HTMLDivElement>(null)
   const [editingField, setEditingField] = useState<string | null>(null)
   const [draftValue, setDraftValue] = useState('')
@@ -176,12 +179,12 @@ export default function DetailFields1099R({
     const issueKey = flagKey ?? fieldKey
     const resolveKey = reviewedKey ?? fieldKey
     const syncedDisplay =
-      fieldKey === 'r-fedTaxWithheld' && amounts && (amounts.rWithholding > 0 || isEdited('r-fedTaxWithheld'))
-        ? (amounts.rWithholding ? amounts.rWithholding.toLocaleString() : '')
+      fieldKey === 'r-fedTaxWithheld' && amounts
+        ? fmt(amounts.rWithholding)
         : fieldKey === 'r-taxableAmt' && amounts
-          ? amounts.taxablePension.toLocaleString()
+          ? fmt(amounts.taxablePension)
           : null
-    const currentVal = syncedDisplay ?? fieldOverrides[fieldKey] ?? defaultValue
+    const currentVal = syncedDisplay ?? fieldOverrides[fieldKey] ?? (showEmptyWhenZero ? '' : defaultValue)
     const isEditing = editingField === fieldKey
     const isFlagged = !!flaggedFields[issueKey] && !reviewedFields?.has(resolveKey)
     const isReviewed = reviewedFields?.has(resolveKey)

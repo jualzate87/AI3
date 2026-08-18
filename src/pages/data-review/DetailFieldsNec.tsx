@@ -4,7 +4,7 @@ import FieldAnnotationButton from './FieldAnnotationButton'
 import Tooltip from './Tooltip'
 import { DestinationFieldLabel } from './DestinationFieldLabel'
 import { CLIENT_ADDRESS } from '../../data/clientAddress'
-import { NEC_SOURCE_AMOUNT, parseAmountDraft, type LiveAmounts } from '../../data/liveReturn'
+import { displayEditableAmount, NEC_SOURCE_AMOUNT, parseAmountDraft, type LiveAmounts } from '../../data/liveReturn'
 import DocVerifyHeaderActions from './DocVerifyHeaderActions'
 import QuestionnaireFieldNote from './QuestionnaireFieldNote'
 import styles from '../../styles/data-review/DetailFields.module.css'
@@ -75,6 +75,7 @@ interface DetailFieldsNecProps {
   flaggedFields?: Record<string, string>
   /** Input return mode — plain editable fields without verify header */
   variant?: 'review' | 'input'
+  showEmptyWhenZero?: boolean
 }
 
 export default function DetailFieldsNec({
@@ -98,7 +99,9 @@ export default function DetailFieldsNec({
   importReadOnly = false,
   flaggedFields = {},
   variant = 'review',
+  showEmptyWhenZero = false,
 }: DetailFieldsNecProps) {
+  const fmt = (n: number) => displayEditableAmount(n, showEmptyWhenZero)
   const highlightedRef = useRef<HTMLDivElement>(null)
   const [editingField, setEditingField] = useState<string | null>(null)
   const [draftValue, setDraftValue] = useState('')
@@ -161,9 +164,9 @@ export default function DetailFieldsNec({
     // Source $24,000 lives only on the JPEG preview until the user edits+saves.
     const syncedNecDisplay =
       fieldKey === 'nec-box1' && amounts
-        ? (amounts.necIncome > 0 ? amounts.necIncome.toLocaleString() : '0')
+        ? fmt(amounts.necIncome)
         : null
-    const currentVal = syncedNecDisplay ?? fieldOverrides[fieldKey] ?? defaultValue
+    const currentVal = syncedNecDisplay ?? fieldOverrides[fieldKey] ?? (showEmptyWhenZero ? '' : defaultValue)
     const isEditing = editingField === fieldKey
     const isFlagged = fieldKey === 'nec-box1' && !!flaggedFields['nec-box1'] && !reviewedFields?.has(fieldKey)
     const isReviewed = reviewedFields?.has(fieldKey)

@@ -17,7 +17,7 @@ import sidebarTaxOrganizerIcon from '../assets/icons/sidebar-tax-organizer.svg'
 import sidebarImportHubIcon from '../assets/icons/sidebar-import-hub.svg'
 import sidebarDocumentsListIcon from '../assets/icons/sidebar-documents-list.svg'
 import sidebarClientActivityIcon from '../assets/icons/sidebar-client-activity.svg'
-import { SOURCE_DOCUMENTS } from '../data/sourceDocuments'
+import { completeDocumentImport } from '../hooks/useSyncedReviewState'
 import { QUESTIONNAIRE_HUB_LABEL, QUESTIONNAIRE_HUB_SOURCE_NOTE } from './data-review/questionnaireData'
 import styles from '../styles/OpenReturnPage.module.css'
 
@@ -71,6 +71,7 @@ export default function SmartReturnDocumentHub({ readOnly = false }: SmartReturn
         if (p >= 100) {
           clearInterval(interval)
           timerRef.current = setTimeout(() => {
+            completeDocumentImport()
             navigate('/import-confirmation')
           }, 400)
           return 100

@@ -4,7 +4,7 @@ import FieldAnnotationButton from './FieldAnnotationButton'
 import Tooltip from './Tooltip'
 import { DestinationFieldLabel } from './DestinationFieldLabel'
 import { CLIENT_ADDRESS } from '../../data/clientAddress'
-import { parseAmountDraft, type LiveAmounts } from '../../data/liveReturn'
+import { displayEditableAmount, parseAmountDraft, type LiveAmounts } from '../../data/liveReturn'
 import DocVerifyHeaderActions from './DocVerifyHeaderActions'
 import styles from '../../styles/data-review/DetailFields.module.css'
 
@@ -149,6 +149,7 @@ interface DetailFields1099Props {
   flaggedFields?: Record<string, string>
   onAddFieldNote?: (text: string, context: string) => void
   variant?: 'review' | 'input'
+  showEmptyWhenZero?: boolean
 }
 
 export default function DetailFields1099({
@@ -175,7 +176,9 @@ export default function DetailFields1099({
   flaggedFields = {},
   onAddFieldNote,
   variant = 'review',
+  showEmptyWhenZero = false,
 }: DetailFields1099Props) {
+  const fmt = (n: number) => displayEditableAmount(n, showEmptyWhenZero)
   const highlightedRef = useRef<HTMLDivElement>(null)
   const [editingField, setEditingField] = useState<string | null>(null)
   const [draftValue, setDraftValue] = useState('')
@@ -265,13 +268,17 @@ export default function DetailFields1099({
   ) => {
     const syncedInterest =
       amounts && fieldKey.startsWith('taxableInterest-')
-        ? activePayer === 'harborlineCredit'
-          ? amounts.interestHarborline.toLocaleString()
+        ? activePayer === 'unwaverIngFinancial'
+          ? fmt(amounts.interestUnwavering)
+          : activePayer === 'harborlineCredit'
+          ? fmt(amounts.interestHarborline)
           : activePayer === 'cascadeFederal'
-            ? amounts.interestCascade.toLocaleString()
+            ? fmt(amounts.interestCascade)
             : null
         : null
-    const currentVal = syncedInterest ?? fieldOverrides[fieldKey] ?? defaultValue
+    const currentVal = syncedInterest !== null
+      ? syncedInterest
+      : (fieldOverrides[fieldKey] ?? (showEmptyWhenZero ? '' : defaultValue))
     const isEditing = editingField === fieldKey
     const isReviewed = reviewedFields?.has(fieldKey)
     const isSelected = selectedField === fieldKey
@@ -416,7 +423,7 @@ export default function DetailFields1099({
               <input
                 className={`${styles.fieldInput} ${styles.fieldInputSmall} ${editingField === 'taxableInterest' ? styles.fieldInputEditing : flaggedFields['taxableInterest'] && !reviewedFields?.has('taxableInterest') ? styles.fieldInputHighlightedOrange : selectedField === 'taxableInterest' ? (highlightMode === 'orange' ? styles.fieldInputHighlightedOrange : styles.fieldInputHighlighted) : ''}`}
                 readOnly={editingField !== 'taxableInterest'}
-                value={editingField === 'taxableInterest' ? draftValue : (fieldValues?.taxableInterest !== undefined ? fieldValues.taxableInterest.toLocaleString() : form.box1_interest)}
+                value={editingField === 'taxableInterest' ? draftValue : (fieldValues?.taxableInterest !== undefined ? fmt(fieldValues.taxableInterest) : (showEmptyWhenZero ? '' : form.box1_interest))}
                 onChange={e => setDraftValue(e.target.value)}
                 autoFocus={editingField === 'taxableInterest'}
                 onClick={e => { e.stopPropagation(); if (editingField !== 'taxableInterest') startEdit('taxableInterest', fieldValues?.taxableInterest?.toString() ?? form.box1_interest) }}
