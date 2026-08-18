@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react'
 import { createPortal } from 'react-dom'
-import { ChevronLeft, CircleCheck, CircleInfo } from '@design-systems/icons'
+import { CircleCheck, CircleInfo } from '@design-systems/icons'
 import { Button } from '@ids-ts/button'
 import '@ids-ts/button/dist/main.css'
 import { DropdownButton, MenuItem } from '@ids-ts/dropdown-button'
@@ -164,12 +164,6 @@ interface LeftPanel1040Props {
   /** Controlled output form / summary selection (Summary, 1040, Sch C, …) */
   outputFormId?: OutputFormId
   onOutputFormChange?: (id: OutputFormId) => void
-  /** When true, show Hide output panel in the toolbar (both Return Summary + Sources open) */
-  showHideOutputs?: boolean
-  onHideOutputs?: () => void
-  /** One-shot coach tip on Hide output panel — only when showHideOutputs */
-  hideOutputsCoachOpen?: boolean
-  onDismissHideOutputsCoach?: () => void
   /** One-shot coach tip on output form dropdown after Phase 2 diagnostics complete */
   outputFormsCoachOpen?: boolean
   onDismissOutputFormsCoach?: () => void
@@ -256,10 +250,6 @@ export default function LeftPanel1040({
   onAddFieldNote,
   outputFormId: controlledOutputFormId,
   onOutputFormChange,
-  showHideOutputs = false,
-  onHideOutputs,
-  hideOutputsCoachOpen = false,
-  onDismissHideOutputsCoach,
   outputFormsCoachOpen = false,
   onDismissOutputFormsCoach,
   outputSourcesCoachOpen = false,
@@ -961,41 +951,15 @@ export default function LeftPanel1040({
     </CoachTip>
   )
 
-  const showOutputToolbar =
-    (showHideOutputs && onHideOutputs) ||
-    (isReviewerRole && onToggleFormSignOff)
+  const showOutputToolbar = isReviewerRole && onToggleFormSignOff
 
   return (
     <div className={styles.leftPanel}>
 
-      {/* ── Toolbar: Hide output panel + per-form sign-off (reviewer) ── */}
+      {/* ── Toolbar: per-form sign-off (reviewer) ── */}
       {showOutputToolbar && (
       <div className={styles.viewToggle}>
-        <div className={styles.viewToggleLeft}>
-          {showHideOutputs && onHideOutputs && (
-            <CoachTip
-              open={hideOutputsCoachOpen}
-              title="Hide output panel"
-              message="Need more room for source documents? Hide output panel to collapse this panel. You can bring it back anytime with Show outputs."
-              onClose={() => onDismissHideOutputsCoach?.()}
-              position="bottom"
-              alignment="left"
-            >
-              <Button
-                priority="secondary"
-                size="small"
-                className={styles.hideOutputsBtn}
-                onClick={() => {
-                  onDismissHideOutputsCoach?.()
-                  onHideOutputs()
-                }}
-                aria-label="Hide output panel"
-              >
-                <ChevronLeft size="small" /> Hide output panel
-              </Button>
-            </CoachTip>
-          )}
-        </div>
+        <div className={styles.viewToggleLeft} />
         {isReviewerRole && onToggleFormSignOff && (
           <FormSignOffControl
             signOffLabel={outputFormSignOffButtonLabel(outputFormId)}

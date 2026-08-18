@@ -134,9 +134,9 @@
 
 /* Left panel — flex:1, smoothly grows/shrinks as panels open/close.
    Visible Summary enforces min-width 795.7px in DataReviewPage (labels stay readable). */
-.leftPanel {
+.outputsColumn {
   display: flex;
-  flex-direction: column;
+  flex-direction: row;
   overflow: hidden;
   flex: 1;
   min-width: 0;
@@ -145,6 +145,14 @@
               width var(--duration-transform-emphasize-fast) var(--ease-transform),
               min-width var(--duration-transform-emphasize-fast) var(--ease-transform),
               opacity var(--duration-disappear-slow) var(--ease-fade);
+}
+
+.leftPanel {
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  flex: 1 1 0%;
+  min-width: 0;
 }
 
 /* Right panel — fixed width, flex column */
@@ -276,6 +284,7 @@
 }
 
 @media (prefers-reduced-motion: reduce) {
+  .outputsColumn { transition: none; }
   .leftPanel { transition: none; }
   .rightPanel { transition: none; }
   .rightPanelFills { transition: none; }
@@ -514,6 +523,48 @@
   font-weight: 600;
   letter-spacing: 0.02em;
   white-space: nowrap;
+}
+
+/* Symmetric hide tab — right edge of outputs column when Sources is also open */
+.form1040HideHandleWrap {
+  display: flex;
+  align-items: flex-start;
+  justify-content: flex-end;
+  flex-shrink: 0;
+  align-self: stretch;
+  overflow: hidden;
+  transition: width var(--duration-transform-emphasize-fast) var(--ease-transform),
+              opacity var(--duration-disappear-slow) var(--ease-fade);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .form1040HideHandleWrap { transition: none; }
+}
+
+.form1040HideHandleWrapCoach {
+  overflow: visible;
+}
+
+.form1040HideHandle {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  flex-shrink: 0;
+  background: var(--color-action-standard, #0077C5);
+  border: none;
+  border-radius: 8px 0 0 8px;
+  color: var(--color-white, #ffffff);
+  cursor: pointer;
+  padding: 16px 10px;
+  margin-top: 24px;
+  box-shadow: -2px 0 6px rgba(0, 0, 0, 0.12);
+  transition: background 120ms ease;
+}
+
+.form1040HideHandle:hover {
+  background: var(--color-action-standard-active, #055393);
 }
 
 /* ProtoC — Phase 1: Hide Summary — layout only; IDS Button secondary supplies look */

@@ -1579,6 +1579,16 @@ export default function DataReviewPage() {
     }, SUMMARY_TOGGLE_MS)
   }, [])
 
+  const handleToggleOutputs = useCallback(() => {
+    if (show1040) {
+      if (coachTip === 'hideSummary') dismissCoachTip('hideSummary')
+      handleHideSummary()
+    } else {
+      if (coachTip === 'showOutputs') dismissCoachTip('showOutputs')
+      handleShowSummary()
+    }
+  }, [show1040, coachTip, dismissCoachTip, handleHideSummary, handleShowSummary])
+
   const handleCloseSourcePanel = useCallback(() => {
     if (rightPanelMode === 'ai+sources') {
       setRightPanelMode('ai')
@@ -1670,6 +1680,17 @@ export default function DataReviewPage() {
           </div>
           <div className={styles.headerRight}>
             <div className={styles.headerIconGroup}>
+              <span className={styles.headerIconWrap}>
+                <IconControl
+                  label="Outputs"
+                  size="medium"
+                  selected={show1040}
+                  aria-label={show1040 ? 'Hide outputs panel' : 'Show outputs panel'}
+                  onClick={handleToggleOutputs}
+                >
+                  <Panel size="medium" />
+                </IconControl>
+              </span>
               <span className={styles.headerIconWrap}>
                 <IconControl
                   label="Comments"
@@ -1857,7 +1878,7 @@ export default function DataReviewPage() {
         </div>
         <div
           ref={leftPanelRef}
-          className={styles.leftPanel}
+          className={styles.outputsColumn}
           style={{
             /* During toggle, drive an explicit px width so min-width→0 and collapse
                interpolate together; otherwise flex:1 grows into remaining space. */
@@ -1878,6 +1899,7 @@ export default function DataReviewPage() {
             transition: panelResizing ? 'none' : undefined,
           }}
         >
+          <div className={styles.leftPanel}>
           <LeftPanel1040
             selectedField={selectedField}
             highlightField={highlightField1040}
@@ -1911,13 +1933,6 @@ export default function DataReviewPage() {
             editedFields={editedFields}
             outputFormId={outputFormId}
             onOutputFormChange={setOutputFormId}
-            showHideOutputs={bothPanelsOpen}
-            onHideOutputs={() => {
-              if (coachTip === 'hideSummary') dismissCoachTip('hideSummary')
-              handleHideSummary()
-            }}
-            hideOutputsCoachOpen={coachTip === 'hideSummary' && bothPanelsOpen}
-            onDismissHideOutputsCoach={() => dismissCoachTip('hideSummary')}
             outputFormsCoachOpen={outputFormsCoach}
             onDismissOutputFormsCoach={dismissOutputFormsCoach}
             outputSourcesCoachOpen={outputSourcesCoach}
@@ -1963,6 +1978,39 @@ export default function DataReviewPage() {
               }
             }}
           />
+          </div>
+          {/* Hide outputs — symmetric edge tab when Summary + Sources share the row */}
+          <div
+            className={`${styles.form1040HideHandleWrap} ${coachTip === 'hideSummary' && bothPanelsOpen ? styles.form1040HideHandleWrapCoach : ''}`}
+            style={{
+              width: bothPanelsOpen && show1040 ? SHOW_SUMMARY_HANDLE_WIDTH : 0,
+              opacity: bothPanelsOpen && show1040 ? 1 : 0,
+              pointerEvents: bothPanelsOpen && show1040 ? 'auto' : 'none',
+              transition: panelResizing ? 'none' : undefined,
+            }}
+          >
+            <CoachTip
+              open={coachTip === 'hideSummary' && bothPanelsOpen}
+              title="Hide outputs"
+              message="Need more room for source documents? Hide outputs to collapse this panel. Bring it back anytime with Show outputs."
+              onClose={() => dismissCoachTip('hideSummary')}
+              position="right"
+              alignment="middle"
+            >
+              <button
+                type="button"
+                className={styles.form1040HideHandle}
+                onClick={() => {
+                  if (coachTip === 'hideSummary') dismissCoachTip('hideSummary')
+                  handleHideSummary()
+                }}
+                aria-label="Hide outputs"
+              >
+                <ChevronLeft size="small" className={styles.form1040HandleIcon} />
+                <span className={styles.form1040HandleLabel}>Hide outputs</span>
+              </button>
+            </CoachTip>
+          </div>
         </div>
 
         {/* Left/right drag handle — stays mounted and collapses width with Summary
