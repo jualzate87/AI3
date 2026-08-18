@@ -3,6 +3,7 @@ import { Button } from '@ids-ts/button'
 import '@ids-ts/button/dist/main.css'
 import intuitAssistIcon from '../../assets/icons/intuit-assist.svg'
 import CoachTip from './CoachTip'
+import DocReviewProgress from './DocReviewProgress'
 import styles from '../../styles/data-review/Phase1Banner.module.css'
 
 interface Phase1BannerProps {
@@ -70,30 +71,23 @@ export default function Phase1Banner({
           ) : (
             <>
               <span className={styles.title}>Step 1: Import accuracy</span>
-              <span className={styles.subtitle}>
-                {importsStarted
-                  ? `Mark each source document verified${flagsRemaining > 0 ? ` — import flags can wait until after document review` : ''}.`
-                  : 'Review each source document and mark it verified, then continue to AI diagnostics.'}
-              </span>
+              {!importsStarted && (
+                <span className={styles.subtitle}>
+                  Review each source document and mark it verified, then continue to AI diagnostics.
+                </span>
+              )}
             </>
           )}
         </div>
       </div>
 
       <div className={styles.right}>
-        {importsStarted && (
-          <div className={styles.docProgress} aria-live="polite">
-            <span className={styles.docProgressLabel}>Document review</span>
-            <span className={styles.counterPrimary}>
-              <strong className={styles.counterNum}>{verifiedDocCount}</strong>
-              <span className={styles.counterOf}> of {totalDocCount} verified</span>
-            </span>
-            {!docsReviewComplete && unreviewedDocCount > 0 && (
-              <span className={styles.docProgressHint}>
-                {unreviewedDocCount} remaining
-              </span>
-            )}
-          </div>
+        {importsStarted && !docsReviewComplete && (
+          <DocReviewProgress
+            verified={verifiedDocCount}
+            total={totalDocCount}
+            variant="compact"
+          />
         )}
 
         {!importsStarted && onStartImports && (

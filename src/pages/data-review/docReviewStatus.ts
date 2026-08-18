@@ -103,7 +103,7 @@ export function getDocVerifyIdentityBlockedMessage(missing: IdentityField[]): st
   return 'Enter the employer EIN on this W-2 before you mark it as verified.'
 }
 
-/** Packet doc verify progress for Phase 1 banner (incl. Questionnaire + Prior Year 1040). */
+/** Packet doc verify progress for Phase 1 banner (incl. Questionnaire). Prior-year 1040 is Summary YoY only. */
 export function countVerifiedPacketDocs(args: {
   verifiedDocs: Set<string>
   reviewerConfirmedDocs?: Set<string>
@@ -257,7 +257,6 @@ export function buildTabVerifiedKeys(): Record<string, string[]> {
     '1099-ints': INT_PAYER_TABS.map(t => intVerifiedDocKey(t.key)),
     '1099-rs': ['1099-r'],
     '1099-necs': ['1099-nec'],
-    'prior-1040': ['prior-1040'],
     questionnaire: [QUESTIONNAIRE_DOC_KEY],
   }
 }
@@ -295,7 +294,6 @@ export function buildTypeReviewed(args: {
     '1099-ints': ints,
     '1099-rs': rs,
     '1099-necs': necs,
-    'prior-1040': isDocShownVerified(verifiedDocs, 'prior-1040', reviewerConfirmedDocs),
     questionnaire: isDocShownVerified(verifiedDocs, QUESTIONNAIRE_DOC_KEY, reviewerConfirmedDocs),
   }
 }
@@ -341,11 +339,6 @@ export function listPacketSourceDocs(): PacketSourceDoc[] {
       label: `1099-NEC · ${t.label}`,
       tab: '1099-necs' as const,
     })),
-    {
-      key: 'prior-1040',
-      label: 'Prior Year 1040',
-      tab: 'prior-1040',
-    },
     {
       key: QUESTIONNAIRE_DOC_KEY,
       label: QUESTIONNAIRE_HUB_LABEL,

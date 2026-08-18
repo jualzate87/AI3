@@ -1,10 +1,11 @@
 import { CircleCheck, PopIn } from '@design-systems/icons'
 import sparklesIcon from '../../assets/icons/sparkles.svg'
 import AttentionCountBadge from './AttentionCountBadge'
+import DocumentCountBadge from './DocumentCountBadge'
 import type { DocConfirmStatus } from './docReviewStatus'
 import styles from '../../styles/data-review/ReviewTab.module.css'
 
-// Import docs first; Questionnaire + Prior Year 1040 last (reference / Organizer)
+// Import docs first; Questionnaire last (reference / Organizer). Prior-year 1040 lives on Summary YoY only.
 const TABS = [
   { label: 'W-2s', key: 'w2s' as const },
   { label: '1099-DIVs', key: '1099-divs' as const },
@@ -12,7 +13,6 @@ const TABS = [
   { label: '1099-Rs', key: '1099-rs' as const },
   { label: '1099-NECs', key: '1099-necs' as const },
   { label: 'Questionnaire', key: 'questionnaire' as const },
-  { label: 'Prior Year 1040', key: 'prior-1040' as const },
 ]
 
 export type TopTab =
@@ -22,7 +22,6 @@ export type TopTab =
   | '1099-rs'
   | '1099-necs'
   | 'questionnaire'
-  | 'prior-1040'
 
 const TAB_KEYS = new Set<string>(TABS.map(t => t.key))
 
@@ -97,10 +96,10 @@ export default function ReviewTab({
     const docUnreviewed = unreviewedCounts?.[tabKey] ?? 0
     if (docUnreviewed > 0) {
       return (
-        <AttentionCountBadge
+        <DocumentCountBadge
           count={docUnreviewed}
           className={styles.tabCountBadge}
-          aria-label={`${docUnreviewed} document${docUnreviewed === 1 ? '' : 's'} need review`}
+          aria-label={`${docUnreviewed} unreviewed document${docUnreviewed === 1 ? '' : 's'}`}
         />
       )
     }

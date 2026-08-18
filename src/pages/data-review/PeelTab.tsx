@@ -7,7 +7,10 @@ interface PeelTabProps {
   tabs: {
     key: string
     label: string
-    badge?: number
+    /** True when this document is not yet mark-reviewed */
+    needsReview?: boolean
+    /** Unresolved Phase 1 import flags on this document */
+    flagCount?: number
     /** True when this payer originally had flags (or is verified) and count is 0 */
     showClearedCheck?: boolean
     /** Reviewer doc confirm state (Pass 2) */
@@ -22,8 +25,9 @@ export default function PeelTab({ tabs, activeKey, onChange }: PeelTabProps) {
     <div className={styles.container}>
       {tabs.map(tab => {
         const isActive = tab.key === activeKey
-        const count = tab.badge ?? 0
         const confirmStatus = tab.confirmStatus
+        const flagCount = tab.flagCount ?? 0
+        const needsReview = tab.needsReview && !tab.showClearedCheck && confirmStatus !== 'confirmed'
         return (
           <button
             key={tab.key}
@@ -31,25 +35,38 @@ export default function PeelTab({ tabs, activeKey, onChange }: PeelTabProps) {
             className={[
               styles.tab,
               isActive ? styles.tabActive : styles.tabInactive,
+              needsReview && !isActive ? styles.tabNeedsReview : '',
               confirmStatus === 'confirmed' && !isActive ? styles.tabConfirmed : '',
             ].filter(Boolean).join(' ')}
             onClick={() => onChange(tab.key)}
+            aria-label={
+              [
+                tab.label,
+                needsReview ? 'needs review' : '',
+                flagCount > 0 ? `${flagCount} import flag${flagCount === 1 ? '' : 's'}` : '',
+                tab.showClearedCheck ? 'reviewed' : '',
+              ].filter(Boolean).join(', ')
+            }
           >
             {tab.label}
-            {count > 0 && !tab.showClearedCheck && confirmStatus !== 'needs-confirm' && (
-              <AttentionCountBadge count={count} className={styles.tabCountBadge} />
+            {flagCount > 0 && confirmStatus !== 'needs-confirm' && (
+              <AttentionCountBadge
+                count={flagCount}
+                className={styles.flagBadge}
+                aria-label={`${flagCount} import flag${flagCount === 1 ? '' : 's'}`}
+              />
             )}
             {confirmStatus === 'needs-confirm' && (
               <AttentionCountBadge
                 count={1}
-                className={styles.tabCountBadge}
+                className={styles.flagBadge}
                 aria-label="Needs reviewer confirmation"
               />
             )}
             {confirmStatus === 'confirmed' && (
               <span
                 className={`${styles.clearedCheck} ${isActive ? styles.clearedCheckActive : ''}`}
-                aria-label="Confirmed by reviewer"
+                aria-hidden
               >
                 <CircleCheck size="small" />
               </span>
@@ -57,10 +74,13 @@ export default function PeelTab({ tabs, activeKey, onChange }: PeelTabProps) {
             {!confirmStatus && tab.showClearedCheck && (
               <span
                 className={`${styles.clearedCheck} ${isActive ? styles.clearedCheckActive : ''}`}
-                aria-label="Document reviewed"
+                aria-hidden
               >
                 <CircleCheck size="small" />
               </span>
+            )}
+            {needsReview && !flagCount && confirmStatus !== 'needs-confirm' && (
+              <span className={styles.reviewDot} aria-hidden />
             )}
           </button>
         )

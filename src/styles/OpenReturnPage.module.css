@@ -1259,6 +1259,13 @@
   flex-shrink: 0;
 }
 
+.sidebarIdsIcon {
+  width: 28px;
+  height: 28px;
+  flex-shrink: 0;
+  color: inherit;
+}
+
 .sidebarDivider {
   width: 44px;
   height: 1px;

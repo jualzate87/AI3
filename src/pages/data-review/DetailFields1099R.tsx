@@ -156,7 +156,7 @@ export default function DetailFields1099R({
   const renderAnnotationBtn = (fieldKey: string, label: string) => (
     <FieldAnnotationButton
       fieldKey={fieldKey}
-      contextLabel={context}
+      contextLabel={`1099-R · ${label}`}
       variant="detail"
       allowFlagTypes
       onAddNote={onAddFieldNote}

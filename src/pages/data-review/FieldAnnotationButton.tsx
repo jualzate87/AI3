@@ -1,12 +1,16 @@
 import { useCallback, useState } from 'react'
-import { Comment, Flag } from '@design-systems/icons'
+import { CommentDots, Flag } from '@design-systems/icons'
 import Tooltip from './Tooltip'
 import AnnotationPopover from './AnnotationPopover'
 import {
+  getAnnotationTypeOptions,
+  isFlagLikeAnnotation,
+  isNoteLikeAnnotation,
+  type AnnotationType,
+  annotationTypeLabel,
   formatAnnotationNote,
   parseAnnotationType,
   stripAnnotationPrefix,
-  type AnnotationType,
 } from './annotationTypes'
 import detailStyles from '../../styles/data-review/DetailFields.module.css'
 import summaryStyles from '../../styles/data-review/LeftPanel1040.module.css'
@@ -90,7 +94,7 @@ export default function FieldAnnotationButton({
 
   const handleSubmit = () => {
     const formatted = formatAnnotationNote(annotationType, draft)
-    if (annotationType === 'note') {
+    if (isNoteLikeAnnotation(annotationType)) {
       if (!formatted) return
       onAddNote?.(formatted, contextLabel)
     } else if (variant === 'summary' && onToggleFlagged && onSetFlagNote) {
@@ -117,7 +121,7 @@ export default function FieldAnnotationButton({
           aria-pressed={isFlagged}
           onClick={handleClick}
         >
-          {showFlagIcon ? <Flag size="small" aria-hidden /> : <Comment size="small" />}
+          {showFlagIcon ? <Flag size="small" aria-hidden /> : <CommentDots size="small" aria-hidden />}
         </button>
       </Tooltip>
       <AnnotationPopover
@@ -132,9 +136,9 @@ export default function FieldAnnotationButton({
         onClose={close}
         onSubmit={handleSubmit}
         allowFlagTypes={allowFlagTypes}
-        submitLabel={annotationType === 'note' ? 'Post' : 'Save'}
-        cancelLabel={annotationType === 'note' ? 'Cancel' : 'Skip'}
-        chipVariant={annotationType !== 'note' ? 'flag' : 'default'}
+        submitLabel={isNoteLikeAnnotation(annotationType) ? 'Post' : 'Save'}
+        cancelLabel={isNoteLikeAnnotation(annotationType) ? 'Cancel' : 'Skip'}
+        chipVariant={isFlagLikeAnnotation(annotationType) ? 'flag' : 'default'}
       />
     </>
   )

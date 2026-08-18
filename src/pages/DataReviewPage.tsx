@@ -8,7 +8,7 @@ import {
   buildHashRouteUrl,
 } from '../lib/prototypeRoutes'
 import { useSyncedReviewState } from '../hooks/useSyncedReviewState'
-import { DotsSix, Panel, ChevronLeft, ChevronRight, Comment, Close, ClockCounterclockwise, PopOut } from '@design-systems/icons'
+import { DotsSix, Panel, ChevronLeft, ChevronRight, CommentDots, Close, ClockCounterclockwise, PopOut } from '@design-systems/icons'
 import '@ids-ts/badge/dist/main.css'
 import { Button } from '@ids-ts/button'
 import '@ids-ts/button/dist/main.css'
@@ -68,14 +68,13 @@ import {
   getDocConfirmStatus,
   getNextUnreviewedSourceDoc,
   getUnreviewedSourceDocs,
-  unreviewedDocBadge,
 } from './data-review/docReviewStatus'
 import { isDocShownVerified, navigationForVerifiedDocKey } from '../data/verifiedDocKeys'
 import DetailFields1099R, { R_PAYER_TABS } from './data-review/DetailFields1099R'
 import DetailFieldsNec, { NEC_PAYER_TABS } from './data-review/DetailFieldsNec'
 import AttentionCountBadge from './data-review/AttentionCountBadge'
+import DocumentCountBadge from './data-review/DocumentCountBadge'
 import PeelTab from './data-review/PeelTab'
-import PriorYear1040Fields from './data-review/PriorYear1040Fields'
 import QuestionnaireResponsesPanel from './data-review/QuestionnaireResponsesPanel'
 import type { QuestionnaireFieldLink, QuestionnaireResponseId } from './data-review/questionnaireData'
 import type { OutputFormId } from './data-review/outputForms'
@@ -90,6 +89,8 @@ import {
   countPhase1Remaining,
   countPhase1FlagsForDivPayer,
   countPhase1FlagsForIntPayer,
+  countPhase1FlagsForNecPayer,
+  countPhase1FlagsForRPayer,
   countPhase1FlagsForW2Payer,
   field1040ToDetail,
   get1040HighlightField,
@@ -1677,7 +1678,7 @@ export default function DataReviewPage() {
                   aria-label="Comments"
                   onClick={notesOpen ? handleCloseNotes : handleOpenNotes}
                 >
-                  <Comment size="medium" />
+                  <CommentDots size="medium" />
                 </IconControl>
                 {notes.length > 0 && (
                   <AttentionCountBadge count={notes.length} className={styles.toolbarBadge} aria-hidden />
@@ -1709,7 +1710,7 @@ export default function DataReviewPage() {
               className={`${styles.intuitIntelBtn} ${rightPanelVisible && !agentPanelActive ? styles.intuitIntelBtnActive : ''}`}
               aria-label={
                 showSourceDocsToolbarBadge && sourceDocsBadgeCount > 0
-                  ? `Source documents panel, ${sourceDocsBadgeCount} item${sourceDocsBadgeCount === 1 ? '' : 's'} need attention`
+                  ? `Source documents panel, ${sourceDocsBadgeCount} unreviewed document${sourceDocsBadgeCount === 1 ? '' : 's'}`
                   : 'Toggle source documents panel'
               }
               style={{ position: 'relative' }}
@@ -1739,7 +1740,7 @@ export default function DataReviewPage() {
               <Panel size="medium" />
               <span className={styles.intuitIntelLabel}>Source documents</span>
               {showSourceDocsToolbarBadge && sourceDocsBadgeCount > 0 && (
-                <AttentionCountBadge count={sourceDocsBadgeCount} className={styles.toolbarBadge} aria-hidden />
+                <DocumentCountBadge count={sourceDocsBadgeCount} className={styles.toolbarBadge} aria-hidden />
               )}
             </button>
             )}
@@ -1863,7 +1864,7 @@ export default function DataReviewPage() {
             flex: leftAnimWidth !== null
               ? `0 0 ${leftAnimWidth}px`
               : !show1040 ? '0 0 0px'
-              : outputsShareWithBrief ? '1 1 0%'
+              : outputsShareWithBrief || bothPanelsOpen ? '1 1 0%'
               : 1,
             width: leftAnimWidth !== null
               ? leftAnimWidth
@@ -1871,7 +1872,7 @@ export default function DataReviewPage() {
             opacity: !show1040 ? 0 : 1,
             /* Keep Summary ≥ 795.7px so Return Breakdown labels aren’t truncated.
                Collapse animation / Hide output panel / brief-open still use minWidth 0. */
-            minWidth: leftAnimWidth !== null || !show1040 || outputsShareWithBrief
+            minWidth: leftAnimWidth !== null || !show1040 || outputsShareWithBrief || bothPanelsOpen
               ? 0
               : LEFT_PANEL_MIN_WIDTH,
             transition: panelResizing ? 'none' : undefined,
@@ -1883,7 +1884,7 @@ export default function DataReviewPage() {
             onFieldClick={inImportPhase ? handle1040FieldClick : setSelectedField}
             total1a={total1a}
             wages={wages}
-            yoyExpanded={yoyExpanded || agentSubView === 'yoyDetail' || activeTopTab === 'prior-1040' || phase === 'diagnostics'}
+            yoyExpanded={yoyExpanded || agentSubView === 'yoyDetail' || phase === 'diagnostics'}
             reviewedFields={reviewedFields}
             checkedFields={summaryCheckedFields}
             checkedMeta={summaryCheckedMeta}
@@ -1938,10 +1939,6 @@ export default function DataReviewPage() {
                 otherIncome:     '1099-necs',
                 capitalGain:     'w2s',
                 stdDeduction:    'w2s',
-                agi:             'prior-1040',
-                totalTax:        'prior-1040',
-                amountOwed:      'prior-1040',
-                totalPayments:   'prior-1040',
               }
               const tab = tabMap[fieldName] ?? 'w2s'
               setActiveTopTab(tab)
@@ -2063,6 +2060,8 @@ export default function DataReviewPage() {
                 <Phase1IssueBanner
                   mode="documents"
                   unreviewedDocCount={unreviewedDocCount}
+                  verifiedDocCount={verifiedDocCount}
+                  totalDocCount={totalDocCount}
                   unresolvedFlagCount={phase1Remaining}
                   onReviewNextDocument={handleReviewNextDocument}
                 />
@@ -2095,7 +2094,8 @@ export default function DataReviewPage() {
                 <PeelTab
                   tabs={DIV_PAYER_TABS.map(t => ({
                     ...t,
-                    badge: unreviewedDocBadge(verifiedDocs, divVerifiedDocKey(t.key), reviewerConfirmedDocs),
+                    needsReview: !isDocShownVerified(verifiedDocs, divVerifiedDocKey(t.key), reviewerConfirmedDocs),
+                    flagCount: divPayerFieldCounts[t.key],
                     showClearedCheck: isDocShownVerified(verifiedDocs, divVerifiedDocKey(t.key), reviewerConfirmedDocs),
                     confirmStatus: peelDocConfirmStatus(divVerifiedDocKey(t.key)),
                   }))}
@@ -2107,7 +2107,8 @@ export default function DataReviewPage() {
                 <PeelTab
                   tabs={INT_PAYER_TABS.map(t => ({
                     ...t,
-                    badge: unreviewedDocBadge(verifiedDocs, intVerifiedDocKey(t.key), reviewerConfirmedDocs),
+                    needsReview: !isDocShownVerified(verifiedDocs, intVerifiedDocKey(t.key), reviewerConfirmedDocs),
+                    flagCount: intPayerFieldCounts[t.key],
                     showClearedCheck: isDocShownVerified(verifiedDocs, intVerifiedDocKey(t.key), reviewerConfirmedDocs),
                     confirmStatus: peelDocConfirmStatus(intVerifiedDocKey(t.key)),
                   }))}
@@ -2119,7 +2120,8 @@ export default function DataReviewPage() {
                 <PeelTab
                   tabs={W2_PAYER_TABS.map(t => ({
                     ...t,
-                    badge: unreviewedDocBadge(verifiedDocs, t.key, reviewerConfirmedDocs),
+                    needsReview: !isDocShownVerified(verifiedDocs, t.key, reviewerConfirmedDocs),
+                    flagCount: w2PayerFieldCounts[t.key],
                     showClearedCheck: isDocShownVerified(verifiedDocs, t.key, reviewerConfirmedDocs),
                     confirmStatus: peelDocConfirmStatus(t.key),
                   }))}
@@ -2131,7 +2133,8 @@ export default function DataReviewPage() {
                 <PeelTab
                   tabs={R_PAYER_TABS.map(t => ({
                     ...t,
-                    badge: unreviewedDocBadge(verifiedDocs, '1099-r', reviewerConfirmedDocs),
+                    needsReview: !isDocShownVerified(verifiedDocs, '1099-r', reviewerConfirmedDocs),
+                    flagCount: countPhase1FlagsForRPayer(reviewedFields),
                     showClearedCheck: isDocShownVerified(verifiedDocs, '1099-r', reviewerConfirmedDocs),
                     confirmStatus: peelDocConfirmStatus('1099-r'),
                   }))}
@@ -2143,7 +2146,8 @@ export default function DataReviewPage() {
                 <PeelTab
                   tabs={NEC_PAYER_TABS.map(t => ({
                     ...t,
-                    badge: unreviewedDocBadge(verifiedDocs, '1099-nec', reviewerConfirmedDocs),
+                    needsReview: !isDocShownVerified(verifiedDocs, '1099-nec', reviewerConfirmedDocs),
+                    flagCount: countPhase1FlagsForNecPayer(t.key, reviewedFields),
                     showClearedCheck: isDocShownVerified(verifiedDocs, '1099-nec', reviewerConfirmedDocs),
                     confirmStatus: peelDocConfirmStatus('1099-nec'),
                   }))}
@@ -2419,21 +2423,6 @@ export default function DataReviewPage() {
                     'nec-box1': PHASE1_FLAG_MESSAGES.nec.necBox1,
                   }, yoyInputFlags)}
                   onAddFieldNote={(text, context) => handleAddNote(text, context)}
-                />
-              )}
-              {activeTopTab === 'prior-1040' && (
-                <PriorYear1040Fields
-                  selectedField={selectedField}
-                  highlightMode={highlightMode}
-                  onFieldSelect={handleFieldSelect}
-                  onMarkReviewed={handleMarkReviewed}
-                  reviewedFields={reviewedFields}
-                  onAddFieldNote={(text, context) => handleAddNote(text, context)}
-                  verifiedDocs={verifiedDocs}
-                  verifiedDocsMeta={verifiedDocsMeta}
-                  onVerifyDoc={toggleVerifiedDoc}
-                  reviewerConfirmedDocs={reviewerConfirmedDocs}
-                  reviewerConfirmedDocsMeta={reviewerConfirmedDocsMeta}
                 />
               )}
               {activeTopTab === 'questionnaire' && (

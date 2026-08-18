@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import { useNavigate, useSearchParams } from 'react-router-dom'
 import SmartReturnHeader from './SmartReturnHeader'
+import ReturnContextRail from '../components/ReturnContextRail'
 import InputMenuNav from './input-return/InputMenuNav'
 import InputFormPanel from './input-return/InputFormPanel'
 import {
@@ -134,6 +135,7 @@ export default function InputReturnPage() {
             showMissingEinDiagnostic={diagnostic === 'missing-ein'}
             onDocChange={handleDocChange}
           />
+          <ReturnContextRail />
         </div>
       </div>
 

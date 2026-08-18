@@ -126,7 +126,7 @@ export default function DetailFieldsNec({
   const renderAnnotationBtn = (fieldKey: string, label: string) => (
     <FieldAnnotationButton
       fieldKey={fieldKey}
-      contextLabel={context}
+      contextLabel={`1099-NEC · ${label}`}
       variant="detail"
       allowFlagTypes
       onAddNote={onAddFieldNote}

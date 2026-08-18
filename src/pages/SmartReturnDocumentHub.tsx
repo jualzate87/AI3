@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import {
   CloudUpload, Upload, OverflowWeb, ChevronDown, ChevronUp, Download, Copy,
+  CommentDots, Flag,
 } from '@design-systems/icons'
 import { Button } from '@ids-ts/button'
 import '@ids-ts/button/dist/main.css'
@@ -16,8 +17,6 @@ import sidebarTaxOrganizerIcon from '../assets/icons/sidebar-tax-organizer.svg'
 import sidebarImportHubIcon from '../assets/icons/sidebar-import-hub.svg'
 import sidebarDocumentsListIcon from '../assets/icons/sidebar-documents-list.svg'
 import sidebarClientActivityIcon from '../assets/icons/sidebar-client-activity.svg'
-import sidebarFlaggedItemsIcon from '../assets/icons/sidebar-flagged-items.svg'
-import sidebarCommentsIcon from '../assets/icons/sidebar-comments.svg'
 import { SOURCE_DOCUMENTS } from '../data/sourceDocuments'
 import { QUESTIONNAIRE_HUB_LABEL, QUESTIONNAIRE_HUB_SOURCE_NOTE } from './data-review/questionnaireData'
 import styles from '../styles/OpenReturnPage.module.css'
@@ -310,11 +309,11 @@ export default function SmartReturnDocumentHub({ readOnly = false }: SmartReturn
           </div>
           <div className={styles.sidebarDivider} />
           <div className={styles.sidebarItem}>
-            <img src={sidebarFlaggedItemsIcon} alt="" className={styles.sidebarIcon} />
+            <Flag size="medium" className={styles.sidebarIdsIcon} aria-hidden />
             <span>Flagged<br />items</span>
           </div>
           <div className={styles.sidebarItem}>
-            <img src={sidebarCommentsIcon} alt="" className={styles.sidebarIcon} />
+            <CommentDots size="medium" className={styles.sidebarIdsIcon} aria-hidden />
             <span>Comments</span>
           </div>
         </div>

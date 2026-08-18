@@ -6,6 +6,8 @@ import {
   countPhase1Remaining,
   countPhase1FlagsForDivPayer,
   countPhase1FlagsForIntPayer,
+  countPhase1FlagsForNecPayer,
+  countPhase1FlagsForRPayer,
   countPhase1FlagsForW2Payer,
   getTabFlagCounts,
   getTabInitialFlagCounts,
@@ -29,13 +31,12 @@ import {
   getUnreviewedSourceDocs,
   buildTabConfirmCounts,
   buildTabConfirmStatus,
+  countVerifiedPacketDocs,
   getDocConfirmStatus,
-  unreviewedDocBadge,
 } from './data-review/docReviewStatus'
 import DetailFields1099R, { R_PAYER_TABS } from './data-review/DetailFields1099R'
 import DetailFieldsNec, { NEC_PAYER_TABS } from './data-review/DetailFieldsNec'
 import PeelTab from './data-review/PeelTab'
-import PriorYear1040Fields from './data-review/PriorYear1040Fields'
 import QuestionnaireResponsesPanel from './data-review/QuestionnaireResponsesPanel'
 import { useSyncedReviewState } from '../hooks/useSyncedReviewState'
 import { computeLiveReturn } from '../data/liveReturn'
@@ -143,6 +144,10 @@ export default function DataReviewPopout() {
     rRemaining: tabFlagCounts['1099-rs'] ?? 0,
   })
   const unreviewedDocCount = unreviewedSourceDocs.length
+  const { verified: verifiedDocCount, total: totalDocCount } = countVerifiedPacketDocs({
+    verifiedDocs,
+    reviewerConfirmedDocs,
+  })
   const flagsCleared = phase1Remaining === 0
   const showPreparerImportPhase = reviewRole === 'preparer'
   const tabConfirmStatus = buildTabConfirmStatus({
@@ -280,6 +285,8 @@ export default function DataReviewPopout() {
           <Phase1IssueBanner
             mode="documents"
             unreviewedDocCount={unreviewedDocCount}
+            verifiedDocCount={verifiedDocCount}
+            totalDocCount={totalDocCount}
             unresolvedFlagCount={phase1Remaining}
             onReviewNextDocument={handleReviewNextDocument}
           />
@@ -297,7 +304,8 @@ export default function DataReviewPopout() {
         <PeelTab
           tabs={DIV_PAYER_TABS.map(t => ({
             ...t,
-            badge: unreviewedDocBadge(verifiedDocs, divVerifiedDocKey(t.key), reviewerConfirmedDocs),
+            needsReview: !isDocShownVerified(verifiedDocs, divVerifiedDocKey(t.key), reviewerConfirmedDocs),
+            flagCount: divPayerFieldCounts[t.key],
             showClearedCheck: isDocShownVerified(verifiedDocs, divVerifiedDocKey(t.key), reviewerConfirmedDocs),
             confirmStatus: peelDocConfirmStatus(divVerifiedDocKey(t.key)),
           }))}
@@ -309,7 +317,8 @@ export default function DataReviewPopout() {
         <PeelTab
           tabs={INT_PAYER_TABS.map(t => ({
             ...t,
-            badge: unreviewedDocBadge(verifiedDocs, intVerifiedDocKey(t.key), reviewerConfirmedDocs),
+            needsReview: !isDocShownVerified(verifiedDocs, intVerifiedDocKey(t.key), reviewerConfirmedDocs),
+            flagCount: intPayerFieldCounts[t.key],
             showClearedCheck: isDocShownVerified(verifiedDocs, intVerifiedDocKey(t.key), reviewerConfirmedDocs),
             confirmStatus: peelDocConfirmStatus(intVerifiedDocKey(t.key)),
           }))}
@@ -321,7 +330,8 @@ export default function DataReviewPopout() {
         <PeelTab
           tabs={W2_PAYER_TABS.map(t => ({
             ...t,
-            badge: unreviewedDocBadge(verifiedDocs, t.key, reviewerConfirmedDocs),
+            needsReview: !isDocShownVerified(verifiedDocs, t.key, reviewerConfirmedDocs),
+            flagCount: w2PayerFieldCounts[t.key],
             showClearedCheck: isDocShownVerified(verifiedDocs, t.key, reviewerConfirmedDocs),
             confirmStatus: peelDocConfirmStatus(t.key),
           }))}
@@ -333,7 +343,8 @@ export default function DataReviewPopout() {
         <PeelTab
           tabs={R_PAYER_TABS.map(t => ({
             ...t,
-            badge: unreviewedDocBadge(verifiedDocs, '1099-r', reviewerConfirmedDocs),
+            needsReview: !isDocShownVerified(verifiedDocs, '1099-r', reviewerConfirmedDocs),
+            flagCount: countPhase1FlagsForRPayer(reviewedFields),
             showClearedCheck: isDocShownVerified(verifiedDocs, '1099-r', reviewerConfirmedDocs),
             confirmStatus: peelDocConfirmStatus('1099-r'),
           }))}
@@ -345,7 +356,8 @@ export default function DataReviewPopout() {
         <PeelTab
           tabs={NEC_PAYER_TABS.map(t => ({
             ...t,
-            badge: unreviewedDocBadge(verifiedDocs, '1099-nec', reviewerConfirmedDocs),
+            needsReview: !isDocShownVerified(verifiedDocs, '1099-nec', reviewerConfirmedDocs),
+            flagCount: countPhase1FlagsForNecPayer(t.key, reviewedFields),
             showClearedCheck: isDocShownVerified(verifiedDocs, '1099-nec', reviewerConfirmedDocs),
             confirmStatus: peelDocConfirmStatus('1099-nec'),
           }))}
@@ -579,20 +591,6 @@ export default function DataReviewPopout() {
                 flaggedFields={{
                   'nec-box1': PHASE1_FLAG_MESSAGES.nec.necBox1,
                 }}
-              />
-            )}
-            {activeTopTab === 'prior-1040' && (
-              <PriorYear1040Fields
-                selectedField={selectedField}
-                highlightMode={highlightMode}
-                onFieldSelect={setSelectedField}
-                onMarkReviewed={handleMarkReviewed}
-                reviewedFields={reviewedFields}
-                verifiedDocs={verifiedDocs}
-                verifiedDocsMeta={verifiedDocsMeta}
-                onVerifyDoc={toggleVerifiedDoc}
-                reviewerConfirmedDocs={reviewerConfirmedDocs}
-                reviewerConfirmedDocsMeta={reviewerConfirmedDocsMeta}
               />
             )}
             {activeTopTab === 'questionnaire' && (

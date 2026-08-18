@@ -1,6 +1,14 @@
 import { useState, useRef, useEffect } from 'react'
-import { CircleCheck, Edit } from '@design-systems/icons'
+import { CircleCheck, CommentDots, Edit } from '@design-systems/icons'
+import { Dropdown, MenuItem } from '@ids-ts/dropdown'
+import '@ids-ts/dropdown/dist/main.css'
 import ReviewSidePanel, { sidePanelStyles } from './ReviewSidePanel'
+import {
+  formatAnnotationNote,
+  getAnnotationTypeOptions,
+  isNoteLikeAnnotation,
+  type AnnotationType,
+} from './annotationTypes'
 import styles from '../../styles/data-review/NotesPane.module.css'
 
 export type NoteReply = {
@@ -55,6 +63,7 @@ export default function NotesPane({
   focusNoteId = null,
 }: NotesPaneProps) {
   const [draft, setDraft] = useState('')
+  const [composeType, setComposeType] = useState<AnnotationType>('note')
   const [editingId, setEditingId] = useState<string | null>(null)
   const [editDraft, setEditDraft] = useState('')
   const [replyingId, setReplyingId] = useState<string | null>(null)
@@ -80,9 +89,12 @@ export default function NotesPane({
   const handlePost = () => {
     const trimmed = draft.trim()
     if (!trimmed) return
-    onAdd(trimmed)
+    onAdd(formatAnnotationNote(composeType, trimmed))
     setDraft('')
+    setComposeType('note')
   }
+
+  const composeTypeOptions = getAnnotationTypeOptions(false)
 
   const startEdit = (note: Note) => {
     setEditingId(note.id)
@@ -119,11 +131,33 @@ export default function NotesPane({
 
   const compose = (
     <div className={styles.compose}>
+      <div className={styles.composeTypeRow}>
+        <Dropdown
+          label="Type"
+          size="small"
+          value={composeType}
+          width="100%"
+          onChange={e => {
+            const target = e.target as HTMLInputElement
+            if (target?.value) setComposeType(target.value as AnnotationType)
+          }}
+        >
+          {composeTypeOptions.map(opt => (
+            <MenuItem key={opt.value} value={opt.value}>
+              {opt.label}
+            </MenuItem>
+          ))}
+        </Dropdown>
+      </div>
       <div className={styles.composeBox}>
         <textarea
           ref={textareaRef}
           className={styles.composeInput}
-          placeholder="Add a note… Use @ to mention a team member"
+          placeholder={
+            isNoteLikeAnnotation(composeType)
+              ? `Add a ${composeTypeOptions.find(o => o.value === composeType)?.label.toLowerCase() ?? 'note'}… Use @ to mention a team member`
+              : 'Add a comment… Use @ to mention a team member'
+          }
           value={draft}
           onChange={e => setDraft(e.target.value)}
           onKeyDown={e => {
@@ -158,12 +192,7 @@ export default function NotesPane({
         {notes.length === 0 ? (
           <div className={styles.emptyState}>
             <div className={styles.emptyIcon}>
-              <svg width="32" height="32" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
-                <rect x="6" y="5" width="20" height="22" rx="2" stroke="currentColor" strokeWidth="1.5" fill="none" />
-                <line x1="10" y1="11" x2="22" y2="11" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
-                <line x1="10" y1="15" x2="22" y2="15" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
-                <line x1="10" y1="19" x2="17" y2="19" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
-              </svg>
+              <CommentDots size="medium" aria-hidden />
             </div>
             <p className={styles.emptyTitle}>No comments yet</p>
             <p className={styles.emptyBody}>Add a comment to flag something for your team or leave context for a reviewer.</p>

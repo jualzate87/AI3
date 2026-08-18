@@ -179,6 +179,9 @@
   min-width: 0;
 }
 
+/* Source-doc column — always flex-fill with min-width:0 so Details can't
+   force the right rail wider than its allocated share. */
+.sourcesColumn,
 .splitSourcesColumn {
   display: flex;
   flex-direction: column;
@@ -186,6 +189,50 @@
   min-width: 0;
   min-height: 0;
   overflow: hidden;
+}
+
+/* Preview ↔ Details split inside the source panel */
+.splitPane {
+  display: flex;
+  flex: 1 1 0%;
+  min-height: 0;
+  min-width: 0;
+  overflow: hidden;
+}
+
+.splitPaneRow {
+  flex-direction: row;
+}
+
+.splitPaneColumn {
+  flex-direction: column;
+}
+
+.previewPane {
+  display: flex;
+  flex-direction: column;
+  flex-grow: 0;
+  flex-shrink: 0;
+  min-width: 0;
+  min-height: 0;
+  overflow: hidden;
+}
+
+.previewPaneRow {
+  border-right: 1px solid #D5DEE3;
+}
+
+.previewPaneColumn {
+  border-bottom: 1px solid #D5DEE3;
+}
+
+.detailsPane {
+  display: flex;
+  flex-direction: column;
+  flex: 1 1 0%;
+  min-width: 0;
+  min-height: 0;
+  overflow: auto;
 }
 
 /* Summary ↔ Sources splitter — width collapses with Hide Summary */
@@ -271,8 +318,24 @@
   /* 16px vertical; 20px horizontal so title + actions aren't flush to edges */
   padding: var(--space-container-padding-small, 16px) var(--space-container-padding-medium, 20px);
   flex-shrink: 0;
+  min-width: 0;
   background: var(--color-container-background-secondary);
   border-bottom: 1px solid var(--color-divider-tertiary, #e8edf0);
+}
+
+.sourcePanelTitleGroup {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  flex: 1 1 0%;
+  min-width: 0;
+}
+
+.sourcePanelLayerBadge {
+  font-family: var(--font-family-component);
+  font-size: var(--font-size-component-x-small, 12px);
+  line-height: 1.35;
+  color: var(--color-text-secondary, #5d686f);
 }
 
 .sourcePanelTitle {
@@ -327,12 +390,24 @@
   min-width: 0;
 }
 
+.issueBannerHeaderRow {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: var(--space-component-gap-small, 6px) var(--space-medium, 16px);
+}
+
 .issueBannerHeader {
   font-family: var(--font-family-component) !important;
   font-size: 13px;
   font-weight: 600;
   color: #393a3d;
 }
+
+.issueBannerProgress {
+  flex-shrink: 0;
+}
+
 
 .issueBannerBody {
   font-family: var(--font-family-component) !important;

@@ -11,7 +11,8 @@ import '@ids-ts/textarea/dist/main.css'
 import { B4 } from '@ids-ts/typography'
 import '@ids-ts/typography/dist/main.css'
 import {
-  ANNOTATION_TYPE_OPTIONS,
+  getAnnotationTypeOptions,
+  isNoteLikeAnnotation,
   type AnnotationType,
   annotationTypeLabel,
 } from './annotationTypes'
@@ -67,17 +68,15 @@ export default function AnnotationPopover({
 
   if (!open || !anchor) return null
 
-  const typeOptions = allowFlagTypes
-    ? ANNOTATION_TYPE_OPTIONS
-    : ANNOTATION_TYPE_OPTIONS.filter(o => o.value === 'note')
+  const typeOptions = getAnnotationTypeOptions(allowFlagTypes)
 
   const resolvedPlaceholder =
     placeholder ??
-    (annotationType === 'note'
-      ? 'Add a comment…'
+    (isNoteLikeAnnotation(annotationType)
+      ? `Add a ${annotationTypeLabel(annotationType).toLowerCase()}…`
       : `Why does this need a ${annotationTypeLabel(annotationType).toLowerCase()}?`)
 
-  const canSubmit = annotationType === 'note' ? draft.trim().length > 0 : true
+  const canSubmit = isNoteLikeAnnotation(annotationType) ? draft.trim().length > 0 : true
 
   const positionStyle: React.CSSProperties =
     anchorMode === 'center'

@@ -75,6 +75,21 @@
   border-color: var(--color-action-success, #00856d);
 }
 
-.tabCountBadge {
+.tabNeedsReview:not(.tabActive) {
+  border-style: dashed;
+  border-color: var(--color-action-standard, #205ea3);
+}
+
+.reviewDot {
+  display: inline-block;
+  width: 6px;
+  height: 6px;
+  margin-left: 6px;
+  border-radius: 50%;
+  background: var(--color-action-standard, #205ea3);
+  flex-shrink: 0;
+}
+
+.flagBadge {
   margin-left: var(--space-component-gap-small, 6px);
 }

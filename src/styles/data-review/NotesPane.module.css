@@ -203,6 +203,10 @@
   width: 100%;
 }
 
+.composeTypeRow {
+  width: 100%;
+}
+
 .composeBox {
   border: 1px solid var(--color-form-border-default, #859299);
   border-radius: 4px;

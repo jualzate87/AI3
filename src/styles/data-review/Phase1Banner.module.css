@@ -2,9 +2,10 @@
 .banner {
   display: flex;
   align-items: center;
-  gap: var(--space-large, 24px);
+  gap: var(--space-medium, 16px);
   box-sizing: border-box;
-  padding: var(--space-medium, 16px) var(--space-large, 24px);
+  padding: var(--space-component-padding-small, 8px) var(--space-container-padding-medium, 20px);
+  min-height: 40px;
   background: var(--color-container-background-primary, #ffffff);
   border-bottom: 1px solid #C3CED5;
   flex-shrink: 0;
@@ -25,8 +26,8 @@
 }
 
 .icon {
-  width: 26px;
-  height: 26px;
+  width: 20px;
+  height: 20px;
   flex-shrink: 0;
 }
 
@@ -39,16 +40,17 @@
 
 .title {
   font-family: var(--font-family-component, sans-serif);
-  font-size: 15px;
+  font-size: 14px;
   font-weight: 600;
+  line-height: 20px;
   color: #21262a;
 }
 
 .subtitle {
   font-family: var(--font-family-component, sans-serif);
-  font-size: 13px;
+  font-size: 12px;
   color: #5d686f;
-  line-height: 1.4;
+  line-height: 16px;
 }
 
 .right {

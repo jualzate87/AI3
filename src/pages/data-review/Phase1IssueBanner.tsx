@@ -1,4 +1,7 @@
 import { Document } from '@design-systems/icons'
+import { Button } from '@ids-ts/button'
+import '@ids-ts/button/dist/main.css'
+import DocReviewProgress from './DocReviewProgress'
 import styles from '../../styles/data-review/DataReviewPage.module.css'
 
 export type Phase1IssueBannerMode = 'flags' | 'documents'
@@ -10,6 +13,8 @@ interface Phase1IssueBannerProps {
   unresolvedCount?: number
   /** Packet source docs still needing mark-reviewed — used when mode is `documents` */
   unreviewedDocCount?: number
+  verifiedDocCount?: number
+  totalDocCount?: number
   /** Optional secondary note when docs mode still has open flags */
   unresolvedFlagCount?: number
   /** Jump to next open flag */
@@ -26,6 +31,8 @@ export default function Phase1IssueBanner({
   mode = 'flags',
   unresolvedCount = 0,
   unreviewedDocCount = 0,
+  verifiedDocCount = 0,
+  totalDocCount = 0,
   unresolvedFlagCount = 0,
   onVerify,
   onReviewNextDocument,
@@ -35,9 +42,19 @@ export default function Phase1IssueBanner({
       <div className={`${styles.issueBanner} ${styles.issueBannerDocuments}`}>
         <Document size="small" className={styles.issueBannerIcon} aria-hidden />
         <span className={styles.issueBannerCopy}>
-          <span className={styles.issueBannerHeader}>
-            {unreviewedDocCount}{' '}
-            {unreviewedDocCount === 1 ? 'document still needs review' : 'documents still need review'}
+          <span className={styles.issueBannerHeaderRow}>
+            <span className={styles.issueBannerHeader}>
+              {unreviewedDocCount}{' '}
+              {unreviewedDocCount === 1 ? 'document still needs review' : 'documents still need review'}
+            </span>
+            {totalDocCount > 0 && (
+              <DocReviewProgress
+                verified={verifiedDocCount}
+                total={totalDocCount}
+                variant="compact"
+                className={styles.issueBannerProgress}
+              />
+            )}
           </span>
           <span className={styles.issueBannerBody}>
             Open each source document and mark it verified when the imported data matches.
@@ -46,9 +63,9 @@ export default function Phase1IssueBanner({
             )}
           </span>
         </span>
-        <button type="button" className={styles.issueBannerPill} onClick={onReviewNextDocument}>
+        <Button priority="primary" size="small" onClick={onReviewNextDocument}>
           Review next document
-        </button>
+        </Button>
       </div>
     )
   }
@@ -66,9 +83,9 @@ export default function Phase1IssueBanner({
             {unresolvedCount} {unresolvedCount === 1 ? 'field needs' : 'fields need'} your attention
           </span>
         </span>
-        <button type="button" className={styles.issueBannerPill} onClick={onVerify}>
+        <Button priority="primary" size="small" onClick={onVerify}>
           Review next issue
-        </button>
+        </Button>
       </div>
     )
   }
