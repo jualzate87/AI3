@@ -1,5 +1,15 @@
 import { useEffect, useRef } from 'react'
 import { createPortal } from 'react-dom'
+import { Badge } from '@ids-ts/badge'
+import '@ids-ts/badge/dist/main.css'
+import { Button } from '@ids-ts/button'
+import '@ids-ts/button/dist/main.css'
+import { Dropdown, MenuItem } from '@ids-ts/dropdown'
+import '@ids-ts/dropdown/dist/main.css'
+import { TextArea } from '@ids-ts/textarea'
+import '@ids-ts/textarea/dist/main.css'
+import { B4 } from '@ids-ts/typography'
+import '@ids-ts/typography/dist/main.css'
 import {
   ANNOTATION_TYPE_OPTIONS,
   type AnnotationType,
@@ -74,6 +84,11 @@ export default function AnnotationPopover({
       ? { top: anchor.top, left: anchor.left, transform: 'translateY(-50%)' }
       : { top: anchor.top + 4, left: anchor.left }
 
+  const handleTypeChange = (e: React.KeyboardEvent | React.MouseEvent) => {
+    const target = e.target as HTMLInputElement
+    if (target?.value) onTypeChange(target.value as AnnotationType)
+  }
+
   return createPortal(
     <div
       ref={ref}
@@ -84,41 +99,38 @@ export default function AnnotationPopover({
       aria-label={`Annotate ${contextLabel}`}
     >
       <div className={styles.contextRow}>
-        <span
-          className={[
-            styles.contextChip,
-            chipVariant === 'flag' ? styles.contextChipFlag : '',
-          ]
-            .filter(Boolean)
-            .join(' ')}
-        >
-          {contextLabel}
-        </span>
+        <Badge
+          status={chipVariant === 'flag' ? 'warning' : 'info'}
+          shape="round"
+          capitalization="sentence"
+          label={contextLabel}
+        />
       </div>
 
-      <div className={styles.typeRow}>
-        <label className={styles.typeLabel} htmlFor="annotation-type-select">
-          Type
-        </label>
-        <select
-          id="annotation-type-select"
-          className={styles.typeSelect}
-          value={annotationType}
-          onChange={e => onTypeChange(e.target.value as AnnotationType)}
-        >
-          {typeOptions.map(opt => (
-            <option key={opt.value} value={opt.value}>
-              {opt.label}
-            </option>
-          ))}
-        </select>
-      </div>
+      {typeOptions.length > 1 && (
+        <div className={styles.typeRow}>
+          <Dropdown
+            label="Type"
+            size="small"
+            value={annotationType}
+            width="100%"
+            onChange={handleTypeChange}
+          >
+            {typeOptions.map(opt => (
+              <MenuItem key={opt.value} value={opt.value}>
+                {opt.label}
+              </MenuItem>
+            ))}
+          </Dropdown>
+        </div>
+      )}
 
-      <textarea
-        autoFocus
-        className={styles.input}
+      <TextArea
+        size="small"
+        width="100%"
         placeholder={resolvedPlaceholder}
         value={draft}
+        resizeTextArea={false}
         onChange={e => onDraftChange(e.target.value)}
         onKeyDown={e => {
           if (e.key === 'Escape') {
@@ -130,23 +142,19 @@ export default function AnnotationPopover({
             onSubmit()
           }
         }}
-        rows={3}
       />
 
-      {metaLine ? <div className={styles.meta}>{metaLine}</div> : null}
+      {metaLine ? (
+        <B4 className={styles.meta}>{metaLine}</B4>
+      ) : null}
 
       <div className={styles.actions}>
-        <button type="button" className={styles.cancelBtn} onClick={onClose}>
+        <Button priority="borderless" size="small" onClick={onClose}>
           {cancelLabel}
-        </button>
-        <button
-          type="button"
-          className={`${styles.submitBtn} ${canSubmit ? styles.submitBtnActive : ''}`}
-          disabled={!canSubmit}
-          onClick={onSubmit}
-        >
+        </Button>
+        <Button priority="primary" size="small" disabled={!canSubmit} onClick={onSubmit}>
           {submitLabel}
-        </button>
+        </Button>
       </div>
     </div>,
     document.body,

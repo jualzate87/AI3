@@ -1318,15 +1318,20 @@
   align-items: center;
   justify-content: center;
   flex-shrink: 0;
-  width: 20px;
-  height: 20px;
-  margin-left: 2px;
+  width: var(--size-action-icon-small, 16px);
+  height: var(--size-action-icon-small, 16px);
+  margin-left: var(--space-component-gap-x-small, 2px);
   padding: 0;
   border: none;
-  border-radius: 4px;
+  border-radius: var(--radius-small, 4px);
   background: transparent;
   color: var(--color-action-standard, #0077c5);
   cursor: pointer;
+}
+
+.summaryInfoBtn svg {
+  width: var(--size-action-icon-small, 16px);
+  height: var(--size-action-icon-small, 16px);
 }
 .summaryInfoBtn:hover,
 .summaryInfoBtnActive {
@@ -1800,8 +1805,8 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 22px;
-  height: 22px;
+  width: var(--size-action-icon-small, 16px);
+  height: var(--size-action-icon-small, 16px);
   padding: 0;
   border: none;
   border-radius: 50%;
@@ -1810,6 +1815,11 @@
   cursor: pointer;
   flex-shrink: 0;
   transition: color 0.15s, background 0.15s;
+}
+
+.controlInfoBtn svg {
+  width: var(--size-action-icon-small, 16px);
+  height: var(--size-action-icon-small, 16px);
 }
 
 .controlInfoBtn:hover,

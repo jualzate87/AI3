@@ -303,7 +303,7 @@ export default function DetailFieldsDiv({
       <>
         <div
           ref={isSelected ? highlightedRef : undefined}
-          className={`${styles.fieldRow} ${isFlagged ? styles.fieldRowHasNote : ''} ${isCommentOpen ? styles.fieldRowCommentOpen : ''} ${isSelected ? (highlightMode === 'orange' && isFlagged ? styles.fieldRowHighlightedOrange : styles.fieldRowHighlighted) : ''}`}
+          className={`${styles.fieldRow} ${isFlagged ? styles.fieldRowHasNote : ''} ${isSelected ? (highlightMode === 'orange' && isFlagged ? styles.fieldRowHighlightedOrange : styles.fieldRowHighlighted) : ''}`}
           onClick={() => onFieldSelect?.(selectKey)}
           style={{ cursor: 'pointer' }}
         >

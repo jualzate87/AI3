@@ -5,6 +5,7 @@ import {
   REVIEWER_DATA_REVIEW_PATH,
   VALID_DATA_REVIEW_ENTRIES,
   setStoredDemoRole,
+  buildHashRouteUrl,
 } from '../lib/prototypeRoutes'
 import { useSyncedReviewState } from '../hooks/useSyncedReviewState'
 import { DotsSix, Panel, ChevronLeft, ChevronRight, Comment, Close, ClockCounterclockwise, PopOut } from '@design-systems/icons'
@@ -97,6 +98,7 @@ import {
   getInitialIntPayerFlagCount,
   getInitialRPayerFlagCount,
   navigationForDetailField,
+  PHASE1_FLAG_KEYS,
   PHASE1_VERIFY_QUEUE,
 } from './data-review/phase1FieldSync'
 import {
@@ -352,6 +354,8 @@ export default function DataReviewPage() {
   // Counter of unresolved import flags — never below 0
   const phase1Remaining = countPhase1Remaining(reviewedFields)
   const phase1Complete = phase1Remaining === 0
+  const phase1FlagsTotal = PHASE1_FLAG_KEYS.length
+  const phase1FlagsResolved = phase1FlagsTotal - phase1Remaining
   // Per-document unresolved counts for PeelTab badges (toolbar uses unreviewed doc count)
   const tabFlagCounts = getTabFlagCounts(reviewedFields)
   // PeelTab per-payer badges — unresolved Phase 1 import flags only (mirrors tabFlagCounts)
@@ -1352,7 +1356,7 @@ export default function DataReviewPage() {
   const handlePopOutSourcePanel = useCallback(() => {
     setPoppedOut(true)
     const popoutWindow = window.open(
-      `${window.location.origin}${window.location.pathname}#/data-review-popout`,
+      buildHashRouteUrl('/data-review-popout'),
       '_blank',
       'width=950,height=900',
     )
@@ -1637,8 +1641,13 @@ export default function DataReviewPage() {
   const isReviewerConfirmMode = reviewRole === 'reviewer'
   /** ProtoC Phase 1 banner — visible for entire preparer import phase (CTA before sources open). */
   const showPreparerImportPhase = inImportPhase && reviewRole === 'preparer'
-  /** Doc-count badge lives on Phase1Banner during active import review — avoid duplicate on toolbar. */
-  const showSourceDocsToolbarBadge = !(showPreparerImportPhase && !phase1FullyComplete)
+  /** Preparer Phase 1: hide Source documents until review starts (banner CTA is the entry). */
+  const showSourceDocsToolbar =
+    (reviewRole !== 'reviewer' || reviewerReviewStarted) &&
+    !(showPreparerImportPhase && !importsStarted)
+  /** Badge on toolbar after imports start — flag count lives on Phase1Banner. */
+  const showSourceDocsToolbarBadge =
+    showSourceDocsToolbar && importsStarted && sourceDocsBadgeCount > 0
   /** Left outputs share row with Smart review brief — allow flex shrink (avoid 795px + 755px overflow). */
   const outputsShareWithBrief = summaryPanelOpen && show1040
   return (
@@ -1687,7 +1696,7 @@ export default function DataReviewPage() {
                 )}
               </span>
             </div>
-            {(reviewRole !== 'reviewer' || reviewerReviewStarted) && (
+            {(reviewRole !== 'reviewer' || reviewerReviewStarted) && showSourceDocsToolbar && (
             <button
               className={`${styles.intuitIntelBtn} ${rightPanelVisible && !agentPanelActive ? styles.intuitIntelBtnActive : ''}`}
               aria-label={
@@ -1752,6 +1761,8 @@ export default function DataReviewPage() {
       {/* ProtoC Phase 1 — Import Accuracy banner (preparer only) */}
       {showPreparerImportPhase && (
         <Phase1Banner
+          flagsResolved={phase1FlagsResolved}
+          flagsTotal={phase1FlagsTotal}
           verifiedDocCount={verifiedDocCount}
           totalDocCount={totalDocCount}
           flagsCleared={flagsCleared}
@@ -2058,6 +2069,7 @@ export default function DataReviewPage() {
                 activeTopTab={activeTopTab}
                 verifiedDocs={verifiedDocs}
                 tabVerifiedKeys={tabVerifiedKeys}
+                flagCounts={showPreparerImportPhase ? tabFlagCounts : undefined}
                 typeReviewed={showPreparerImportPhase ? typeReviewed : undefined}
                 tabConfirmStatus={reviewRole === 'reviewer' ? tabConfirmStatus : undefined}
                 tabConfirmCounts={reviewRole === 'reviewer' ? tabConfirmCounts : undefined}

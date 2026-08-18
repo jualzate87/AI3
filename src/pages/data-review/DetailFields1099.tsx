@@ -296,7 +296,7 @@ export default function DetailFields1099({
     return (
       <div
         ref={isSelected ? highlightedRef : undefined}
-        className={`${styles.fieldRow} ${flagUnresolved ? styles.fieldRowHasNote : ''} ${isCommentOpen ? styles.fieldRowCommentOpen : ''} ${isSelected ? (highlightMode === 'orange' ? styles.fieldRowHighlightedOrange : styles.fieldRowHighlighted) : ''}`}
+        className={`${styles.fieldRow} ${flagUnresolved ? styles.fieldRowHasNote : ''} ${isSelected ? (highlightMode === 'orange' ? styles.fieldRowHighlightedOrange : styles.fieldRowHighlighted) : ''}`}
         onClick={() => onFieldSelect?.(fieldKey)}
         style={{ cursor: 'pointer' }}
       >

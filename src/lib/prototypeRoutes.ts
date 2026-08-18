@@ -15,6 +15,7 @@ const KNOWN_HASH_ROUTES = [
   '/check-return/insights',
   '/check-return',
   '/import-confirmation',
+  '/data-review-popout',
   '/data-review',
   '/smart-return',
 ] as const

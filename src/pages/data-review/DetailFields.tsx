@@ -321,7 +321,7 @@ export default function DetailFields({
     return (
       <>
       <div
-        className={`${styles.fieldRow} ${isFlagged ? styles.fieldRowHasNote : ''} ${isCommentOpen ? styles.fieldRowCommentOpen : ''}`}
+        className={`${styles.fieldRow} ${isFlagged ? styles.fieldRowHasNote : ''}`}
         onClick={() => onFieldSelect?.(key)}
         style={{ cursor: 'pointer' }}
       >
