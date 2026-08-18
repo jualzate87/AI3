@@ -1,5 +1,8 @@
 import type { ReactNode } from 'react'
-import { CircleCheck } from '@design-systems/icons'
+import { Badge, SuccessBadgeIcon } from '@ids-ts/badge'
+import '@ids-ts/badge/dist/main.css'
+import { Button } from '@ids-ts/button'
+import '@ids-ts/button/dist/main.css'
 import intuitAssistIcon from '../../assets/icons/intuit-assist.svg'
 import styles from '../../styles/data-review/Phase1Banner.module.css'
 
@@ -53,14 +56,15 @@ export default function Phase2Banner({
       <div className={styles.right}>
         {!complete && (
           showProgressLink ? (
-            <button
-              type="button"
+            <Button
+              priority="borderless"
+              size="medium"
               className={styles.counterLink}
               onClick={onOpenDiagnostics}
               aria-label={`Open AI diagnostics — ${reviewed} of ${total} diagnostics reviewed, ${remaining} diagnostics remaining`}
             >
               <strong className={styles.counterNum}>{reviewed}</strong> of {total} diagnostics reviewed
-            </button>
+            </Button>
           ) : (
             <span className={styles.counter}>
               <strong className={styles.counterNum}>{reviewed}</strong> of {total} diagnostics reviewed
@@ -68,9 +72,16 @@ export default function Phase2Banner({
           )
         )}
         {complete && (
-          <span className={styles.completeBadge}>
-            <CircleCheck size="small" /> All diagnostics reviewed
-          </span>
+          <Badge
+            className={styles.completeBadge}
+            shape="round"
+            status="success"
+            label="All diagnostics reviewed"
+            capitalization="sentence"
+            priority="secondary"
+          >
+            <SuccessBadgeIcon />
+          </Badge>
         )}
         {checklistProgress && (
           <span className={styles.checklistHint} aria-live="polite">

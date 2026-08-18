@@ -166,19 +166,10 @@
   margin: 0;
 }
 
-/* Progress bar — white track, 12px tall, rounded pill, teal fill */
-.progressTrack {
-  height: 12px;
-  background: #ffffff;
-  border-radius: 100px;
-  overflow: hidden;
+/* Progress bar — IDS ProgressBar wrapper */
+.progressBarWrap {
   width: 100%;
   flex-shrink: 0;
-}
-
-.progressFill {
-  height: 100%;
-  border-radius: 100px;
 }
 
 /* Bottom row: large number + "items remaining" — baseline-aligned */

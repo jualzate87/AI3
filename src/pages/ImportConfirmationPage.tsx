@@ -5,6 +5,8 @@ import { Button } from '@ids-ts/button'
 import '@ids-ts/button/dist/main.css'
 import { Link } from '@ids-ts/link'
 import '@ids-ts/link/dist/main.css'
+import { ProgressBar } from '@ids-ts/progress-bar'
+import '@ids-ts/progress-bar/dist/main.css'
 import { H5, B2, B3 } from '@ids-ts/typography'
 import '@ids-ts/typography/dist/main.css'
 import SmartReturnHeader from './SmartReturnHeader'
@@ -65,14 +67,15 @@ export default function ImportConfirmationPage() {
 
       <div className={styles.main}>
         <nav className={styles.breadcrumb} aria-label="Breadcrumb">
-          <button
-            type="button"
+          <Button
+            priority="borderless"
+            size="small"
             className={styles.breadcrumbBtn}
             onClick={handleBackToSmartReturn}
           >
             <ChevronLeft size="small" aria-hidden />
             Back to SmartReturn
-          </button>
+          </Button>
         </nav>
 
         <div className={styles.card} role="status" aria-live="polite">
@@ -84,16 +87,14 @@ export default function ImportConfirmationPage() {
             Your review starts in a <strong>new tab</strong>, showing output forms first
           </B2>
 
-          <div
+          <ProgressBar
             className={styles.progressBar}
-            role="progressbar"
-            aria-valuenow={100}
-            aria-valuemin={0}
-            aria-valuemax={100}
+            value={100}
+            max={100}
+            persistent
+            automationId="import-complete-progress"
             aria-label="Import complete"
-          >
-            <div className={styles.progressFill} />
-          </div>
+          />
 
           <Button
             priority="primary"

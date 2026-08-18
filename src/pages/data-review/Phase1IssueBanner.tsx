@@ -1,7 +1,6 @@
-import { Document } from '@design-systems/icons'
+import { Document, TriangleExclamationFill } from '@design-systems/icons'
 import { Button } from '@ids-ts/button'
 import '@ids-ts/button/dist/main.css'
-import DocReviewProgress from './DocReviewProgress'
 import styles from '../../styles/data-review/DataReviewPage.module.css'
 
 export type Phase1IssueBannerMode = 'flags' | 'documents'
@@ -42,19 +41,9 @@ export default function Phase1IssueBanner({
       <div className={`${styles.issueBanner} ${styles.issueBannerDocuments}`}>
         <Document size="small" className={styles.issueBannerIcon} aria-hidden />
         <span className={styles.issueBannerCopy}>
-          <span className={styles.issueBannerHeaderRow}>
-            <span className={styles.issueBannerHeader}>
-              {unreviewedDocCount}{' '}
-              {unreviewedDocCount === 1 ? 'document still needs review' : 'documents still need review'}
-            </span>
-            {totalDocCount > 0 && (
-              <DocReviewProgress
-                verified={verifiedDocCount}
-                total={totalDocCount}
-                variant="compact"
-                className={styles.issueBannerProgress}
-              />
-            )}
+          <span className={styles.issueBannerHeader}>
+            {unreviewedDocCount}{' '}
+            {unreviewedDocCount === 1 ? 'document still needs review' : 'documents still need review'}
           </span>
           <span className={styles.issueBannerBody}>
             Open each source document and mark it verified when the imported data matches.
@@ -73,11 +62,7 @@ export default function Phase1IssueBanner({
   if (mode === 'flags' && unresolvedCount > 0 && onVerify) {
     return (
       <div className={styles.issueBanner}>
-        <svg className={styles.issueBannerIcon} viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
-          <path d="M10 2L18.66 17H1.34L10 2Z" fill="rgba(255,187,0,0.6)" stroke="#ff6a00" strokeWidth="1.5" strokeLinejoin="round"/>
-          <path d="M10 8v4" stroke="#cc5500" strokeWidth="1.8" strokeLinecap="round"/>
-          <circle cx="10" cy="14.5" r="0.9" fill="#cc5500"/>
-        </svg>
+        <TriangleExclamationFill size="small" className={styles.issueBannerIcon} aria-hidden />
         <span className={styles.issueBannerCopy}>
           <span className={styles.issueBannerHeader}>
             {unresolvedCount} {unresolvedCount === 1 ? 'field needs' : 'fields need'} your attention

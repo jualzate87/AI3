@@ -1,7 +1,13 @@
 import { useState, useEffect, useRef } from 'react'
 import { Close, Plus, ChevronDown, ChevronRight, CircleCheck, Send } from '@design-systems/icons'
+import { Badge, SuccessBadgeIcon } from '@ids-ts/badge'
+import '@ids-ts/badge/dist/main.css'
 import { Button } from '@ids-ts/button'
 import '@ids-ts/button/dist/main.css'
+import { IconControl } from '@ids-ts/icon-control'
+import '@ids-ts/icon-control/dist/main.css'
+import { ProgressBar } from '@ids-ts/progress-bar'
+import '@ids-ts/progress-bar/dist/main.css'
 import intuitAssistIcon from '../../assets/icons/intuit-assist.svg'
 import compareOthersIcon from '../../assets/icons/compare-others.svg'
 import federalTaxesIcon from '../../assets/icons/federal-taxes.svg'
@@ -554,9 +560,9 @@ export default function AgentReportPane({
             <span className={styles.titleText}>AI diagnostics</span>
           </div>
           <div className={styles.headerRight}>
-            <button className={styles.iconBtn} aria-label="Close" onClick={onClose}>
+            <IconControl aria-label="Close" onClick={onClose}>
               <Close size="small" />
-            </button>
+            </IconControl>
           </div>
         </div>
       )}
@@ -570,8 +576,14 @@ export default function AgentReportPane({
 
           <div className={styles.scoreCard}>
             <span className={styles.scoreTitle}>Diagnostics to review</span>
-            <div className={styles.progressTrack}>
-              <div className={styles.progressFill} style={{ width: `${progressPct || 5}%`, background: '#00856d', transition: 'width 400ms ease' }} />
+            <div className={styles.progressBarWrap}>
+              <ProgressBar
+                value={reviewedCount}
+                max={totalActive || 1}
+                persistent={allReviewed}
+                automationId="diagnostics-progress"
+                aria-label={`${reviewedCount} of ${totalActive} diagnostics reviewed`}
+              />
             </div>
             <div className={styles.scoreCountRow}>
               <span className={styles.scoreCountNumber}>{Math.max(0, remainingCount)}</span>
@@ -659,7 +671,18 @@ export default function AgentReportPane({
                             {isReviewed ? <span className={styles.findingCheckIcon}><CircleCheck size="small" /></span> : <span className={styles.findingDot} style={{ background: issue.dotColor === 'blue' ? '#0077c5' : issue.dotColor === 'orange' ? '#d68000' : '#c22929' }} />}
                             <span className={styles.findingTitle}>{issue.title}</span>
                             <span className={styles.issueChip}>{issueNum} of {activeOrder.length}</span>
-                            {isReviewed && <span className={styles.findingReviewedBadge}>Reviewed</span>}
+                            {isReviewed && (
+                              <Badge
+                                className={styles.findingReviewedBadge}
+                                status="success"
+                                label="Reviewed"
+                                capitalization="sentence"
+                                priority="secondary"
+                                shape="round"
+                              >
+                                <SuccessBadgeIcon />
+                              </Badge>
+                            )}
                           </div>
                           {signOff && <span className={styles.findingSignOff}>{signOff.by} · {signOff.at}</span>}
                           <p className={styles.findingBody}>{issue.summary}</p>
@@ -670,13 +693,13 @@ export default function AgentReportPane({
                             <Tooltip text={isReviewed && signOff
                               ? `Reviewed · ${signOff.by} · ${signOff.at}`
                               : (isReviewed ? 'Click to unmark' : 'Mark as reviewed')}>
-                              <button
+                              <IconControl
                                 className={`${styles.findingMarkReviewedBtn} ${isReviewed ? styles.findingMarkReviewedBtnActive : ''}`}
                                 aria-label={isReviewed ? `Unmark ${issue.title} as reviewed` : `Mark ${issue.title} as reviewed`}
                                 onClick={() => onMarkReviewed?.(key)}
                               >
                                 <CircleCheck size="small" />
-                              </button>
+                              </IconControl>
                             </Tooltip>
                           </div>
                         </div>

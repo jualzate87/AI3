@@ -1,3 +1,5 @@
+import { ProgressBar } from '@ids-ts/progress-bar'
+import '@ids-ts/progress-bar/dist/main.css'
 import styles from '../../styles/data-review/DocReviewProgress.module.css'
 
 type DocReviewProgressProps = {
@@ -16,20 +18,31 @@ export default function DocReviewProgress({
   className,
 }: DocReviewProgressProps) {
   const remaining = Math.max(0, total - verified)
+  const complete = total > 0 && verified >= total
 
   if (variant === 'compact') {
     return (
-      <span
-        className={[styles.compact, className].filter(Boolean).join(' ')}
+      <div
+        className={[styles.compactWrap, className].filter(Boolean).join(' ')}
         aria-live="polite"
-        aria-label={`${verified} of ${total} documents verified${remaining > 0 ? `, ${remaining} remaining` : ''}`}
       >
-        <strong className={styles.compactNum}>{verified}</strong>
-        <span className={styles.compactOf}> / {total} verified</span>
-        {remaining > 0 && (
-          <span className={styles.compactHint}> · {remaining} left</span>
-        )}
-      </span>
+        <p className={styles.compactLabel}>
+          <strong className={styles.compactNum}>{verified}</strong>
+          <span className={styles.compactOf}> / {total} verified</span>
+          {remaining > 0 && (
+            <span className={styles.compactHint}> · {remaining} left</span>
+          )}
+        </p>
+        <div className={styles.compactProgressBar}>
+          <ProgressBar
+            value={verified}
+            max={total || 1}
+            persistent={complete}
+            automationId="doc-review-progress"
+            aria-label={`${verified} of ${total} documents verified${remaining > 0 ? `, ${remaining} remaining` : ''}`}
+          />
+        </div>
+      </div>
     )
   }
 

@@ -8,7 +8,7 @@ import {
   buildHashRouteUrl,
 } from '../lib/prototypeRoutes'
 import { useSyncedReviewState } from '../hooks/useSyncedReviewState'
-import { DotsSix, Panel, ChevronLeft, ChevronRight, CommentDots, Close, ClockCounterclockwise, PopOut } from '@design-systems/icons'
+import { DotsSix, Panel, ChevronLeft, ChevronRight, CommentDots, ClockCounterclockwise, PopOut } from '@design-systems/icons'
 import '@ids-ts/badge/dist/main.css'
 import { Button } from '@ids-ts/button'
 import '@ids-ts/button/dist/main.css'
@@ -119,16 +119,6 @@ import img1040PriorPage2 from '../assets/jessica-1040-2024-variant-2.png'
 import styles from '../styles/data-review/DataReviewPage.module.css'
 import dragStyles from '../styles/data-review/DragHandle.module.css'
 import DemoRoleBar from '../components/DemoRoleBar/DemoRoleBar'
-
-function VerticalGripIcon() {
-  return (
-    <svg width="4" height="20" viewBox="0 0 4 20" fill="none" xmlns="http://www.w3.org/2000/svg">
-      <circle cx="2" cy="4"  r="1.5" fill="#93A3AB"/>
-      <circle cx="2" cy="10" r="1.5" fill="#93A3AB"/>
-      <circle cx="2" cy="16" r="1.5" fill="#93A3AB"/>
-    </svg>
-  )
-}
 
 /** Source-doc panel slide timing — matches --duration-appear/disappear-emphasize-fast */
 const SOURCE_PANEL_ENTER_MS = 500
@@ -2030,7 +2020,7 @@ export default function DataReviewPage() {
                   transition: panelResizing ? 'none' : undefined,
                 }}
               >
-                <VerticalGripIcon />
+                <DotsSix size="small" className={dragStyles.handleIcon} aria-hidden />
               </div>
             )}
 
@@ -2051,16 +2041,14 @@ export default function DataReviewPage() {
             >
               {(rightPanelMode === 'sources' || diagnosticsSourceSplit) && !poppedOut && (
               <div
-                className={diagnosticsSourceSplit ? styles.splitSourcesColumn : undefined}
-                style={diagnosticsSourceSplit ? {
-                  display: 'flex',
-                  flexDirection: 'column',
-                  flex: '1 1 0%',
-                  minWidth: 0,
-                  minHeight: 0,
-                  overflow: 'hidden',
-                  borderRight: '1px solid #D5DEE3',
-                } : undefined}
+                className={
+                  diagnosticsSourceSplit ? styles.splitSourcesColumn : styles.sourcesColumn
+                }
+                style={
+                  diagnosticsSourceSplit
+                    ? { borderRight: '1px solid #D5DEE3' }
+                    : undefined
+                }
               >
               <>
               {/* Source panel header — title left; Close on right */}
@@ -2097,10 +2085,10 @@ export default function DataReviewPage() {
                   </IconControl>
                   <IconControl
                     size="small"
-                    aria-label="Close"
+                    aria-label="Hide source documents"
                     onClick={handleCloseSourcePanel}
                   >
-                    <Close size="small" />
+                    <ChevronRight size="small" />
                   </IconControl>
                 </div>
               </div>
@@ -2265,7 +2253,7 @@ export default function DataReviewPage() {
               )}
 
               {/* Detail fields — switches based on active tab */}
-              <div style={{ flex: 1, minWidth: 0, minHeight: 0, overflow: 'hidden', display: 'flex', flexDirection: 'column' }}>
+              <div className={styles.detailsPane}>
               {activeTopTab === 'w2s' && (
                 <DetailFields
                   formTitle="Details: Wages, Salaries, Tips (W-2)"
@@ -2503,7 +2491,7 @@ export default function DataReviewPage() {
                     transition: panelResizing ? 'none' : undefined,
                   }}
                 >
-                  <VerticalGripIcon />
+                  <DotsSix size="small" className={dragStyles.handleIcon} aria-hidden />
                 </div>
               )}
 

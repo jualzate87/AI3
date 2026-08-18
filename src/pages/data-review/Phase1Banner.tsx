@@ -1,4 +1,6 @@
-import { ArrowRight, CircleCheck } from '@design-systems/icons'
+import { ArrowRight } from '@design-systems/icons'
+import { Badge, SuccessBadgeIcon } from '@ids-ts/badge'
+import '@ids-ts/badge/dist/main.css'
 import { Button } from '@ids-ts/button'
 import '@ids-ts/button/dist/main.css'
 import intuitAssistIcon from '../../assets/icons/intuit-assist.svg'
@@ -71,11 +73,9 @@ export default function Phase1Banner({
           ) : (
             <>
               <span className={styles.title}>Step 1: Import accuracy</span>
-              {!importsStarted && (
-                <span className={styles.subtitle}>
-                  Review each source document and mark it verified, then continue to AI diagnostics.
-                </span>
-              )}
+              <span className={styles.subtitle}>
+                Compare each imported field to its source document, resolve flagged mismatches, and mark each document verified.
+              </span>
             </>
           )}
         </div>
@@ -124,9 +124,16 @@ export default function Phase1Banner({
       </div>
 
       {docsReviewComplete && (
-        <span className={styles.completeBadge}>
-          <CircleCheck size="small" /> All documents reviewed
-        </span>
+        <Badge
+          className={styles.completeBadge}
+          shape="round"
+          status="success"
+          label="All documents reviewed"
+          capitalization="sentence"
+          priority="secondary"
+        >
+          <SuccessBadgeIcon />
+        </Badge>
       )}
     </div>
   )

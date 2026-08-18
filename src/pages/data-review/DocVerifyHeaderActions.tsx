@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react'
+import { useRef } from 'react'
 import {
   getReviewActor,
   REVIEWER_NAME,
@@ -9,19 +9,13 @@ import { Badge, SuccessBadgeIcon, WarningBadgeIcon } from '@ids-ts/badge'
 import '@ids-ts/badge/dist/main.css'
 import { Button } from '@ids-ts/button'
 import '@ids-ts/button/dist/main.css'
-import InlineValidationMessage from '@ids-ts/inline-validation-message'
-import '@ids-ts/inline-validation-message/dist/main.css'
 import { getVerifiedDocEntry, isVerifiedInSet } from '../../data/verifiedDocKeys'
 import type { LiveAmounts } from '../../data/liveReturn'
 import {
   canVerifyDoc,
   getDocVerifyIdentityBlockedHint,
-  getDocVerifyIdentityBlockedMessage,
 } from './docReviewStatus'
-import {
-  getDocVerifyBlockedHint,
-  getDocVerifyBlockedMessage,
-} from './phase1FieldSync'
+import { getDocVerifyBlockedHint } from './phase1FieldSync'
 import styles from '../../styles/data-review/DetailFields.module.css'
 
 type Props = {
@@ -61,14 +55,15 @@ function VerifiedBadge({
   if (!clickable) return badge
 
   return (
-    <button
-      type="button"
+    <Button
+      priority="borderless"
+      size="small"
       className={styles.verifiedBadgeBtn}
       onClick={onClick}
       aria-label={tooltip}
     >
       {badge}
-    </button>
+    </Button>
   )
 }
 
@@ -82,8 +77,7 @@ export default function DocVerifyHeaderActions({
   amounts,
   onVerifyDoc,
 }: Props) {
-  const blockedMessageRef = useRef<HTMLDivElement>(null)
-  const [verifyAttempted, setVerifyAttempted] = useState(false)
+  const blockedMessageRef = useRef<HTMLParagraphElement>(null)
 
   const isPreparerVerified = verifiedDocs ? isVerifiedInSet(verifiedDocs, docKey) : false
   const isReviewerConfirmed = reviewerConfirmedDocs ? isVerifiedInSet(reviewerConfirmedDocs, docKey) : false
@@ -113,19 +107,9 @@ export default function DocVerifyHeaderActions({
       ? getDocVerifyBlockedHint(verifyCheck.uncorrectedCriticalCount ?? 0)
       : getDocVerifyIdentityBlockedHint(verifyCheck.missingIdentityFields ?? [])
     : ''
-  const blockedMessage = verifyBlocked
-    ? verifyCheck.reason === 'critical-flags'
-      ? getDocVerifyBlockedMessage(verifyCheck.uncorrectedCriticalCount ?? 0)
-      : getDocVerifyIdentityBlockedMessage(verifyCheck.missingIdentityFields ?? [])
-    : ''
-
-  useEffect(() => {
-    if (!verifyBlocked) setVerifyAttempted(false)
-  }, [verifyBlocked])
 
   const handlePreparerMark = () => {
     if (verifyBlocked) {
-      setVerifyAttempted(true)
       blockedMessageRef.current?.scrollIntoView({ block: 'nearest', behavior: 'smooth' })
       return
     }
@@ -188,17 +172,14 @@ export default function DocVerifyHeaderActions({
       </div>
 
       {verifyBlocked && (
-        <div
+        <p
           ref={blockedMessageRef}
           className={styles.verifyBlockedMessage}
           role="status"
           aria-live="polite"
         >
-          <p className={styles.verifyBlockedHint}>{blockedHint}</p>
-          {verifyAttempted && (
-            <InlineValidationMessage type="warning" message={blockedMessage} />
-          )}
-        </div>
+          {blockedHint}
+        </p>
       )}
     </div>
   )

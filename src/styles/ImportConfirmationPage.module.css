@@ -75,17 +75,6 @@
 .progressBar {
   width: 320px;
   max-width: 100%;
-  height: 8px;
-  background: var(--color-container-background-tertiary, #e3e5e8);
-  border-radius: var(--radius-full, 100px);
-  overflow: hidden;
-}
-
-.progressFill {
-  width: 100%;
-  height: 100%;
-  background: #1a8254;
-  border-radius: var(--radius-full, 100px);
 }
 
 .feedback {
