@@ -10,6 +10,8 @@ interface Phase1IssueBannerProps {
   unresolvedCount?: number
   /** Packet source docs still needing mark-reviewed — used when mode is `documents` */
   unreviewedDocCount?: number
+  /** Optional secondary note when docs mode still has open flags */
+  unresolvedFlagCount?: number
   /** Jump to next open flag */
   onVerify?: () => void
   /** Jump to next source document that still needs a review */
@@ -24,6 +26,7 @@ export default function Phase1IssueBanner({
   mode = 'flags',
   unresolvedCount = 0,
   unreviewedDocCount = 0,
+  unresolvedFlagCount = 0,
   onVerify,
   onReviewNextDocument,
 }: Phase1IssueBannerProps) {
@@ -34,10 +37,13 @@ export default function Phase1IssueBanner({
         <span className={styles.issueBannerCopy}>
           <span className={styles.issueBannerHeader}>
             {unreviewedDocCount}{' '}
-            {unreviewedDocCount === 1 ? 'document left' : 'documents left'} to review
+            {unreviewedDocCount === 1 ? 'document still needs review' : 'documents still need review'}
           </span>
           <span className={styles.issueBannerBody}>
-            Flags are cleared. AI diagnostics are available. Reviewing remaining documents is recommended.
+            Open each source document and mark it verified when the imported data matches.
+            {unresolvedFlagCount > 0 && (
+              <> {unresolvedFlagCount} import {unresolvedFlagCount === 1 ? 'flag also needs' : 'flags also need'} attention — document review comes first.</>
+            )}
           </span>
         </span>
         <button type="button" className={styles.issueBannerPill} onClick={onReviewNextDocument}>

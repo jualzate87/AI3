@@ -156,6 +156,31 @@ export function countDocsIncompleteForReviewer(args: {
   ).length
 }
 
+/** Per L1 tab: count of packet docs not yet mark-reviewed (preparer Phase 1 badges). */
+export function buildTabUnreviewedCounts(args: {
+  verifiedDocs: Set<string>
+  reviewerConfirmedDocs?: Set<string>
+  tabVerifiedKeys: Record<string, string[]>
+}): Record<string, number> {
+  const out: Record<string, number> = {}
+  for (const [tabKey, keys] of Object.entries(args.tabVerifiedKeys)) {
+    const unreviewed = keys.filter(
+      k => !isDocShownVerified(args.verifiedDocs, k, args.reviewerConfirmedDocs),
+    ).length
+    if (unreviewed > 0) out[tabKey] = unreviewed
+  }
+  return out
+}
+
+/** Peel-tab badge: 1 when doc unreviewed, 0 when verified (replaces flag counts for doc progress). */
+export function unreviewedDocBadge(
+  verifiedDocs: Set<string>,
+  docKey: string,
+  reviewerConfirmedDocs?: Set<string>,
+): number {
+  return isDocShownVerified(verifiedDocs, docKey, reviewerConfirmedDocs) ? 0 : 1
+}
+
 /**
  * A document shows a green check when marked verified, OR when it originally
  * had import flags and those are all cleared (legacy “cleared” signal).

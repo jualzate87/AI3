@@ -182,15 +182,19 @@ export default function DocumentPreview({ imageSrc, alt, customContent }: Docume
             className={styles.zoomWrap}
             style={{ width: customContent ? '100%' : `${zoom}%` }}
           >
-            {customContent ?? images.map((src, i) => (
-              <img
-                key={src}
-                src={src}
-                alt={images.length > 1 ? `${alt} — page ${i + 1}` : alt}
-                className={styles.documentImage}
-                draggable={false}
-              />
-            ))}
+            {customContent ?? (
+              <div className={images.length > 1 ? styles.pageStack : undefined}>
+                {images.map((src, i) => (
+                  <img
+                    key={`${src}-${i}`}
+                    src={src}
+                    alt={images.length > 1 ? `${alt} — page ${i + 1}` : alt}
+                    className={styles.documentImage}
+                    draggable={false}
+                  />
+                ))}
+              </div>
+            )}
           </div>
         </div>
       </div>

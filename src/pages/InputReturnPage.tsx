@@ -29,6 +29,7 @@ export default function InputReturnPage() {
     () => inputNavItemById(formParam).id,
   )
   const [searchQuery, setSearchQuery] = useState('')
+  const [navCollapsed, setNavCollapsed] = useState(false)
 
   const {
     activeTopTab,
@@ -106,6 +107,12 @@ export default function InputReturnPage() {
     setSearchParams(next, { replace: true })
   }
 
+  const activeDocKey = readActiveDocKey(inputNavItemById(activeItemId).topTab, {
+    activeSubTab,
+    activeDivPayer,
+    activeIntPayer,
+  })
+
   return (
     <div className={styles.page} data-theme="intuit">
       <SmartReturnHeader activeTab="inputreturn" />
@@ -114,9 +121,13 @@ export default function InputReturnPage() {
         <div className={styles.contentArea}>
           <InputMenuNav
             activeItemId={activeItemId}
+            activeDocKey={activeDocKey}
             onSelect={handleSelectItem}
+            onDocSelect={handleDocChange}
             searchQuery={searchQuery}
             onSearchChange={setSearchQuery}
+            collapsed={navCollapsed}
+            onCollapsedChange={setNavCollapsed}
           />
           <InputFormPanel
             activeItemId={activeItemId}

@@ -861,8 +861,7 @@ export default function LeftPanel1040({
 
   const Section = ({ title }: { title: string }) => (
     <tr className={styles.sectionHeader}>
-      <td />
-      <td colSpan={3} className={styles.sectionTitle}>{title}</td>
+      <td colSpan={4} className={styles.sectionTitle}>{title}</td>
     </tr>
   )
 

@@ -30,7 +30,9 @@ interface ReviewTabProps {
   activeTopTab?: string
   onTopTabChange?: (tab: TopTab) => void
   onTabChange?: (tab: string) => void
-  /** Per-tab count of unresolved import flags — drives dynamic tab badges */
+  /** Per-tab count of unreviewed documents — drives dynamic tab badges (preparer Phase 1) */
+  unreviewedCounts?: Record<string, number>
+  /** @deprecated Use unreviewedCounts — kept for legacy flag-only flows */
   flagCounts?: Record<string, number>
   /** Initial flag totals — used when combining with verified semantics */
   initialFlagCounts?: Record<string, number>
@@ -55,6 +57,7 @@ export default function ReviewTab({
   activeTopTab = 'w2s',
   onTopTabChange,
   onTabChange,
+  unreviewedCounts,
   flagCounts,
   initialFlagCounts,
   verifiedDocs,
@@ -88,6 +91,17 @@ export default function ReviewTab({
         <span className={styles.tabClearedCheck} aria-label="All documents confirmed">
           <CircleCheck size="small" />
         </span>
+      )
+    }
+
+    const docUnreviewed = unreviewedCounts?.[tabKey] ?? 0
+    if (docUnreviewed > 0) {
+      return (
+        <AttentionCountBadge
+          count={docUnreviewed}
+          className={styles.tabCountBadge}
+          aria-label={`${docUnreviewed} document${docUnreviewed === 1 ? '' : 's'} need review`}
+        />
       )
     }
 

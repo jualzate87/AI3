@@ -60,6 +60,7 @@ import type { DivPayer } from './data-review/DetailFieldsDiv'
 import {
   buildTabConfirmCounts,
   buildTabConfirmStatus,
+  buildTabUnreviewedCounts,
   buildTabVerifiedKeys,
   buildTypeReviewed,
   countDocsIncompleteForReviewer,
@@ -67,6 +68,7 @@ import {
   getDocConfirmStatus,
   getNextUnreviewedSourceDoc,
   getUnreviewedSourceDocs,
+  unreviewedDocBadge,
 } from './data-review/docReviewStatus'
 import { isDocShownVerified, navigationForVerifiedDocKey } from '../data/verifiedDocKeys'
 import DetailFields1099R, { R_PAYER_TABS } from './data-review/DetailFields1099R'
@@ -369,6 +371,11 @@ export default function DataReviewPage() {
     W2_PAYER_TABS.map(({ key: p }) => [p, countPhase1FlagsForW2Payer(p, reviewedFields)])
   ) as Record<W2Employer, number>
   const tabVerifiedKeys = buildTabVerifiedKeys()
+  const tabUnreviewedCounts = buildTabUnreviewedCounts({
+    verifiedDocs,
+    reviewerConfirmedDocs,
+    tabVerifiedKeys,
+  })
   const typeReviewed = buildTypeReviewed({
     verifiedDocs,
     reviewerConfirmedDocs,
@@ -410,7 +417,8 @@ export default function DataReviewPage() {
     reviewerConfirmedDocs,
   })
   const flagsCleared = phase1Complete
-  const phase1FullyComplete = flagsCleared && unreviewedDocCount === 0
+  const docsReviewComplete = unreviewedDocCount === 0
+  const phase1FullyComplete = docsReviewComplete
   // Phase 2 diagnostics progress — same dismiss rules AgentReportPane uses, so
   // resolving Phase 1 flags / editing amounts that fix an insight keeps the banner in sync.
   const phase2Progress = getPhase2Progress({
@@ -2051,25 +2059,26 @@ export default function DataReviewPage() {
                   </IconControl>
                 </div>
               </div>
-              {showPreparerImportPhase && phase1Remaining > 0 && (
+              {showPreparerImportPhase && unreviewedDocCount > 0 && (
+                <Phase1IssueBanner
+                  mode="documents"
+                  unreviewedDocCount={unreviewedDocCount}
+                  unresolvedFlagCount={phase1Remaining}
+                  onReviewNextDocument={handleReviewNextDocument}
+                />
+              )}
+              {showPreparerImportPhase && unreviewedDocCount === 0 && phase1Remaining > 0 && (
                 <Phase1IssueBanner
                   mode="flags"
                   unresolvedCount={phase1Remaining}
                   onVerify={handleVerifyNext}
                 />
               )}
-              {showPreparerImportPhase && flagsCleared && unreviewedDocCount > 0 && !phase1FullyComplete && (
-                <Phase1IssueBanner
-                  mode="documents"
-                  unreviewedDocCount={unreviewedDocCount}
-                  onReviewNextDocument={handleReviewNextDocument}
-                />
-              )}
               <ReviewTab
                 activeTopTab={activeTopTab}
                 verifiedDocs={verifiedDocs}
                 tabVerifiedKeys={tabVerifiedKeys}
-                flagCounts={showPreparerImportPhase ? tabFlagCounts : undefined}
+                unreviewedCounts={showPreparerImportPhase ? tabUnreviewedCounts : undefined}
                 typeReviewed={showPreparerImportPhase ? typeReviewed : undefined}
                 tabConfirmStatus={reviewRole === 'reviewer' ? tabConfirmStatus : undefined}
                 tabConfirmCounts={reviewRole === 'reviewer' ? tabConfirmCounts : undefined}
@@ -2086,7 +2095,7 @@ export default function DataReviewPage() {
                 <PeelTab
                   tabs={DIV_PAYER_TABS.map(t => ({
                     ...t,
-                    badge: divPayerFieldCounts[t.key],
+                    badge: unreviewedDocBadge(verifiedDocs, divVerifiedDocKey(t.key), reviewerConfirmedDocs),
                     showClearedCheck: isDocShownVerified(verifiedDocs, divVerifiedDocKey(t.key), reviewerConfirmedDocs),
                     confirmStatus: peelDocConfirmStatus(divVerifiedDocKey(t.key)),
                   }))}
@@ -2098,7 +2107,7 @@ export default function DataReviewPage() {
                 <PeelTab
                   tabs={INT_PAYER_TABS.map(t => ({
                     ...t,
-                    badge: intPayerFieldCounts[t.key],
+                    badge: unreviewedDocBadge(verifiedDocs, intVerifiedDocKey(t.key), reviewerConfirmedDocs),
                     showClearedCheck: isDocShownVerified(verifiedDocs, intVerifiedDocKey(t.key), reviewerConfirmedDocs),
                     confirmStatus: peelDocConfirmStatus(intVerifiedDocKey(t.key)),
                   }))}
@@ -2110,7 +2119,7 @@ export default function DataReviewPage() {
                 <PeelTab
                   tabs={W2_PAYER_TABS.map(t => ({
                     ...t,
-                    badge: w2PayerFieldCounts[t.key],
+                    badge: unreviewedDocBadge(verifiedDocs, t.key, reviewerConfirmedDocs),
                     showClearedCheck: isDocShownVerified(verifiedDocs, t.key, reviewerConfirmedDocs),
                     confirmStatus: peelDocConfirmStatus(t.key),
                   }))}
@@ -2122,7 +2131,7 @@ export default function DataReviewPage() {
                 <PeelTab
                   tabs={R_PAYER_TABS.map(t => ({
                     ...t,
-                    badge: tabFlagCounts['1099-rs'],
+                    badge: unreviewedDocBadge(verifiedDocs, '1099-r', reviewerConfirmedDocs),
                     showClearedCheck: isDocShownVerified(verifiedDocs, '1099-r', reviewerConfirmedDocs),
                     confirmStatus: peelDocConfirmStatus('1099-r'),
                   }))}
@@ -2134,7 +2143,7 @@ export default function DataReviewPage() {
                 <PeelTab
                   tabs={NEC_PAYER_TABS.map(t => ({
                     ...t,
-                    badge: 0,
+                    badge: unreviewedDocBadge(verifiedDocs, '1099-nec', reviewerConfirmedDocs),
                     showClearedCheck: isDocShownVerified(verifiedDocs, '1099-nec', reviewerConfirmedDocs),
                     confirmStatus: peelDocConfirmStatus('1099-nec'),
                   }))}

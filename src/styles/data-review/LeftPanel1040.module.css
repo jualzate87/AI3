@@ -44,7 +44,7 @@
   align-items: center;
   justify-content: space-between;
   padding: 8px 12px 6px;
-  border-bottom: 2px solid #000;
+  border-bottom: 2px solid var(--color-divider-secondary);
   background: #eef3f7;
 }
 
@@ -2076,7 +2076,7 @@
   --form-amount-width: 132px;
   --form-actions-width: 138px;
   max-width: 960px;
-  border: 1px solid var(--color-text-primary);
+  border: 1px solid var(--color-container-border-primary);
   border-radius: 0;
   box-shadow: none;
   padding-bottom: 0;
@@ -2088,7 +2088,7 @@
 .formTableColValue { width: var(--form-col-value); }
 
 .formDocDigitized .summaryCardHeader {
-  border-bottom: 1px solid #000;
+  border-bottom: 1px solid var(--color-divider-secondary);
   padding: 12px 16px;
 }
 
@@ -2102,8 +2102,8 @@
 }
 
 .irsUseOnlyBox {
-  background: #f3f4f6;
-  border: 1px solid #000;
+  background: var(--color-container-background-secondary);
+  border: 1px solid var(--color-input-border-primary);
   border-radius: 2px;
   padding: 6px;
   font-family: var(--font-family-component);
@@ -2115,7 +2115,7 @@
 
 .formDocDigitized .irsHeader {
   padding: 16px;
-  border-bottom: 1px solid #000;
+  border-bottom: 1px solid var(--color-divider-secondary);
   background: #fff;
   align-items: flex-start;
 }
@@ -2170,33 +2170,40 @@
   color: var(--color-text-secondary);
 }
 
-/* Section bars — gray bg, black top/bottom borders */
+/* Section bars — gray bg, soft divider borders */
 .sectionBar {
-  background: #f3f4f6;
-  border-top: 1px solid #000;
-  border-bottom: 1px solid #000;
-  padding: 6px 12px;
+  background: var(--color-container-background-secondary);
+  border-top: 1px solid var(--color-divider-secondary);
+  border-bottom: 1px solid var(--color-divider-secondary);
+  padding: 8px 12px;
   font-family: var(--font-family-component);
   font-size: 13px;
   font-weight: var(--font-weight-component-semibold);
   color: var(--color-text-primary);
 }
 
+.formDocDigitized .sectionHeader {
+  background: var(--color-container-background-secondary);
+  border-top: 1px solid var(--color-divider-secondary);
+  border-bottom: 1px solid var(--color-divider-secondary);
+}
+
 .formDocDigitized .sectionHeader td {
   padding: 0;
-  background: #f3f4f6;
-  border-top: 1px solid #000;
-  border-bottom: 1px solid #000;
+  border: none;
+  background: transparent;
 }
 
 .formDocDigitized .sectionTitle {
   display: block;
-  padding: 6px 12px;
+  width: 100%;
+  padding: 8px 12px;
   font-size: 13px;
   font-weight: var(--font-weight-component-semibold);
   color: var(--color-text-primary);
   text-transform: none;
   letter-spacing: normal;
+  box-sizing: border-box;
 }
 
 /* Filing status — numbered checkbox row like IRS form */
@@ -2205,7 +2212,7 @@
   align-items: stretch;
   gap: var(--space-component-gap-medium);
   padding: var(--space-container-padding-x-small, 12px) var(--space-container-padding-small, 16px);
-  border-bottom: 1px solid var(--color-text-primary);
+  border-bottom: 1px solid var(--color-divider-tertiary);
   background: var(--color-container-background-primary);
 }
 
@@ -2238,7 +2245,7 @@
   font-weight: var(--font-weight-component);
   color: var(--color-text-primary);
   line-height: var(--line-height-component);
-  border: 1px solid var(--color-text-primary);
+  border: 1px solid var(--color-input-border-primary);
   border-radius: var(--radius-small, 4px);
   padding: var(--space-component-inline-padding-medium) var(--space-component-inline-padding-large);
   background: var(--color-container-background-primary);
@@ -2253,7 +2260,7 @@
   justify-content: center;
   width: 18px;
   height: 18px;
-  border: 1px solid var(--color-text-primary);
+  border: 1px solid var(--color-input-border-primary);
   border-radius: 2px;
   font-size: var(--font-size-component-x-small);
   font-weight: var(--font-weight-component-bold);
@@ -2285,7 +2292,7 @@
 .formDocDigitized .taxpayerGrid {
   display: grid;
   grid-template-columns: 1.4fr 1.4fr 1fr;
-  border-top: 1px solid var(--color-text-primary);
+  border-top: 1px solid var(--color-divider-tertiary);
 }
 
 .formDocDigitized .taxpayerGridWide {
@@ -2312,8 +2319,8 @@
 }
 
 .formDocDigitized .infoField {
-  border-right: 1px solid var(--color-text-primary);
-  border-bottom: 1px solid var(--color-text-primary);
+  border-right: 1px solid var(--color-divider-tertiary);
+  border-bottom: 1px solid var(--color-divider-tertiary);
   padding: var(--space-component-inline-padding-medium) var(--space-component-inline-padding-large);
   gap: var(--space-component-gap-small);
   min-width: 0;
@@ -2337,10 +2344,10 @@
   width: 100%;
   min-height: 32px;
   padding: var(--space-component-inline-padding-medium) var(--space-component-inline-padding-large);
-  border: 1px solid var(--color-text-primary);
+  border: 1px solid var(--color-input-border-primary);
   border-radius: var(--radius-small, 4px);
   background: var(--color-container-background-primary);
-  box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.06);
+  box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.04);
   font-size: var(--font-size-component-small);
   font-weight: var(--font-weight-component-semibold);
   color: var(--color-text-primary);
@@ -2353,8 +2360,8 @@
   display: grid;
   grid-template-columns: var(--form-col-line) minmax(140px, 1fr) var(--form-col-line-r) var(--form-col-value);
   background: var(--color-container-background-primary);
-  border-bottom: 1px solid var(--color-text-primary);
-  border-top: 1px solid var(--color-text-primary);
+  border-bottom: 1px solid var(--color-divider-secondary);
+  border-top: 1px solid var(--color-divider-tertiary);
   padding: var(--space-component-inline-padding-small) 0;
 }
 
@@ -2383,6 +2390,10 @@
 
 .formDocDigitized .table tbody tr.row:nth-child(even of tr.row) {
   background: var(--color-container-background-secondary);
+}
+
+.formDocDigitized .row {
+  border-bottom: 1px solid var(--color-divider-tertiary);
 }
 
 .formDocDigitized .rowClickable:hover {
@@ -2458,17 +2469,17 @@
   flex-shrink: 0;
 }
 
-/* Value boxes — black border, white bg, right-aligned, fixed width, 32px height */
+/* Value boxes — soft input border, white bg, right-aligned, fixed width, 32px height */
 .formDocDigitized .valueBox {
   width: 100%;
   min-width: 0;
   max-width: var(--form-amount-width);
   height: 32px;
   min-height: 32px;
-  border: 1px solid var(--color-text-primary);
+  border: 1px solid var(--color-input-border-primary);
   border-radius: var(--radius-small, 4px);
   background: var(--color-container-background-primary);
-  box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.06);
+  box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.04);
   padding: 0 var(--space-component-inline-padding-medium);
   flex: 0 0 auto;
   box-sizing: border-box;
@@ -2477,8 +2488,8 @@
 .formDocDigitized .valueBoxSource,
 .formDocDigitized .valueBoxCalc,
 .formDocDigitized .valueBoxEmpty {
-  background: #fff;
-  border: 1px solid #000;
+  background: var(--color-container-background-primary);
+  border: 1px solid var(--color-input-border-primary);
 }
 
 .formDocDigitized .valueBoxEmpty {
@@ -2519,17 +2530,17 @@
 /* Dividers */
 .formDocDigitized .dividerLine {
   height: 1px;
-  background: #000;
+  background: var(--color-divider-secondary);
   margin: 0;
 }
 
 .formDocDigitized .oweDividerRow td {
-  background: #000;
+  background: var(--color-divider-secondary);
   height: 1px;
 }
 
 .formDocDigitized .rowOwe {
-  border-top: 1px solid #000;
+  border-top: 1px solid var(--color-divider-secondary);
   background: #fff;
 }
 
@@ -2537,7 +2548,7 @@
 .formPageFooter {
   text-align: center;
   padding: 12px 16px;
-  border-top: 1px solid #000;
+  border-top: 1px solid var(--color-divider-secondary);
   font-family: var(--font-family-component);
   font-size: 11px;
   font-weight: var(--font-weight-component-semibold);

@@ -27,10 +27,8 @@
 .imageAreaInner {
   /* Width must stay 100% of .imageArea so zoom % is relative to the viewport,
      not the image’s intrinsic size (max-content made 85% look massively cropped).
-     Vertical min-height keeps short pages centered; horizontal overflow scrolls
-     on .imageArea when zoom > 100%. */
+     Height grows with stacked pages so .imageArea scrolls vertically. */
   display: block;
-  min-height: 100%;
   width: 100%;
   box-sizing: border-box;
 }
@@ -42,13 +40,20 @@
   flex-shrink: 0;
 }
 
+.pageStack {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-stack-medium, 20px);
+  width: 100%;
+}
+
 .documentImage {
-  border: 1px solid #000000;
+  border: 1px solid var(--color-container-border-primary);
   display: block;
   /* intrinsic size — zoom is controlled by wrapper width, image fills wrapper */
   width: 100%;
   height: auto;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.18);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.12);
 }
 
 /* Zoom toolbar — same pattern as LeftPanel1040 */

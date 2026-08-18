@@ -71,6 +71,52 @@
   color: #21262a;
 }
 
+.docProgress {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 2px;
+  padding: var(--space-component-padding-small, 8px) var(--space-component-padding-medium, 12px);
+  background: var(--color-container-background-secondary, #f0f4f6);
+  border: 1px solid var(--color-divider-tertiary, #c3ced5);
+  border-radius: var(--radius-medium, 4px);
+  min-width: 148px;
+}
+
+.docProgressLabel {
+  font-family: var(--font-family-component, sans-serif);
+  font-size: 11px;
+  font-weight: var(--font-weight-component-semibold, 500);
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+  color: var(--color-text-secondary, #6b6c72);
+}
+
+.counterPrimary {
+  font-family: var(--font-family-component, sans-serif);
+  font-size: 16px;
+  color: var(--color-text-primary, #21262a);
+  white-space: nowrap;
+}
+
+.counterPrimary .counterNum {
+  font-size: 20px;
+  font-weight: var(--font-weight-heading-bold, 800);
+  color: var(--color-action-standard, #205ea3);
+}
+
+.counterOf {
+  font-size: 14px;
+  font-weight: var(--font-weight-component, 400);
+  color: var(--color-text-primary, #21262a);
+}
+
+.docProgressHint {
+  font-family: var(--font-family-component, sans-serif);
+  font-size: 12px;
+  color: var(--color-text-secondary, #6b6c72);
+}
+
 /* Progress note as link back to AI Review when diagnostics remain */
 .counterLink {
   font-family: var(--font-family-component, sans-serif);

@@ -23,12 +23,14 @@ import DetailFieldsDiv, { DIV_PAYER_TABS, divVerifiedDocKey } from './data-revie
 import type { DivPayer } from './data-review/DetailFieldsDiv'
 import {
   buildTabVerifiedKeys,
+  buildTabUnreviewedCounts,
   buildTypeReviewed,
   getNextUnreviewedSourceDoc,
   getUnreviewedSourceDocs,
   buildTabConfirmCounts,
   buildTabConfirmStatus,
   getDocConfirmStatus,
+  unreviewedDocBadge,
 } from './data-review/docReviewStatus'
 import DetailFields1099R, { R_PAYER_TABS } from './data-review/DetailFields1099R'
 import DetailFieldsNec, { NEC_PAYER_TABS } from './data-review/DetailFieldsNec'
@@ -43,6 +45,7 @@ import img1040PriorPage2 from '../assets/jessica-1040-2024-variant-2.png'
 import { isDocShownVerified } from '../data/verifiedDocKeys'
 import { getStoredDemoRole } from '../lib/prototypeRoutes'
 import dragStyles from '../styles/data-review/DragHandle.module.css'
+import styles from '../styles/data-review/DataReviewPopout.module.css'
 
 // ProtoC: the pop-out is the same view as the main window's right panel, not a
 // separate copy — same flags, same reviewed state, same edits, same document
@@ -119,6 +122,11 @@ export default function DataReviewPopout() {
     W2_PAYER_TABS.map(({ key: p }) => [p, countPhase1FlagsForW2Payer(p, reviewedFields)])
   ) as Record<W2Employer, number>
   const tabVerifiedKeys = buildTabVerifiedKeys()
+  const tabUnreviewedCounts = buildTabUnreviewedCounts({
+    verifiedDocs,
+    reviewerConfirmedDocs,
+    tabVerifiedKeys,
+  })
   const typeReviewed = buildTypeReviewed({
     verifiedDocs,
     reviewerConfirmedDocs,
@@ -155,7 +163,7 @@ export default function DataReviewPopout() {
     if (status === 'unverified') return undefined
     return status
   }
-  const phase1FullyComplete = flagsCleared && unreviewedDocCount === 0
+  const phase1FullyComplete = unreviewedDocCount === 0
   const handleReviewNextDocument = useCallback(() => {
     const next = getNextUnreviewedSourceDoc(unreviewedSourceDocs, {
       tab: activeTopTab,
@@ -176,6 +184,43 @@ export default function DataReviewPopout() {
 
   const rightRef = useRef<HTMLDivElement>(null)
   const [previewWidth, setPreviewWidth] = useState(40)
+
+  // Lock document scroll chain so 100vh/dvh fits the popout window — #root defaults
+  // to min-height:100vh and can grow with content, which scrolls the page and clips the top.
+  useEffect(() => {
+    const html = document.documentElement
+    const body = document.body
+    const root = document.getElementById('root')
+    const prev = {
+      htmlOverflow: html.style.overflow,
+      htmlHeight: html.style.height,
+      bodyOverflow: body.style.overflow,
+      bodyHeight: body.style.height,
+      rootHeight: root?.style.height ?? '',
+      rootMinHeight: root?.style.minHeight ?? '',
+      rootOverflow: root?.style.overflow ?? '',
+    }
+    html.style.overflow = 'hidden'
+    html.style.height = '100%'
+    body.style.overflow = 'hidden'
+    body.style.height = '100%'
+    if (root) {
+      root.style.height = '100%'
+      root.style.minHeight = '0'
+      root.style.overflow = 'hidden'
+    }
+    return () => {
+      html.style.overflow = prev.htmlOverflow
+      html.style.height = prev.htmlHeight
+      body.style.overflow = prev.bodyOverflow
+      body.style.height = prev.bodyHeight
+      if (root) {
+        root.style.height = prev.rootHeight
+        root.style.minHeight = prev.rootMinHeight
+        root.style.overflow = prev.rootOverflow
+      }
+    }
+  }, [])
 
   const handlePreviewDrag = useCallback((e: React.PointerEvent) => {
     if (e.button !== 0) return
@@ -217,41 +262,42 @@ export default function DataReviewPopout() {
   })
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', height: '100vh', overflow: 'hidden' }}>
-<ReviewTab
-        isPopout
-        activeTopTab={activeTopTab}
-        flagCounts={tabFlagCounts}
-        initialFlagCounts={tabInitialFlagCounts}
-        verifiedDocs={verifiedDocs}
-        tabVerifiedKeys={tabVerifiedKeys}
-        typeReviewed={showPreparerImportPhase ? typeReviewed : undefined}
-        tabConfirmStatus={reviewRole === 'reviewer' ? tabConfirmStatus : undefined}
-        tabConfirmCounts={reviewRole === 'reviewer' ? tabConfirmCounts : undefined}
-        onTopTabChange={(tab) => { setActiveTopTab(tab); setSelectedField(null) }}
-      />
-
-      {showPreparerImportPhase && phase1Remaining > 0 && (
-        <Phase1IssueBanner
-          mode="flags"
-          unresolvedCount={phase1Remaining}
-          onVerify={handleVerifyNext}
+    <div className={styles.page}>
+      <div className={styles.headerStack}>
+        <ReviewTab
+          isPopout
+          activeTopTab={activeTopTab}
+          unreviewedCounts={showPreparerImportPhase ? tabUnreviewedCounts : undefined}
+          verifiedDocs={verifiedDocs}
+          tabVerifiedKeys={tabVerifiedKeys}
+          typeReviewed={showPreparerImportPhase ? typeReviewed : undefined}
+          tabConfirmStatus={reviewRole === 'reviewer' ? tabConfirmStatus : undefined}
+          tabConfirmCounts={reviewRole === 'reviewer' ? tabConfirmCounts : undefined}
+          onTopTabChange={(tab) => { setActiveTopTab(tab); setSelectedField(null) }}
         />
-      )}
-      {showPreparerImportPhase && flagsCleared && unreviewedDocCount > 0 && !phase1FullyComplete && (
-        <Phase1IssueBanner
-          mode="documents"
-          unreviewedDocCount={unreviewedDocCount}
-          onReviewNextDocument={handleReviewNextDocument}
-        />
-      )}
 
-      {/* Peel tabs — payer switcher for multi-payer doc types */}
-      {activeTopTab === '1099-divs' && (
+        {showPreparerImportPhase && unreviewedDocCount > 0 && (
+          <Phase1IssueBanner
+            mode="documents"
+            unreviewedDocCount={unreviewedDocCount}
+            unresolvedFlagCount={phase1Remaining}
+            onReviewNextDocument={handleReviewNextDocument}
+          />
+        )}
+        {showPreparerImportPhase && unreviewedDocCount === 0 && phase1Remaining > 0 && (
+          <Phase1IssueBanner
+            mode="flags"
+            unresolvedCount={phase1Remaining}
+            onVerify={handleVerifyNext}
+          />
+        )}
+
+        {/* Peel tabs — payer switcher for multi-payer doc types */}
+        {activeTopTab === '1099-divs' && (
         <PeelTab
           tabs={DIV_PAYER_TABS.map(t => ({
             ...t,
-            badge: divPayerFieldCounts[t.key],
+            badge: unreviewedDocBadge(verifiedDocs, divVerifiedDocKey(t.key), reviewerConfirmedDocs),
             showClearedCheck: isDocShownVerified(verifiedDocs, divVerifiedDocKey(t.key), reviewerConfirmedDocs),
             confirmStatus: peelDocConfirmStatus(divVerifiedDocKey(t.key)),
           }))}
@@ -263,7 +309,7 @@ export default function DataReviewPopout() {
         <PeelTab
           tabs={INT_PAYER_TABS.map(t => ({
             ...t,
-            badge: intPayerFieldCounts[t.key],
+            badge: unreviewedDocBadge(verifiedDocs, intVerifiedDocKey(t.key), reviewerConfirmedDocs),
             showClearedCheck: isDocShownVerified(verifiedDocs, intVerifiedDocKey(t.key), reviewerConfirmedDocs),
             confirmStatus: peelDocConfirmStatus(intVerifiedDocKey(t.key)),
           }))}
@@ -275,7 +321,7 @@ export default function DataReviewPopout() {
         <PeelTab
           tabs={W2_PAYER_TABS.map(t => ({
             ...t,
-            badge: w2PayerFieldCounts[t.key],
+            badge: unreviewedDocBadge(verifiedDocs, t.key, reviewerConfirmedDocs),
             showClearedCheck: isDocShownVerified(verifiedDocs, t.key, reviewerConfirmedDocs),
             confirmStatus: peelDocConfirmStatus(t.key),
           }))}
@@ -287,7 +333,7 @@ export default function DataReviewPopout() {
         <PeelTab
           tabs={R_PAYER_TABS.map(t => ({
             ...t,
-            badge: tabFlagCounts['1099-rs'],
+            badge: unreviewedDocBadge(verifiedDocs, '1099-r', reviewerConfirmedDocs),
             showClearedCheck: isDocShownVerified(verifiedDocs, '1099-r', reviewerConfirmedDocs),
             confirmStatus: peelDocConfirmStatus('1099-r'),
           }))}
@@ -299,7 +345,7 @@ export default function DataReviewPopout() {
         <PeelTab
           tabs={NEC_PAYER_TABS.map(t => ({
             ...t,
-            badge: 0,
+            badge: unreviewedDocBadge(verifiedDocs, '1099-nec', reviewerConfirmedDocs),
             showClearedCheck: isDocShownVerified(verifiedDocs, '1099-nec', reviewerConfirmedDocs),
             confirmStatus: peelDocConfirmStatus('1099-nec'),
           }))}
@@ -308,9 +354,11 @@ export default function DataReviewPopout() {
         />
       )}
 
-      <div ref={rightRef} style={{ display: 'flex', flex: 1, minHeight: 0, overflow: 'hidden' }}>
+      </div>
+
+      <div ref={rightRef} className={styles.splitPane}>
           {activeTopTab !== 'questionnaire' && (
-          <div style={{ flex: `0 0 ${previewWidth}%`, minWidth: 0, minHeight: 0, overflow: 'hidden', borderRight: '1px solid #d5dee3' }}>
+          <div className={styles.previewPane} style={{ flex: `0 0 ${previewWidth}%` }}>
             <DocumentPreview
               imageSrc={sourceDocPreview.imageSrc}
               alt={sourceDocPreview.alt}
@@ -335,7 +383,7 @@ export default function DataReviewPopout() {
           </div>
           )}
 
-          <div style={{ flex: 1, minWidth: 0, minHeight: 0, overflow: 'hidden', display: 'flex', flexDirection: 'column' }}>
+          <div className={styles.detailsPane}>
             {activeTopTab === 'w2s' && (
               <DetailFields
                 formTitle="Details: Wages, Salaries, Tips (W-2)"

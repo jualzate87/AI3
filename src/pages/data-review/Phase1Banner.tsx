@@ -1,4 +1,4 @@
-import { ArrowRight, CircleCheck, Lock } from '@design-systems/icons'
+import { ArrowRight, CircleCheck } from '@design-systems/icons'
 import { Button } from '@ids-ts/button'
 import '@ids-ts/button/dist/main.css'
 import intuitAssistIcon from '../../assets/icons/intuit-assist.svg'
@@ -16,7 +16,7 @@ interface Phase1BannerProps {
   flagsCleared: boolean
   /** Count of packet source docs (incl. Questionnaire) not yet mark-reviewed */
   unreviewedDocCount?: number
-  /** Soft complete: flags cleared AND all packet docs reviewed */
+  /** Soft complete: all packet docs mark-reviewed (primary Phase 1 progress signal) */
   complete: boolean
   /** Continue to Phase 2 — AI Diagnostics (enabled when flags cleared) */
   onContinue?: () => void
@@ -32,7 +32,7 @@ interface Phase1BannerProps {
 /**
  * ProtoC Phase 1 step header. Progress, start CTA, AI-diagnostics lock, and complete state.
  * Remaining-document attention (copy + CTA) lives on Phase1IssueBanner (documents mode).
- * Flags are the hard gate for Continue; document review is recommended only.
+ * Document review is the primary gate for Continue; unresolved flags are secondary.
  */
 export default function Phase1Banner({
   flagsResolved,
@@ -48,27 +48,32 @@ export default function Phase1Banner({
   continueCoachOpen = false,
   onDismissContinueCoach,
 }: Phase1BannerProps) {
+  const docsReviewComplete = complete
+  const flagsRemaining = flagsTotal - flagsResolved
+
   return (
     <div
-      className={[styles.banner, flagsCleared ? styles.bannerComplete : ''].filter(Boolean).join(' ')}
+      className={[styles.banner, docsReviewComplete ? styles.bannerComplete : ''].filter(Boolean).join(' ')}
     >
       <div className={styles.left}>
         <img src={intuitAssistIcon} alt="" className={styles.icon} />
         <div className={styles.text}>
-          {flagsCleared ? (
+          {docsReviewComplete ? (
             <>
-              <span className={styles.title}>Import accuracy confirmed</span>
+              <span className={styles.title}>Source documents reviewed</span>
               <span className={styles.subtitle}>
-                {complete
-                  ? 'All flagged fields and source documents have been reviewed. Ready to move to Step 2?'
-                  : 'Flags are cleared. AI diagnostics are available. Reviewing remaining documents is recommended.'}
+                {flagsCleared
+                  ? 'All source documents and import flags are resolved. Ready to move to Step 2?'
+                  : `${flagsRemaining} import ${flagsRemaining === 1 ? 'flag remains' : 'flags remain'} — you can continue to AI diagnostics or resolve them first.`}
               </span>
             </>
           ) : (
             <>
               <span className={styles.title}>Step 1: Import accuracy</span>
               <span className={styles.subtitle}>
-                Verify the flagged fields against each source document, then continue to AI diagnostics.
+                {importsStarted
+                  ? `Mark each source document verified${flagsRemaining > 0 ? ` — import flags can wait until after document review` : ''}.`
+                  : 'Review each source document and mark it verified, then continue to AI diagnostics.'}
               </span>
             </>
           )}
@@ -76,19 +81,22 @@ export default function Phase1Banner({
       </div>
 
       <div className={styles.right}>
-        {!flagsCleared && (
-          <span className={styles.counter}>
-            <strong className={styles.counterNum}>{flagsResolved}</strong> of {flagsTotal} flags resolved
-          </span>
+        {importsStarted && (
+          <div className={styles.docProgress} aria-live="polite">
+            <span className={styles.docProgressLabel}>Document review</span>
+            <span className={styles.counterPrimary}>
+              <strong className={styles.counterNum}>{verifiedDocCount}</strong>
+              <span className={styles.counterOf}> of {totalDocCount} verified</span>
+            </span>
+            {!docsReviewComplete && unreviewedDocCount > 0 && (
+              <span className={styles.docProgressHint}>
+                {unreviewedDocCount} remaining
+              </span>
+            )}
+          </div>
         )}
 
-        {importsStarted && !complete && (
-          <span className={styles.counter}>
-            <strong className={styles.counterNum}>{verifiedDocCount}</strong> of {totalDocCount} documents verified
-          </span>
-        )}
-
-        {!flagsCleared && !importsStarted && onStartImports && (
+        {!importsStarted && onStartImports && (
           <Button
             priority="primary"
             size="medium"
@@ -98,11 +106,11 @@ export default function Phase1Banner({
           </Button>
         )}
 
-        {flagsCleared && onContinue ? (
+        {docsReviewComplete && onContinue ? (
           <CoachTip
             open={!!continueCoachOpen && complete}
             title="Ready for AI diagnostics"
-            message="Import checks are complete. Continue to Step 2 for compliance, year-over-year, and planning insights."
+            message="Source document review is complete. Continue to Step 2 for compliance, year-over-year, and planning insights."
             onClose={() => onDismissContinueCoach?.()}
             position="bottom"
             alignment="right"
@@ -118,19 +126,10 @@ export default function Phase1Banner({
               Continue to AI diagnostics <ArrowRight size="small" />
             </Button>
           </CoachTip>
-        ) : importsStarted ? (
-          <div className={styles.lockedWrap}>
-            <Button priority="secondary" size="medium" disabled>
-              <Lock size="small" /> AI diagnostics locked
-            </Button>
-            <span className={styles.lockNote}>
-              Diagnostics unlock once import flags are confirmed.
-            </span>
-          </div>
         ) : null}
       </div>
 
-      {complete && (
+      {docsReviewComplete && (
         <span className={styles.completeBadge}>
           <CircleCheck size="small" /> All documents reviewed
         </span>
