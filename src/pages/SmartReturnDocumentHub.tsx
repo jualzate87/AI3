@@ -18,6 +18,7 @@ import sidebarImportHubIcon from '../assets/icons/sidebar-import-hub.svg'
 import sidebarDocumentsListIcon from '../assets/icons/sidebar-documents-list.svg'
 import sidebarClientActivityIcon from '../assets/icons/sidebar-client-activity.svg'
 import { completeDocumentImport } from '../hooks/useSyncedReviewState'
+import { SOURCE_DOCUMENTS } from '../data/sourceDocuments'
 import { QUESTIONNAIRE_HUB_LABEL, QUESTIONNAIRE_HUB_SOURCE_NOTE } from './data-review/questionnaireData'
 import styles from '../styles/OpenReturnPage.module.css'
 
