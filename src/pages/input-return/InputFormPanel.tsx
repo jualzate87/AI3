@@ -2,24 +2,30 @@ import { useEffect } from 'react'
 import PageMessage from '@ids-ts/page-message'
 import '@ids-ts/page-message/dist/main.css'
 import { useSyncedReviewState } from '../../hooks/useSyncedReviewState'
-import DetailFields, { type W2Employer } from '../data-review/DetailFields'
-import DetailFields1099, { INT_PAYER_TABS } from '../data-review/DetailFields1099'
-import type { IntPayer } from '../data-review/DetailFields1099'
-import DetailFieldsDiv, { DIV_PAYER_TABS } from '../data-review/DetailFieldsDiv'
-import type { DivPayer } from '../data-review/DetailFieldsDiv'
+import DetailFields from '../data-review/DetailFields'
+import DetailFields1099 from '../data-review/DetailFields1099'
+import DetailFieldsDiv from '../data-review/DetailFieldsDiv'
 import DetailFields1099R from '../data-review/DetailFields1099R'
 import DetailFieldsNec from '../data-review/DetailFieldsNec'
+import PeelTab from '../data-review/PeelTab'
+import {
+  applyInputDocKey,
+  getInputDocTabs,
+  readActiveDocKey,
+} from '../../data/inputDocTabs'
 import { inputNavItemById, type InputNavItemId } from '../../data/inputMenuNav'
 import styles from '../../styles/InputReturnPage.module.css'
 
 interface InputFormPanelProps {
   activeItemId: InputNavItemId
   showMissingEinDiagnostic?: boolean
+  onDocChange?: (docKey: string) => void
 }
 
 export default function InputFormPanel({
   activeItemId,
   showMissingEinDiagnostic = false,
+  onDocChange,
 }: InputFormPanelProps) {
   const navItem = inputNavItemById(activeItemId)
   const {
@@ -39,8 +45,20 @@ export default function InputFormPanel({
     fieldOverrides,
     setFieldOverride,
     activeDivPayer,
+    setActiveDivPayer,
     activeIntPayer,
+    setActiveIntPayer,
   } = useSyncedReviewState()
+
+  const docTabs = getInputDocTabs(navItem.topTab)
+  const activeDocKey =
+    readActiveDocKey(navItem.topTab, {
+      activeSubTab,
+      activeDivPayer,
+      activeIntPayer,
+    }) ?? docTabs[0]?.key ?? ''
+
+  const docSetters = { setActiveSubTab, setActiveDivPayer, setActiveIntPayer }
 
   useEffect(() => {
     if (activeTopTab !== navItem.topTab) {
@@ -57,6 +75,11 @@ export default function InputFormPanel({
   const totalWithholding =
     fieldValues.withholding.techCircle + amounts.intWithholding + amounts.divWithholding
 
+  const handleDocTabChange = (docKey: string) => {
+    applyInputDocKey(navItem.topTab, docKey, docSetters)
+    onDocChange?.(docKey)
+  }
+
   return (
     <div className={styles.formPanel}>
       {showMissingEinDiagnostic && activeItemId === 'w2' && (
@@ -64,6 +87,16 @@ export default function InputFormPanel({
           <PageMessage
             type="error"
             title="Form W-2: Employer Identification Number (EIN) is missing and is required for e-file."
+          />
+        </div>
+      )}
+
+      {docTabs.length > 1 && activeDocKey && (
+        <div className={styles.docTabBar}>
+          <PeelTab
+            tabs={docTabs}
+            activeKey={activeDocKey}
+            onChange={handleDocTabChange}
           />
         </div>
       )}
@@ -76,7 +109,7 @@ export default function InputFormPanel({
             selectedField={selectedField}
             onFieldSelect={setSelectedField}
             activeSubTab={activeSubTab}
-            onSubTabChange={tab => setActiveSubTab(tab as W2Employer)}
+            onSubTabChange={tab => handleDocTabChange(tab)}
             wages={{ bingEquipment: 0, techCircle: wages.techCircle }}
             onWageChange={(employer, value) => {
               setWages({ ...wages, [employer]: value })
@@ -199,15 +232,6 @@ export default function InputFormPanel({
             fieldOverrides={fieldOverrides}
             onFieldOverride={setFieldOverride}
           />
-        )}
-      </div>
-
-      <div className={styles.formMeta} aria-hidden>
-        {navItem.topTab === '1099-divs' && (
-          <span>Payers: {DIV_PAYER_TABS.map(t => t.label).join(', ')}</span>
-        )}
-        {navItem.topTab === '1099-ints' && (
-          <span>Payers: {INT_PAYER_TABS.map(t => t.label).join(', ')}</span>
         )}
       </div>
     </div>

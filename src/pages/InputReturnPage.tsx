@@ -7,17 +7,41 @@ import {
   inputNavItemById,
   type InputNavItemId,
 } from '../data/inputMenuNav'
+import {
+  applyInputDocKey,
+  getDefaultDocKey,
+  INPUT_DOC_PARAM,
+  INPUT_FORM_PARAM,
+  readActiveDocKey,
+  resolveDocKeyFromUrl,
+  writeInputReturnParams,
+} from '../data/inputDocTabs'
+import { useSyncedReviewState } from '../hooks/useSyncedReviewState'
 import styles from '../styles/InputReturnPage.module.css'
 
 export default function InputReturnPage() {
   const navigate = useNavigate()
   const [searchParams, setSearchParams] = useSearchParams()
-  const formParam = searchParams.get('form') as InputNavItemId | null
+  const formParam = searchParams.get(INPUT_FORM_PARAM) as InputNavItemId | null
+  const docParam = searchParams.get(INPUT_DOC_PARAM)
   const diagnostic = searchParams.get('diagnostic')
   const [activeItemId, setActiveItemId] = useState<InputNavItemId>(
     () => inputNavItemById(formParam).id,
   )
   const [searchQuery, setSearchQuery] = useState('')
+
+  const {
+    activeTopTab,
+    setActiveTopTab,
+    activeSubTab,
+    setActiveSubTab,
+    activeDivPayer,
+    setActiveDivPayer,
+    activeIntPayer,
+    setActiveIntPayer,
+  } = useSyncedReviewState()
+
+  const docSetters = { setActiveSubTab, setActiveDivPayer, setActiveIntPayer }
 
   useEffect(() => {
     const el = document.documentElement
@@ -40,10 +64,45 @@ export default function InputReturnPage() {
     }
   }, [formParam, activeItemId])
 
+  useEffect(() => {
+    const navItem = inputNavItemById(activeItemId)
+    if (activeTopTab !== navItem.topTab) {
+      setActiveTopTab(navItem.topTab)
+    }
+  }, [activeItemId, activeTopTab, setActiveTopTab])
+
+  useEffect(() => {
+    const navItem = inputNavItemById(activeItemId)
+    const resolved = resolveDocKeyFromUrl(navItem.topTab, docParam)
+    if (!resolved) return
+    const current = readActiveDocKey(navItem.topTab, {
+      activeSubTab,
+      activeDivPayer,
+      activeIntPayer,
+    })
+    if (current !== resolved) {
+      applyInputDocKey(navItem.topTab, resolved, docSetters)
+    }
+  }, [docParam, activeItemId, activeSubTab, activeDivPayer, activeIntPayer, setActiveSubTab, setActiveDivPayer, setActiveIntPayer])
+
   const handleSelectItem = (id: InputNavItemId) => {
     setActiveItemId(id)
+    const navItem = inputNavItemById(id)
+    setActiveTopTab(navItem.topTab)
+    const defaultDoc = getDefaultDocKey(navItem.topTab)
+    if (defaultDoc) {
+      applyInputDocKey(navItem.topTab, defaultDoc, docSetters)
+    }
     const next = new URLSearchParams(searchParams)
-    next.set('form', id)
+    writeInputReturnParams(next, id, navItem.topTab, defaultDoc)
+    setSearchParams(next, { replace: true })
+  }
+
+  const handleDocChange = (docKey: string) => {
+    const navItem = inputNavItemById(activeItemId)
+    applyInputDocKey(navItem.topTab, docKey, docSetters)
+    const next = new URLSearchParams(searchParams)
+    next.set(INPUT_DOC_PARAM, docKey)
     setSearchParams(next, { replace: true })
   }
 
@@ -62,6 +121,7 @@ export default function InputReturnPage() {
           <InputFormPanel
             activeItemId={activeItemId}
             showMissingEinDiagnostic={diagnostic === 'missing-ein'}
+            onDocChange={handleDocChange}
           />
         </div>
       </div>

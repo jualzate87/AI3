@@ -401,9 +401,13 @@
   padding: 5px 8px;
   height: 32px;
   width: 300px;
+  min-width: 0;
   box-sizing: border-box;
   outline: none;
   cursor: pointer;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .fieldInput:read-write {

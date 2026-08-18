@@ -1,3 +1,4 @@
+import type { LiveAmounts } from '../../data/liveReturn'
 import type { W2Employer } from './DetailFields'
 import { W2_PAYER_TABS } from './DetailFields'
 import type { DivPayer } from './DetailFieldsDiv'
@@ -7,6 +8,7 @@ import { INT_PAYER_TABS, intVerifiedDocKey } from './DetailFields1099'
 import { R_PAYER_TABS } from './DetailFields1099R'
 import { NEC_PAYER_TABS } from './DetailFieldsNec'
 import {
+  countUncorrectedCriticalFlagsForDoc,
   getInitialDivPayerFlagCount,
   getInitialIntPayerFlagCount,
   getInitialRPayerFlagCount,
@@ -14,7 +16,104 @@ import {
 } from './phase1FieldSync'
 import type { TopTab } from './ReviewTab'
 import { QUESTIONNAIRE_DOC_KEY, QUESTIONNAIRE_HUB_LABEL } from './questionnaireData'
-import { isDocShownVerified, isVerifiedInSet } from '../../data/verifiedDocKeys'
+import { isDocShownVerified, isVerifiedInSet, normalizeVerifiedDocKey } from '../../data/verifiedDocKeys'
+
+export type IdentityField = 'ssn' | 'ein'
+
+export type DocVerifyBlockReason =
+  | 'critical-flags'
+  | 'missing-ssn'
+  | 'missing-ein'
+  | 'missing-identity'
+
+export type CanVerifyDocResult = {
+  allowed: boolean
+  reason?: DocVerifyBlockReason
+  uncorrectedCriticalCount?: number
+  missingIdentityFields?: IdentityField[]
+}
+
+function isBlankIdentity(value: string | undefined | null): boolean {
+  return !value?.trim()
+}
+
+/** Missing SSN/EIN on Tech Circle W-2 (LiveAmounts identity fields). */
+export function getTechCircleIdentityGaps(
+  amounts: Pick<LiveAmounts, 'employeeSsn' | 'employerEin'>,
+): IdentityField[] {
+  const gaps: IdentityField[] = []
+  if (isBlankIdentity(amounts.employeeSsn)) gaps.push('ssn')
+  if (isBlankIdentity(amounts.employerEin)) gaps.push('ein')
+  return gaps
+}
+
+/** Whether a preparer may mark this document verified (critical flags + identity gates). */
+export function canVerifyDoc(args: {
+  docKey: string
+  reviewedFields: Map<string, unknown>
+  amounts?: Pick<LiveAmounts, 'employeeSsn' | 'employerEin'>
+  isReviewer?: boolean
+}): CanVerifyDocResult {
+  if (args.isReviewer) return { allowed: true }
+
+  const uncorrectedCriticalCount = countUncorrectedCriticalFlagsForDoc(
+    args.docKey,
+    args.reviewedFields,
+  )
+  if (uncorrectedCriticalCount > 0) {
+    return { allowed: false, reason: 'critical-flags', uncorrectedCriticalCount }
+  }
+
+  const key = normalizeVerifiedDocKey(args.docKey)
+  if (key === 'techCircle' && args.amounts) {
+    const missingIdentityFields = getTechCircleIdentityGaps(args.amounts)
+    if (missingIdentityFields.length > 0) {
+      const reason: DocVerifyBlockReason =
+        missingIdentityFields.length === 2
+          ? 'missing-identity'
+          : missingIdentityFields[0] === 'ssn'
+            ? 'missing-ssn'
+            : 'missing-ein'
+      return { allowed: false, reason, missingIdentityFields }
+    }
+  }
+
+  return { allowed: true }
+}
+
+/** Short persistent hint under Mark as verified while identity fields are missing. */
+export function getDocVerifyIdentityBlockedHint(missing: IdentityField[]): string {
+  if (missing.length === 2) {
+    return 'Employee SSN and employer EIN must be entered before you can mark this document verified.'
+  }
+  if (missing.includes('ssn')) {
+    return 'Employee SSN must be entered before you can mark this document verified.'
+  }
+  return 'Employer EIN must be entered before you can mark this document verified.'
+}
+
+/** Full message after clicking Mark as verified while identity fields are missing. */
+export function getDocVerifyIdentityBlockedMessage(missing: IdentityField[]): string {
+  if (missing.length === 2) {
+    return 'Enter the employee SSN and employer EIN on this W-2 before you mark it as verified.'
+  }
+  if (missing.includes('ssn')) {
+    return 'Enter the employee SSN on this W-2 before you mark it as verified.'
+  }
+  return 'Enter the employer EIN on this W-2 before you mark it as verified.'
+}
+
+/** Packet doc verify progress for Phase 1 banner (incl. Questionnaire + Prior Year 1040). */
+export function countVerifiedPacketDocs(args: {
+  verifiedDocs: Set<string>
+  reviewerConfirmedDocs?: Set<string>
+}): { verified: number; total: number } {
+  const docs = listPacketSourceDocs()
+  const verified = docs.filter(d =>
+    isDocShownVerified(args.verifiedDocs, d.key, args.reviewerConfirmedDocs),
+  ).length
+  return { verified, total: docs.length }
+}
 
 export type DocConfirmStatus = 'confirmed' | 'needs-confirm' | 'unverified'
 

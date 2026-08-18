@@ -88,15 +88,6 @@
   border-radius: var(--radius-full, 100px);
 }
 
-.ctaGroup {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: var(--space-component-gap-medium, 12px);
-  width: 100%;
-  max-width: 20rem;
-}
-
 .feedback {
   color: var(--color-text-secondary, #6b6c72);
   margin: var(--space-component-gap-large, 16px) 0 0;

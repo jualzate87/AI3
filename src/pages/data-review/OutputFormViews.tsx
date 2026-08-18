@@ -20,9 +20,11 @@ function fmt(n: number) {
 function FormHeader({
   formCode,
   title,
+  taxYear = '2025',
 }: {
   formCode: string
   title: string
+  taxYear?: string
 }) {
   return (
     <div className={styles.irsHeader}>
@@ -30,10 +32,12 @@ function FormHeader({
         <div className={styles.irsFormCode}>Form {formCode}</div>
         <div className={styles.irsDept}>Department of the Treasury — Internal Revenue Service</div>
         <div className={styles.irsTitle}>{title}</div>
+        <div className={styles.irsSubtitle}>For calendar year {taxYear}, or other tax year beginning _____________, {taxYear}, ending _____________ , 20____</div>
       </div>
       <div className={styles.irsRight}>
+        <div className={styles.irsYear}>{taxYear}</div>
         <div className={styles.irsOmb}>OMB No. 1545-0074</div>
-        <div className={styles.irsUseOnlyBox}>IRS Use Only</div>
+        <div className={styles.irsUseOnlyBox}>IRS Use Only — Do not write or staple in this space.</div>
       </div>
     </div>
   )
@@ -43,21 +47,23 @@ function TaxpayerStrip({ ssn }: { ssn: string }) {
   return (
     <>
       <div className={styles.sectionBar}>Taxpayer Information</div>
-      <div className={styles.infoGrid}>
+      <div className={`${styles.infoGrid} ${styles.taxpayerGrid}`}>
         <div className={styles.infoRow}>
-          <div className={styles.infoField} style={{ flex: 2 }}>
+          <div className={`${styles.infoField} ${styles.taxpayerGridWide}`}>
             <span className={styles.infoLabel}>Name</span>
             <span className={styles.infoValue}>Jessica Drake</span>
           </div>
-          <div className={styles.infoField} style={{ flex: 2 }}>
-            <span className={styles.infoLabel}>SSN</span>
+          <div className={styles.infoField}>
+            <span className={styles.infoLabel}>Social security number</span>
             <span className={styles.infoValue}>{ssn || '—'}</span>
           </div>
-          <div className={styles.infoField} style={{ flex: 3 }}>
-            <span className={styles.infoLabel}>Address</span>
-            <span className={styles.infoValue}>
-              {CLIENT_ADDRESS.street}, {formatClientCityStateZip()}
-            </span>
+          <div className={`${styles.infoField} ${styles.taxpayerGridWide}`}>
+            <span className={styles.infoLabel}>Home address</span>
+            <span className={styles.infoValue}>{CLIENT_ADDRESS.street}</span>
+          </div>
+          <div className={styles.infoField}>
+            <span className={styles.infoLabel}>City, state, and ZIP</span>
+            <span className={styles.infoValue}>{formatClientCityStateZip()}</span>
           </div>
         </div>
       </div>
@@ -79,14 +85,9 @@ type AttestContext = {
 type RowActionsContext = {
   flaggedFields?: Set<string>
   flagNotes?: Record<string, string>
-  flaggedMeta?: Map<string, ActivityEntry>
-  flagActivity?: Record<string, ActivityEntry>
-  commentField?: string | null
-  flagNoteField?: string | null
   onAddFieldNote?: (text: string, context: string) => void
   onToggleFlagged?: (fieldKey: string) => void
-  onOpenComment?: (fieldKey: string, context: string, btn: HTMLElement) => void
-  onFlagClick?: (fieldKey: string, btn: HTMLElement) => void
+  onSetFlagNote?: (fieldKey: string, note: string) => void
   formLabel: string
 }
 
@@ -133,14 +134,9 @@ function LineRow({
   issueField,
   flaggedFields = new Set(),
   flagNotes = {},
-  flaggedMeta = new Map(),
-  flagActivity = {},
-  commentField = null,
-  flagNoteField = null,
   onAddFieldNote,
   onToggleFlagged,
-  onOpenComment,
-  onFlagClick,
+  onSetFlagNote,
   formLabel,
 }: LineRowProps) {
   const display = typeof value === 'number' ? fmt(value) : value
@@ -162,10 +158,6 @@ function LineRow({
   const flagKey = attestKey ?? fieldId
   const isFlagged = flaggedFields.has(flagKey)
   const flagNote = flagNotes[flagKey] ?? ''
-  const flagActivityEntry = flaggedMeta.get(flagKey) ?? flagActivity[flagKey]
-  const flagTooltip = isFlagged
-    ? (flagNote ? `Flagged: ${flagNote}` : 'Flagged for follow-up. Click to remove flag')
-    : 'Flag this row for follow-up'
   const commentContext = `${formLabel} · ${label}`
   const isIssueRow = fieldId === issueField
   const isSelected = fieldId === highlightField
@@ -257,20 +249,14 @@ function LineRow({
             <OutputRowActions
               className={styles.outputRowEndActionsCommentFlag}
               label={label}
-              showComment={!!onAddFieldNote && !!onOpenComment}
-              showFlag={!!onToggleFlagged && !!onFlagClick}
-              commentOpen={commentField === flagKey}
-              flagNoteOpen={flagNoteField === flagKey}
+              fieldKey={flagKey}
+              contextLabel={commentContext}
+              showAnnotate={!!onAddFieldNote || !!onToggleFlagged}
               isFlagged={isFlagged}
-              flagTooltip={flagTooltip}
-              onCommentClick={e => {
-                e.stopPropagation()
-                onOpenComment?.(flagKey, commentContext, e.currentTarget)
-              }}
-              onFlagClick={e => {
-                e.stopPropagation()
-                onFlagClick?.(flagKey, e.currentTarget)
-              }}
+              existingFlagNote={flagNote}
+              onAddNote={onAddFieldNote}
+              onToggleFlagged={onToggleFlagged}
+              onSetFlagNote={onSetFlagNote}
             />
             {showAttest && (
               <AttestColumns
@@ -319,6 +305,12 @@ function FormTable({ children }: { children: React.ReactNode }) {
         </span>
       </div>
       <table className={styles.table}>
+        <colgroup>
+          <col className={styles.formTableColLine} />
+          <col className={styles.formTableColDesc} />
+          <col className={styles.formTableColLineR} />
+          <col className={styles.formTableColValue} />
+        </colgroup>
         <tbody>{children}</tbody>
       </table>
     </>
@@ -871,14 +863,9 @@ export interface OutputFormViewsProps {
   onNavigateToSourceDoc?: (docId: string) => void
   flaggedFields?: Set<string>
   flagNotes?: Record<string, string>
-  flaggedMeta?: Map<string, ActivityEntry>
-  flagActivity?: Record<string, ActivityEntry>
-  commentField?: string | null
-  flagNoteField?: string | null
   onAddFieldNote?: (text: string, context: string) => void
   onToggleFlagged?: (fieldKey: string) => void
-  onOpenComment?: (fieldKey: string, context: string, btn: HTMLElement) => void
-  onFlagClick?: (fieldKey: string, btn: HTMLElement) => void
+  onSetFlagNote?: (fieldKey: string, note: string) => void
 }
 
 /** Renders non-1040 output forms. Summary and Form 1040 stay in LeftPanel1040. */
@@ -900,14 +887,9 @@ export default function OutputFormViews({
   onNavigateToSourceDoc,
   flaggedFields = new Set(),
   flagNotes = {},
-  flaggedMeta = new Map(),
-  flagActivity = {},
-  commentField = null,
-  flagNoteField = null,
   onAddFieldNote,
   onToggleFlagged,
-  onOpenComment,
-  onFlagClick,
+  onSetFlagNote,
 }: OutputFormViewsProps) {
   const ssn = live.employeeSsn || '—'
   const [flyoutField, setFlyoutField] = useState<string | null>(null)
@@ -954,14 +936,9 @@ export default function OutputFormViews({
     onToggleReviewer: onToggleReviewerConfirm,
     flaggedFields,
     flagNotes,
-    flaggedMeta,
-    flagActivity,
-    commentField,
-    flagNoteField,
     onAddFieldNote,
     onToggleFlagged,
-    onOpenComment,
-    onFlagClick,
+    onSetFlagNote,
     formLabel: scheduleFormLabel(formId),
   }
 

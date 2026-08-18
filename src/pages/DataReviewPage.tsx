@@ -7,7 +7,7 @@ import {
   setStoredDemoRole,
 } from '../lib/prototypeRoutes'
 import { useSyncedReviewState } from '../hooks/useSyncedReviewState'
-import { DotsSix, Panel, ChevronLeft, ChevronRight, Comment, Close, ClockCounterclockwise } from '@design-systems/icons'
+import { DotsSix, Panel, ChevronLeft, ChevronRight, Comment, Close, ClockCounterclockwise, PopOut } from '@design-systems/icons'
 import '@ids-ts/badge/dist/main.css'
 import { Button } from '@ids-ts/button'
 import '@ids-ts/button/dist/main.css'
@@ -62,6 +62,7 @@ import {
   buildTabVerifiedKeys,
   buildTypeReviewed,
   countDocsIncompleteForReviewer,
+  countVerifiedPacketDocs,
   getDocConfirmStatus,
   getNextUnreviewedSourceDoc,
   getUnreviewedSourceDocs,
@@ -83,7 +84,6 @@ import Phase1Banner from './data-review/Phase1Banner'
 import Phase1IssueBanner from './data-review/Phase1IssueBanner'
 import Phase2Banner from './data-review/Phase2Banner'
 import {
-  PHASE1_FLAG_KEYS,
   countPhase1Remaining,
   countPhase1FlagsForDivPayer,
   countPhase1FlagsForIntPayer,
@@ -92,12 +92,10 @@ import {
   get1040HighlightField,
   getNextVerifyItem,
   getTabFlagCounts,
-  getTabInitialFlagCounts,
   getInitialW2PayerFlagCount,
   getInitialDivPayerFlagCount,
   getInitialIntPayerFlagCount,
   getInitialRPayerFlagCount,
-  isPhase1FlagResolved,
   navigationForDetailField,
   PHASE1_VERIFY_QUEUE,
 } from './data-review/phase1FieldSync'
@@ -238,6 +236,8 @@ export default function DataReviewPage() {
   const [panelResizing, setPanelResizing] = useState(false)
   // Top/bottom section height ratio in right panel (0-100, where value = preview percentage)
   const [previewHeight, setPreviewHeight] = useState(40)
+  /** Source panel detached to popout window */
+  const [poppedOut, setPoppedOut] = useState(false)
   // Unified right rail — one shell, one active mode (sources | ai | comments | summary)
   const isPreparerEntry = entry === 'input-return' && roleParam !== 'reviewer'
   const [rightPanelMode, setRightPanelMode] = useState<RightPanelMode>('closed')
@@ -349,14 +349,11 @@ export default function DataReviewPage() {
 
   // The import/OCR flags owned by Phase 1. Each key matches the reviewed-field key
   // emitted by the DetailFields "Edit+Save" / "Mark as correct" controls.
-  const phase1Total = PHASE1_FLAG_KEYS.length
-  const phase1Resolved = PHASE1_FLAG_KEYS.filter(k => isPhase1FlagResolved(k, reviewedFields)).length
   // Counter of unresolved import flags — never below 0
   const phase1Remaining = countPhase1Remaining(reviewedFields)
   const phase1Complete = phase1Remaining === 0
-  // Per-document unresolved counts for dynamic tab badges
+  // Per-document unresolved counts for PeelTab badges (toolbar uses unreviewed doc count)
   const tabFlagCounts = getTabFlagCounts(reviewedFields)
-  const tabInitialFlagCounts = getTabInitialFlagCounts()
   // PeelTab per-payer badges — unresolved Phase 1 import flags only (mirrors tabFlagCounts)
   const divPayerFieldCounts: Record<DivPayer, number> = Object.fromEntries(
     DIV_PAYER_TABS.map(({ key: p }) => [p, countPhase1FlagsForDivPayer(p, reviewedFields)])
@@ -404,6 +401,10 @@ export default function DataReviewPage() {
     rRemaining: tabFlagCounts['1099-rs'] ?? 0,
   })
   const unreviewedDocCount = unreviewedSourceDocs.length
+  const { verified: verifiedDocCount, total: totalDocCount } = countVerifiedPacketDocs({
+    verifiedDocs,
+    reviewerConfirmedDocs,
+  })
   const flagsCleared = phase1Complete
   const phase1FullyComplete = flagsCleared && unreviewedDocCount === 0
   // Phase 2 diagnostics progress — same dismiss rules AgentReportPane uses, so
@@ -1346,6 +1347,26 @@ export default function DataReviewPage() {
       : rightPanelWidth / bodyWidth > 0.6)
   const previewSideBySide = freezePreviewSideBySide || !show1040 || sourcesPanelWide
 
+  const hideRightRailForPopout = poppedOut && rightPanelMode === 'sources'
+
+  const handlePopOutSourcePanel = useCallback(() => {
+    setPoppedOut(true)
+    const popoutWindow = window.open(
+      `${window.location.origin}${window.location.pathname}#/data-review-popout`,
+      '_blank',
+      'width=950,height=900',
+    )
+    if (popoutWindow) {
+      const checkClosed = window.setInterval(() => {
+        if (popoutWindow.closed) {
+          window.clearInterval(checkClosed)
+          setPoppedOut(false)
+        }
+      }, 500)
+    }
+  }, [])
+
+
   const outstandingOpenCount = getOutstandingOpenCount(buildSnapshot('signoff-review'))
 
   const inImportPhase = phase === 'import'
@@ -1384,10 +1405,9 @@ export default function DataReviewPage() {
     singlePersonMode,
   })
 
-  /** Source Documents toolbar badge — matches tab flag totals (or unreviewed docs after flags clear). */
+  /** Source Documents toolbar badge — unreviewed packet docs (preparer Phase 1). */
   const sourceDocsBadgeCount = (() => {
     if (reviewRole === 'preparer' && inImportPhase) {
-      if (phase1Remaining > 0) return phase1Remaining
       return unreviewedDocCount
     }
     if (reviewRole === 'reviewer' && reviewPass === 2) {
@@ -1617,6 +1637,8 @@ export default function DataReviewPage() {
   const isReviewerConfirmMode = reviewRole === 'reviewer'
   /** ProtoC Phase 1 banner — visible for entire preparer import phase (CTA before sources open). */
   const showPreparerImportPhase = inImportPhase && reviewRole === 'preparer'
+  /** Doc-count badge lives on Phase1Banner during active import review — avoid duplicate on toolbar. */
+  const showSourceDocsToolbarBadge = !(showPreparerImportPhase && !phase1FullyComplete)
   /** Left outputs share row with Smart review brief — allow flex shrink (avoid 795px + 755px overflow). */
   const outputsShareWithBrief = summaryPanelOpen && show1040
   return (
@@ -1669,9 +1691,9 @@ export default function DataReviewPage() {
             <button
               className={`${styles.intuitIntelBtn} ${rightPanelVisible && !agentPanelActive ? styles.intuitIntelBtnActive : ''}`}
               aria-label={
-                sourceDocsBadgeCount > 0
-                  ? `Source Documents, ${sourceDocsBadgeCount} item${sourceDocsBadgeCount === 1 ? '' : 's'} need attention`
-                  : 'Toggle panel'
+                showSourceDocsToolbarBadge && sourceDocsBadgeCount > 0
+                  ? `Source documents panel, ${sourceDocsBadgeCount} item${sourceDocsBadgeCount === 1 ? '' : 's'} need attention`
+                  : 'Toggle source documents panel'
               }
               style={{ position: 'relative' }}
               onClick={() => {
@@ -1692,16 +1714,14 @@ export default function DataReviewPage() {
                   openRightPanel('sources')
                 } else if (rightPanelMode === 'sources') {
                   closeRightPanel()
-                } else if (reviewRole === 'reviewer' || importsStarted) {
-                  openRightPanel('sources')
                 } else {
-                  startReviewingImports()
+                  openRightPanel('sources')
                 }
               }}
             >
               <Panel size="medium" />
-              <span className={styles.intuitIntelLabel}>Source Documents</span>
-              {sourceDocsBadgeCount > 0 && (
+              <span className={styles.intuitIntelLabel}>Source documents</span>
+              {showSourceDocsToolbarBadge && sourceDocsBadgeCount > 0 && (
                 <AttentionCountBadge count={sourceDocsBadgeCount} className={styles.toolbarBadge} aria-hidden />
               )}
             </button>
@@ -1732,8 +1752,8 @@ export default function DataReviewPage() {
       {/* ProtoC Phase 1 — Import Accuracy banner (preparer only) */}
       {showPreparerImportPhase && (
         <Phase1Banner
-          resolved={phase1Resolved}
-          total={phase1Total}
+          verifiedDocCount={verifiedDocCount}
+          totalDocCount={totalDocCount}
           flagsCleared={flagsCleared}
           unreviewedDocCount={unreviewedDocCount}
           complete={phase1FullyComplete}
@@ -1931,7 +1951,7 @@ export default function DataReviewPage() {
 
         {/* Left/right drag handle — stays mounted and collapses width with Summary
             so the gutter doesn't pop out of the row mid-animation. */}
-        {rightPanelOpen && !rightPanelExiting && show1040 && (
+        {rightPanelOpen && !rightPanelExiting && show1040 && !hideRightRailForPopout && (
               <div
                 className={`${dragStyles.handleVertical} ${styles.summarySplitter}`}
                 onPointerDown={show1040 ? (panelUsesAgentWidth ? handleAgentDrag : handleRightPanelDrag) : undefined}
@@ -1951,6 +1971,7 @@ export default function DataReviewPage() {
             )}
 
             {/* Unified right rail — one shell; inner content switches by rightPanelMode */}
+            {!hideRightRailForPopout && (
             <div
               className={`${styles.rightPanel} ${diagnosticsSourceSplit ? styles.splitRail : ''} ${rightPanelAnimating ? styles.rightPanelEntering : ''} ${rightPanelExiting ? styles.rightPanelExiting : ''} ${rightPanelFills ? styles.rightPanelFills : ''}`}
               ref={rightRef}
@@ -1964,7 +1985,7 @@ export default function DataReviewPage() {
                 transition: panelResizing ? 'none' : undefined,
               }}
             >
-              {(rightPanelMode === 'sources' || diagnosticsSourceSplit) && (
+              {(rightPanelMode === 'sources' || diagnosticsSourceSplit) && !poppedOut && (
               <div
                 className={diagnosticsSourceSplit ? styles.splitSourcesColumn : undefined}
                 style={diagnosticsSourceSplit ? {
@@ -2002,6 +2023,15 @@ export default function DataReviewPage() {
                 )}
                 <div className={styles.sourcePanelActions}>
                   <IconControl
+                    label="Detach"
+                    labelAlignment="right"
+                    size="small"
+                    aria-label="Detach source documents to new window"
+                    onClick={handlePopOutSourcePanel}
+                  >
+                    <PopOut size="small" />
+                  </IconControl>
+                  <IconControl
                     size="small"
                     aria-label="Close"
                     onClick={handleCloseSourcePanel}
@@ -2026,8 +2056,6 @@ export default function DataReviewPage() {
               )}
               <ReviewTab
                 activeTopTab={activeTopTab}
-                flagCounts={showPreparerImportPhase ? tabFlagCounts : undefined}
-                initialFlagCounts={showPreparerImportPhase ? tabInitialFlagCounts : undefined}
                 verifiedDocs={verifiedDocs}
                 tabVerifiedKeys={tabVerifiedKeys}
                 typeReviewed={showPreparerImportPhase ? typeReviewed : undefined}
@@ -2404,7 +2432,7 @@ export default function DataReviewPage() {
               </div>
               )}
 
-              {diagnosticsSourceSplit && (
+              {diagnosticsSourceSplit && !poppedOut && (
                 <div
                   className={`${dragStyles.handleVertical} ${styles.summarySplitter}`}
                   onPointerDown={handleAgentDrag}
@@ -2593,11 +2621,10 @@ export default function DataReviewPage() {
                       ? handleSwitchToReviewerRole
                       : handleBeginPass2Review
                   }
-                  importsPending={reviewRole === 'preparer' && !importsStarted && reviewPass === 1}
-                  onReviewImports={startReviewingImports}
                 />
               )}
             </div>
+            )}
       </div>
     </div>
   )

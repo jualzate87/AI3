@@ -6,8 +6,8 @@ import CoachTip from './CoachTip'
 import styles from '../../styles/data-review/Phase1Banner.module.css'
 
 interface Phase1BannerProps {
-  resolved: number
-  total: number
+  verifiedDocCount: number
+  totalDocCount: number
   /** All import flags resolved — hard gate for AI diagnostics */
   flagsCleared: boolean
   /** Count of packet source docs (incl. Questionnaire) not yet mark-reviewed */
@@ -31,8 +31,8 @@ interface Phase1BannerProps {
  * Flags are the hard gate for Continue; document review is recommended only.
  */
 export default function Phase1Banner({
-  resolved,
-  total,
+  verifiedDocCount,
+  totalDocCount,
   flagsCleared,
   unreviewedDocCount = 0,
   complete,
@@ -70,9 +70,9 @@ export default function Phase1Banner({
       </div>
 
       <div className={styles.right}>
-        {!flagsCleared && (
+        {!complete && (
           <span className={styles.counter}>
-            <strong className={styles.counterNum}>{resolved}</strong> of {total} flags resolved
+            <strong className={styles.counterNum}>{verifiedDocCount}</strong> of {totalDocCount} documents verified
           </span>
         )}
 

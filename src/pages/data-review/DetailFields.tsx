@@ -1,9 +1,9 @@
 import { useEffect, useRef, useState } from 'react'
-import { createPortal } from 'react-dom'
-import { CircleCheck, Comment } from '@design-systems/icons'
+import { CircleCheck } from '@design-systems/icons'
 import DocVerifyHeaderActions from './DocVerifyHeaderActions'
 import QuestionnaireFieldNote from './QuestionnaireFieldNote'
 import { DestinationFieldLabel } from './DestinationFieldLabel'
+import FieldAnnotationButton from './FieldAnnotationButton'
 import Tooltip from './Tooltip'
 import styles from '../../styles/data-review/DetailFields.module.css'
 import { getBox12SubRowKeys, isBox12FlagResolved } from './phase1FieldSync'
@@ -21,6 +21,7 @@ export type W2Employer = 'bingEquipment' | 'techCircle'
 
 export const W2_PAYER_TABS: { key: W2Employer; label: string }[] = [
   { key: 'techCircle', label: 'Tech Circle' },
+  { key: 'bingEquipment', label: 'Bing Equipment' },
 ]
 
 type FieldValuesKey = 'withholding' | 'box12' | 'taxableInterest' | 'qualifiedDivs'
@@ -174,12 +175,6 @@ export default function DetailFields({
     const m = reviewedFields?.get(key)
     return m ? `Marked correct · ${m.by} · ${m.at}` : 'Click to unmark'
   }
-  // Field key whose comment popover is currently open + its anchor position (fixed)
-  const [commentField, setCommentField] = useState<string | null>(null)
-  const [commentDraft, setCommentDraft] = useState('')
-  const [commentAnchor, setCommentAnchor] = useState<{ top: number; left: number } | null>(null)
-  const commentRef = useRef<HTMLDivElement>(null)
-
   useEffect(() => {
     const ref =
       selectedField === 'withholding' ? withholdingRef :
@@ -285,86 +280,15 @@ export default function DetailFields({
     )
   }
 
-  // Close popover on outside click
-  useEffect(() => {
-    if (!commentField) return
-    const onDown = (e: MouseEvent) => {
-      if (commentRef.current && !commentRef.current.contains(e.target as Node)) {
-        setCommentField(null)
-        setCommentDraft('')
-        setCommentAnchor(null)
-      }
-    }
-    document.addEventListener('mousedown', onDown)
-    return () => document.removeEventListener('mousedown', onDown)
-  }, [commentField])
-
-  const openComment = (fieldKey: string, btn: HTMLElement) => {
-    const rect = btn.getBoundingClientRect()
-    const popoverWidth = 280
-    let left = rect.left - popoverWidth - 8
-    if (left < 8) left = rect.right + 8
-    setCommentAnchor({ top: rect.bottom, left })
-    setCommentField(fieldKey)
-    setCommentDraft('')
-  }
-
-  const postComment = (context: string) => {
-    if (!commentDraft.trim()) return
-    onAddFieldNote?.(commentDraft.trim(), context)
-    setCommentField(null)
-    setCommentDraft('')
-    setCommentAnchor(null)
-  }
-
-  // Returns just the button + portal (no wrapper div) — caller places it inside fieldActions
-  const renderCommentBtn = (fieldKey: string, label: string, section: string) => {
-    const context = `${section} · ${label}`
-    const isOpen = commentField === fieldKey
-    return (
-      <>
-        <Tooltip text="Add a comment" placement="top"><button
-          className={`${styles.commentBtn} ${isOpen ? styles.commentBtnActive : ''}`}
-          aria-label={`Add comment for ${label}`}
-          onClick={e => { e.stopPropagation(); isOpen ? (setCommentField(null), setCommentDraft(''), setCommentAnchor(null)) : openComment(fieldKey, e.currentTarget) }}
-        >
-          <Comment size="small" />
-        </button></Tooltip>
-        {isOpen && commentAnchor && createPortal(
-          <div
-            className={styles.commentPopover}
-            style={{ top: commentAnchor.top + 4, left: commentAnchor.left }}
-            ref={commentRef}
-            onClick={e => e.stopPropagation()}
-          >
-            <div className={styles.commentPopoverContext}>
-              <span className={styles.commentPopoverChip}>{context}</span>
-            </div>
-            <textarea
-              autoFocus
-              className={styles.commentPopoverInput}
-              placeholder="Add a comment…"
-              value={commentDraft}
-              onChange={e => setCommentDraft(e.target.value)}
-              onKeyDown={e => { if (e.key === 'Enter' && (e.metaKey || e.ctrlKey)) postComment(context) }}
-              rows={3}
-            />
-            <div className={styles.commentPopoverActions}>
-              <button className={styles.commentPopoverCancel} onClick={e => { e.stopPropagation(); setCommentField(null); setCommentDraft(''); setCommentAnchor(null) }}>Cancel</button>
-              <button
-                className={`${styles.commentPopoverPost} ${commentDraft.trim() ? styles.commentPopoverPostActive : ''}`}
-                disabled={!commentDraft.trim()}
-                onClick={e => { e.stopPropagation(); postComment(context) }}
-              >
-                Post
-              </button>
-            </div>
-          </div>,
-          document.body
-        )}
-      </>
-    )
-  }
+  const renderAnnotationBtn = (fieldKey: string, label: string, section: string) => (
+    <FieldAnnotationButton
+      fieldKey={fieldKey}
+      contextLabel={`${section} · ${label}`}
+      variant="detail"
+      allowFlagTypes
+      onAddNote={onAddFieldNote}
+    />
+  )
 
   // Generic editable row — auto-saves on blur / Enter (no Save button)
   const renderStaticRow = (fieldKey: string, label: string, defaultValue: string, inputClass = styles.fieldInputSmall) => {
@@ -378,7 +302,6 @@ export default function DetailFields({
     const currentVal = identitySynced ?? fieldOverrides[key] ?? defaultValue
     const isEditing = editingField === key
     const isReviewed = reviewedFields?.has(key)
-    const isCommentOpen = commentField === key
     // A flagged static row (e.g. missing EIN) shows the same orange dot + validation note as other import flags
     const isFlagged = !!flaggedFields[fieldKey] && !isReviewed
     const commitStatic = () => {
@@ -447,7 +370,7 @@ export default function DetailFields({
         ) : importReadOnly ? null : (
           <div className={styles.fieldActions}>
             <Tooltip text={reviewedTip(key, false)} placement="top"><button className={styles.markCorrectBtn} onClick={e => { e.stopPropagation(); onMarkReviewed?.(key) }}><CircleCheck size="small" /></button></Tooltip>
-            {renderCommentBtn(key, label, employer.name)}
+            {renderAnnotationBtn(key, label, employer.name)}
           </div>
         )}
         {savedField === key && <span className={styles.recalcBadge}>Saved</span>}
@@ -490,18 +413,9 @@ export default function DetailFields({
             reviewerConfirmedDocsMeta={reviewerConfirmedDocsMeta}
             onVerifyDoc={onVerifyDoc}
             reviewedFields={reviewedFields}
-            onPreparerMarkVerified={() => {
-              onMarkReviewedBulk?.([
-                `ssn-${activeSubTab}`, `wages-${activeSubTab}`,
-                'withholding', 'box12',
-                ...getBox12SubRowKeys(activeSubTab),
-                `ein-${activeSubTab}`, `employerName-${activeSubTab}`,
-                `street-${activeSubTab}`, `cityStateZip-${activeSubTab}`,
-                `sswages-${activeSubTab}`, `sstax-${activeSubTab}`,
-                `medicarewages-${activeSubTab}`, `medicaretax-${activeSubTab}`,
-                `sstips-${activeSubTab}`, `allocatedtips-${activeSubTab}`,
-                `dependentcare-${activeSubTab}`, `nonqualified-${activeSubTab}`,
-              ])
+            amounts={{
+              employeeSsn: identityValues?.ssn ?? '',
+              employerEin: identityValues?.ein ?? '',
             }}
           />
           )}
@@ -527,7 +441,7 @@ export default function DetailFields({
         {/* (1) Wages — editable, drives 1040 line 1a */}
         <div
           ref={selectedField === 'wages' ? highlightedRef : undefined}
-          className={`${styles.fieldRow} ${flaggedFields['wages'] ? styles.fieldRowHasNote : ''} ${selectedField === 'wages' ? (highlightMode === 'orange' ? styles.fieldRowHighlightedOrange : styles.fieldRowHighlighted) : ''} ${commentField === `wages-${activeSubTab}` ? styles.fieldRowCommentOpen : ''}`}
+          className={`${styles.fieldRow} ${flaggedFields['wages'] ? styles.fieldRowHasNote : ''} ${selectedField === 'wages' ? (highlightMode === 'orange' ? styles.fieldRowHighlightedOrange : styles.fieldRowHighlighted) : ''}`}
           onClick={() => onFieldSelect?.('wages')}
           style={{ cursor: 'pointer' }}
         >
@@ -563,7 +477,7 @@ export default function DetailFields({
           ) : (
             <div className={styles.fieldActions}>
               <Tooltip text="Mark as correct" placement="top"><button className={styles.markCorrectBtn} onClick={e => { e.stopPropagation(); onMarkReviewed?.(`wages-${activeSubTab}`) }}><CircleCheck size="small" /></button></Tooltip>
-              {renderCommentBtn(`wages-${activeSubTab}`, '(1) Wages, tips, etc.', employer.name)}
+              {renderAnnotationBtn(`wages-${activeSubTab}`, '(1) Wages, tips, etc.', employer.name)}
             </div>
           )}
           {savedField === 'wages' && <span className={styles.recalcBadge}>1040 updated</span>}
@@ -573,7 +487,7 @@ export default function DetailFields({
 
         <div
           ref={withholdingRef}
-          className={`${styles.fieldRow} ${selectedField === 'withholding' ? (highlightMode === 'orange' ? styles.fieldRowHighlightedOrange : styles.fieldRowHighlighted) : ''} ${commentField === `withholding-${activeSubTab}` ? styles.fieldRowCommentOpen : ''}`}
+          className={`${styles.fieldRow} ${selectedField === 'withholding' ? (highlightMode === 'orange' ? styles.fieldRowHighlightedOrange : styles.fieldRowHighlighted) : ''}`}
           onClick={() => onFieldSelect?.('withholding')}
           style={{ cursor: 'pointer' }}
         >
@@ -604,7 +518,7 @@ export default function DetailFields({
           ) : (
             <div className={styles.fieldActions}>
               <Tooltip text="Mark as correct" placement="top"><button className={styles.markCorrectBtn} onClick={e => { e.stopPropagation(); onMarkReviewed?.('withholding') }}><CircleCheck size="small" /></button></Tooltip>
-              {renderCommentBtn(`withholding-${activeSubTab}`, '(2) Federal income tax withheld', employer.name)}
+              {renderAnnotationBtn(`withholding-${activeSubTab}`, '(2) Federal income tax withheld', employer.name)}
             </div>
           )}
           {savedField === 'withholding' && <span className={styles.recalcBadge}>1040 updated</span>}
@@ -669,7 +583,7 @@ export default function DetailFields({
                 <div key={entry.sub}>
                   <div
                     ref={i === 0 ? box12Ref : undefined}
-                    className={`${styles.fieldRow} ${isFlagged ? styles.fieldRowHasNote : ''} ${commentField === rowKey ? styles.fieldRowCommentOpen : ''}`}
+                    className={`${styles.fieldRow} ${isFlagged ? styles.fieldRowHasNote : ''}`}
                     style={isLast ? { borderBottom: 'none', cursor: 'pointer' } : { cursor: 'pointer' }}
                     onClick={() => onFieldSelect?.(rowKey)}
                   >
@@ -724,7 +638,7 @@ export default function DetailFields({
                     ) : (
                       <div className={styles.fieldActions}>
                         <Tooltip text="Mark as correct" placement="top"><button className={styles.markCorrectBtn} onClick={e => { e.stopPropagation(); markBox12RowReviewed(rowKey) }}><CircleCheck size="small" /></button></Tooltip>
-                        {renderCommentBtn(rowKey, `(12${entry.sub}) Box 12 code`, employer.name)}
+                        {renderAnnotationBtn(rowKey, `(12${entry.sub}) Box 12 code`, employer.name)}
                       </div>
                     )}
                     {savedField === amtKey && <span className={styles.recalcBadge}>Saved</span>}
@@ -739,7 +653,7 @@ export default function DetailFields({
           <>
             <div
               ref={box12Ref}
-              className={`${styles.fieldRow} ${selectedField === 'box12' ? (highlightMode === 'orange' ? styles.fieldRowHighlightedOrange : styles.fieldRowHighlighted) : ''} ${commentField === `box12-${activeSubTab}` ? styles.fieldRowCommentOpen : ''}`}
+              className={`${styles.fieldRow} ${selectedField === 'box12' ? (highlightMode === 'orange' ? styles.fieldRowHighlightedOrange : styles.fieldRowHighlighted) : ''}`}
               onClick={() => onFieldSelect?.('box12')}
               style={{ cursor: 'pointer' }}
             >
@@ -770,7 +684,7 @@ export default function DetailFields({
               ) : (
                 <div className={styles.fieldActions}>
                   <Tooltip text="Mark as correct" placement="top"><button className={styles.markCorrectBtn} onClick={e => { e.stopPropagation(); onMarkReviewed?.('box12') }}><CircleCheck size="small" /></button></Tooltip>
-                  {renderCommentBtn(`box12-${activeSubTab}`, `(12) Code ${employer.box12Code || '—'} — 401(k) deferral`, employer.name)}
+                  {renderAnnotationBtn(`box12-${activeSubTab}`, `(12) Code ${employer.box12Code || '—'} — 401(k) deferral`, employer.name)}
                 </div>
               )}
               {savedField === 'box12' && <span className={styles.recalcBadge}>Saved</span>}

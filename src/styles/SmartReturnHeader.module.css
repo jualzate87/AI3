@@ -193,10 +193,6 @@
   white-space: nowrap;
 }
 
-.circleInfo {
-  color: #6b6c72;
-  flex-shrink: 0;
-}
 
 /* Row 2 right side */
 .row2Right {

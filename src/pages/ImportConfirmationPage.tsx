@@ -50,10 +50,6 @@ export default function ImportConfirmationPage() {
     openHashRoute(PREPARER_DATA_REVIEW_PATH)
   }
 
-  const handleEnterReturnData = () => {
-    navigate('/input-return')
-  }
-
   return (
     <div className={styles.page} data-theme="intuit">
       <SmartReturnHeader
@@ -94,25 +90,14 @@ export default function ImportConfirmationPage() {
             <div className={styles.progressFill} />
           </div>
 
-          <div className={styles.ctaGroup}>
-            <Button
-              priority="primary"
-              onClick={handleReviewReturn}
-              automationId="review-return-confirmation-cta"
-            >
-              Review the return
-              <ChevronRight size="small" aria-hidden />
-            </Button>
-
-            <Button
-              priority="secondary"
-              purpose="standard"
-              onClick={handleEnterReturnData}
-              automationId="enter-return-data-confirmation-cta"
-            >
-              Enter return data
-            </Button>
-          </div>
+          <Button
+            priority="primary"
+            onClick={handleReviewReturn}
+            automationId="review-return-confirmation-cta"
+          >
+            Review the return
+            <ChevronRight size="small" aria-hidden />
+          </Button>
 
           <B3 className={styles.feedback}>
             How was your import?{' '}

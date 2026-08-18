@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react'
-import { createPortal } from 'react-dom'
-import { CircleCheck, Comment } from '@design-systems/icons'
+import { CircleCheck } from '@design-systems/icons'
+import FieldAnnotationButton from './FieldAnnotationButton'
 import Tooltip from './Tooltip'
 import { DestinationFieldLabel } from './DestinationFieldLabel'
 import { CLIENT_ADDRESS } from '../../data/clientAddress'
@@ -105,10 +105,6 @@ export default function DetailFieldsNec({
   const [originalValue, setOriginalValue] = useState('')
   const [savedField, setSavedField] = useState<string | null>(null)
   const [localEdited, setLocalEdited] = useState<Set<string>>(new Set())
-  const [commentField, setCommentField] = useState<string | null>(null)
-  const [commentDraft, setCommentDraft] = useState('')
-  const [commentAnchor, setCommentAnchor] = useState<{ top: number; left: number } | null>(null)
-  const commentRef = useRef<HTMLDivElement>(null)
   const isEdited = (key: string) => syncedEditedFields?.has(key) || localEdited.has(key)
 
   useEffect(() => {
@@ -127,78 +123,15 @@ export default function DetailFieldsNec({
 
   const cancelEdit = () => { setEditingField(null); setDraftValue(''); setOriginalValue('') }
 
-  useEffect(() => {
-    if (!commentField) return
-    const handler = (e: MouseEvent) => {
-      if (commentRef.current && !commentRef.current.contains(e.target as Node)) {
-        setCommentField(null); setCommentDraft(''); setCommentAnchor(null)
-      }
-    }
-    document.addEventListener('mousedown', handler)
-    return () => document.removeEventListener('mousedown', handler)
-  }, [commentField])
-
-  const openComment = (fieldKey: string, btn: HTMLElement) => {
-    const rect = btn.getBoundingClientRect()
-    const popoverWidth = 280
-    let left = rect.left - popoverWidth - 8
-    if (left < 8) left = rect.right + 8
-    setCommentAnchor({ top: rect.bottom, left })
-    setCommentField(fieldKey)
-    setCommentDraft('')
-  }
-
-  const postComment = (context: string) => {
-    if (!commentDraft.trim()) return
-    onAddFieldNote?.(commentDraft.trim(), context)
-    setCommentField(null); setCommentDraft(''); setCommentAnchor(null)
-  }
-
-  const renderCommentBtn = (fieldKey: string, label: string) => {
-    const context = `1099-NEC · ${label}`
-    const isOpen = commentField === fieldKey
-    return (
-      <>
-        <Tooltip text="Add a comment" placement="top"><button
-          className={`${styles.commentBtn} ${isOpen ? styles.commentBtnActive : ''}`}
-          aria-label={`Add comment for ${label}`}
-          onClick={e => { e.stopPropagation(); isOpen ? (setCommentField(null), setCommentDraft(''), setCommentAnchor(null)) : openComment(fieldKey, e.currentTarget) }}
-        >
-          <Comment size="small" />
-        </button></Tooltip>
-        {isOpen && commentAnchor && createPortal(
-          <div
-            className={styles.commentPopover}
-            style={{ top: commentAnchor.top + 4, left: commentAnchor.left }}
-            ref={commentRef}
-            onClick={e => e.stopPropagation()}
-          >
-            <div className={styles.commentPopoverContext}>
-              <span className={styles.commentPopoverChip}>{context}</span>
-            </div>
-            <textarea
-              autoFocus
-              className={styles.commentPopoverInput}
-              placeholder="Add a comment…"
-              value={commentDraft}
-              onChange={e => setCommentDraft(e.target.value)}
-              onKeyDown={e => { if (e.key === 'Enter' && (e.metaKey || e.ctrlKey)) postComment(context) }}
-              rows={3}
-            />
-            <div className={styles.commentPopoverActions}>
-              <button className={styles.commentPopoverCancel} onClick={e => { e.stopPropagation(); setCommentField(null); setCommentDraft(''); setCommentAnchor(null) }}>Cancel</button>
-              <button
-                className={`${styles.commentPopoverPost} ${commentDraft.trim() ? styles.commentPopoverPostActive : ''}`}
-                disabled={!commentDraft.trim()}
-                onClick={e => { e.stopPropagation(); postComment(context) }}
-              >Post</button>
-            </div>
-          </div>,
-          document.body
-        )}
-      </>
-    )
-  }
+  const renderAnnotationBtn = (fieldKey: string, label: string) => (
+    <FieldAnnotationButton
+      fieldKey={fieldKey}
+      contextLabel={context}
+      variant="detail"
+      allowFlagTypes
+      onAddNote={onAddFieldNote}
+    />
+  )
 
   const ValidationNote = ({ fieldKey }: { fieldKey: string }) => {
     const issue = flaggedFields[fieldKey]
@@ -234,7 +167,6 @@ export default function DetailFieldsNec({
     const isEditing = editingField === fieldKey
     const isFlagged = fieldKey === 'nec-box1' && !!flaggedFields['nec-box1'] && !reviewedFields?.has(fieldKey)
     const isReviewed = reviewedFields?.has(fieldKey)
-    const isCommentOpen = commentField === fieldKey
     const isSelected = selectedField === select || selectedField === fieldKey || selectedField === 'necIncome'
     const commitStatic = () => {
       if (editingField !== fieldKey) return
@@ -257,7 +189,7 @@ export default function DetailFieldsNec({
     const row = (
       <div
         ref={isSelected ? highlightedRef : undefined}
-        className={`${styles.fieldRow} ${isFlagged ? styles.fieldRowHasNote : ''} ${isCommentOpen ? styles.fieldRowCommentOpen : ''} ${isSelected ? (highlightMode === 'orange' && isFlagged ? styles.fieldRowHighlightedOrange : styles.fieldRowHighlighted) : ''}`}
+        className={`${styles.fieldRow} ${isFlagged ? styles.fieldRowHasNote : ''} ${isSelected ? (highlightMode === 'orange' && isFlagged ? styles.fieldRowHighlightedOrange : styles.fieldRowHighlighted) : ''}`}
         onClick={() => onFieldSelect?.(select)}
         style={{ cursor: 'pointer' }}
       >
@@ -305,7 +237,7 @@ export default function DetailFieldsNec({
             <Tooltip text="Mark as correct" placement="top">
               <button className={styles.markCorrectBtn} onClick={e => { e.stopPropagation(); onMarkReviewed?.(fieldKey) }}><CircleCheck size="small" /></button>
             </Tooltip>
-            {renderCommentBtn(fieldKey, label)}
+            {renderAnnotationBtn(fieldKey, label)}
           </div>
         )}
         {savedField === fieldKey && <span className={styles.recalcBadge}>{fieldKey === 'nec-box1' ? '1040 updated' : 'Saved'}</span>}
@@ -338,11 +270,6 @@ export default function DetailFieldsNec({
             reviewerConfirmedDocsMeta={reviewerConfirmedDocsMeta}
             onVerifyDoc={onVerifyDoc}
             reviewedFields={reviewedFields}
-            onPreparerMarkVerified={() => onMarkReviewedBulk?.([
-              'nec-ein', 'nec-payerName', 'nec-street', 'nec-cityStateZip', 'nec-phone',
-              'nec-ssn', 'nec-recipientName', 'nec-recipientStreet', 'nec-recipientCityStateZip',
-              'nec-box1', 'nec-fedTaxWithheld', 'nec-stateTaxId', 'nec-stateTax', 'nec-stateIncome',
-            ])}
           />
           )}
         </div>

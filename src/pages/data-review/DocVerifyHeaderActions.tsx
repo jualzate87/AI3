@@ -12,8 +12,13 @@ import '@ids-ts/button/dist/main.css'
 import InlineValidationMessage from '@ids-ts/inline-validation-message'
 import '@ids-ts/inline-validation-message/dist/main.css'
 import { getVerifiedDocEntry, isVerifiedInSet } from '../../data/verifiedDocKeys'
+import type { LiveAmounts } from '../../data/liveReturn'
 import {
-  countUncorrectedCriticalFlagsForDoc,
+  canVerifyDoc,
+  getDocVerifyIdentityBlockedHint,
+  getDocVerifyIdentityBlockedMessage,
+} from './docReviewStatus'
+import {
   getDocVerifyBlockedHint,
   getDocVerifyBlockedMessage,
 } from './phase1FieldSync'
@@ -26,8 +31,9 @@ type Props = {
   reviewerConfirmedDocs?: Set<string>
   reviewerConfirmedDocsMeta?: Map<string, ActivityEntry>
   reviewedFields?: Map<string, unknown>
+  /** Live return amounts — used for Tech Circle SSN/EIN verify gate */
+  amounts?: Pick<LiveAmounts, 'employeeSsn' | 'employerEin'>
   onVerifyDoc?: (docKey: string) => void
-  onPreparerMarkVerified?: () => void
 }
 
 function VerifiedBadge({
@@ -73,8 +79,8 @@ export default function DocVerifyHeaderActions({
   reviewerConfirmedDocs,
   reviewerConfirmedDocsMeta,
   reviewedFields,
+  amounts,
   onVerifyDoc,
-  onPreparerMarkVerified,
 }: Props) {
   const blockedMessageRef = useRef<HTMLDivElement>(null)
   const [verifyAttempted, setVerifyAttempted] = useState(false)
@@ -93,15 +99,24 @@ export default function DocVerifyHeaderActions({
     ? `Confirmed by ${reviewerMeta.by} · ${reviewerMeta.at}`
     : 'Click to remove confirmation'
 
-  const uncorrectedCriticalCount = reviewedFields
-    ? countUncorrectedCriticalFlagsForDoc(docKey, reviewedFields)
-    : 0
-  const verifyBlocked = !isReviewerActor && uncorrectedCriticalCount > 0
+  const verifyCheck = reviewedFields
+    ? canVerifyDoc({
+        docKey,
+        reviewedFields,
+        amounts,
+        isReviewer: isReviewerActor,
+      })
+    : { allowed: true as const }
+  const verifyBlocked = !isReviewerActor && !verifyCheck.allowed
   const blockedHint = verifyBlocked
-    ? getDocVerifyBlockedHint(uncorrectedCriticalCount)
+    ? verifyCheck.reason === 'critical-flags'
+      ? getDocVerifyBlockedHint(verifyCheck.uncorrectedCriticalCount ?? 0)
+      : getDocVerifyIdentityBlockedHint(verifyCheck.missingIdentityFields ?? [])
     : ''
   const blockedMessage = verifyBlocked
-    ? getDocVerifyBlockedMessage(uncorrectedCriticalCount)
+    ? verifyCheck.reason === 'critical-flags'
+      ? getDocVerifyBlockedMessage(verifyCheck.uncorrectedCriticalCount ?? 0)
+      : getDocVerifyIdentityBlockedMessage(verifyCheck.missingIdentityFields ?? [])
     : ''
 
   useEffect(() => {
@@ -115,7 +130,6 @@ export default function DocVerifyHeaderActions({
       return
     }
     onVerifyDoc?.(docKey)
-    onPreparerMarkVerified?.()
   }
 
   const needsReviewerConfirm =

@@ -120,14 +120,31 @@
   border-bottom: 1px solid var(--color-divider-tertiary, #c3ced5);
 }
 
+.menuNavScroll {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  overflow-x: hidden;
+}
+
+.docCountHint {
+  margin-left: auto;
+  padding-left: var(--space-component-gap-small, 8px);
+  font-size: var(--font-size-component-x-small, 12px);
+  font-weight: var(--font-weight-component, 400);
+  color: var(--color-text-secondary, #6b6c72);
+  white-space: nowrap;
+}
+
+.docTabBar {
+  flex-shrink: 0;
+  min-width: 0;
+}
+
 .formScroll {
   flex: 1;
   min-height: 0;
   overflow: auto;
-}
-
-.formMeta {
-  display: none;
 }
 
 .footerBar {

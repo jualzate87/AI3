@@ -5,7 +5,8 @@ import type { TopTab } from '../pages/data-review/ReviewTab'
 import type { DivPayer } from '../pages/data-review/DetailFieldsDiv'
 import type { IntPayer } from '../pages/data-review/DetailFields1099'
 import { PHASE1_TO_PHASE2_ISSUES } from '../pages/data-review/phase2FlagSync'
-import { countUncorrectedCriticalFlagsForDoc, getPhase1FlagKeysForVerifiedDoc } from '../pages/data-review/phase1FieldSync'
+import { canVerifyDoc } from '../pages/data-review/docReviewStatus'
+import { getPhase1FlagKeysForVerifiedDoc } from '../pages/data-review/phase1FieldSync'
 import { normalizeVerifiedDocEntries, normalizeVerifiedDocKey } from '../data/verifiedDocKeys'
 import type { MilestoneCompletion } from '../data/reviewMilestones'
 import {
@@ -41,6 +42,8 @@ interface SyncedState {
   editedFieldsList: [string, ActivityEntry][]
   /** Docs marked verified — with who/when */
   verifiedDocsList: [string, ActivityEntry][]
+  /** Phase 1 flag keys auto-cleared when each doc was verified — restored on un-verify */
+  verifiedDocAutoFlagsList: [string, string[]][]
   /** Summary-row checks (preparer verified against source) — mutually exclusive with flags */
   summaryCheckedFieldsList: [string, ActivityEntry][]
   /** Summary-row reviewer sign-off confirmations — independent of preparer checks */
@@ -79,11 +82,12 @@ interface SyncedState {
 
 const CHANNEL_NAME = 'protoc3-data-review-sync'
 // Bump whenever DEFAULT_STATE shape or seed values change so stale sessions reset.
-const STATE_VERSION = 28
+const STATE_VERSION = 29
 const STORAGE_KEY = 'protoc3-data-review-state-v' + STATE_VERSION
 /** Prior keys — sessionStorage (tab-scoped) and older localStorage versions */
 const LEGACY_STORAGE_KEYS = [
   STORAGE_KEY,
+  'protoc3-data-review-state-v28',
   'protoc3-data-review-state-v27',
   'protoc3-data-review-state-v26',
 ] as const
@@ -120,6 +124,7 @@ function writePersisted(state: SyncedState): void {
 function hydrateSyncedState(raw: string): SyncedState {
   const parsed = JSON.parse(raw) as Partial<SyncedState> & {
     verifiedDocsList?: unknown
+    verifiedDocAutoFlagsList?: unknown
     editedFieldsList?: unknown
     reviewedFieldsList?: unknown
     summaryCheckedFieldsList?: unknown
@@ -153,6 +158,7 @@ function hydrateSyncedState(raw: string): SyncedState {
       : [],
     reviewedFieldsList: migrateActivityList(parsed.reviewedFieldsList),
     editedFieldsList: migrateActivityList(parsed.editedFieldsList),
+    verifiedDocAutoFlagsList: migrateVerifiedDocAutoFlagsList(parsed.verifiedDocAutoFlagsList),
     ...migrateDualSlotLists(parsed),
     completedMilestones: migrateCompletedMilestones(parsed.completedMilestones),
     reviewerSignedOffFormsList: migrateActivityList(parsed.reviewerSignedOffFormsList),
@@ -174,6 +180,7 @@ export function sanitizeSyncedState(state: SyncedState): SyncedState {
     ...state,
     reviewedFieldsList: migrateActivityList(state.reviewedFieldsList),
     editedFieldsList: migrateActivityList(state.editedFieldsList),
+    verifiedDocAutoFlagsList: migrateVerifiedDocAutoFlagsList(state.verifiedDocAutoFlagsList),
     ...dualSlots,
     completedMilestones: migrateCompletedMilestones(state.completedMilestones),
     reviewerSignedOffFormsList: migrateActivityList(state.reviewerSignedOffFormsList),
@@ -390,6 +397,19 @@ function migrateActivityRecord(raw: unknown): Record<string, ActivityEntry> {
   return out
 }
 
+function migrateVerifiedDocAutoFlagsList(raw: unknown): [string, string[]][] {
+  if (!Array.isArray(raw)) return []
+  return raw
+    .map((item): [string, string[]] | null => {
+      if (!Array.isArray(item) || typeof item[0] !== 'string') return null
+      const flags = Array.isArray(item[1])
+        ? item[1].filter((k): k is string => typeof k === 'string')
+        : []
+      return [normalizeVerifiedDocKey(item[0]), flags]
+    })
+    .filter((x): x is [string, string[]] => x !== null)
+}
+
 const DEFAULT_STATE: SyncedState = {
   activeTopTab: 'w2s',
   activeSubTab: 'techCircle',
@@ -398,6 +418,7 @@ const DEFAULT_STATE: SyncedState = {
   reviewedFieldsList: [],
   editedFieldsList: [],
   verifiedDocsList: [],
+  verifiedDocAutoFlagsList: [],
   summaryCheckedFieldsList: [],
   reviewerConfirmedFieldsList: [],
   reviewerConfirmedDocsList: [],
@@ -661,20 +682,58 @@ export function useSyncedReviewState() {
     }
 
     const nextVerified = new Map(stateRef.current.verifiedDocsList)
+    const autoFlagsMap = new Map(stateRef.current.verifiedDocAutoFlagsList)
     const existing = [...nextVerified.keys()].find(k => normalizeVerifiedDocKey(k) === docKey)
     if (existing) {
       nextVerified.delete(existing)
-      update({ verifiedDocsList: Array.from(nextVerified.entries()) })
+      const autoFlags = autoFlagsMap.get(docKey) ?? autoFlagsMap.get(existing) ?? []
+      autoFlagsMap.delete(docKey)
+      autoFlagsMap.delete(existing)
+      const nextReviewed = new Map(stateRef.current.reviewedFieldsList)
+      for (const flag of autoFlags) {
+        nextReviewed.delete(flag)
+      }
+      update({
+        verifiedDocsList: Array.from(nextVerified.entries()),
+        verifiedDocAutoFlagsList: Array.from(autoFlagsMap.entries()),
+        reviewedFieldsList: Array.from(nextReviewed.entries()),
+      })
       return
     }
 
     const reviewedMap = new Map(stateRef.current.reviewedFieldsList)
-    if (countUncorrectedCriticalFlagsForDoc(docKey, reviewedMap) > 0) {
+    const verifyResult = canVerifyDoc({
+      docKey,
+      reviewedFields: reviewedMap,
+      amounts: stateRef.current.amounts,
+      isReviewer: false,
+    })
+    if (!verifyResult.allowed) {
       return
     }
 
+    const at = formatActivityTimestamp()
+    const flagKeys = getPhase1FlagKeysForVerifiedDoc(docKey)
+    const autoAdded = flagKeys.filter(k => !reviewedMap.has(k))
+    const nextReviewed = new Map(reviewedMap)
+    autoAdded.forEach(f => {
+      nextReviewed.set(f, { by: PREPARER_NAME, at })
+      const linked = PHASE1_TO_PHASE2_ISSUES[f]
+      if (linked) {
+        linked.forEach(issueKey => {
+          if (!nextReviewed.has(issueKey)) nextReviewed.set(issueKey, { by: PREPARER_NAME, at })
+        })
+      }
+    })
+    if (autoAdded.length > 0) {
+      autoFlagsMap.set(docKey, autoAdded)
+    }
     nextVerified.set(docKey, nowEntry())
-    update({ verifiedDocsList: Array.from(nextVerified.entries()) })
+    update({
+      verifiedDocsList: Array.from(nextVerified.entries()),
+      verifiedDocAutoFlagsList: Array.from(autoFlagsMap.entries()),
+      reviewedFieldsList: Array.from(nextReviewed.entries()),
+    })
   }
 
   /** Toggle Summary check/confirm — preparer vs reviewer slot based on current actor */

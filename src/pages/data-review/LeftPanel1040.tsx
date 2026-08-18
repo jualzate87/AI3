@@ -283,16 +283,6 @@ export default function LeftPanel1040({
   const [summaryFlyoutRect, setSummaryFlyoutRect] = useState<DOMRect | null>(null)
   const [popoverField, setPopoverField] = useState<string | null>(null)
   const [popoverRect, setPopoverRect]   = useState<DOMRect | null>(null)
-  const [commentField, setCommentField] = useState<string | null>(null)
-  const [commentContextLabel, setCommentContextLabel] = useState('')
-  const [commentDraft, setCommentDraft] = useState('')
-  const [commentAnchor, setCommentAnchor] = useState<{ top: number; left: number } | null>(null)
-  const commentRef = useRef<HTMLDivElement>(null)
-  const [flagNoteField, setFlagNoteField] = useState<string | null>(null)
-  const [flagNoteDraft, setFlagNoteDraft] = useState('')
-  const [flagNoteAnchor, setFlagNoteAnchor] = useState<{ top: number; left: number } | null>(null)
-  const flagNoteRef = useRef<HTMLDivElement>(null)
-
   const isReviewerRole = reviewRole === 'reviewer'
   const togglePreparer = onTogglePreparerCheck ?? onToggleChecked
   const toggleReviewer = onToggleReviewerConfirm ?? onToggleChecked
@@ -471,90 +461,6 @@ export default function LeftPanel1040({
 
   const toggleExpanded = (key: string) =>
     setExpanded(prev => { const s = new Set(prev); s.has(key) ? s.delete(key) : s.add(key); return s })
-
-  useEffect(() => {
-    if (!commentField) return
-    const onDown = (e: MouseEvent) => {
-      if (commentRef.current && !commentRef.current.contains(e.target as Node)) {
-        setCommentField(null); setCommentDraft(''); setCommentAnchor(null); setCommentContextLabel('')
-      }
-    }
-    document.addEventListener('mousedown', onDown)
-    return () => document.removeEventListener('mousedown', onDown)
-  }, [commentField])
-
-  useEffect(() => {
-    if (!flagNoteField) return
-    const onDown = (e: MouseEvent) => {
-      if (flagNoteRef.current && !flagNoteRef.current.contains(e.target as Node)) {
-        setFlagNoteField(null); setFlagNoteDraft(''); setFlagNoteAnchor(null)
-      }
-    }
-    document.addEventListener('mousedown', onDown)
-    return () => document.removeEventListener('mousedown', onDown)
-  }, [flagNoteField])
-
-  const openComment1040 = (fieldKey: string, context: string, btn: HTMLElement) => {
-    if (commentField === fieldKey) {
-      setCommentField(null)
-      setCommentDraft('')
-      setCommentAnchor(null)
-      setCommentContextLabel('')
-      return
-    }
-    const btnRect = btn.getBoundingClientRect()
-    setCommentAnchor({ top: btnRect.top + btnRect.height / 2, left: btnRect.left - 292 })
-    setCommentField(fieldKey)
-    setCommentContextLabel(context)
-    setCommentDraft('')
-  }
-
-  const postComment1040 = (context: string) => {
-    if (!commentDraft.trim()) return
-    onAddFieldNote?.(commentDraft.trim(), context)
-    setCommentField(null); setCommentDraft(''); setCommentAnchor(null); setCommentContextLabel('')
-  }
-
-  const openFlagNotePopover = (fieldKey: string, btn: HTMLElement) => {
-    const btnRect = btn.getBoundingClientRect()
-    setFlagNoteAnchor({ top: btnRect.top + btnRect.height / 2, left: btnRect.left - 292 })
-    setFlagNoteField(fieldKey)
-    setFlagNoteDraft(flagNotes[fieldKey] ?? '')
-    // Close comment popover if open — one floaty at a time
-    setCommentField(null); setCommentDraft(''); setCommentAnchor(null); setCommentContextLabel('')
-  }
-
-  const closeFlagNotePopover = () => {
-    setFlagNoteField(null); setFlagNoteDraft(''); setFlagNoteAnchor(null)
-  }
-
-  const saveFlagNote = () => {
-    if (!flagNoteField) return
-    onSetFlagNote?.(flagNoteField, flagNoteDraft)
-    closeFlagNotePopover()
-  }
-
-  /** Toggle user flag; opening note prompt only when turning on. Clears check off via store. */
-  const handleFlagClick = (fieldKey: string, btn: HTMLElement) => {
-    if (!onToggleFlagged) return
-    const turningOn = !flaggedFields.has(fieldKey)
-    onToggleFlagged(fieldKey)
-    if (turningOn) openFlagNotePopover(fieldKey, btn)
-    else {
-      // Turning off — keep note stored; just close editor if open for this row
-      if (flagNoteField === fieldKey) closeFlagNotePopover()
-    }
-  }
-
-  /** Shared handler for output-form flag buttons (1040 + schedules). */
-  const handleOutputFlagClick = (fieldKey: string, btn: HTMLElement) => {
-    if (!onToggleFlagged) return
-    if (flaggedFields.has(fieldKey) && flagNoteField === fieldKey) {
-      closeFlagNotePopover()
-      return
-    }
-    handleFlagClick(fieldKey, btn)
-  }
 
   /** Anchor popover to the Amount cell of a form row (Form view only). */
   const openPopoverForRow = (field: string, rowEl: HTMLElement) => {
@@ -845,20 +751,19 @@ export default function LeftPanel1040({
       isReviewed       ? styles.rowReviewed     : '',
       showYoyTint      ? rowYoyClass(yoy!)      : '',
       clickable        ? styles.rowClickable    : '',
-      commentField === field ? styles.rowCommentOpen : '',
+      
       needsReconfirm ? styles.rowNeedsReconfirm : '',
       isDimmed ? styles.rowDimmed : '',
     ].filter(Boolean).join(' ')
 
-    const isCommentOpen = commentField === field
-    const valueCellCls = [
+        const valueCellCls = [
       styles.valueBox,
       kind === 'source'   ? styles.valueBoxSource   : '',
       kind === 'calc'     ? styles.valueBoxCalc     : '',
       value === undefined ? styles.valueBoxEmpty    : '',
       isOrange ? styles.valueBoxSelected : '',
       isBlue   ? styles.valueBoxSelectedBlue : '',
-      isCommentOpen && !isSelected ? styles.valueBoxCommentOpen : '',
+      
     ].filter(Boolean).join(' ')
 
     const valueNumCls = [
@@ -928,26 +833,14 @@ export default function LeftPanel1040({
               <OutputRowActions
                 className={styles.outputRowEndActionsCommentFlag}
                 label={label}
-                showComment={commentable}
-                showFlag={!!field && !!onToggleFlagged}
-                commentOpen={commentField === field}
-                flagNoteOpen={flagNoteField === field}
+                fieldKey={field!}
+                contextLabel={`Form 1040 · ${label}`}
+                showAnnotate={commentable || !!onToggleFlagged}
                 isFlagged={isFlagged}
-                flagTooltip={flagTooltip}
-                onCommentClick={e => {
-                  e.stopPropagation()
-                  if (commentField === field) {
-                    setCommentField(null)
-                    setCommentDraft('')
-                    setCommentAnchor(null)
-                  } else {
-                    openComment1040(field!, `Form 1040 · ${label}`, e.currentTarget)
-                  }
-                }}
-                onFlagClick={e => {
-                  e.stopPropagation()
-                  handleOutputFlagClick(field!, e.currentTarget)
-                }}
+                existingFlagNote={flagNote}
+                onAddNote={onAddFieldNote}
+                onToggleFlagged={onToggleFlagged}
+                onSetFlagNote={onSetFlagNote}
               />
               {showAttest && (
                 <AttestColumns
@@ -1390,26 +1283,14 @@ export default function LeftPanel1040({
                               <OutputRowActions
                                 className={styles.outputRowEndActionsCommentFlag}
                                 label={row.label}
-                                showComment={!!row.field && !!onAddFieldNote}
-                                showFlag={!!row.field && !!onToggleFlagged}
-                                commentOpen={commentField === row.field}
-                                flagNoteOpen={flagNoteField === row.field}
+                                fieldKey={row.field!}
+                                contextLabel={`Return Summary · ${row.label}`}
+                                showAnnotate={!!row.field && (!!onAddFieldNote || !!onToggleFlagged)}
                                 isFlagged={isFlagged}
-                                flagTooltip={flagTooltip}
-                                onCommentClick={e => {
-                                  e.stopPropagation()
-                                  if (commentField === row.field) {
-                                    setCommentField(null)
-                                    setCommentDraft('')
-                                    setCommentAnchor(null)
-                                  } else {
-                                    openComment1040(row.field!, `Return Summary · ${row.label}`, e.currentTarget)
-                                  }
-                                }}
-                                onFlagClick={e => {
-                                  e.stopPropagation()
-                                  handleOutputFlagClick(row.field!, e.currentTarget)
-                                }}
+                                existingFlagNote={flagNote}
+                                onAddNote={onAddFieldNote}
+                                onToggleFlagged={onToggleFlagged}
+                                onSetFlagNote={onSetFlagNote}
                               />
                               {!!row.field && (togglePreparer || toggleReviewer) ? (
                                 <>
@@ -1599,14 +1480,9 @@ export default function LeftPanel1040({
             onNavigateToSourceDoc={onNavigateToSourceDoc}
             flaggedFields={flaggedFields}
             flagNotes={flagNotes}
-            flaggedMeta={flaggedMeta}
-            flagActivity={flagActivity}
-            commentField={commentField}
-            flagNoteField={flagNoteField}
             onAddFieldNote={onAddFieldNote}
             onToggleFlagged={onToggleFlagged}
-            onOpenComment={openComment1040}
-            onFlagClick={handleOutputFlagClick}
+            onSetFlagNote={onSetFlagNote}
           />
           </>
         ) : (
@@ -1620,11 +1496,13 @@ export default function LeftPanel1040({
             <div className={styles.irsLeft}>
               <div className={styles.irsFormCode}>Form 1040</div>
               <div className={styles.irsDept}>Department of the Treasury — Internal Revenue Service</div>
-              <div className={styles.irsTitle}>U.S. Individual Income Tax Return 2025</div>
+              <div className={styles.irsTitle}>U.S. Individual Income Tax Return</div>
+              <div className={styles.irsSubtitle}>For calendar year 2025, or other tax year beginning _____________, 2025, ending _____________ , 20____</div>
             </div>
             <div className={styles.irsRight}>
+              <div className={styles.irsYear}>2025</div>
               <div className={styles.irsOmb}>OMB No. 1545-0074</div>
-              <div className={styles.irsUseOnlyBox}>IRS Use Only</div>
+              <div className={styles.irsUseOnlyBox}>IRS Use Only — Do not write or staple in this space.</div>
             </div>
           </div>
 
@@ -1634,7 +1512,9 @@ export default function LeftPanel1040({
             <div className={styles.filingOptions}>
               {['Single', 'Married filing jointly', 'Married filing separately', 'Head of household'].map((s, i) => (
                 <label key={i} className={styles.filingOption}>
-                  <input type="radio" readOnly checked={i === 0} onChange={() => {}} /> {s}
+                  <span className={styles.filingOptionNum}>{i + 1}</span>
+                  <input type="radio" readOnly checked={i === 0} onChange={() => {}} aria-label={s} />
+                  <span>{s}</span>
                 </label>
               ))}
             </div>
@@ -1642,13 +1522,13 @@ export default function LeftPanel1040({
 
           {/* ── Taxpayer info ── */}
           <div className={styles.sectionBar}>Taxpayer Information</div>
-          <div className={styles.infoGrid}>
+          <div className={`${styles.infoGrid} ${styles.taxpayerGrid}`}>
             <div className={styles.infoRow}>
-              <div className={styles.infoField} style={{ flex: 2 }}>
+              <div className={styles.infoField}>
                 <span className={styles.infoLabel}>Your first name and middle initial</span>
                 <span className={styles.infoValue}>Jessica</span>
               </div>
-              <div className={styles.infoField} style={{ flex: 2 }}>
+              <div className={styles.infoField}>
                 <span className={styles.infoLabel}>Last name</span>
                 <span className={styles.infoValue}>Drake</span>
               </div>
@@ -1656,14 +1536,12 @@ export default function LeftPanel1040({
                 <span className={styles.infoLabel}>Your social security number</span>
                 <span className={styles.infoValue}>{displaySsn}</span>
               </div>
-            </div>
-            <div className={styles.infoRow}>
-              <div className={styles.infoField} style={{ flex: 3 }}>
-                <span className={styles.infoLabel}>Home address</span>
+              <div className={`${styles.infoField} ${styles.taxpayerGridWide}`}>
+                <span className={styles.infoLabel}>Home address (number and street)</span>
                 <span className={styles.infoValue}>{CLIENT_ADDRESS.street}</span>
               </div>
               <div className={styles.infoField}>
-                <span className={styles.infoLabel}>City, State, ZIP</span>
+                <span className={styles.infoLabel}>City, town, or post office, state, and ZIP code</span>
                 <span className={styles.infoValue}>{formatClientCityStateZip()}</span>
               </div>
             </div>
@@ -1701,10 +1579,10 @@ export default function LeftPanel1040({
           {/* ── Income table ── */}
           <table className={styles.table}>
             <colgroup>
-              <col style={{ width: '28px' }} />
-              <col style={{ width: 'auto' }} />
-              <col style={{ width: '40px' }} />
-              <col style={{ width: '280px' }} />
+              <col className={styles.formTableColLine} />
+              <col className={styles.formTableColDesc} />
+              <col className={styles.formTableColLineR} />
+              <col className={styles.formTableColValue} />
             </colgroup>
             <tbody>
               <Section title="Income" />
@@ -1788,105 +1666,6 @@ export default function LeftPanel1040({
         />
       )}
 
-      {/* ── Comment popover (portal) ── */}
-      {commentField && commentAnchor && createPortal(
-        <div
-          className={styles.commentPopover1040}
-          style={{ top: commentAnchor.top, left: commentAnchor.left, transform: 'translateY(-50%)' }}
-          ref={commentRef}
-          onClick={e => e.stopPropagation()}
-        >
-          <div className={styles.commentPopoverCtx}>
-            <span className={styles.commentPopoverChip}>
-              {commentContextLabel || `Form 1040 · ${FIELD_META[commentField]?.label ?? commentField}`}
-            </span>
-          </div>
-          <textarea
-            autoFocus
-            className={styles.commentPopoverInput}
-            placeholder="Add a comment…"
-            value={commentDraft}
-            onChange={e => setCommentDraft(e.target.value)}
-            onKeyDown={e => {
-              if (e.key === 'Enter' && (e.metaKey || e.ctrlKey))
-                postComment1040(commentContextLabel || `Form 1040 · ${FIELD_META[commentField]?.label ?? commentField}`)
-            }}
-            rows={3}
-          />
-          <div className={styles.commentPopoverActions}>
-            <button className={styles.commentPopoverCancel}
-              onClick={e => { e.stopPropagation(); setCommentField(null); setCommentDraft(''); setCommentAnchor(null); setCommentContextLabel('') }}>
-              Cancel
-            </button>
-            <button
-              className={`${styles.commentPopoverPost} ${commentDraft.trim() ? styles.commentPopoverPostActive : ''}`}
-              disabled={!commentDraft.trim()}
-              onClick={e => {
-                e.stopPropagation()
-                postComment1040(commentContextLabel || `Form 1040 · ${FIELD_META[commentField]?.label ?? commentField}`)
-              }}
-            >
-              Post
-            </button>
-          </div>
-        </div>,
-        document.body
-      )}
-
-      {/* ── Flag note popover (portal) — optional; flag already toggled on ── */}
-      {flagNoteField && flagNoteAnchor && createPortal(
-        <div
-          className={styles.commentPopover1040}
-          style={{ top: flagNoteAnchor.top, left: flagNoteAnchor.left, transform: 'translateY(-50%)' }}
-          ref={flagNoteRef}
-          onClick={e => e.stopPropagation()}
-        >
-          <div className={styles.commentPopoverCtx}>
-            <span className={`${styles.commentPopoverChip} ${styles.flagNoteChip}`}>
-              Flag note · {FIELD_META[flagNoteField]?.label ?? flagNoteField}
-            </span>
-          </div>
-          <textarea
-            autoFocus
-            className={styles.commentPopoverInput}
-            placeholder="Why does this need a double-check? (optional)"
-            value={flagNoteDraft}
-            onChange={e => setFlagNoteDraft(e.target.value)}
-            onKeyDown={e => {
-              if (e.key === 'Enter' && (e.metaKey || e.ctrlKey)) saveFlagNote()
-              if (e.key === 'Escape') closeFlagNotePopover()
-            }}
-            rows={2}
-          />
-          {(() => {
-            const meta = formatActivityMeta(
-              flagNoteField
-                ? (flaggedMeta.get(flagNoteField) ?? flagActivity[flagNoteField])
-                : undefined,
-            )
-            return meta ? (
-              <div className={styles.flagNoteMeta}>{meta}</div>
-            ) : null
-          })()}
-          <div className={styles.commentPopoverActions}>
-            <button
-              type="button"
-              className={styles.commentPopoverCancel}
-              onClick={e => { e.stopPropagation(); closeFlagNotePopover() }}
-            >
-              Skip
-            </button>
-            <button
-              type="button"
-              className={`${styles.commentPopoverPost} ${styles.commentPopoverPostActive}`}
-              onClick={e => { e.stopPropagation(); saveFlagNote() }}
-            >
-              Done
-            </button>
-          </div>
-        </div>,
-        document.body
-      )}
     </div>
   )
 }

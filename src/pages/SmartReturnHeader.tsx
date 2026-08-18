@@ -1,7 +1,7 @@
 import { useNavigate } from 'react-router-dom'
 import {
   Question, Notification, Settings, Lock, PersonThree,
-  CircleInfo, ChevronDown, List, Edit, Checklist,
+ChevronDown, List, Edit, Checklist,
   Send, CloudUpload, AlarmClock, Rocket,
 } from '@design-systems/icons'
 import { Button } from '@ids-ts/button'
@@ -74,14 +74,12 @@ export default function SmartReturnHeader({
             <span className={styles.metaLabel}>Tax year</span>
             <div className={styles.metaValueRow}>
               <span className={styles.metaValue}>2025</span>
-              <CircleInfo size="small" className={styles.circleInfo} />
             </div>
           </div>
           <div className={styles.metaItem}>
             <span className={styles.metaLabel}>Return type</span>
             <div className={styles.metaValueRow}>
               <span className={styles.metaValue}>1040</span>
-              <CircleInfo size="small" className={styles.circleInfo} />
             </div>
           </div>
         </div>

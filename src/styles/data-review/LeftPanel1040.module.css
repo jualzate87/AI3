@@ -453,8 +453,9 @@
   padding: 2px 7px;
   border-radius: 3px;
   min-height: 22px;
-  min-width: 80px;
+  min-width: 0;
   flex: 1;
+  overflow: hidden;
   border: 1px solid #e0e4e8;   /* default: plain outline for any non-empty field */
   background: #ffffff;
   transition: border-color 100ms ease, background 100ms ease;
@@ -497,9 +498,12 @@
 }
 
 .valueNum {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  max-width: 100%;
   font-size: 12px;
   font-weight: 500;
-  white-space: nowrap;
   letter-spacing: 0.01em;
   color: #393a3d;   /* default for rows with no kind */
 }
@@ -1828,6 +1832,10 @@
   background: #fff;
   outline: none;
   flex-shrink: 0;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
   transition: border-color 0.15s;
 }
 .controlInput:focus {
@@ -2051,12 +2059,23 @@
 /* ── Digitized IRS form styling (Figma form-1040-digitized) ── */
 
 .formDocDigitized {
+  /* Shared column widths — colHeaders, colgroup, and value cell must match */
+  --form-col-line: 32px;
+  --form-col-line-r: 44px;
+  --form-col-value: 348px;
+  --form-amount-width: 132px;
+  --form-actions-width: 138px;
   max-width: 960px;
-  border: 1px solid #000;
+  border: 1px solid var(--color-text-primary);
   border-radius: 0;
   box-shadow: none;
   padding-bottom: 0;
 }
+
+.formTableColLine { width: var(--form-col-line); }
+.formTableColDesc { width: auto; }
+.formTableColLineR { width: var(--form-col-line-r); }
+.formTableColValue { width: var(--form-col-value); }
 
 .formDocDigitized .summaryCardHeader {
   border-bottom: 1px solid #000;
@@ -2108,6 +2127,15 @@
   line-height: 1.3;
 }
 
+.formDocDigitized .irsSubtitle {
+  font-family: var(--font-family-component);
+  font-size: var(--font-size-component-x-small);
+  font-weight: var(--font-weight-component);
+  color: var(--color-text-secondary);
+  line-height: var(--line-height-component);
+  margin-top: var(--space-component-gap-x-small);
+}
+
 .formDocDigitized .irsTitle strong {
   font-weight: inherit;
   font-size: inherit;
@@ -2118,7 +2146,13 @@
 }
 
 .formDocDigitized .irsYear {
-  display: none;
+  display: block;
+  font-family: var(--font-family-component);
+  font-size: var(--font-size-heading-3);
+  font-weight: var(--font-weight-heading-bold);
+  color: var(--color-text-primary);
+  letter-spacing: -0.03em;
+  line-height: 1;
 }
 
 .formDocDigitized .irsOmb {
@@ -2155,73 +2189,135 @@
   letter-spacing: normal;
 }
 
-/* Filing status — pill radio buttons */
+/* Filing status — numbered checkbox row like IRS form */
 .formDocDigitized .filingStatus {
   flex-direction: column;
-  align-items: flex-start;
-  gap: 8px;
-  padding: 12px;
-  border-bottom: none;
+  align-items: stretch;
+  gap: var(--space-component-gap-medium);
+  padding: var(--space-container-padding-x-small, 12px) var(--space-container-padding-small, 16px);
+  border-bottom: 1px solid var(--color-text-primary);
+  background: var(--color-container-background-primary);
 }
 
 .formDocDigitized .filingLabel {
   text-transform: none;
-  font-size: 13px;
-  font-weight: var(--font-weight-component-semibold);
+  font-size: var(--font-size-component-small);
+  font-weight: var(--font-weight-component-bold);
   letter-spacing: normal;
   color: var(--color-text-primary);
 }
 
 .filingOptions {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 8px;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--space-component-gap-medium);
   width: 100%;
 }
 
+@media (min-width: 720px) {
+  .formDocDigitized .filingOptions {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+}
+
 .formDocDigitized .filingOption {
-  gap: 6px;
-  font-size: 13px;
-  font-weight: var(--font-weight-component-semibold);
+  display: flex;
+  align-items: flex-start;
+  gap: var(--space-component-gap-medium);
+  font-size: var(--font-size-component-small);
+  font-weight: var(--font-weight-component);
   color: var(--color-text-primary);
-  border: 1px solid #000;
-  border-radius: 16px;
-  padding: 6px 10px;
-  background: #fff;
+  line-height: var(--line-height-component);
+  border: 1px solid var(--color-text-primary);
+  border-radius: var(--radius-small, 4px);
+  padding: var(--space-component-inline-padding-medium) var(--space-component-inline-padding-large);
+  background: var(--color-container-background-primary);
+  min-height: 44px;
+  box-sizing: border-box;
+}
+
+.formDocDigitized .filingOptionNum {
+  flex-shrink: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 18px;
+  height: 18px;
+  border: 1px solid var(--color-text-primary);
+  border-radius: 2px;
+  font-size: var(--font-size-component-x-small);
+  font-weight: var(--font-weight-component-bold);
+  line-height: 1;
 }
 
 .formDocDigitized .filingOption:has(input:checked) {
-  background: #f3f4f6;
+  background: var(--color-container-background-secondary);
+}
+
+.formDocDigitized .filingOption:has(input:checked) .filingOptionNum {
+  background: var(--color-text-primary);
+  color: var(--color-text-inverse, #fff);
 }
 
 .formDocDigitized .filingOption input[type="radio"] {
   width: 14px;
   height: 14px;
-  accent-color: #000;
+  margin-top: 2px;
+  accent-color: var(--color-text-primary);
+  flex-shrink: 0;
 }
 
-/* Taxpayer fields — labeled inputs with black border, 32px height, inset shadow */
+/* Taxpayer fields — labeled inputs with black border, inset shadow */
 .formDocDigitized .infoGrid {
   border-bottom: none;
 }
 
-.formDocDigitized .infoRow {
+.formDocDigitized .taxpayerGrid {
+  display: grid;
+  grid-template-columns: 1.4fr 1.4fr 1fr;
+  border-top: 1px solid var(--color-text-primary);
+}
+
+.formDocDigitized .taxpayerGridWide {
+  grid-column: span 2;
+}
+
+.formDocDigitized .taxpayerGrid .infoRow {
+  display: contents;
+}
+
+.formDocDigitized .infoGrid:not(.taxpayerGrid) .infoRow {
   display: flex;
-  gap: 20px;
-  padding: 12px;
+  gap: var(--space-column-gap-medium);
+  padding: var(--space-container-padding-x-small, 12px) var(--space-container-padding-small, 16px);
   border-bottom: none;
 }
 
-.formDocDigitized .infoField {
+.formDocDigitized .infoGrid:not(.taxpayerGrid) .infoField {
   border-right: none;
+  border-bottom: none;
   padding: 0;
-  gap: 4px;
+  flex: 1;
+  min-width: 0;
+}
+
+.formDocDigitized .infoField {
+  border-right: 1px solid var(--color-text-primary);
+  border-bottom: 1px solid var(--color-text-primary);
+  padding: var(--space-component-inline-padding-medium) var(--space-component-inline-padding-large);
+  gap: var(--space-component-gap-small);
+  min-width: 0;
+}
+
+.formDocDigitized .infoField:last-child {
+  border-right: none;
 }
 
 .formDocDigitized .infoLabel {
-  font-size: var(--font-size-component-small);
+  font-size: var(--font-size-component-x-small);
   font-weight: var(--font-weight-component-semibold);
   color: var(--color-text-primary);
+  line-height: var(--line-height-component);
 }
 
 .formDocDigitized .infoValue {
@@ -2229,23 +2325,27 @@
   align-items: center;
   box-sizing: border-box;
   width: 100%;
-  height: 32px;
-  padding: 0 10px;
-  border: 1px solid #000;
+  min-height: 32px;
+  padding: var(--space-component-inline-padding-medium) var(--space-component-inline-padding-large);
+  border: 1px solid var(--color-text-primary);
   border-radius: var(--radius-small, 4px);
-  background: #fff;
+  background: var(--color-container-background-primary);
   box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.06);
-  font-size: 13px;
+  font-size: var(--font-size-component-small);
   font-weight: var(--font-weight-component-semibold);
   color: var(--color-text-primary);
   letter-spacing: normal;
+  line-height: var(--line-height-component);
 }
 
-/* Column headers */
+/* Column headers — grid must match table colgroup widths */
 .formDocDigitized .colHeaders {
-  background: #fff;
-  border-bottom: 1px solid #000;
-  padding: 4px 0;
+  display: grid;
+  grid-template-columns: var(--form-col-line) minmax(140px, 1fr) var(--form-col-line-r) var(--form-col-value);
+  background: var(--color-container-background-primary);
+  border-bottom: 1px solid var(--color-text-primary);
+  border-top: 1px solid var(--color-text-primary);
+  padding: var(--space-component-inline-padding-small) 0;
 }
 
 /* Field legend — less prominent but accessible */
@@ -2264,17 +2364,19 @@
 /* Income lines — blue bold line numbers, alternating row stripes */
 .formDocDigitized .cellLine,
 .formDocDigitized .cellLineRight {
-  color: #205ea3;
+  color: var(--color-action-standard, #205ea3);
   font-weight: var(--font-weight-component-bold);
-  font-size: 13px;
+  font-size: var(--font-size-component-small);
+  padding-top: var(--space-component-stack-padding-large);
+  padding-bottom: var(--space-component-stack-padding-large);
 }
 
 .formDocDigitized .table tbody tr.row:nth-child(even of tr.row) {
-  background: #f3f4f6;
+  background: var(--color-container-background-secondary);
 }
 
 .formDocDigitized .rowClickable:hover {
-  background: #e8eaed !important;
+  background: var(--color-container-background-tertiary, #e8eaed) !important;
 }
 
 .formDocDigitized .rowSelected {
@@ -2286,7 +2388,7 @@
 }
 
 .formDocDigitized .rowShaded {
-  background: #e8eaed !important;
+  background: var(--color-container-background-tertiary, #e8eaed) !important;
 }
 
 .formDocDigitized .rowBold .cellLabelPrimary {
@@ -2295,22 +2397,71 @@
 
 .formDocDigitized .cellLabel {
   font-size: var(--font-size-component-small);
-  padding: 6px 8px;
+  font-weight: var(--font-weight-component);
+  line-height: var(--line-height-component);
+  padding: var(--space-component-stack-padding-large) var(--space-component-inline-padding-medium);
 }
 
-/* Value boxes — black border, white bg, right-aligned, ~140px, 32px height */
+.formDocDigitized .row td {
+  vertical-align: middle;
+}
+
+.formDocDigitized .reconfirmBadge {
+  margin-left: 0;
+  margin-top: var(--space-component-gap-x-small);
+  white-space: normal;
+}
+
+/* Value column — fixed width so amount + actions never overlap */
+.formDocDigitized .cellValue {
+  width: var(--form-col-value);
+  min-width: var(--form-col-value);
+  max-width: var(--form-col-value);
+  padding: var(--space-component-stack-padding-medium) var(--space-component-inline-padding-medium);
+  box-sizing: border-box;
+}
+
+.formDocDigitized .cellValueInner {
+  display: grid;
+  grid-template-columns: var(--form-amount-width) var(--form-actions-width);
+  column-gap: var(--space-component-gap-medium);
+  align-items: center;
+  justify-content: end;
+  width: 100%;
+}
+
+.formDocDigitized .cellValueAmountGroup {
+  display: grid;
+  grid-template-columns: 1fr 24px;
+  column-gap: var(--space-component-gap-x-small);
+  align-items: center;
+  justify-items: end;
+  min-width: 0;
+}
+
+.formDocDigitized .formRowActions {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: var(--space-component-gap-medium);
+  width: var(--form-actions-width);
+  flex-shrink: 0;
+}
+
+/* Value boxes — black border, white bg, right-aligned, fixed width, 32px height */
 .formDocDigitized .valueBox {
-  width: 140px;
-  min-width: 140px;
-  max-width: 140px;
+  width: 100%;
+  min-width: 0;
+  max-width: var(--form-amount-width);
   height: 32px;
   min-height: 32px;
-  border: 1px solid #000;
+  border: 1px solid var(--color-text-primary);
   border-radius: var(--radius-small, 4px);
-  background: #fff;
+  background: var(--color-container-background-primary);
   box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.06);
-  padding: 0 8px;
+  padding: 0 var(--space-component-inline-padding-medium);
   flex: 0 0 auto;
+  box-sizing: border-box;
 }
 
 .formDocDigitized .valueBoxSource,
@@ -2330,7 +2481,8 @@
   color: var(--color-text-primary);
   font-style: normal;
   font-weight: var(--font-weight-component-semibold);
-  font-size: 13px;
+  font-size: var(--font-size-component-small);
+  font-variant-numeric: tabular-nums;
 }
 
 /* Preserve selection / attest / flag highlight states */

@@ -4,6 +4,7 @@ import {
   INPUT_NAV_CATEGORIES,
   type InputNavItemId,
 } from '../../data/inputMenuNav'
+import { getInputDocTabs } from '../../data/inputDocTabs'
 import navStyles from '../../styles/CheckReturnPage.module.css'
 import styles from '../../styles/InputReturnPage.module.css'
 
@@ -57,7 +58,7 @@ export default function InputMenuNav({
         />
       </label>
 
-      <nav className={navStyles.leftNav}>
+      <nav className={`${navStyles.leftNav} ${styles.menuNavScroll}`}>
         {INPUT_NAV_CATEGORIES.map(category => {
           const visibleItems = category.items.filter(item =>
             !normalizedSearch || item.label.toLowerCase().includes(normalizedSearch),
@@ -81,16 +82,24 @@ export default function InputMenuNav({
               <div className={navStyles.navCategory}>
                 <span className={navStyles.navCategoryLabel}>{category.label}</span>
               </div>
-              {visibleItems.map(item => (
-                <button
-                  key={item.id}
-                  type="button"
-                  className={`${navStyles.navSecondary} ${activeItemId === item.id ? navStyles.navSecondaryActive : ''}`}
-                  onClick={() => onSelect(item.id)}
-                >
-                  <span className={navStyles.navSecondaryLabel}>{item.label}</span>
-                </button>
-              ))}
+              {visibleItems.map(item => {
+                const docCount = getInputDocTabs(item.topTab).length
+                return (
+                  <button
+                    key={item.id}
+                    type="button"
+                    className={`${navStyles.navSecondary} ${activeItemId === item.id ? navStyles.navSecondaryActive : ''}`}
+                    onClick={() => onSelect(item.id)}
+                  >
+                    <span className={navStyles.navSecondaryLabel}>{item.label}</span>
+                    {docCount > 1 && (
+                      <span className={styles.docCountHint} aria-label={`${docCount} documents`}>
+                        {docCount} docs
+                      </span>
+                    )}
+                  </button>
+                )
+              })}
             </div>
           )
         })}

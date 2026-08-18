@@ -1,4 +1,4 @@
-import { CircleCheck } from '@design-systems/icons'
+import { CircleCheck, PopIn } from '@design-systems/icons'
 import sparklesIcon from '../../assets/icons/sparkles.svg'
 import AttentionCountBadge from './AttentionCountBadge'
 import type { DocConfirmStatus } from './docReviewStatus'
@@ -47,6 +47,8 @@ interface ReviewTabProps {
   tabConfirmStatus?: Record<string, DocConfirmStatus>
   /** Pass 2 reviewer: count of docs awaiting confirmation per top tab */
   tabConfirmCounts?: Record<string, number>
+  /** When true, shows Dock back control (popout window only) */
+  isPopout?: boolean
 }
 
 export default function ReviewTab({
@@ -60,6 +62,7 @@ export default function ReviewTab({
   typeReviewed,
   tabConfirmStatus,
   tabConfirmCounts,
+  isPopout = false,
 }: ReviewTabProps) {
   const handleTabClick = (key: string, label: string) => {
     if (TAB_KEYS.has(key)) {
@@ -138,6 +141,18 @@ export default function ReviewTab({
           </button>
         ))}
       </div>
+
+      {isPopout && (
+        <button
+          type="button"
+          className={styles.dockBackBtn}
+          aria-label="Dock back to main window"
+          onClick={() => window.close()}
+        >
+          <PopIn size="small" />
+          Dock back
+        </button>
+      )}
     </div>
   )
 }
