@@ -7,6 +7,7 @@ import '@ids-ts/button/dist/main.css'
 import { IconControl } from '@ids-ts/icon-control'
 import '@ids-ts/icon-control/dist/main.css'
 import DocVerifyHeaderActions from './DocVerifyHeaderActions'
+import ImportSourceBadge from '../../components/ImportSourceBadge/ImportSourceBadge'
 import QuestionnaireFieldNote from './QuestionnaireFieldNote'
 import { DestinationFieldLabel } from './DestinationFieldLabel'
 import FieldAnnotationButton from './FieldAnnotationButton'
@@ -82,6 +83,8 @@ interface DetailFieldsProps {
   variant?: 'review' | 'input'
   /** When true (pre-import manual entry), zero amounts render blank */
   showEmptyWhenZero?: boolean
+  /** Canonical verify-doc key — drives import source badge in header */
+  importDocKey?: string
 }
 
 // Static non-wages fields per employer
@@ -152,8 +155,10 @@ export default function DetailFields({
   importReadOnly = false,
   variant = 'review',
   showEmptyWhenZero = false,
+  importDocKey,
 }: DetailFieldsProps) {
   const employer = EMPLOYER_DATA[activeSubTab]
+  const resolvedImportDocKey = importDocKey ?? activeSubTab
   const currentWages = wages[activeSubTab]
   const fmt = (n: number) => displayEditableAmount(n, showEmptyWhenZero)
   const highlightedRef = useRef<HTMLDivElement>(null)
@@ -405,7 +410,10 @@ export default function DetailFields({
       {/* Page header */}
       <div className={styles.pageHeader}>
         <div className={styles.headerActions}>
-          <h2 className={styles.headerTitle}>{formTitle}</h2>
+          <div className={styles.headerTitleRow}>
+            <h2 className={styles.headerTitle}>{formTitle}</h2>
+            <ImportSourceBadge docKey={resolvedImportDocKey} />
+          </div>
           {variant !== 'input' && (
           <DocVerifyHeaderActions
             docKey={activeSubTab}

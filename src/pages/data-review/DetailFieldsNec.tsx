@@ -1,8 +1,13 @@
 import { useEffect, useRef, useState } from 'react'
 import { CircleCheck } from '@design-systems/icons'
+import PageMessage from '@ids-ts/page-message'
+import '@ids-ts/page-message/dist/main.css'
+import { B3 } from '@ids-ts/typography'
+import '@ids-ts/typography/dist/main.css'
 import FieldAnnotationButton from './FieldAnnotationButton'
 import Tooltip from './Tooltip'
 import { DestinationFieldLabel } from './DestinationFieldLabel'
+import ImportSourceBadge from '../../components/ImportSourceBadge/ImportSourceBadge'
 import { CLIENT_ADDRESS } from '../../data/clientAddress'
 import { displayEditableAmount, NEC_SOURCE_AMOUNT, parseAmountDraft, type LiveAmounts } from '../../data/liveReturn'
 import DocVerifyHeaderActions from './DocVerifyHeaderActions'
@@ -76,6 +81,10 @@ interface DetailFieldsNecProps {
   /** Input return mode — plain editable fields without verify header */
   variant?: 'review' | 'input'
   showEmptyWhenZero?: boolean
+  /** Canonical verify-doc key — drives import source badge */
+  importDocKey?: string
+  /** Navigate to Schedule C gross receipts when NEC flows to the return */
+  onOpenScheduleC?: () => void
 }
 
 export default function DetailFieldsNec({
@@ -100,6 +109,8 @@ export default function DetailFieldsNec({
   flaggedFields = {},
   variant = 'review',
   showEmptyWhenZero = false,
+  importDocKey = DOC_KEY,
+  onOpenScheduleC,
 }: DetailFieldsNecProps) {
   const fmt = (n: number) => displayEditableAmount(n, showEmptyWhenZero)
   const highlightedRef = useRef<HTMLDivElement>(null)
@@ -109,6 +120,11 @@ export default function DetailFieldsNec({
   const [savedField, setSavedField] = useState<string | null>(null)
   const [localEdited, setLocalEdited] = useState<Set<string>>(new Set())
   const isEdited = (key: string) => syncedEditedFields?.has(key) || localEdited.has(key)
+
+  const scheduleCNeedsSetup =
+    variant === 'review' &&
+    !amounts?.necOnReturn &&
+    (NEC_SOURCE_AMOUNT > 0 || (amounts?.necIncome ?? 0) > 0 || !!flaggedFields['nec-box1'])
 
   useEffect(() => {
     if (selectedField && highlightedRef.current) {
@@ -263,7 +279,10 @@ export default function DetailFieldsNec({
       {/* Page header */}
       <div className={styles.pageHeader}>
         <div className={styles.headerActions}>
-          <h2 className={styles.headerTitle}>Details: Nonemployee Comp (1099-NEC)</h2>
+          <div className={styles.headerTitleRow}>
+            <h2 className={styles.headerTitle}>Details: Nonemployee Comp (1099-NEC)</h2>
+            {importDocKey && <ImportSourceBadge docKey={importDocKey} />}
+          </div>
           {variant !== 'input' && (
           <DocVerifyHeaderActions
             docKey={DOC_KEY}
@@ -279,6 +298,24 @@ export default function DetailFieldsNec({
       </div>
 
       <div className={styles.inputContainer}>
+
+        {scheduleCNeedsSetup && (
+          <div className={styles.necSchCMessage}>
+            <PageMessage
+              type="warn"
+              title="NEC income may need Schedule C"
+              open
+              dismissible={false}
+              actionLabel={onOpenScheduleC ? 'Open Schedule C' : undefined}
+              onActionClick={onOpenScheduleC}
+            >
+              <B3>
+                Nonemployee compensation flows to return income, but Schedule C may still need
+                business info and expenses before you can finalize self-employment tax.
+              </B3>
+            </PageMessage>
+          </div>
+        )}
 
         {/* ── Payer Information ── */}
         <div className={styles.sectionHeader}>

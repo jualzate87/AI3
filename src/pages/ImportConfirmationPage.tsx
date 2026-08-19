@@ -1,5 +1,5 @@
-import { useEffect, useState } from 'react'
-import { useNavigate, useSearchParams } from 'react-router-dom'
+import { useEffect } from 'react'
+import { useNavigate } from 'react-router-dom'
 import { CircleCheckFill, ChevronLeft, ChevronRight } from '@design-systems/icons'
 import { Button } from '@ids-ts/button'
 import '@ids-ts/button/dist/main.css'
@@ -16,19 +16,6 @@ import { openHashRoute, PREPARER_DATA_REVIEW_PATH } from '../lib/prototypeRoutes
 
 export default function ImportConfirmationPage() {
   const navigate = useNavigate()
-  const [searchParams, setSearchParams] = useSearchParams()
-  const roleParam = searchParams.get('role')
-  const [reviewRole, setReviewRole] = useState<'preparer' | 'reviewer'>(() =>
-    roleParam === 'reviewer' ? 'reviewer' : 'preparer',
-  )
-
-  const handleSwitchRole = (role: 'preparer' | 'reviewer') => {
-    setReviewRole(role)
-    setSearchParams(role === 'reviewer' ? { role: 'reviewer' } : {}, { replace: true })
-    if (role === 'reviewer') {
-      navigate('/smart-return?role=reviewer')
-    }
-  }
 
   useEffect(() => {
     completeDocumentImport()
@@ -59,11 +46,7 @@ export default function ImportConfirmationPage() {
 
   return (
     <div className={styles.page} data-theme="intuit">
-      <SmartReturnHeader
-        activeTab="smartreturn"
-        demoRole={reviewRole}
-        onDemoRoleChange={handleSwitchRole}
-      />
+      <SmartReturnHeader activeTab="smartreturn" />
 
       <div className={styles.main}>
         <nav className={styles.breadcrumb} aria-label="Breadcrumb">

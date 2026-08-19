@@ -3,8 +3,6 @@ import PageMessage from '@ids-ts/page-message'
 import '@ids-ts/page-message/dist/main.css'
 import { Badge } from '@ids-ts/badge'
 import '@ids-ts/badge/dist/main.css'
-import InfoLink from '@ids-ts/info-link'
-import '@ids-ts/info-link/dist/main.css'
 import { LinkActionButton } from '@ids-ts/link-action-button'
 import '@ids-ts/link-action-button/dist/main.css'
 import { B3 } from '@ids-ts/typography'
@@ -38,11 +36,11 @@ interface QuestionnaireResponsesPanelProps {
 function linkStatusBadge(status: QuestionnaireFieldLinkStatus) {
   switch (status) {
     case 'applied':
-      return <Badge status="success" label="On return" capitalization="sentence" />
+      return <Badge status="success" label="Applied" capitalization="sentence" />
     case 'pending':
       return <Badge status="warn" label="Pending" capitalization="sentence" />
     case 'flagged':
-      return <Badge status="error" label="Needs review" capitalization="sentence" />
+      return <Badge status="error" label="Flagged" capitalization="sentence" />
     case 'planning':
       return <Badge status="info" label="Planning" capitalization="sentence" />
     default:
@@ -85,12 +83,9 @@ export default function QuestionnaireResponsesPanel({
             />
           </div>
           <p className={styles.subtitle}>
-            {QUESTIONNAIRE_PANEL_META.clientName}&apos;s Tax Organizer · {QUESTIONNAIRE_PANEL_META.submittedRange}
+            {QUESTIONNAIRE_PANEL_META.clientName} · {QUESTIONNAIRE_PANEL_META.submittedRange}
             {' · '}
             {QUESTIONNAIRE_PANEL_META.responseCount} responses
-          </p>
-          <p className={styles.sourceMix}>
-            Sources: {formatQuestionnaireSourceMix(QUESTIONNAIRE_PANEL_META.sourceMix)}
           </p>
         </div>
         <DocVerifyHeaderActions
@@ -108,43 +103,15 @@ export default function QuestionnaireResponsesPanel({
           <div className={styles.introMessage}>
             <PageMessage
               type="discovery"
-              title="How client answers connect to this return"
+              title="Client answers feed the return"
               open={introOpen}
               dismissible
               onClose={() => setIntroOpen(false)}
             >
               <B3 className={styles.introBody}>
-                Client answers came from {formatQuestionnaireSourceMix(QUESTIONNAIRE_PANEL_META.sourceMix).toLowerCase()}.
-                We used them to pre-fill values, set planning notes, and raise flags on the return.
-                Review each answer below, open the linked fields to confirm they look right, and edit
-                downstream inputs if anything changed.
-                {' '}
-                <InfoLink
-                  automationId="questionnaire-flow-info"
-                  title="Answer flow"
-                  message={
-                    <>
-                      Client answers flow into the return as field values, flags, or planning
-                      notes. Orange flags mean something still needs your confirmation. AI
-                      diagnostics in Step 2 cite these same responses when they spot a mismatch.
-                    </>
-                  }
-                  tooltipOffsetX={0}
-                  offsetY={8}
-                  tooltipOffsetSkidding={0}
-                  tooltipOffsetDistance={8}
-                  preventTooltipOverflow={{ enabled: true }}
-                  size="inherit"
-                >
-                  How answers flow into the return
-                </InfoLink>
+                Review each answer, open linked fields to confirm values, and mark reviewed when done.
+                Sources: {formatQuestionnaireSourceMix(QUESTIONNAIRE_PANEL_META.sourceMix).toLowerCase()}.
               </B3>
-
-            <ul className={styles.reviewChecklist}>
-              <li>Confirm each answer still matches what the client told you</li>
-              <li>Open linked return fields and verify values or flags look correct</li>
-              <li>Mark this questionnaire reviewed when you&apos;re done — or edit fields directly</li>
-            </ul>
             </PageMessage>
           </div>
         )}
@@ -167,7 +134,7 @@ export default function QuestionnaireResponsesPanel({
             </div>
 
             <p className={styles.question}>
-              <span className={styles.questionLabel}>Preparer asked</span>
+              <span className={styles.questionLabel}>Asked</span>
               {qa.question}
             </p>
 
@@ -182,13 +149,10 @@ export default function QuestionnaireResponsesPanel({
             </div>
 
             <div className={styles.linkageSection}>
-              <p className={styles.linkageIntro}>
-                This answer from <strong>{getQuestionnaireSourceLabel(qa.sourceChannel)}</strong> informed the return fields below.
-              </p>
-              <p className={styles.linkageHeading}>Applied to return</p>
-              <p className={styles.linkageSummary}>{qa.appliedSummary}</p>
-
-              <p className={styles.linkageHeading}>Fields touched</p>
+              <p className={styles.linkageHeading}>On return</p>
+              {qa.appliedSummary && (
+                <p className={styles.linkageSummary}>{qa.appliedSummary}</p>
+              )}
               <ul className={styles.fieldLinkList}>
                 {qa.fieldLinks.map((link, index) => (
                   <li key={`${qa.id}-${link.fieldKey}-${index}`} className={styles.fieldLinkRow}>

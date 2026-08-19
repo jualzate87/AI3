@@ -1,5 +1,6 @@
 import { CircleCheck } from '@design-systems/icons'
 import AttentionCountBadge from './AttentionCountBadge'
+import Tooltip from './Tooltip'
 import type { DocConfirmStatus } from './docReviewStatus'
 import styles from '../../styles/data-review/PeelTab.module.css'
 
@@ -28,9 +29,11 @@ export default function PeelTab({ tabs, activeKey, onChange }: PeelTabProps) {
         const confirmStatus = tab.confirmStatus
         const flagCount = tab.flagCount ?? 0
         const needsReview = tab.needsReview && !tab.showClearedCheck && confirmStatus !== 'confirmed'
-        return (
+        const showNeedsReviewTip =
+          needsReview && !flagCount && confirmStatus !== 'needs-confirm'
+
+        const tabButton = (
           <button
-            key={tab.key}
             type="button"
             className={[
               styles.tab,
@@ -53,6 +56,7 @@ export default function PeelTab({ tabs, activeKey, onChange }: PeelTabProps) {
               <AttentionCountBadge
                 count={flagCount}
                 className={styles.flagBadge}
+                tooltip={`${flagCount} import flag${flagCount === 1 ? '' : 's'} on this document`}
                 aria-label={`${flagCount} import flag${flagCount === 1 ? '' : 's'}`}
               />
             )}
@@ -60,6 +64,7 @@ export default function PeelTab({ tabs, activeKey, onChange }: PeelTabProps) {
               <AttentionCountBadge
                 count={1}
                 className={styles.flagBadge}
+                tooltip="Waiting for reviewer confirmation"
                 aria-label="Needs reviewer confirmation"
               />
             )}
@@ -79,10 +84,17 @@ export default function PeelTab({ tabs, activeKey, onChange }: PeelTabProps) {
                 <CircleCheck size="small" />
               </span>
             )}
-            {needsReview && !flagCount && confirmStatus !== 'needs-confirm' && (
-              <span className={styles.reviewDot} aria-hidden />
-            )}
           </button>
+        )
+
+        return showNeedsReviewTip ? (
+          <Tooltip key={tab.key} text="Not yet marked reviewed" placement="top">
+            {tabButton}
+          </Tooltip>
+        ) : (
+          <span key={tab.key} className={styles.tabWrap}>
+            {tabButton}
+          </span>
         )
       })}
     </div>

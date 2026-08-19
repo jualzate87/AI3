@@ -113,6 +113,9 @@ export default function AnnotationPopover({
             size="small"
             value={annotationType}
             width="100%"
+            stylePosition={{ zIndex: 10001 }}
+            preventMenuOverflow={{ enabled: true, padding: 8 }}
+            positions={['bottom', 'top']}
             onChange={handleTypeChange}
           >
             {typeOptions.map(opt => (

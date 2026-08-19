@@ -94,7 +94,7 @@ export default function NotesPane({
     setComposeType('note')
   }
 
-  const composeTypeOptions = getAnnotationTypeOptions(false)
+  const composeTypeOptions = getAnnotationTypeOptions(true)
 
   const startEdit = (note: Note) => {
     setEditingId(note.id)
@@ -137,6 +137,9 @@ export default function NotesPane({
           size="small"
           value={composeType}
           width="100%"
+          stylePosition={{ zIndex: 10001 }}
+          preventMenuOverflow={{ enabled: true, padding: 8 }}
+          positions={['bottom', 'top']}
           onChange={e => {
             const target = e.target as HTMLInputElement
             if (target?.value) setComposeType(target.value as AnnotationType)

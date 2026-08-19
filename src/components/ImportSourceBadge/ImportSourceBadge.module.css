@@ -1,0 +1,33 @@
+.badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 1px 7px;
+  border-radius: 10px;
+  font-family: var(--font-family-component);
+  font-size: 11px;
+  font-weight: 600;
+  line-height: 16px;
+  letter-spacing: 0.02em;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+/* Audit log API purple — field-highlight #4A2291 */
+.apiFiled {
+  background: #ede9fe;
+  color: #4a2291;
+  border: 1px solid #c4b5fd;
+}
+
+/* Audit log IMPORT green */
+.import {
+  background: #d1fae5;
+  color: #047857;
+  border: 1px solid #6ee7b7;
+}
+
+.manual {
+  background: var(--color-container-background-secondary, #f0f4f6);
+  color: var(--color-text-secondary, #5d686f);
+  border: 1px solid var(--color-divider-secondary, #c3ced5);
+}

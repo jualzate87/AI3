@@ -27,8 +27,17 @@
   justify-content: space-between;
   flex-wrap: wrap;
   gap: var(--space-component-gap-medium, 12px);
-  padding: 14px 20px 12px;
-  border-bottom: 1px solid #e8edf0;
+  padding: var(--space-container-padding-small, 12px) var(--space-container-padding-medium, 20px);
+  border-bottom: 1px solid var(--color-divider-tertiary, #e8edf0);
+  min-width: 0;
+}
+
+.headerTitleRow {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: var(--space-component-gap-small, 8px);
+  flex: 1;
   min-width: 0;
 }
 
@@ -294,18 +303,18 @@
 /* Section header — grey bg, full width */
 .sectionHeader {
   display: flex;
-  gap: 10px;
+  gap: var(--space-component-gap-small, 8px);
   align-items: center;
-  padding: 6px 20px;
-  margin: 4px 0 0;
-  background: #f0f4f6;
+  padding: var(--space-component-inline-padding-small, 8px) var(--space-container-padding-medium, 20px);
+  margin: var(--space-component-gap-small, 8px) 0 0;
+  background: var(--color-container-background-secondary, #f0f4f6);
   font-family: var(--font-family-component) !important;
-  font-size: 12px;
-  font-weight: 600;
+  font-size: var(--font-size-component-x-small, 12px);
+  font-weight: var(--font-weight-component-bold, 600);
   letter-spacing: 0.04em;
   text-transform: uppercase;
   line-height: 18px;
-  color: #5d686f;
+  color: var(--color-text-secondary, #5d686f);
 }
 
 /* Spacer */
@@ -318,12 +327,13 @@
 /* Field row */
 .fieldRow {
   display: flex;
-  gap: 12px;
+  gap: var(--space-component-gap-medium, 12px);
   align-items: center;
-  padding: 6px 0;
-  margin: 0 20px;
-  border-bottom: 1px solid #e8edf0;
+  padding: var(--space-component-inline-padding-small, 8px) 0;
+  margin: 0 var(--space-container-padding-medium, 20px);
+  border-bottom: 1px solid var(--color-divider-tertiary, #e8edf0);
   min-width: 0;
+  transition: background 160ms ease, box-shadow 160ms ease;
 }
 
 /* Field label — prefers ~268px, can shrink when Sources is narrow */
@@ -370,14 +380,18 @@
   display: flex;
   align-items: center;
   gap: 5px;
-  margin: 0 20px;
-  padding: 4px 0 6px;
-  border-bottom: 1px solid #e8edf0;
+  margin: 0 var(--space-container-padding-medium, 20px);
+  padding: var(--space-component-inline-padding-x-small, 4px) 0 var(--space-component-inline-padding-small, 8px);
+  border-bottom: 1px solid var(--color-divider-tertiary, #e8edf0);
   font-family: var(--font-family-component);
-  font-size: 12px;
+  font-size: var(--font-size-component-x-small, 12px);
   font-weight: 400;
   line-height: 16px;
   color: #c9500f;
+}
+
+.necSchCMessage {
+  margin: 0 var(--space-container-padding-medium, 20px) var(--space-component-gap-medium, 12px);
 }
 
 .validationNoteIcon {
@@ -407,6 +421,7 @@
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
+  transition: background 160ms ease, border-color 160ms ease, box-shadow 160ms ease;
 }
 
 .fieldInput:read-write {
@@ -419,16 +434,18 @@
 
 /* Highlighted input — blue (generic popover / source navigation) */
 .fieldInputHighlighted {
-  background: rgba(32, 94, 163, 0.05);
+  background: rgba(32, 94, 163, 0.1);
   border-color: #205ea3;
   border-width: 2px;
+  box-shadow: 0 0 0 1px rgba(32, 94, 163, 0.15);
 }
 
 /* Highlighted input — warning state (flagged fields) */
 .fieldInputHighlightedOrange {
-  background: rgba(255, 187, 0, 0.25);
+  background: rgba(255, 187, 0, 0.28);
   border-color: #ff6a00;
-  border-width: 1px;
+  border-width: 2px;
+  box-shadow: 0 0 0 1px rgba(201, 80, 15, 0.12);
 }
 
 /* Comment popover open — blue tint, keep actions visible */
@@ -448,14 +465,16 @@
 
 /* Highlighted row — blue tint */
 .fieldRowHighlighted {
-  background: rgba(32, 94, 163, 0.04);
+  background: rgba(32, 94, 163, 0.08);
   border-radius: 4px;
+  box-shadow: inset 0 0 0 2px rgba(32, 94, 163, 0.35);
 }
 
 /* Highlighted row — warning state (flagged fields) */
 .fieldRowHighlightedOrange {
-  background: rgba(255, 187, 0, 0.08);
+  background: rgba(255, 187, 0, 0.12);
   border-radius: 4px;
+  box-shadow: inset 0 0 0 2px rgba(201, 80, 15, 0.45);
 }
 
 /* Edit hint — subtle pencil icon shown on highlighted (non-editing) rows */

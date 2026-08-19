@@ -80,13 +80,8 @@
   border-color: var(--color-action-standard, #205ea3);
 }
 
-.reviewDot {
-  display: inline-block;
-  width: 6px;
-  height: 6px;
-  margin-left: 6px;
-  border-radius: 50%;
-  background: var(--color-action-standard, #205ea3);
+.tabWrap {
+  display: inline-flex;
   flex-shrink: 0;
 }
 

@@ -3,7 +3,6 @@ import { CommentDots, Flag } from '@design-systems/icons'
 import Tooltip from './Tooltip'
 import AnnotationPopover from './AnnotationPopover'
 import {
-  getAnnotationTypeOptions,
   isFlagLikeAnnotation,
   isNoteLikeAnnotation,
   type AnnotationType,
@@ -47,7 +46,7 @@ export default function FieldAnnotationButton({
   variant = 'detail',
   isFlagged = false,
   existingFlagNote = '',
-  allowFlagTypes = variant === 'summary',
+  allowFlagTypes = true,
   onAddNote,
   onToggleFlagged,
   onSetFlagNote,
@@ -94,14 +93,14 @@ export default function FieldAnnotationButton({
 
   const handleSubmit = () => {
     const formatted = formatAnnotationNote(annotationType, draft)
-    if (isNoteLikeAnnotation(annotationType)) {
-      if (!formatted) return
-      onAddNote?.(formatted, contextLabel)
+    if (isNoteLikeAnnotation(annotationType) && !formatted) return
+
+    // All annotation types land in Comments when onAddNote is wired.
+    if (onAddNote) {
+      onAddNote(formatted || annotationTypeLabel(annotationType), contextLabel)
     } else if (variant === 'summary' && onToggleFlagged && onSetFlagNote) {
       if (!isFlagged) onToggleFlagged(fieldKey)
       onSetFlagNote(fieldKey, formatted)
-    } else {
-      onAddNote?.(formatted, contextLabel)
     }
     close()
   }

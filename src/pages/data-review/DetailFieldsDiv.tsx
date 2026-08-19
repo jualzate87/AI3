@@ -6,6 +6,7 @@ import { DestinationFieldLabel } from './DestinationFieldLabel'
 import { CLIENT_ADDRESS } from '../../data/clientAddress'
 import { displayEditableAmount, parseAmountDraft, type LiveAmounts } from '../../data/liveReturn'
 import DocVerifyHeaderActions from './DocVerifyHeaderActions'
+import ImportSourceBadge from '../../components/ImportSourceBadge/ImportSourceBadge'
 import QuestionnaireFieldNote from './QuestionnaireFieldNote'
 import styles from '../../styles/data-review/DetailFields.module.css'
 
@@ -375,7 +376,10 @@ export default function DetailFieldsDiv({
       {/* Page header */}
       <div className={styles.pageHeader}>
         <div className={styles.headerActions}>
-          <h2 className={styles.headerTitle}>Details: Dividend Income (1099-DIV)</h2>
+          <div className={styles.headerTitleRow}>
+            <h2 className={styles.headerTitle}>Details: Dividend Income (1099-DIV)</h2>
+            <ImportSourceBadge docKey={docKey} />
+          </div>
           {variant !== 'input' && (
           <DocVerifyHeaderActions
             docKey={docKey}

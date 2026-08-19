@@ -16,6 +16,7 @@ import {
 } from './phase1FieldSync'
 import type { TopTab } from './ReviewTab'
 import { QUESTIONNAIRE_DOC_KEY, QUESTIONNAIRE_HUB_LABEL } from './questionnaireData'
+import { isManualImportDoc } from '../../data/documentImportMeta'
 import { isDocShownVerified, isVerifiedInSet, normalizeVerifiedDocKey } from '../../data/verifiedDocKeys'
 
 export type IdentityField = 'ssn' | 'ein'
@@ -56,6 +57,13 @@ export function canVerifyDoc(args: {
 }): CanVerifyDocResult {
   if (args.isReviewer) return { allowed: true }
 
+  const key = normalizeVerifiedDocKey(args.docKey)
+
+  /** PDF-only / manual docs — preparer attests manual match; skip OCR flag + identity gates. */
+  if (isManualImportDoc(key)) {
+    return { allowed: true }
+  }
+
   const uncorrectedCriticalCount = countUncorrectedCriticalFlagsForDoc(
     args.docKey,
     args.reviewedFields,
@@ -64,7 +72,6 @@ export function canVerifyDoc(args: {
     return { allowed: false, reason: 'critical-flags', uncorrectedCriticalCount }
   }
 
-  const key = normalizeVerifiedDocKey(args.docKey)
   if (key === 'techCircle' && args.amounts) {
     const missingIdentityFields = getTechCircleIdentityGaps(args.amounts)
     if (missingIdentityFields.length > 0) {

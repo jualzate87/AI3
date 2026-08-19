@@ -44,7 +44,11 @@ import {
   REVIEWER_NAME,
   setReviewActor,
   getReviewActor,
+  STORAGE_KEY,
 } from '../hooks/useSyncedReviewState'
+import ImportSourceBadge from '../components/ImportSourceBadge/ImportSourceBadge'
+import ManualDocNotice from '../components/ManualDocNotice/ManualDocNotice'
+import { resolveActiveVerifyDocKey } from '../data/documentImportMeta'
 import intuitAssistIcon from '../assets/icons/intuit-assist.svg'
 import LeftPanel1040 from './data-review/LeftPanel1040'
 import ReviewTab from './data-review/ReviewTab'
@@ -118,7 +122,6 @@ import img1040PriorPage1 from '../assets/jessica-1040-2024-variant-1.png'
 import img1040PriorPage2 from '../assets/jessica-1040-2024-variant-2.png'
 import styles from '../styles/data-review/DataReviewPage.module.css'
 import dragStyles from '../styles/data-review/DragHandle.module.css'
-import DemoRoleBar from '../components/DemoRoleBar/DemoRoleBar'
 
 /** Source-doc panel slide timing — matches --duration-appear/disappear-emphasize-fast */
 const SOURCE_PANEL_ENTER_MS = 500
@@ -253,6 +256,9 @@ export default function DataReviewPage() {
   const [agentSubView, setAgentSubView] = useState<'overview' | 'yoyDetail'>('overview')
   // Notes / comments — persisted for C2 handoff (localStorage for cross-tab reviewer)
   const NOTES_KEY = 'protoc3-notes'
+  const SESSION_STARTED_KEY = 'protoc3-session-started'
+  const SESSION_IMPORTS_KEY = 'protoc3-imports-started'
+  const SESSION_PHASE_KEY = 'protoc3-phase'
   const loadNotes = (): Note[] => {
     if (typeof window !== 'undefined') {
       const hash = window.location.hash.replace(/^#/, '')
@@ -837,6 +843,25 @@ export default function DataReviewPage() {
 
   const highlightField1040 = resolveOutputFieldFromIssueField(selectedField)
 
+  const activeVerifyDocKey = resolveActiveVerifyDocKey({
+    activeTopTab,
+    activeSubTab,
+    activeDivPayer,
+    activeIntPayer,
+  })
+
+  const handleOpenScheduleC = useCallback(() => {
+    setShow1040(true)
+    setOutputFormId('schC')
+    setSelectedField('schC-1')
+    requestAnimationFrame(() => {
+      requestAnimationFrame(() => {
+        const row = document.querySelector('[data-field-row="schC-1"]') as HTMLElement | null
+        row?.scrollIntoView({ block: 'nearest', behavior: 'smooth' })
+      })
+    })
+  }, [setSelectedField, setOutputFormId, setShow1040])
+
   // Scroll the mapped output row into view when a source field is selected and outputs are visible
   useEffect(() => {
     if (!show1040 || !highlightField1040) return
@@ -1173,31 +1198,63 @@ export default function DataReviewPage() {
   }
 
   // Preparer entry (Import confirmation / Input return tab): Return Summary full width, panels closed.
-  // Re-run on route navigation (location.key), not on every render — setSelectedField is unstable.
+  // Only wipe synced state on first-time session or explicit Reset demo — not on Input ↔ Data review hops.
   useEffect(() => {
     if (!isPreparerEntry) return
-    resetReviewState()
-    setNotes([])
-    try { localStorage.removeItem(NOTES_KEY) } catch { /* ignore */ }
+
+    const sessionStarted = sessionStorage.getItem(SESSION_STARTED_KEY) === '1'
+    let hasPersistedReview = false
+    try {
+      hasPersistedReview = !!localStorage.getItem(STORAGE_KEY)
+    } catch {
+      hasPersistedReview = false
+    }
+
+    const isFreshSession = !sessionStarted && !hasPersistedReview
+
+    if (isFreshSession) {
+      resetReviewState()
+      setNotes([])
+      try { localStorage.removeItem(NOTES_KEY) } catch { /* ignore */ }
+      sessionStorage.setItem(SESSION_STARTED_KEY, '1')
+      sessionStorage.setItem(SESSION_IMPORTS_KEY, '0')
+      sessionStorage.setItem(SESSION_PHASE_KEY, 'import')
+    } else {
+      const savedImports = sessionStorage.getItem(SESSION_IMPORTS_KEY) === '1'
+      const savedPhase = sessionStorage.getItem(SESSION_PHASE_KEY)
+      setImportsStarted(savedImports)
+      if (savedPhase === 'import' || savedPhase === 'diagnostics') {
+        setPhase(savedPhase)
+      }
+    }
+
     setReviewRole('preparer')
     setReviewPass(1)
     setReviewActor(PREPARER_NAME)
     setReviewerReviewStarted(false)
-    setPhase('import')
+    if (isFreshSession) {
+      setPhase('import')
+      setImportsStarted(false)
+      setSelectedField(null)
+      setSummaryMode('signoff-review')
+      setSummaryOpts({})
+      setRightPanelExiting(false)
+      setPanelClosing(false)
+      setRightPanelMode('closed')
+      setOutputSourcesCoach(false)
+      setCoachTip(null)
+      try { sessionStorage.removeItem('protoc-coach-tip:outputSourcesFirst') } catch { /* ignore */ }
+    }
     setShow1040(true)
     setOutputFormId('summary')
-    setImportsStarted(false)
-    setSelectedField(null)
-    setSummaryMode('signoff-review')
-    setSummaryOpts({})
-    setRightPanelExiting(false)
-    setPanelClosing(false)
-    setRightPanelMode('closed')
-    setOutputSourcesCoach(false)
-    setCoachTip(null)
-    // Fresh preparer session — replay the Summary (i) coach sequence like ProtoC welcome
-    try { sessionStorage.removeItem('protoc-coach-tip:outputSourcesFirst') } catch { /* ignore */ }
   }, [entry, roleParam, isPreparerEntry, location.key, resetReviewState])
+
+  // Persist preparer UI progress across Input return ↔ Data review navigation
+  useEffect(() => {
+    if (!isPreparerEntry) return
+    sessionStorage.setItem(SESSION_IMPORTS_KEY, importsStarted ? '1' : '0')
+    sessionStorage.setItem(SESSION_PHASE_KEY, phase)
+  }, [importsStarted, phase, isPreparerEntry, SESSION_IMPORTS_KEY, SESSION_PHASE_KEY])
 
   // Auto-start review when navigated from SmartReturn header CTA
   const startReviewHandled = useRef(false)
@@ -1214,28 +1271,6 @@ export default function DataReviewPage() {
     const timer = window.setTimeout(() => setSummaryBriefEnterAnim(false), 2800)
     return () => window.clearTimeout(timer)
   }, [summaryBriefEnterAnim])
-
-  /** Demo chrome: jump between Pass 1 / Pass 2 without full grind */
-  const handleSwitchRole = (role: 'preparer' | 'reviewer') => {
-    setStoredDemoRole(role)
-    if (role === 'reviewer') {
-      handleSwitchToReviewerRole()
-      return
-    }
-    setReviewRole('preparer')
-    setReviewPass(1)
-    setReviewActor(PREPARER_NAME)
-    setReviewerReviewStarted(false)
-    setPhase('import')
-    setImportsStarted(false)
-    setShow1040(true)
-    setOutputFormId('summary')
-    setFocusNoteId(null)
-    setSummaryMode('signoff-review')
-    setSummaryOpts({})
-    closeRightPanel()
-    navigate('/data-review?entry=input-return&role=preparer', { replace: true })
-  }
 
   const handoffSnapshot: HandoffSnapshot | null =
     rightPanelMode === 'summary'
@@ -1664,7 +1699,6 @@ export default function DataReviewPage() {
   const outputsShareWithBrief = summaryPanelOpen && show1040
   return (
     <div className={styles.page}>
-      <DemoRoleBar role={reviewRole} onRoleChange={handleSwitchRole} />
       {/* Header — title + peer icon controls (Sign-off lives on Step 2 banner) */}
       <div className={styles.headerBlock}>
         <div className={styles.header}>
@@ -2056,7 +2090,7 @@ export default function DataReviewPage() {
                 ) : (
                   <div className={styles.sourcePanelTitleGroup}>
                     <span className={styles.sourcePanelTitle}>
-                      {isReviewerConfirmMode ? 'Source documents' : 'Imported documents'}
+                      Source documents
                     </span>
                     {isReviewerConfirmMode && (
                       <span className={styles.sourcePanelLayerBadge}>
@@ -2183,6 +2217,14 @@ export default function DataReviewPage() {
                   onChange={() => {}}
                 />
               )}
+
+              {activeTopTab !== 'questionnaire' && activeVerifyDocKey && (
+                <div className={styles.docImportBar}>
+                  <ImportSourceBadge docKey={activeVerifyDocKey} />
+                </div>
+              )}
+
+              <ManualDocNotice docKey={activeVerifyDocKey} />
 
               {/* Document preview + detail fields. flex-basis % (not width/height alone)
                   so the six-dot handle can shrink the preview even when the document
@@ -2451,6 +2493,7 @@ export default function DataReviewPage() {
                     'nec-box1': PHASE1_FLAG_MESSAGES.nec.necBox1,
                   }, yoyInputFlags)}
                   onAddFieldNote={(text, context) => handleAddNote(text, context)}
+                  onOpenScheduleC={handleOpenScheduleC}
                 />
               )}
               {activeTopTab === 'questionnaire' && (

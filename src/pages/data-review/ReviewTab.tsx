@@ -81,6 +81,7 @@ export default function ReviewTab({
         <AttentionCountBadge
           count={confirmCount}
           className={styles.tabCountBadge}
+          tooltip="Documents waiting for reviewer confirmation"
           aria-label="Documents need reviewer confirmation"
         />
       )
@@ -99,6 +100,7 @@ export default function ReviewTab({
         <DocumentCountBadge
           count={docUnreviewed}
           className={styles.tabCountBadge}
+          tooltip={`${docUnreviewed} document${docUnreviewed === 1 ? '' : 's'} not yet marked reviewed in this section`}
           aria-label={`${docUnreviewed} unreviewed document${docUnreviewed === 1 ? '' : 's'}`}
         />
       )
@@ -107,7 +109,13 @@ export default function ReviewTab({
     if (!flagCounts && !typeReviewed && !verifiedDocs) return null
     const count = flagCounts?.[tabKey] ?? 0
     if (count > 0) {
-      return <AttentionCountBadge count={count} className={styles.tabCountBadge} />
+      return (
+        <AttentionCountBadge
+          count={count}
+          className={styles.tabCountBadge}
+          tooltip={`${count} import flag${count === 1 ? '' : 's'} needing attention in this section`}
+        />
+      )
     }
     if (typeReviewed?.[tabKey]) {
       return (

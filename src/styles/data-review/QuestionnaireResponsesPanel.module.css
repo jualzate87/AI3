@@ -1,7 +1,8 @@
 .container {
   display: flex;
   flex-direction: column;
-  flex: 1;
+  flex: 1 1 auto;
+  height: 100%;
   min-height: 0;
   width: 100%;
   overflow: hidden;
@@ -41,11 +42,7 @@
 }
 
 .sourceMix {
-  margin: 0;
-  font-family: var(--font-family-body);
-  font-size: var(--font-size-body-4, 12px);
-  color: var(--color-text-secondary, #5d686f);
-  line-height: 1.4;
+  display: none;
 }
 
 .subtitle {
@@ -71,16 +68,7 @@
 }
 
 .reviewChecklist {
-  margin: var(--space-150, 8px) 0 0;
-  padding-left: var(--space-300, 16px);
-  font-family: var(--font-family-body);
-  font-size: var(--font-size-body-3, 14px);
-  color: var(--color-text-primary, #393a3d);
-  line-height: 1.45;
-}
-
-.reviewChecklist li + li {
-  margin-top: var(--space-100, 6px);
+  display: none;
 }
 
 .introBody {
@@ -180,16 +168,7 @@
 }
 
 .linkageIntro {
-  margin: 0 0 var(--space-150, 8px);
-  font-family: var(--font-family-body);
-  font-size: var(--font-size-body-4, 12px);
-  color: var(--color-text-secondary, #5d686f);
-  line-height: 1.4;
-}
-
-.linkageIntro strong {
-  font-weight: var(--font-weight-body-bold, 600);
-  color: var(--color-text-primary, #393a3d);
+  display: none;
 }
 
 .linkageSection {
@@ -211,11 +190,11 @@
 }
 
 .linkageSummary {
-  margin: 0 0 var(--space-150, 8px);
+  margin: 0 0 var(--space-100, 6px);
   font-family: var(--font-family-body);
-  font-size: var(--font-size-body-3, 14px);
-  color: var(--color-text-primary, #393a3d);
-  line-height: 1.45;
+  font-size: var(--font-size-body-4, 12px);
+  color: var(--color-text-secondary, #5d686f);
+  line-height: 1.4;
 }
 
 .fieldLinkList {

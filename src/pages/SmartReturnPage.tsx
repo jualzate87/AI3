@@ -10,7 +10,7 @@ import {
 } from '../lib/prototypeRoutes'
 
 export default function SmartReturnPage() {
-  const [searchParams, setSearchParams] = useSearchParams()
+  const [searchParams] = useSearchParams()
   const roleParam = searchParams.get('role')
   const [reviewRole, setReviewRole] = useState<'preparer' | 'reviewer'>(() =>
     roleParam === 'reviewer' ? 'reviewer' : 'preparer',
@@ -19,6 +19,10 @@ export default function SmartReturnPage() {
   useEffect(() => {
     setStoredDemoRole(reviewRole)
   }, [reviewRole])
+
+  useEffect(() => {
+    setReviewRole(roleParam === 'reviewer' ? 'reviewer' : 'preparer')
+  }, [roleParam])
 
   useEffect(() => {
     const el = document.documentElement
@@ -35,12 +39,6 @@ export default function SmartReturnPage() {
     }
   }, [])
 
-  const handleSwitchRole = (role: 'preparer' | 'reviewer') => {
-    setReviewRole(role)
-    setStoredDemoRole(role)
-    setSearchParams(role === 'reviewer' ? { role: 'reviewer' } : {}, { replace: true })
-  }
-
   const handleReviewReturn = () => {
     openHashRoute(REVIEWER_DATA_REVIEW_PATH)
   }
@@ -54,8 +52,6 @@ export default function SmartReturnPage() {
           activeTab="smartreturn"
           showReviewReturn={isReviewer}
           onReviewReturn={handleReviewReturn}
-          demoRole={reviewRole}
-          onDemoRoleChange={handleSwitchRole}
         />
 
         <SmartReturnDocumentHub readOnly={isReviewer} />

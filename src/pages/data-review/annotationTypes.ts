@@ -1,53 +1,31 @@
-/** Unified annotation kinds — notes vs follow-up flags at increasing severity. */
-export type AnnotationType =
-  | 'note'
-  | 'question'
-  | 'follow-up'
-  | 'client-question'
-  | 'flag'
-  | 'critical'
-  | 'blocking'
+/** Unified annotation kinds — notes and flags at increasing severity. */
+export type AnnotationType = 'note' | 'flag' | 'efile-critical'
 
-export const ANNOTATION_NOTE_TYPE_OPTIONS: { value: AnnotationType; label: string }[] = [
+export const ANNOTATION_TYPE_OPTIONS: { value: AnnotationType; label: string }[] = [
   { value: 'note', label: 'Note' },
-  { value: 'question', label: 'Question for reviewer' },
-  { value: 'follow-up', label: 'Follow-up needed' },
-  { value: 'client-question', label: 'Client question' },
-]
-
-export const ANNOTATION_FLAG_TYPE_OPTIONS: { value: AnnotationType; label: string }[] = [
   { value: 'flag', label: 'Flag' },
-  { value: 'critical', label: 'Critical' },
-  { value: 'blocking', label: 'Blocking flag' },
+  { value: 'efile-critical', label: 'E-file critical flag' },
 ]
 
-/** @deprecated use getAnnotationTypeOptions */
-export const ANNOTATION_TYPE_OPTIONS = [
-  ...ANNOTATION_NOTE_TYPE_OPTIONS,
-  ...ANNOTATION_FLAG_TYPE_OPTIONS,
-]
+/** @deprecated use ANNOTATION_TYPE_OPTIONS */
+export const ANNOTATION_NOTE_TYPE_OPTIONS = ANNOTATION_TYPE_OPTIONS.filter(o => o.value === 'note')
+export const ANNOTATION_FLAG_TYPE_OPTIONS = ANNOTATION_TYPE_OPTIONS.filter(o => o.value !== 'note')
 
-export function getAnnotationTypeOptions(allowFlagTypes: boolean): { value: AnnotationType; label: string }[] {
-  return allowFlagTypes
-    ? [...ANNOTATION_NOTE_TYPE_OPTIONS, ...ANNOTATION_FLAG_TYPE_OPTIONS]
-    : [...ANNOTATION_NOTE_TYPE_OPTIONS]
+export function getAnnotationTypeOptions(_allowFlagTypes = true): { value: AnnotationType; label: string }[] {
+  return ANNOTATION_TYPE_OPTIONS
 }
 
 export function isNoteLikeAnnotation(type: AnnotationType): boolean {
-  return type === 'note' || type === 'question' || type === 'follow-up' || type === 'client-question'
+  return type === 'note'
 }
 
 export function isFlagLikeAnnotation(type: AnnotationType): boolean {
-  return !isNoteLikeAnnotation(type)
+  return type === 'flag' || type === 'efile-critical'
 }
 
 const ANNOTATION_PREFIX: Partial<Record<AnnotationType, string>> = {
-  question: '[Question]',
-  'follow-up': '[Follow-up]',
-  'client-question': '[Client]',
   flag: '[Flag]',
-  critical: '[Critical]',
-  blocking: '[Blocking]',
+  'efile-critical': '[E-file critical]',
 }
 
 export function formatAnnotationNote(type: AnnotationType, text: string): string {
@@ -58,19 +36,17 @@ export function formatAnnotationNote(type: AnnotationType, text: string): string
 }
 
 export function parseAnnotationType(note: string, isFlagged = false): AnnotationType {
-  if (note.startsWith('[Blocking]')) return 'blocking'
-  if (note.startsWith('[Critical]')) return 'critical'
-  if (note.startsWith('[Question]')) return 'question'
-  if (note.startsWith('[Follow-up]')) return 'follow-up'
-  if (note.startsWith('[Client]')) return 'client-question'
+  if (note.startsWith('[E-file critical]') || note.startsWith('[Blocking]') || note.startsWith('[Critical]')) {
+    return 'efile-critical'
+  }
   if (isFlagged || note.startsWith('[Flag]')) return 'flag'
   return 'note'
 }
 
 export function stripAnnotationPrefix(note: string): string {
-  return note.replace(/^\[(Flag|Critical|Blocking|Question|Follow-up|Client)\]\s?/, '')
+  return note.replace(/^\[(Flag|E-file critical|Blocking|Critical)\]\s?/, '')
 }
 
 export function annotationTypeLabel(type: AnnotationType): string {
-  return getAnnotationTypeOptions(true).find(o => o.value === type)?.label ?? 'Note'
+  return ANNOTATION_TYPE_OPTIONS.find(o => o.value === type)?.label ?? 'Note'
 }

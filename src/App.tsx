@@ -6,6 +6,7 @@ import { FusionProvider } from './contexts/fusion'
 import FusionShell from './components/FusionShell'
 import { FUSION_CONFIG } from './navigation'
 import { repairIncomingRoute, resolveCatchAllRoute } from './lib/prototypeRoutes'
+import LaunchPointsFab from './components/LaunchPointsFab/LaunchPointsFab'
 import DataReviewPage from './pages/DataReviewPage'
 import DataReviewPopout from './pages/DataReviewPopout'
 import SmartReturnPage from './pages/SmartReturnPage'
@@ -56,6 +57,7 @@ export default function App() {
       <HashRouter basename={ROUTER_BASENAME}>
         <FusionProvider pathPrefix={FUSION_CONFIG.pathPrefix || ''}>
           <HashRouteNormalizer />
+          <LaunchPointsFab />
           <Routes>
             {/* SmartReview prototype — outside the QBO Fusion shell */}
             <Route path="/" element={<Navigate to="/smart-return" replace />} />

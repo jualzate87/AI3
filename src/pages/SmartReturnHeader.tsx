@@ -6,7 +6,6 @@ ChevronDown, List, Edit, Checklist,
 } from '@design-systems/icons'
 import { Button } from '@ids-ts/button'
 import '@ids-ts/button/dist/main.css'
-import DemoRoleBar, { type DemoRole } from '../components/DemoRoleBar/DemoRoleBar'
 import styles from '../styles/SmartReturnHeader.module.css'
 
 export type ReturnHeaderTab = 'profile' | 'smartreturn' | 'inputreturn' | 'checkreturns' | 'filereturn'
@@ -18,9 +17,6 @@ interface SmartReturnHeaderProps {
   /** Primary styling after review has started */
   reviewReturnStarted?: boolean
   onReviewReturn?: () => void
-  /** Prototype demo role — renders accent bar above product chrome */
-  demoRole?: DemoRole
-  onDemoRoleChange?: (role: DemoRole) => void
 }
 
 export default function SmartReturnHeader({
@@ -28,17 +24,11 @@ export default function SmartReturnHeader({
   showReviewReturn = false,
   reviewReturnStarted = false,
   onReviewReturn,
-  demoRole,
-  onDemoRoleChange,
 }: SmartReturnHeaderProps) {
   const navigate = useNavigate()
 
   return (
     <div className={styles.header}>
-      {demoRole != null && onDemoRoleChange != null && (
-        <DemoRoleBar role={demoRole} onRoleChange={onDemoRoleChange} />
-      )}
-
       {/* ── Row 1: Product header 48px ── */}
       <div className={styles.row1}>
         <span className={styles.businessName}>Honey Tax Accounting</span>
