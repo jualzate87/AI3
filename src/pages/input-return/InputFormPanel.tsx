@@ -98,6 +98,8 @@ export default function InputFormPanel({
           <PageMessage
             type="error"
             title="Form W-2: Employer Identification Number (EIN) is missing and is required for e-file."
+            open
+            dismissible={false}
           />
         </div>
       )}

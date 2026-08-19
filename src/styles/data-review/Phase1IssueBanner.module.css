@@ -1,0 +1,9 @@
+.wrap {
+  margin: var(--space-component-gap-small, 8px) var(--space-container-padding-medium, 16px)
+    var(--space-component-gap-small, 8px);
+  flex-shrink: 0;
+}
+
+.body {
+  margin: 0;
+}

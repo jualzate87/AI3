@@ -2,30 +2,27 @@ import Tooltip from '../../pages/data-review/Tooltip'
 import { getDocumentImportMeta, type ImportMode } from '../../data/documentImportMeta'
 import styles from './ImportSourceBadge.module.css'
 
-export type ImportSourceBadgeVariant = 'api-filed' | 'import' | 'manual'
+export type ImportSourceBadgeVariant = 'api-filed' | 'import'
 
 const LABELS: Record<ImportSourceBadgeVariant, string> = {
   'api-filed': 'Imported through Filed API',
   import: 'IMPORT',
-  manual: 'Manual entry',
 }
 
 const TOOLTIPS: Record<ImportSourceBadgeVariant, string> = {
   'api-filed': 'PDF and input values imported through Filed API',
   import: 'Values extracted from uploaded document (OCR import)',
-  manual: 'Document attached for reference · data entered manually',
 }
 
 const STYLE_CLASS: Record<ImportSourceBadgeVariant, string> = {
   'api-filed': styles.apiFiled,
   import: styles.import,
-  manual: styles.manual,
 }
 
-export function importModeToBadgeVariant(mode: ImportMode): ImportSourceBadgeVariant {
+export function importModeToBadgeVariant(mode: ImportMode): ImportSourceBadgeVariant | null {
   if (mode === 'api-filed') return 'api-filed'
   if (mode === 'extracted') return 'import'
-  return 'manual'
+  return null
 }
 
 type Props = {
@@ -36,6 +33,7 @@ type Props = {
   className?: string
 }
 
+/** Audit-log style import badge — API purple or OCR green. Manual docs use PageMessage instead. */
 export default function ImportSourceBadge({ variant, docKey, className }: Props) {
   const meta = docKey ? getDocumentImportMeta(docKey) : null
 
@@ -47,7 +45,7 @@ export default function ImportSourceBadge({ variant, docKey, className }: Props)
         ? 'import'
         : null)
 
-  if (!resolvedVariant || resolvedVariant === 'manual') return null
+  if (!resolvedVariant) return null
 
   const label = LABELS[resolvedVariant]
   const tooltip = TOOLTIPS[resolvedVariant]

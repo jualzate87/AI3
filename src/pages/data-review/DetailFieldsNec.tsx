@@ -80,8 +80,6 @@ interface DetailFieldsNecProps {
   /** Input return mode — plain editable fields without verify header */
   variant?: 'review' | 'input'
   showEmptyWhenZero?: boolean
-  /** Canonical verify-doc key — drives import source badge */
-  importDocKey?: string
   /** Navigate to Schedule C gross receipts when NEC flows to the return */
   onOpenScheduleC?: () => void
 }
@@ -108,7 +106,6 @@ export default function DetailFieldsNec({
   flaggedFields = {},
   variant = 'review',
   showEmptyWhenZero = false,
-  importDocKey = DOC_KEY,
   onOpenScheduleC,
 }: DetailFieldsNecProps) {
   const fmt = (n: number) => displayEditableAmount(n, showEmptyWhenZero)

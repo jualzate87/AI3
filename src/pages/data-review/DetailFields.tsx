@@ -82,8 +82,6 @@ interface DetailFieldsProps {
   variant?: 'review' | 'input'
   /** When true (pre-import manual entry), zero amounts render blank */
   showEmptyWhenZero?: boolean
-  /** Canonical verify-doc key — drives import source badge in header */
-  importDocKey?: string
 }
 
 // Static non-wages fields per employer
@@ -154,10 +152,8 @@ export default function DetailFields({
   importReadOnly = false,
   variant = 'review',
   showEmptyWhenZero = false,
-  importDocKey,
 }: DetailFieldsProps) {
   const employer = EMPLOYER_DATA[activeSubTab]
-  const resolvedImportDocKey = importDocKey ?? activeSubTab
   const currentWages = wages[activeSubTab]
   const fmt = (n: number) => displayEditableAmount(n, showEmptyWhenZero)
   const highlightedRef = useRef<HTMLDivElement>(null)

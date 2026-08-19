@@ -44,6 +44,7 @@ import { PHASE1_FLAG_MESSAGES } from './data-review/phase1FlagMessages'
 import img1040PriorPage1 from '../assets/jessica-1040-2024-variant-1.png'
 import img1040PriorPage2 from '../assets/jessica-1040-2024-variant-2.png'
 import { isDocShownVerified } from '../data/verifiedDocKeys'
+import { resolveActiveVerifyDocKey } from '../data/documentImportMeta'
 import { getStoredDemoRole } from '../lib/prototypeRoutes'
 import dragStyles from '../styles/data-review/DragHandle.module.css'
 import styles from '../styles/data-review/DataReviewPopout.module.css'
@@ -168,6 +169,12 @@ export default function DataReviewPopout() {
     if (status === 'unverified') return undefined
     return status
   }
+  const activeVerifyDocKey = resolveActiveVerifyDocKey({
+    activeTopTab,
+    activeSubTab,
+    activeDivPayer,
+    activeIntPayer,
+  })
   const phase1FullyComplete = unreviewedDocCount === 0
   const handleReviewNextDocument = useCallback(() => {
     const next = getNextUnreviewedSourceDoc(unreviewedSourceDocs, {
@@ -374,6 +381,7 @@ export default function DataReviewPopout() {
             <DocumentPreview
               imageSrc={sourceDocPreview.imageSrc}
               alt={sourceDocPreview.alt}
+              importDocKey={activeVerifyDocKey}
               customContent={
                 sourceDocPreview.useInt1099UnwaveringHtml
                   ? <Int1099FormPreview />

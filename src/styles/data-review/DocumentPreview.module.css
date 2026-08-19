@@ -8,6 +8,15 @@
   border-bottom: 1px solid #adbac2;
 }
 
+.manualDocMessage {
+  flex-shrink: 0;
+  padding: var(--space-container-padding-small, 12px) var(--space-container-padding-medium, 16px) 0;
+}
+
+.manualDocBody {
+  margin: 0;
+}
+
 /* Scrollable image area — plain block layout, not flex. A flex row with
    justify-content:center clips a child wider than the container instead of
    making it scrollable (centering wins over overflow), which broke panning
