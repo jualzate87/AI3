@@ -1,5 +1,6 @@
 import { useState, useRef, useEffect, useCallback } from 'react'
 import { ZoomOut, ZoomIn, Search } from '@design-systems/icons'
+import ImportSourceBadge from '../../components/ImportSourceBadge/ImportSourceBadge'
 import styles from '../../styles/data-review/DocumentPreview.module.css'
 
 interface DocumentPreviewProps {
@@ -7,6 +8,8 @@ interface DocumentPreviewProps {
   alt: string
   /** When set, renders custom content instead of image(s) */
   customContent?: React.ReactNode
+  /** Show API import badge in the preview toolbar when doc was imported via Filed */
+  importDocKey?: string | null
 }
 
 const ZOOM_LEVELS = [50, 60, 65, 70, 75, 85, 100, 125, 150, 200]
@@ -31,7 +34,7 @@ const HIDDEN_LOUPE: LoupeState = {
   backgroundPosition: '0 0',
 }
 
-export default function DocumentPreview({ imageSrc, alt, customContent }: DocumentPreviewProps) {
+export default function DocumentPreview({ imageSrc, alt, customContent, importDocKey }: DocumentPreviewProps) {
   const [zoomIndex, setZoomIndex] = useState(6) // default 100% — fit to viewer width
   const zoom = ZOOM_LEVELS[zoomIndex]
   const images = imageSrc ? (Array.isArray(imageSrc) ? imageSrc : [imageSrc]) : []
@@ -217,6 +220,9 @@ export default function DocumentPreview({ imageSrc, alt, customContent }: Docume
 
       {/* Zoom toolbar */}
       <div className={styles.toolbar}>
+        <div className={styles.toolbarBadge}>
+          {importDocKey ? <ImportSourceBadge docKey={importDocKey} /> : null}
+        </div>
         <div className={styles.toolbarControls}>
           <span className={styles.zoomLevel}>{zoom}%</span>
           <button

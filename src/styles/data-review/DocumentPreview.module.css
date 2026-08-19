@@ -60,17 +60,27 @@
 .toolbar {
   display: flex;
   align-items: center;
-  justify-content: center;
+  justify-content: space-between;
+  gap: var(--space-component-gap-small, 8px);
   height: 45px;
   padding: 4px 10px;
   background: #e2e9ed;
   flex-shrink: 0;
 }
 
+.toolbarBadge {
+  flex: 0 1 auto;
+  min-width: 0;
+  display: flex;
+  align-items: center;
+}
+
 .toolbarControls {
   display: flex;
   align-items: center;
+  justify-content: center;
   gap: 20px;
+  flex: 1;
 }
 
 .zoomLevel {

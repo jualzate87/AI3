@@ -16,7 +16,6 @@ import {
   getDocVerifyIdentityBlockedHint,
 } from './docReviewStatus'
 import { getDocVerifyBlockedHint } from './phase1FieldSync'
-import ImportSourceBadge from '../../components/ImportSourceBadge/ImportSourceBadge'
 import styles from '../../styles/data-review/DetailFields.module.css'
 
 type Props = {
@@ -29,8 +28,6 @@ type Props = {
   /** Live return amounts — used for Tech Circle SSN/EIN verify gate */
   amounts?: Pick<LiveAmounts, 'employeeSsn' | 'employerEin'>
   onVerifyDoc?: (docKey: string) => void
-  /** Show API / IMPORT / Manual entry badge beside verify actions */
-  showImportBadge?: boolean
 }
 
 function VerifiedBadge({
@@ -79,7 +76,6 @@ export default function DocVerifyHeaderActions({
   reviewedFields,
   amounts,
   onVerifyDoc,
-  showImportBadge = false,
 }: Props) {
   const blockedMessageRef = useRef<HTMLParagraphElement>(null)
 
@@ -126,7 +122,6 @@ export default function DocVerifyHeaderActions({
   return (
     <div className={styles.verifyHeaderActionsCol}>
       <div className={styles.verifyStatusGroup}>
-        {showImportBadge && <ImportSourceBadge docKey={docKey} />}
         {needsReviewerConfirm && (
           <Tooltip text="Needs confirmation" placement="top">
             <span className={styles.needsConfirmIconWrap}>

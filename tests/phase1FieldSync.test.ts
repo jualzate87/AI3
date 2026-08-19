@@ -20,8 +20,9 @@ describe('W-2 Phase 1 flag counting', () => {
   it('counts all four Tech Circle flags when nothing is reviewed', () => {
     const empty = new Map<string, unknown>()
     expect(countPhase1FlagsForW2Payer('techCircle', empty)).toBe(4)
-    expect(countPhase1FlagsForW2Tab(empty)).toBe(4)
-    expect(getTabFlagCounts(empty).w2s).toBe(4)
+    expect(countPhase1FlagsForW2Payer('bingEquipment', empty)).toBe(4)
+    expect(countPhase1FlagsForW2Tab(empty)).toBe(7)
+    expect(getTabFlagCounts(empty).w2s).toBe(7)
   })
 
   it('drops wages from count when that key is reviewed', () => {
@@ -56,7 +57,14 @@ describe('W-2 Phase 1 flag counting', () => {
     expect(isBox12FlagResolved(fields)).toBe(true)
   })
 
-  it('keeps tab and peel-tab counts in sync', () => {
+  it('keeps Bing Equipment peel-tab count aligned with unresolved detail flags', () => {
+    const empty = new Map<string, unknown>()
+    expect(countPhase1FlagsForW2Payer('bingEquipment', empty)).toBe(4)
+    const fields = reviewed('ssn-bingEquipment', 'wages-bingEquipment')
+    expect(countPhase1FlagsForW2Payer('bingEquipment', fields)).toBe(2)
+  })
+
+  it('keeps tab and peel-tab counts in sync for Tech Circle', () => {
     const fields = reviewed('wages-techCircle')
     const tabCount = getTabFlagCounts(fields).w2s
     const peelCount = countPhase1FlagsForW2Payer('techCircle', fields)
@@ -88,6 +96,15 @@ describe('Phase 1 flag total', () => {
 })
 
 describe('getPhase1FlagKeysForVerifiedDoc', () => {
+  it('returns Bing Equipment W-2 flags (no box12 sub-rows)', () => {
+    expect(getPhase1FlagKeysForVerifiedDoc('bingEquipment')).toEqual([
+      'ssn-bingEquipment',
+      'wages-bingEquipment',
+      'box12',
+      'ein-bingEquipment',
+    ])
+  })
+
   it('returns all Tech Circle W-2 flags plus box12 sub-rows', () => {
     const keys = getPhase1FlagKeysForVerifiedDoc('techCircle')
     expect(keys).toEqual(expect.arrayContaining([
@@ -132,10 +149,23 @@ describe('countUncorrectedCriticalFlagsForDoc', () => {
     expect(docHasUncorrectedCriticalFlags('techCircle', empty)).toBe(true)
   })
 
+  it('counts unresolved Bing Equipment W-2 flags', () => {
+    const empty = new Map<string, unknown>()
+    expect(countUncorrectedCriticalFlagsForDoc('bingEquipment', empty)).toBe(4)
+    expect(docHasUncorrectedCriticalFlags('bingEquipment', empty)).toBe(true)
+    const cleared = reviewed(
+      'ssn-bingEquipment',
+      'wages-bingEquipment',
+      'box12',
+      'ein-bingEquipment',
+    )
+    expect(countUncorrectedCriticalFlagsForDoc('bingEquipment', cleared)).toBe(0)
+  })
+
   it('returns zero for documents without import flags', () => {
     const empty = new Map<string, unknown>()
-    expect(countUncorrectedCriticalFlagsForDoc('bingEquipment', empty)).toBe(0)
-    expect(docHasUncorrectedCriticalFlags('bingEquipment', empty)).toBe(false)
+    expect(countUncorrectedCriticalFlagsForDoc('1099-div-beaconDividend', empty)).toBe(0)
+    expect(docHasUncorrectedCriticalFlags('1099-div-beaconDividend', empty)).toBe(false)
   })
 
   it('counts unresolved NEC Summit flag', () => {

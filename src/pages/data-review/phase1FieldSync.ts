@@ -187,10 +187,19 @@ export function navigationForDetailField(field: string): Pick<Phase1VerifyItem, 
   return null
 }
 
-/** Phase 1 import flags per W-2 employer — only Tech Circle carries flags. */
-const W2_PAYER_FLAG_KEYS: Record<W2Employer, Phase1FlagKey[]> = {
+/** Phase 1 import flags per W-2 employer — keys match DetailFields reviewed-field ids. */
+const W2_PAYER_FLAG_KEYS: Record<W2Employer, readonly string[]> = {
   techCircle: ['ssn-techCircle', 'wages-techCircle', 'box12', 'ein-techCircle'],
-  bingEquipment: [],
+  bingEquipment: ['ssn-bingEquipment', 'wages-bingEquipment', 'box12', 'ein-bingEquipment'],
+}
+
+function isW2PayerFlagResolved(
+  flagKey: string,
+  employer: W2Employer,
+  reviewedFields: Map<string, unknown>,
+): boolean {
+  if (flagKey === 'box12') return isBox12FlagResolved(reviewedFields, employer)
+  return reviewedFields.has(flagKey)
 }
 
 /** Phase 1 import flags per 1099-DIV payer — primary + Northmark carry flags. */
@@ -221,15 +230,23 @@ export function countPhase1FlagsForW2Payer(
   employer: W2Employer,
   reviewedFields: Map<string, unknown>,
 ): number {
-  return W2_PAYER_FLAG_KEYS[employer].filter(k => !isPhase1FlagResolved(k, reviewedFields)).length
+  return W2_PAYER_FLAG_KEYS[employer].filter(
+    k => !isW2PayerFlagResolved(k, employer, reviewedFields),
+  ).length
 }
 
 /** Unresolved W-2 Phase 1 flags across all payers — used for the W-2s top tab badge. */
 export function countPhase1FlagsForW2Tab(reviewedFields: Map<string, unknown>): number {
-  return (Object.keys(W2_PAYER_FLAG_KEYS) as W2Employer[]).reduce(
-    (sum, employer) => sum + countPhase1FlagsForW2Payer(employer, reviewedFields),
-    0,
-  )
+  const seen = new Set<string>()
+  let count = 0
+  for (const employer of Object.keys(W2_PAYER_FLAG_KEYS) as W2Employer[]) {
+    for (const k of W2_PAYER_FLAG_KEYS[employer]) {
+      if (seen.has(k)) continue
+      seen.add(k)
+      if (!isW2PayerFlagResolved(k, employer, reviewedFields)) count++
+    }
+  }
+  return count
 }
 
 /** Single source of truth for ReviewTab badge counts during Phase 1. */
@@ -381,11 +398,11 @@ export function getDocVerifyBlockedMessage(uncorrectedCount: number): string {
 export function getPhase1FlagKeysForVerifiedDoc(docKey: string): string[] {
   docKey = normalizeVerifiedDocKey(docKey)
   if (docKey === 'techCircle' || docKey === 'bingEquipment') {
-    const flags = W2_PAYER_FLAG_KEYS[docKey]
-    if (flags.includes('box12')) {
+    const flags = [...W2_PAYER_FLAG_KEYS[docKey]]
+    if (docKey === 'techCircle') {
       return [...flags, ...getBox12SubRowKeys(docKey)]
     }
-    return [...flags]
+    return flags
   }
   if (docKey.startsWith('1099-div-')) {
     const payer = docKey.slice('1099-div-'.length) as DivPayer

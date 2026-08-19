@@ -7,7 +7,6 @@ import '@ids-ts/button/dist/main.css'
 import { IconControl } from '@ids-ts/icon-control'
 import '@ids-ts/icon-control/dist/main.css'
 import DocVerifyHeaderActions from './DocVerifyHeaderActions'
-import ImportSourceBadge from '../../components/ImportSourceBadge/ImportSourceBadge'
 import QuestionnaireFieldNote from './QuestionnaireFieldNote'
 import { DestinationFieldLabel } from './DestinationFieldLabel'
 import FieldAnnotationButton from './FieldAnnotationButton'
@@ -412,7 +411,6 @@ export default function DetailFields({
         <div className={styles.headerActions}>
           <div className={styles.headerTitleRow}>
             <h2 className={styles.headerTitle}>{formTitle}</h2>
-            <ImportSourceBadge docKey={resolvedImportDocKey} />
           </div>
           {variant !== 'input' && (
           <DocVerifyHeaderActions

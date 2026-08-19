@@ -8,7 +8,6 @@ import DetailFieldsDiv from '../data-review/DetailFieldsDiv'
 import DetailFields1099R from '../data-review/DetailFields1099R'
 import DetailFieldsNec from '../data-review/DetailFieldsNec'
 import PeelTab from '../data-review/PeelTab'
-import ImportSourceBadge from '../../components/ImportSourceBadge/ImportSourceBadge'
 import { resolveActiveVerifyDocKey } from '../../data/documentImportMeta'
 import {
   applyInputDocKey,
@@ -110,12 +109,6 @@ export default function InputFormPanel({
             activeKey={activeDocKey}
             onChange={handleDocTabChange}
           />
-        </div>
-      )}
-
-      {verifyDocKey && (
-        <div className={styles.importBadgeRow}>
-          <ImportSourceBadge docKey={verifyDocKey} />
         </div>
       )}
 

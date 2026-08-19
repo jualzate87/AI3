@@ -46,8 +46,6 @@ import {
   getReviewActor,
   STORAGE_KEY,
 } from '../hooks/useSyncedReviewState'
-import ImportSourceBadge from '../components/ImportSourceBadge/ImportSourceBadge'
-import ManualDocNotice from '../components/ManualDocNotice/ManualDocNotice'
 import { resolveActiveVerifyDocKey } from '../data/documentImportMeta'
 import intuitAssistIcon from '../assets/icons/intuit-assist.svg'
 import LeftPanel1040 from './data-review/LeftPanel1040'
@@ -2218,14 +2216,6 @@ export default function DataReviewPage() {
                 />
               )}
 
-              {activeTopTab !== 'questionnaire' && activeVerifyDocKey && (
-                <div className={styles.docImportBar}>
-                  <ImportSourceBadge docKey={activeVerifyDocKey} />
-                </div>
-              )}
-
-              <ManualDocNotice docKey={activeVerifyDocKey} />
-
               {/* Document preview + detail fields. flex-basis % (not width/height alone)
                   so the six-dot handle can shrink the preview even when the document
                   image has a large intrinsic min-size. */}
@@ -2265,6 +2255,7 @@ export default function DataReviewPage() {
                 <DocumentPreview
                   imageSrc={sourceDocPreview.imageSrc}
                   alt={sourceDocPreview.alt}
+                  importDocKey={activeVerifyDocKey}
                   customContent={
                     sourceDocPreview.useInt1099UnwaveringHtml
                       ? <Int1099FormPreview />

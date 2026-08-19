@@ -6,7 +6,6 @@ import { DestinationFieldLabel } from './DestinationFieldLabel'
 import { CLIENT_ADDRESS } from '../../data/clientAddress'
 import { displayEditableAmount, parseAmountDraft, type LiveAmounts } from '../../data/liveReturn'
 import DocVerifyHeaderActions from './DocVerifyHeaderActions'
-import ImportSourceBadge from '../../components/ImportSourceBadge/ImportSourceBadge'
 import styles from '../../styles/data-review/DetailFields.module.css'
 
 function CheckIcon() {
@@ -369,7 +368,6 @@ export default function DetailFields1099({
         <div className={styles.headerActions}>
           <div className={styles.headerTitleRow}>
             <h2 className={styles.headerTitle}>Details: Interest Income (1099-INT)</h2>
-            <ImportSourceBadge docKey={docKey} />
           </div>
           {variant !== 'input' && (
           <DocVerifyHeaderActions

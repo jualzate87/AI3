@@ -14,9 +14,9 @@
 
 /* Audit log API purple — field-highlight #4A2291 */
 .apiFiled {
-  background: #ede9fe;
-  color: #4a2291;
-  border: 1px solid #c4b5fd;
+  background: #4a2291;
+  color: #ffffff;
+  border: 1px solid transparent;
 }
 
 /* Audit log IMPORT green */

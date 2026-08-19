@@ -7,7 +7,6 @@ import '@ids-ts/typography/dist/main.css'
 import FieldAnnotationButton from './FieldAnnotationButton'
 import Tooltip from './Tooltip'
 import { DestinationFieldLabel } from './DestinationFieldLabel'
-import ImportSourceBadge from '../../components/ImportSourceBadge/ImportSourceBadge'
 import { CLIENT_ADDRESS } from '../../data/clientAddress'
 import { displayEditableAmount, NEC_SOURCE_AMOUNT, parseAmountDraft, type LiveAmounts } from '../../data/liveReturn'
 import DocVerifyHeaderActions from './DocVerifyHeaderActions'
@@ -281,7 +280,6 @@ export default function DetailFieldsNec({
         <div className={styles.headerActions}>
           <div className={styles.headerTitleRow}>
             <h2 className={styles.headerTitle}>Details: Nonemployee Comp (1099-NEC)</h2>
-            {importDocKey && <ImportSourceBadge docKey={importDocKey} />}
           </div>
           {variant !== 'input' && (
           <DocVerifyHeaderActions
