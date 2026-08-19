@@ -64,21 +64,23 @@ describe('W-2 Phase 1 flag counting', () => {
     expect(countPhase1FlagsForW2Payer('bingEquipment', fields)).toBe(2)
   })
 
-  it('keeps tab and peel-tab counts in sync for Tech Circle', () => {
+  it('counts remaining Tech Circle peel-tab flags after one field is reviewed', () => {
     const fields = reviewed('wages-techCircle')
-    const tabCount = getTabFlagCounts(fields).w2s
-    const peelCount = countPhase1FlagsForW2Payer('techCircle', fields)
-    expect(tabCount).toBe(peelCount)
-    expect(tabCount).toBe(3)
+    expect(countPhase1FlagsForW2Payer('techCircle', fields)).toBe(3)
   })
 
-  it('hides W-2 badges when all four Phase 1 flags are resolved', () => {
+  it('hides W-2 badges when all Phase 1 flags are resolved for both employers', () => {
     const fields = reviewed(
       'ssn-techCircle',
       'wages-techCircle',
       'box12',
       'ein-techCircle',
+      'ssn-bingEquipment',
+      'wages-bingEquipment',
+      'ein-bingEquipment',
     )
+    expect(countPhase1FlagsForW2Payer('techCircle', fields)).toBe(0)
+    expect(countPhase1FlagsForW2Payer('bingEquipment', fields)).toBe(0)
     expect(countPhase1FlagsForW2Tab(fields)).toBe(0)
     expect(getTabFlagCounts(fields).w2s).toBe(0)
   })
