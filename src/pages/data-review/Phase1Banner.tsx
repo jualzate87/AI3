@@ -1,9 +1,8 @@
 import { ArrowRight } from '@design-systems/icons'
-import { Badge, SuccessBadgeIcon } from '@ids-ts/badge'
+import { Badge, InfoBadgeIcon, SuccessBadgeIcon } from '@ids-ts/badge'
 import '@ids-ts/badge/dist/main.css'
 import { Button } from '@ids-ts/button'
 import '@ids-ts/button/dist/main.css'
-import intuitAssistIcon from '../../assets/icons/intuit-assist.svg'
 import CoachTip from './CoachTip'
 import DocReviewProgress from './DocReviewProgress'
 import styles from '../../styles/data-review/Phase1Banner.module.css'
@@ -33,8 +32,7 @@ interface Phase1BannerProps {
 }
 
 /**
- * ProtoC Phase 1 step header. Progress, start CTA, AI-diagnostics lock, and complete state.
- * Remaining-document attention (copy + CTA) lives on Phase1IssueBanner (documents mode).
+ * ProtoC Phase 1 step header — message, step indicator, progress, and continue CTA.
  * Document review is the primary gate for Continue; unresolved flags are secondary.
  */
 export default function Phase1Banner({
@@ -59,7 +57,14 @@ export default function Phase1Banner({
       className={[styles.banner, docsReviewComplete ? styles.bannerComplete : ''].filter(Boolean).join(' ')}
     >
       <div className={styles.left}>
-        <img src={intuitAssistIcon} alt="" className={styles.icon} />
+        <Badge
+          className={styles.stepBadge}
+          shape="round"
+          status="info"
+          aria-label="Step information"
+        >
+          <InfoBadgeIcon />
+        </Badge>
         <div className={styles.text}>
           {docsReviewComplete ? (
             <>
@@ -74,7 +79,7 @@ export default function Phase1Banner({
             <>
               <span className={styles.title}>Step 1: Import accuracy</span>
               <span className={styles.subtitle}>
-                Compare each imported field to its source document, resolve flagged mismatches, and mark each document verified.
+                Verify all fields in every document not only the ones flagged for attention. Confirm accuracy against the source before marking as verified.
               </span>
             </>
           )}

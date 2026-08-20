@@ -62,6 +62,7 @@ import type { DivPayer } from './data-review/DetailFieldsDiv'
 import {
   buildTabConfirmCounts,
   buildTabConfirmStatus,
+  buildTabReviewCounts,
   buildTabUnreviewedCounts,
   buildTabVerifiedKeys,
   buildTypeReviewed,
@@ -76,6 +77,7 @@ import DetailFields1099R, { R_PAYER_TABS } from './data-review/DetailFields1099R
 import DetailFieldsNec, { NEC_PAYER_TABS } from './data-review/DetailFieldsNec'
 import AttentionCountBadge from './data-review/AttentionCountBadge'
 import DocumentCountBadge from './data-review/DocumentCountBadge'
+import ImportSourceBadge from '../components/ImportSourceBadge/ImportSourceBadge'
 import PeelTab from './data-review/PeelTab'
 import QuestionnaireResponsesPanel from './data-review/QuestionnaireResponsesPanel'
 import type { QuestionnaireFieldLink, QuestionnaireResponseId } from './data-review/questionnaireData'
@@ -367,6 +369,11 @@ export default function DataReviewPage() {
   ) as Record<W2Employer, number>
   const tabVerifiedKeys = buildTabVerifiedKeys()
   const tabUnreviewedCounts = buildTabUnreviewedCounts({
+    verifiedDocs,
+    reviewerConfirmedDocs,
+    tabVerifiedKeys,
+  })
+  const tabReviewCounts = buildTabReviewCounts({
     verifiedDocs,
     reviewerConfirmedDocs,
     tabVerifiedKeys,
@@ -2116,16 +2123,6 @@ export default function DataReviewPage() {
                   </IconControl>
                 </div>
               </div>
-              {showPreparerImportPhase && unreviewedDocCount > 0 && (
-                <Phase1IssueBanner
-                  mode="documents"
-                  unreviewedDocCount={unreviewedDocCount}
-                  verifiedDocCount={verifiedDocCount}
-                  totalDocCount={totalDocCount}
-                  unresolvedFlagCount={phase1Remaining}
-                  onReviewNextDocument={handleReviewNextDocument}
-                />
-              )}
               {showPreparerImportPhase && unreviewedDocCount === 0 && phase1Remaining > 0 && (
                 <Phase1IssueBanner
                   mode="flags"
@@ -2137,6 +2134,7 @@ export default function DataReviewPage() {
                 activeTopTab={activeTopTab}
                 verifiedDocs={verifiedDocs}
                 tabVerifiedKeys={tabVerifiedKeys}
+                tabReviewCounts={showPreparerImportPhase ? tabReviewCounts : undefined}
                 unreviewedCounts={showPreparerImportPhase ? tabUnreviewedCounts : undefined}
                 typeReviewed={showPreparerImportPhase ? typeReviewed : undefined}
                 tabConfirmStatus={reviewRole === 'reviewer' ? tabConfirmStatus : undefined}
@@ -2214,6 +2212,12 @@ export default function DataReviewPage() {
                   activeKey="summit"
                   onChange={() => {}}
                 />
+              )}
+
+              {activeTopTab !== 'questionnaire' && activeVerifyDocKey && (
+                <div className={styles.importSourceRow}>
+                  <ImportSourceBadge docKey={activeVerifyDocKey} />
+                </div>
               )}
 
               {/* Document preview + detail fields. flex-basis % (not width/height alone)

@@ -1,4 +1,3 @@
-import { useRef } from 'react'
 import {
   getReviewActor,
   REVIEWER_NAME,
@@ -77,8 +76,6 @@ export default function DocVerifyHeaderActions({
   amounts,
   onVerifyDoc,
 }: Props) {
-  const blockedMessageRef = useRef<HTMLParagraphElement>(null)
-
   const isPreparerVerified = verifiedDocs ? isVerifiedInSet(verifiedDocs, docKey) : false
   const isReviewerConfirmed = reviewerConfirmedDocs ? isVerifiedInSet(reviewerConfirmedDocs, docKey) : false
   const isReviewerActor = getReviewActor() === REVIEWER_NAME
@@ -109,10 +106,7 @@ export default function DocVerifyHeaderActions({
     : ''
 
   const handlePreparerMark = () => {
-    if (verifyBlocked) {
-      blockedMessageRef.current?.scrollIntoView({ block: 'nearest', behavior: 'smooth' })
-      return
-    }
+    if (verifyBlocked) return
     onVerifyDoc?.(docKey)
   }
 
@@ -172,14 +166,14 @@ export default function DocVerifyHeaderActions({
       </div>
 
       {verifyBlocked && (
-        <p
-          ref={blockedMessageRef}
-          className={styles.verifyBlockedMessage}
-          role="status"
+        <Badge
+          className={styles.verifyBlockedBadge}
+          status="warning"
+          label={blockedHint}
+          capitalization="sentence"
+          priority="secondary"
           aria-live="polite"
-        >
-          {blockedHint}
-        </p>
+        />
       )}
     </div>
   )

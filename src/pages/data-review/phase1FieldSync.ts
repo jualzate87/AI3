@@ -382,9 +382,9 @@ export function docHasUncorrectedCriticalFlags(
 /** Short persistent hint under Mark as verified while critical flags remain. */
 export function getDocVerifyBlockedHint(uncorrectedCount: number): string {
   if (uncorrectedCount === 1) {
-    return '1 critical issue must be corrected before you can mark this document verified.'
+    return 'Correct 1 critical issue before marking as verified.'
   }
-  return `${uncorrectedCount} critical issues must be corrected before you can mark this document verified.`
+  return `Correct ${uncorrectedCount} critical issues before marking as verified.`
 }
 
 /** Full message shown after the preparer clicks Mark as verified while blocked. */

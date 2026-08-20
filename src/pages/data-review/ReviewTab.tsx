@@ -1,7 +1,7 @@
 import { CircleCheck, PopIn } from '@design-systems/icons'
 import sparklesIcon from '../../assets/icons/sparkles.svg'
 import AttentionCountBadge from './AttentionCountBadge'
-import DocumentCountBadge from './DocumentCountBadge'
+import TabReviewCountBadge from './TabReviewCountBadge'
 import type { DocConfirmStatus } from './docReviewStatus'
 import styles from '../../styles/data-review/ReviewTab.module.css'
 
@@ -31,6 +31,8 @@ interface ReviewTabProps {
   onTabChange?: (tab: string) => void
   /** Per-tab count of unreviewed documents — drives dynamic tab badges (preparer Phase 1) */
   unreviewedCounts?: Record<string, number>
+  /** Per-tab reviewed/total — "X of Y" badges when provided (preferred in Phase 1) */
+  tabReviewCounts?: Record<string, { reviewed: number; total: number }>
   /** @deprecated Use unreviewedCounts — kept for legacy flag-only flows */
   flagCounts?: Record<string, number>
   /** Initial flag totals — used when combining with verified semantics */
@@ -57,6 +59,7 @@ export default function ReviewTab({
   onTopTabChange,
   onTabChange,
   unreviewedCounts,
+  tabReviewCounts,
   flagCounts,
   initialFlagCounts,
   verifiedDocs,
@@ -94,14 +97,30 @@ export default function ReviewTab({
       )
     }
 
+    const docCounts = tabReviewCounts?.[tabKey]
+    if (docCounts && docCounts.total > 0) {
+      return (
+        <TabReviewCountBadge
+          reviewed={docCounts.reviewed}
+          total={docCounts.total}
+          className={styles.tabCountBadge}
+          tooltip={
+            docCounts.reviewed >= docCounts.total
+              ? `All ${docCounts.total} document${docCounts.total === 1 ? '' : 's'} reviewed in this section`
+              : `${docCounts.total - docCounts.reviewed} document${docCounts.total - docCounts.reviewed === 1 ? '' : 's'} not yet marked reviewed in this section`
+          }
+        />
+      )
+    }
+
     const docUnreviewed = unreviewedCounts?.[tabKey] ?? 0
     if (docUnreviewed > 0) {
       return (
-        <DocumentCountBadge
-          count={docUnreviewed}
+        <TabReviewCountBadge
+          reviewed={0}
+          total={docUnreviewed}
           className={styles.tabCountBadge}
           tooltip={`${docUnreviewed} document${docUnreviewed === 1 ? '' : 's'} not yet marked reviewed in this section`}
-          aria-label={`${docUnreviewed} unreviewed document${docUnreviewed === 1 ? '' : 's'}`}
         />
       )
     }

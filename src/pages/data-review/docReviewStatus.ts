@@ -179,6 +179,23 @@ export function buildTabUnreviewedCounts(args: {
   return out
 }
 
+/** Per L1 tab: reviewed vs total counts for "X of Y" tab badges. */
+export function buildTabReviewCounts(args: {
+  verifiedDocs: Set<string>
+  reviewerConfirmedDocs?: Set<string>
+  tabVerifiedKeys: Record<string, string[]>
+}): Record<string, { reviewed: number; total: number }> {
+  const out: Record<string, { reviewed: number; total: number }> = {}
+  for (const [tabKey, keys] of Object.entries(args.tabVerifiedKeys)) {
+    const total = keys.length
+    const reviewed = keys.filter(k =>
+      isDocShownVerified(args.verifiedDocs, k, args.reviewerConfirmedDocs),
+    ).length
+    out[tabKey] = { reviewed, total }
+  }
+  return out
+}
+
 /** Peel-tab badge: 1 when doc unreviewed, 0 when verified (replaces flag counts for doc progress). */
 export function unreviewedDocBadge(
   verifiedDocs: Set<string>,

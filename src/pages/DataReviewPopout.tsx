@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { DotsSix } from '@design-systems/icons'
 import ReviewTab from './data-review/ReviewTab'
+import ImportSourceBadge from '../components/ImportSourceBadge/ImportSourceBadge'
 import Phase1IssueBanner from './data-review/Phase1IssueBanner'
 import {
   countPhase1Remaining,
@@ -25,6 +26,7 @@ import DetailFieldsDiv, { DIV_PAYER_TABS, divVerifiedDocKey } from './data-revie
 import type { DivPayer } from './data-review/DetailFieldsDiv'
 import {
   buildTabVerifiedKeys,
+  buildTabReviewCounts,
   buildTabUnreviewedCounts,
   buildTypeReviewed,
   getNextUnreviewedSourceDoc,
@@ -163,6 +165,11 @@ export default function DataReviewPopout() {
     tabVerifiedKeys,
     isReviewer: reviewRole === 'reviewer',
   })
+  const tabReviewCounts = buildTabReviewCounts({
+    verifiedDocs,
+    reviewerConfirmedDocs,
+    tabVerifiedKeys,
+  })
   const peelDocConfirmStatus = (docKey: string) => {
     if (reviewRole !== 'reviewer') return undefined
     const status = getDocConfirmStatus(verifiedDocs, docKey, reviewerConfirmedDocs)
@@ -282,22 +289,13 @@ export default function DataReviewPopout() {
           unreviewedCounts={showPreparerImportPhase ? tabUnreviewedCounts : undefined}
           verifiedDocs={verifiedDocs}
           tabVerifiedKeys={tabVerifiedKeys}
+          tabReviewCounts={showPreparerImportPhase ? tabReviewCounts : undefined}
           typeReviewed={showPreparerImportPhase ? typeReviewed : undefined}
           tabConfirmStatus={reviewRole === 'reviewer' ? tabConfirmStatus : undefined}
           tabConfirmCounts={reviewRole === 'reviewer' ? tabConfirmCounts : undefined}
           onTopTabChange={(tab) => { setActiveTopTab(tab); setSelectedField(null) }}
         />
 
-        {showPreparerImportPhase && unreviewedDocCount > 0 && (
-          <Phase1IssueBanner
-            mode="documents"
-            unreviewedDocCount={unreviewedDocCount}
-            verifiedDocCount={verifiedDocCount}
-            totalDocCount={totalDocCount}
-            unresolvedFlagCount={phase1Remaining}
-            onReviewNextDocument={handleReviewNextDocument}
-          />
-        )}
         {showPreparerImportPhase && unreviewedDocCount === 0 && phase1Remaining > 0 && (
           <Phase1IssueBanner
             mode="flags"
@@ -374,6 +372,12 @@ export default function DataReviewPopout() {
       )}
 
       </div>
+
+      {activeTopTab !== 'questionnaire' && activeVerifyDocKey && (
+        <div className={styles.importSourceRow}>
+          <ImportSourceBadge docKey={activeVerifyDocKey} />
+        </div>
+      )}
 
       <div ref={rightRef} className={styles.splitPane}>
           {activeTopTab !== 'questionnaire' && (

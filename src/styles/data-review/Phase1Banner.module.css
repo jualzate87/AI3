@@ -4,53 +4,53 @@
   align-items: center;
   gap: var(--space-medium, 16px);
   box-sizing: border-box;
-  padding: var(--space-component-padding-small, 8px) var(--space-container-padding-medium, 20px);
+  padding: var(--space-small, 12px) var(--space-container-padding-medium, 20px);
   min-height: 40px;
-  background: var(--color-container-background-primary, #ffffff);
-  border-bottom: 1px solid #C3CED5;
+  background: var(--color-container-background-secondary, #f4f5f8);
+  border-bottom: 1px solid var(--color-divider-tertiary, #c3ced5);
   flex-shrink: 0;
   position: relative;
 }
 
 .bannerComplete {
-  background: linear-gradient(90deg, #f0f9f4 0%, #ffffff 60%);
-  border-bottom-color: #b7e0c7;
+  background: linear-gradient(90deg, var(--color-container-feedback-success-secondary, #f0f9f4) 0%, var(--color-container-background-secondary, #f4f5f8) 60%);
+  border-bottom-color: var(--color-container-feedback-success-border, #b7e0c7);
 }
 
 .left {
   display: flex;
-  align-items: center;
-  gap: 12px;
+  align-items: flex-start;
+  gap: var(--space-component-gap-medium, 12px);
   flex: 1;
   min-width: 0;
 }
 
-.icon {
-  width: 20px;
-  height: 20px;
+.stepBadge {
   flex-shrink: 0;
+  margin-top: 2px;
 }
 
 .text {
   display: flex;
   flex-direction: column;
-  gap: 2px;
+  gap: var(--space-column-gap-xx-small, 4px);
   min-width: 0;
 }
 
 .title {
   font-family: var(--font-family-component, sans-serif);
-  font-size: 14px;
-  font-weight: 600;
-  line-height: 20px;
-  color: #21262a;
+  font-size: var(--font-size-body-3, 14px);
+  font-weight: var(--font-weight-component-bold, 600);
+  line-height: var(--line-height-body-3, 20px);
+  color: var(--color-text-primary, #393a3d);
 }
 
 .subtitle {
-  font-family: var(--font-family-component, sans-serif);
-  font-size: 12px;
-  color: #5d686f;
-  line-height: 16px;
+  font-family: var(--font-family-body, sans-serif);
+  font-size: var(--font-size-body-3, 14px);
+  font-weight: var(--font-weight-body-semibold, 500);
+  line-height: 1.5;
+  color: var(--color-text-primary, #393a3d);
 }
 
 .right {
@@ -60,125 +60,6 @@
   flex-shrink: 0;
 }
 
-.counter {
-  font-family: var(--font-family-component, sans-serif);
-  font-size: 13px;
-  color: #5d686f;
-  white-space: nowrap;
-}
-
-.counterNum {
-  font-size: 15px;
-  font-weight: 700;
-  color: #21262a;
-}
-
-.docProgress {
-  display: flex;
-  flex-direction: column;
-  align-items: flex-end;
-  gap: 2px;
-  padding: var(--space-component-padding-small, 8px) var(--space-component-padding-medium, 12px);
-  background: var(--color-container-background-secondary, #f0f4f6);
-  border: 1px solid var(--color-divider-tertiary, #c3ced5);
-  border-radius: var(--radius-medium, 4px);
-  min-width: 148px;
-}
-
-.docProgressLabel {
-  font-family: var(--font-family-component, sans-serif);
-  font-size: 11px;
-  font-weight: var(--font-weight-component-semibold, 500);
-  letter-spacing: 0.02em;
-  text-transform: uppercase;
-  color: var(--color-text-secondary, #6b6c72);
-}
-
-.counterPrimary {
-  font-family: var(--font-family-component, sans-serif);
-  font-size: 16px;
-  color: var(--color-text-primary, #21262a);
-  white-space: nowrap;
-}
-
-.counterPrimary .counterNum {
-  font-size: 20px;
-  font-weight: var(--font-weight-heading-bold, 800);
-  color: var(--color-action-standard, #205ea3);
-}
-
-.counterOf {
-  font-size: 14px;
-  font-weight: var(--font-weight-component, 400);
-  color: var(--color-text-primary, #21262a);
-}
-
-.docProgressHint {
-  font-family: var(--font-family-component, sans-serif);
-  font-size: 12px;
-  color: var(--color-text-secondary, #6b6c72);
-}
-
-/* Progress note as link back to AI Review when diagnostics remain */
-.counterLink {
-  font-family: var(--font-family-component, sans-serif);
-  font-size: 13px;
-  color: #105c99;
-  white-space: nowrap;
-  background: none;
-  border: none;
-  padding: 0;
-  cursor: pointer;
-  text-decoration: underline;
-  text-underline-offset: 2px;
-}
-
-.counterLink:hover {
-  color: #0b4573;
-}
-
-.counterLink .counterNum {
-  color: inherit;
-  font-size: 15px;
-  font-weight: 700;
-}
-
-/* Locked (hard-lock) — visible + explained */
-.lockedWrap {
-  display: flex;
-  flex-direction: column;
-  align-items: flex-end;
-  gap: 4px;
-  max-width: 340px;
-}
-
-.lockNote {
-  font-family: var(--font-family-component, sans-serif);
-  font-size: 11px;
-  color: #6b7680;
-  line-height: 1.35;
-  text-align: right;
-}
-
 .completeBadge {
-  display: inline-flex;
-  align-items: center;
-  gap: 5px;
-  padding: 4px 10px;
-  background: #e6f6ef;
-  color: #1a8254;
-  border-radius: 999px;
-  font-family: var(--font-family-component, sans-serif);
-  font-size: 12px;
-  font-weight: 600;
   flex-shrink: 0;
-}
-
-
-.checklistHint {
-  font-family: var(--font-family-component);
-  font-size: var(--font-size-component-small);
-  font-weight: var(--font-weight-component-semibold);
-  color: var(--color-text-secondary);
-  white-space: nowrap;
 }

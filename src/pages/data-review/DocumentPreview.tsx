@@ -1,11 +1,5 @@
 import { useState, useRef, useEffect, useCallback } from 'react'
 import { ZoomOut, ZoomIn, Search } from '@design-systems/icons'
-import PageMessage from '@ids-ts/page-message'
-import '@ids-ts/page-message/dist/main.css'
-import { B3 } from '@ids-ts/typography'
-import '@ids-ts/typography/dist/main.css'
-import ImportSourceBadge from '../../components/ImportSourceBadge/ImportSourceBadge'
-import { getDocumentImportMeta, isManualImportDoc } from '../../data/documentImportMeta'
 import styles from '../../styles/data-review/DocumentPreview.module.css'
 
 interface DocumentPreviewProps {
@@ -39,31 +33,11 @@ const HIDDEN_LOUPE: LoupeState = {
   backgroundPosition: '0 0',
 }
 
-function manualDocMessage(docKey: string): { title: string; body: string } | null {
-  if (!isManualImportDoc(docKey)) return null
-
-  const meta = getDocumentImportMeta(docKey)
-  if (meta?.importMode === 'pdf-only') {
-    return {
-      title: 'Manual entry',
-      body:
-        'Document attached · data entered manually. Extraction is not supported for this form — use the PDF for reference while you key values.',
-    }
-  }
-
-  return {
-    title: 'Manual entry',
-    body: 'No structured import for this document — values were entered manually.',
-  }
-}
-
-export default function DocumentPreview({ imageSrc, alt, customContent, importDocKey }: DocumentPreviewProps) {
+export default function DocumentPreview({ imageSrc, alt, customContent, importDocKey: _importDocKey }: DocumentPreviewProps) {
   const [zoomIndex, setZoomIndex] = useState(6) // default 100% — fit to viewer width
   const zoom = ZOOM_LEVELS[zoomIndex]
   const images = imageSrc ? (Array.isArray(imageSrc) ? imageSrc : [imageSrc]) : []
   const canMagnify = !customContent && images.length > 0
-  const manualNotice = importDocKey ? manualDocMessage(importDocKey) : null
-
   const [magnifyOn, setMagnifyOn] = useState(false)
   const [loupe, setLoupe] = useState<LoupeState>(HIDDEN_LOUPE)
 
@@ -195,19 +169,6 @@ export default function DocumentPreview({ imageSrc, alt, customContent, importDo
 
   return (
     <div className={styles.container}>
-      {manualNotice && (
-        <div className={styles.manualDocMessage}>
-          <PageMessage
-            type="info"
-            title={manualNotice.title}
-            open
-            dismissible={false}
-          >
-            <B3 className={styles.manualDocBody}>{manualNotice.body}</B3>
-          </PageMessage>
-        </div>
-      )}
-
       {/* Scrollable image area */}
       <div
         ref={imageAreaRef}
@@ -257,9 +218,6 @@ export default function DocumentPreview({ imageSrc, alt, customContent, importDo
 
       {/* Zoom toolbar */}
       <div className={styles.toolbar}>
-        <div className={styles.toolbarBadge}>
-          {importDocKey ? <ImportSourceBadge docKey={importDocKey} /> : null}
-        </div>
         <div className={styles.toolbarControls}>
           <span className={styles.zoomLevel}>{zoom}%</span>
           <button
