@@ -173,3 +173,18 @@
 .tabCountBadge {
   margin-left: var(--space-component-gap-small, 6px);
 }
+
+.tabActions {
+  display: flex;
+  align-items: center;
+  gap: var(--space-component-gap-small, 8px);
+  flex-shrink: 0;
+  align-self: center;
+  margin-left: auto;
+  margin-right: var(--space-container-padding-medium, 20px);
+}
+
+.addItemBtn,
+.nextDocBtn {
+  white-space: nowrap;
+}

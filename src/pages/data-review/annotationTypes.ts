@@ -50,3 +50,17 @@ export function stripAnnotationPrefix(note: string): string {
 export function annotationTypeLabel(type: AnnotationType): string {
   return ANNOTATION_TYPE_OPTIONS.find(o => o.value === type)?.label ?? 'Note'
 }
+
+
+export function annotationTypeDotColor(type: AnnotationType): string {
+  switch (type) {
+    case 'note':
+      return 'var(--color-action-standard)'
+    case 'flag':
+      return 'var(--color-data-attention)'
+    case 'efile-critical':
+      return 'var(--color-action-negative)'
+    default:
+      return 'var(--color-action-standard)'
+  }
+}

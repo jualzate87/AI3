@@ -50,6 +50,16 @@ import { resolveActiveVerifyDocKey } from '../data/documentImportMeta'
 import intuitAssistIcon from '../assets/icons/intuit-assist.svg'
 import LeftPanel1040 from './data-review/LeftPanel1040'
 import ReviewTab from './data-review/ReviewTab'
+import AddItemReviewPane, { type AddItemLinkResult } from './data-review/AddItemReviewPane'
+import type { ReviewInputScreen } from '../data/reviewInputScreens'
+import { applyInputDocKey } from '../data/inputDocTabs'
+import {
+  readManualDocAttachments,
+  writeManualDocAttachment,
+  readUsedLibraryIds,
+  writeUsedLibraryId,
+  type ManualDocAttachment,
+} from '../lib/manualDocAttachments'
 import DocumentPreview from './data-review/DocumentPreview'
 import Int1099FormPreview from './data-review/Int1099FormPreview'
 import { getSourceDocPreview } from './data-review/sourceDocImages'
@@ -142,6 +152,23 @@ const PANEL_DRAG_HANDLE_WIDTH = 16
 
 /** Right-rail content mode — `ai+sources` shows source docs and AI diagnostics side-by-side. */
 type RightPanelMode = 'closed' | 'sources' | 'ai' | 'ai+sources' | 'comments' | 'summary'
+
+function verifyDocKeyForInput(input: ReviewInputScreen): string {
+  switch (input.topTab) {
+    case 'w2s':
+      return input.docKey
+    case '1099-divs':
+      return divVerifiedDocKey(input.docKey as DivPayer)
+    case '1099-ints':
+      return intVerifiedDocKey(input.docKey as IntPayer)
+    case '1099-rs':
+      return '1099-r'
+    case '1099-necs':
+      return '1099-nec'
+    default:
+      return input.docKey
+  }
+}
 
 export default function DataReviewPage() {
   const navigate = useNavigate()
@@ -347,6 +374,11 @@ export default function DataReviewPage() {
   /** Keep doc|Details side-by-side during Summary toggle so flexDirection doesn't flip mid-motion. */
   const [freezePreviewSideBySide, setFreezePreviewSideBySide] = useState(false)
   const [questionnaireHighlightId, setQuestionnaireHighlightId] = useState<QuestionnaireResponseId | null>(null)
+  const [addItemReviewMode, setAddItemReviewMode] = useState(false)
+  const [manualAttachments, setManualAttachments] = useState<Record<string, ManualDocAttachment>>(
+    () => readManualDocAttachments(),
+  )
+  const [usedLibraryIds, setUsedLibraryIds] = useState<Set<string>>(() => readUsedLibraryIds())
 
   // The import/OCR flags owned by Phase 1. Each key matches the reviewed-field key
   // emitted by the DetailFields "Edit+Save" / "Mark as correct" controls.
@@ -732,6 +764,53 @@ export default function DataReviewPage() {
     setActiveTopTab, setActiveSubTab, setActiveDivPayer, setActiveIntPayer, setSelectedField,
   ])
 
+  const handleAddItemClick = useCallback(() => {
+    if (!importsStarted) startReviewingImports()
+    else ensureSourcePanelVisible()
+    setAddItemReviewMode(true)
+    setSelectedField(null)
+    setActiveIssueField(null)
+  }, [importsStarted, startReviewingImports, ensureSourcePanelVisible, setSelectedField])
+
+  const handleAddItemLink = useCallback((result: AddItemLinkResult) => {
+    const verifyKey = verifyDocKeyForInput(result.input)
+
+    if (!result.importReady) {
+      const nextAttachments = writeManualDocAttachment({
+        docKey: verifyKey,
+        imageSrc: result.libraryDoc.imageSrc,
+        libraryId: result.libraryDoc.id,
+        label: result.libraryDoc.label,
+      })
+      setManualAttachments(nextAttachments)
+    }
+
+    setUsedLibraryIds(writeUsedLibraryId(result.libraryDoc.id))
+
+    setActiveTopTab(result.input.topTab)
+    applyInputDocKey(result.input.topTab, result.input.docKey, {
+      setActiveSubTab,
+      setActiveDivPayer,
+      setActiveIntPayer,
+    })
+
+    setSelectedField(null)
+    setActiveIssueField(null)
+    setAddItemReviewMode(false)
+
+    if (!importsStarted) startReviewingImports()
+    else ensureSourcePanelVisible()
+  }, [
+    setActiveTopTab,
+    setActiveSubTab,
+    setActiveDivPayer,
+    setActiveIntPayer,
+    setSelectedField,
+    importsStarted,
+    startReviewingImports,
+    ensureSourcePanelVisible,
+  ])
+
 
   const handleQuestionnaireNavigateToField = useCallback((link: QuestionnaireFieldLink) => {
     setQuestionnaireHighlightId(null)
@@ -886,6 +965,7 @@ export default function DataReviewPage() {
     activeIntPayer,
     activeDivPayer,
     prior1040Images: [img1040PriorPage1, img1040PriorPage2],
+    manualAttachments,
   })
 
   // Reset field selection on mount
@@ -2139,14 +2219,29 @@ export default function DataReviewPage() {
                 typeReviewed={showPreparerImportPhase ? typeReviewed : undefined}
                 tabConfirmStatus={reviewRole === 'reviewer' ? tabConfirmStatus : undefined}
                 tabConfirmCounts={reviewRole === 'reviewer' ? tabConfirmCounts : undefined}
+                showAddItem={showPreparerImportPhase}
+                onAddItemClick={handleAddItemClick}
+                showNextDocument={showPreparerImportPhase}
+                onNextDocumentClick={handleReviewNextDocument}
+                unreviewedDocCount={unreviewedDocCount}
                 onTopTabChange={(tab) => {
                   setActiveTopTab(tab)
                   setFromAgent(false)
                   setSelectedField(null)
                   setActiveIssueField(null)
+                  if (tab === 'questionnaire') setAddItemReviewMode(false)
                 }}
               />
 
+              {addItemReviewMode ? (
+                <AddItemReviewPane
+                  activeTopTab={activeTopTab}
+                  usedLibraryIds={usedLibraryIds}
+                  onLink={handleAddItemLink}
+                  onCancel={() => setAddItemReviewMode(false)}
+                />
+              ) : (
+              <>
               {/* Peel tabs — payer switcher for multi-payer doc types */}
               {activeTopTab === '1099-divs' && (
                 <PeelTab
@@ -2260,6 +2355,8 @@ export default function DataReviewPage() {
                   imageSrc={sourceDocPreview.imageSrc}
                   alt={sourceDocPreview.alt}
                   importDocKey={activeVerifyDocKey}
+                  onUploadDocument={showPreparerImportPhase ? handleAddItemClick : undefined}
+                  onChooseAvailable={showPreparerImportPhase ? handleAddItemClick : undefined}
                   customContent={
                     sourceDocPreview.useInt1099UnwaveringHtml
                       ? <Int1099FormPreview />
@@ -2504,6 +2601,9 @@ export default function DataReviewPage() {
               )}
               </div>
               </div>
+              </>
+              )}
+
               </>
               </div>
               )}

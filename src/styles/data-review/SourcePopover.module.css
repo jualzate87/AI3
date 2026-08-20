@@ -1,0 +1,271 @@
+/* ── Shared source / summary flyout — Summary, schedules, FieldPopover sources ── */
+
+.popover {
+  position: relative;
+  width: 300px;
+  background: var(--color-container-background-primary);
+  border: 1px solid var(--color-divider-tertiary);
+  border-radius: var(--radius-medium, 8px);
+  box-shadow: var(--elevation-overlay, 0 4px 16px rgba(0, 0, 0, 0.12));
+  padding: var(--space-container-padding-x-small, 12px) var(--space-component-gap-medium, 14px);
+  box-sizing: border-box;
+}
+
+.popoverWide {
+  width: 360px;
+}
+
+/* Beak / pointer aiming at the (i) trigger */
+.popover::before,
+.popover::after {
+  content: '';
+  position: absolute;
+  top: 50%;
+  width: 0;
+  height: 0;
+  pointer-events: none;
+}
+
+.popoverBeakLeft::before {
+  left: -8px;
+  transform: translateY(-50%);
+  border-top: 8px solid transparent;
+  border-bottom: 8px solid transparent;
+  border-right: 8px solid var(--color-divider-tertiary);
+}
+
+.popoverBeakLeft::after {
+  left: -7px;
+  transform: translateY(-50%);
+  border-top: 7px solid transparent;
+  border-bottom: 7px solid transparent;
+  border-right: 7px solid var(--color-container-background-primary);
+}
+
+.popoverBeakRight::before {
+  right: -8px;
+  transform: translateY(-50%);
+  border-top: 8px solid transparent;
+  border-bottom: 8px solid transparent;
+  border-left: 8px solid var(--color-divider-tertiary);
+}
+
+.popoverBeakRight::after {
+  right: -7px;
+  transform: translateY(-50%);
+  border-top: 7px solid transparent;
+  border-bottom: 7px solid transparent;
+  border-left: 7px solid var(--color-container-background-primary);
+}
+
+.header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: var(--space-component-gap-x-small, 6px);
+}
+
+.title {
+  font-family: var(--font-family-component);
+  font-size: var(--font-size-component-small);
+  font-weight: var(--font-weight-component-bold);
+  color: var(--color-text-primary);
+}
+
+.closeBtn {
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 2px;
+  color: var(--color-text-secondary);
+  display: flex;
+  align-items: center;
+}
+
+.closeBtn:hover {
+  color: var(--color-text-primary);
+}
+
+.subtitle {
+  font-family: var(--font-family-component);
+  font-size: var(--font-size-component-x-small);
+  color: var(--color-text-secondary);
+  margin: 0 0 var(--space-component-gap-small, 10px);
+  line-height: 1.4;
+}
+
+.itemList {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-component-gap-x-small, 6px);
+}
+
+.sourceCard {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-component-gap-x-small, 4px);
+  width: 100%;
+  padding: var(--space-component-gap-x-small, 8px) var(--space-component-gap-small, 10px);
+  border: 1px solid var(--color-container-border-info);
+  border-radius: var(--radius-small, 6px);
+  background: var(--color-container-background-info);
+  cursor: pointer;
+  text-align: left;
+  font-family: var(--font-family-component);
+  box-sizing: border-box;
+  transition: background 120ms ease, border-color 120ms ease;
+}
+
+.sourceCard:hover {
+  background: var(--color-container-background-info-secondary);
+  border-color: var(--color-action-standard);
+}
+
+.sourceCard:focus-visible {
+  outline: 2px solid var(--color-action-standard);
+  outline-offset: 2px;
+}
+
+.sourceCardStatic {
+  cursor: default;
+}
+
+.sourceCardStatic:hover {
+  background: var(--color-container-background-info);
+  border-color: var(--color-container-border-info);
+}
+
+.cardMain {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--space-component-gap-x-small, 8px);
+  min-width: 0;
+}
+
+.cardLabel {
+  font-size: var(--font-size-component-x-small);
+  font-weight: var(--font-weight-component-semibold);
+  color: var(--color-action-standard);
+  line-height: 1.35;
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+
+.sourceCardStatic .cardLabel {
+  color: var(--color-text-primary);
+}
+
+.cardAmount {
+  font-size: var(--font-size-component-small);
+  font-weight: var(--font-weight-component-bold);
+  color: var(--color-text-primary);
+  white-space: nowrap;
+  flex-shrink: 0;
+  font-variant-numeric: tabular-nums;
+}
+
+.itemNote {
+  margin: 0;
+  font-family: var(--font-family-component);
+  font-size: var(--font-size-component-x-small);
+  font-weight: var(--font-weight-component);
+  color: var(--color-text-secondary);
+  line-height: 1.4;
+}
+
+.viewSource {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-component-gap-x-small, 4px);
+  font-size: var(--font-size-component-x-small);
+  font-weight: var(--font-weight-component-semibold);
+  color: var(--color-action-standard);
+}
+
+.footerRow {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: var(--space-component-gap-small, 10px);
+  padding-top: var(--space-component-gap-small, 10px);
+  border-top: 1px solid var(--color-divider-tertiary);
+}
+
+.footerLabel {
+  font-family: var(--font-family-component);
+  font-size: var(--font-size-component-x-small);
+  font-weight: var(--font-weight-component-bold);
+  color: var(--color-text-secondary);
+}
+
+.footerValue {
+  font-family: var(--font-family-component);
+  font-size: var(--font-size-component-medium);
+  font-weight: var(--font-weight-component-bold);
+  color: var(--color-text-primary);
+  font-variant-numeric: tabular-nums;
+}
+
+.footnote {
+  margin: var(--space-component-gap-x-small, 8px) 0 0;
+  font-family: var(--font-family-component);
+  font-size: var(--font-size-component-x-small);
+  color: var(--color-text-secondary);
+  line-height: 1.4;
+}
+
+/* Calc breakdown rows (shared with FieldPopover calc section) */
+.calcFormula {
+  margin: 0 0 var(--space-component-gap-x-small, 8px);
+  font-family: var(--font-family-component);
+  font-size: var(--font-size-component-x-small);
+  color: var(--color-text-secondary);
+  line-height: 1.4;
+}
+
+.calcList {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-component-gap-x-small, 4px);
+}
+
+.calcRow {
+  display: grid;
+  grid-template-columns: 16px 1fr auto;
+  align-items: baseline;
+  gap: var(--space-component-gap-x-small, 6px);
+  font-family: var(--font-family-component);
+  font-size: var(--font-size-component-x-small);
+}
+
+.calcOp {
+  color: var(--color-text-tertiary);
+  font-weight: var(--font-weight-component-semibold);
+  text-align: center;
+}
+
+.calcLabel {
+  color: var(--color-text-primary);
+  line-height: 1.35;
+}
+
+.calcValue {
+  font-weight: var(--font-weight-component-semibold);
+  color: var(--color-text-primary);
+  white-space: nowrap;
+  font-variant-numeric: tabular-nums;
+}
+
+.embeddedSection {
+  padding-top: var(--space-component-gap-x-small, 8px);
+  border-top: 1px solid var(--color-divider-tertiary);
+}
+
+.embeddedSectionFirst {
+  border-top: none;
+  padding-top: 0;
+}

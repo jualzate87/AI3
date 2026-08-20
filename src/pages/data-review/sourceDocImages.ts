@@ -34,6 +34,8 @@ export type SourceDocPreviewParams = {
   activeIntPayer: IntPayer
   activeDivPayer: DivPayer
   prior1040Images: [string, string]
+  /** Manual doc attachments keyed by verify doc key (e.g. bingEquipment) */
+  manualAttachments?: Record<string, { imageSrc: string }>
 }
 
 export type SourceDocPreview = {
@@ -49,6 +51,7 @@ export function getSourceDocPreview({
   activeIntPayer,
   activeDivPayer,
   prior1040Images,
+  manualAttachments,
 }: SourceDocPreviewParams): SourceDocPreview {
   switch (activeTopTab) {
     case 'questionnaire':
@@ -76,10 +79,22 @@ export function getSourceDocPreview({
     case '1099-necs':
       return { imageSrc: img1099NecSummit, alt: '1099-NEC Summit Advisory Partners' }
     case 'w2s':
-    default:
+    default: {
+      const w2Label = W2_PAYER_TABS.find(t => t.key === activeSubTab)?.label ?? activeSubTab
+      const attached = manualAttachments?.[activeSubTab]?.imageSrc
+      if (attached) {
+        return {
+          imageSrc: attached,
+          alt: `W-2 ${w2Label}`,
+        }
+      }
+      if (activeSubTab === 'bingEquipment') {
+        return { alt: 'W-2 Bing Equipment — attach a source document' }
+      }
       return {
         imageSrc: imgW2TechCircle,
-        alt: `W-2 ${W2_PAYER_TABS.find(t => t.key === activeSubTab)?.label ?? 'Tech Circle'}`,
+        alt: `W-2 ${w2Label}`,
       }
+    }
   }
 }

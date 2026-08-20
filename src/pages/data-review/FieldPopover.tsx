@@ -4,7 +4,13 @@ import { Close } from '@design-systems/icons'
 import intuitAssistIcon from '../../assets/icons/intuit-assist.svg'
 import type { FieldOrigin, FieldOriginSource } from '../../data/fieldOrigins'
 import { getQuestionnairePopoverSupplement } from './questionnaireData'
+import {
+  SourcePopoverFooter,
+  SourcePopoverItems,
+  type SourcePopoverItem,
+} from './SourcePopover'
 import styles from '../../styles/data-review/FieldPopover.module.css'
+import sourceStyles from '../../styles/data-review/SourcePopover.module.css'
 
 // ── Field metadata ────────────────────────────────────────────────────────────
 
@@ -293,10 +299,32 @@ export default function FieldPopover({
     onViewSource?.(fieldName, s.label)
   }
 
+  const handleSourceNavigate = (docId: string) => {
+    const match = sources?.find(s => s.docId === docId)
+    if (match) handleSourceClick(match)
+    else onViewSource?.(fieldName)
+  }
+
+  const sourcePopoverItems: SourcePopoverItem[] = hasOriginSources
+    ? sources!.map(s => ({
+        id: `${s.docId}-${s.detailFieldId}`,
+        label: s.box ? `${s.label} · ${s.box}` : s.label,
+        amount: s.amount,
+        docId: s.docId,
+      }))
+    : (legacySources ?? []).map(s => ({
+        id: s.label,
+        label: s.label,
+        amount: s.value,
+      }))
+
+  const sourceTotal = sourcePopoverItems.reduce((sum, item) => sum + (item.amount ?? 0), 0)
+  const showSourceBlock = sourcePopoverItems.length > 0
+
   return createPortal(
     <div
       ref={ref}
-      className={styles.popover}
+      className={`${sourceStyles.popover} ${sourceStyles.popoverWide} ${sourceStyles.popoverBeakLeft} ${styles.popover}`}
       style={{
         position: 'fixed',
         top: coords.top,
@@ -309,10 +337,10 @@ export default function FieldPopover({
       aria-label={`${label} details`}
     >
       {/* Header — sparkle + field label + close */}
-      <div className={styles.header}>
+      <div className={sourceStyles.header}>
         <img src={intuitAssistIcon} alt="" className={styles.assistIcon} />
-        <span className={styles.fieldLabel}>{label}</span>
-        <button className={styles.closeBtn} onClick={onClose} aria-label="Close popover">
+        <span className={sourceStyles.title}>{label}</span>
+        <button className={sourceStyles.closeBtn} onClick={onClose} aria-label="Close popover">
           <Close size="small" />
         </button>
       </div>
@@ -365,46 +393,23 @@ export default function FieldPopover({
         </div>
       )}
 
-      {/* Sources — original slim rows (label ····· $amount), clickable for navigate+highlight */}
-      {hasOriginSources && (
+      {/* Sources — unified card style (matches Summary / schedule flyouts) */}
+      {showSourceBlock && (
         <div className={styles.sourcesSection}>
-          <div className={styles.sourcesSectionLabel}>Sources</div>
-          {sources!.map(s => {
-            const displayLabel = s.box ? `${s.label} · ${s.box}` : s.label
-            return (
-              <div key={`${s.docId}-${s.detailFieldId}`} className={styles.sourceRow}>
-                <button
-                  type="button"
-                  className={styles.sourceLink}
-                  onClick={() => handleSourceClick(s)}
-                >
-                  {displayLabel}
-                </button>
-                <span className={styles.sourceDots} aria-hidden="true" />
-                <span className={styles.sourceValue}>${fmt(s.amount)}</span>
-              </div>
-            )
-          })}
-        </div>
-      )}
-
-      {/* Legacy sources fallback when no origin.sources */}
-      {legacySources && legacySources.length > 0 && (
-        <div className={styles.sourcesSection}>
-          <div className={styles.sourcesSectionLabel}>Sources</div>
-          {legacySources.map(s => (
-            <div key={s.label} className={styles.sourceRow}>
-              <button
-                type="button"
-                className={styles.sourceLink}
-                onClick={() => onViewSource?.(fieldName, s.label)}
-              >
-                {s.label}
-              </button>
-              <span className={styles.sourceDots} aria-hidden="true" />
-              <span className={styles.sourceValue}>${fmt(s.value)}</span>
-            </div>
-          ))}
+          <p className={sourceStyles.subtitle}>
+            Select a source below to open its document.
+          </p>
+          <SourcePopoverItems
+            mode="source"
+            items={sourcePopoverItems}
+            onNavigateToDoc={hasOriginSources ? handleSourceNavigate : undefined}
+            onItemClick={
+              !hasOriginSources
+                ? item => onViewSource?.(fieldName, item.label)
+                : undefined
+            }
+          />
+          <SourcePopoverFooter label="Total from sources" value={sourceTotal} />
         </div>
       )}
 
@@ -426,21 +431,18 @@ export default function FieldPopover({
       {calc && calc.components.length > 0 && (
         <div className={styles.calcSection}>
           <div className={styles.sourcesSectionLabel}>Calculated from</div>
-          <p className={styles.calcFormula}>{calc.formula}</p>
-          <ul className={styles.calcList}>
+          <p className={sourceStyles.calcFormula}>{calc.formula}</p>
+          <ul className={sourceStyles.calcList}>
             {calc.components.map((comp, i) => (
-              <li key={i} className={styles.calcRow}>
-                <span className={styles.calcOp}>{comp.operator ?? '+'}</span>
-                <span className={styles.calcLabel}>{comp.label}</span>
-                <span className={styles.calcValue}>${fmt(comp.amount)}</span>
+              <li key={i} className={sourceStyles.calcRow}>
+                <span className={sourceStyles.calcOp}>{comp.operator ?? '+'}</span>
+                <span className={sourceStyles.calcLabel}>{comp.label}</span>
+                <span className={sourceStyles.calcValue}>${fmt(comp.amount)}</span>
               </li>
             ))}
           </ul>
-          <div className={styles.calcTotalRow}>
-            <span className={styles.calcTotalLabel}>{calc.totalLabel}</span>
-            <span className={styles.calcTotalValue}>${fmt(calc.total)}</span>
-          </div>
-          {calc.footnote && <p className={styles.calcFootnote}>{calc.footnote}</p>}
+          <SourcePopoverFooter label={calc.totalLabel} value={calc.total} />
+          {calc.footnote && <p className={sourceStyles.footnote}>{calc.footnote}</p>}
         </div>
       )}
     </div>,

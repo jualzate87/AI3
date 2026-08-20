@@ -1,7 +1,11 @@
 import { useEffect, useRef } from 'react'
-import { Close } from '@design-systems/icons'
 import type { TaxControlBreakdown } from '../../data/taxControlBreakdowns'
-import styles from '../../styles/data-review/TaxControlBreakdownPopover.module.css'
+import {
+  SourcePopoverFooter,
+  SourcePopoverShell,
+  computeSourcePopoverPosition,
+} from './SourcePopover'
+import styles from '../../styles/data-review/SourcePopover.module.css'
 
 interface TaxControlBreakdownPopoverProps {
   breakdown: TaxControlBreakdown
@@ -39,44 +43,29 @@ export default function TaxControlBreakdownPopover({
     return () => document.removeEventListener('keydown', handler)
   }, [onClose])
 
-  const top = anchorRect.top + anchorRect.height / 2
-  const left = anchorRect.right + 8
+  const { top, left, beakSide } = computeSourcePopoverPosition(anchorRect)
 
   return (
-    <div
-      ref={ref}
-      className={styles.popover}
-      style={{ position: 'fixed', top, left, transform: 'translateY(-50%)', zIndex: 300 }}
-      role="dialog"
-      aria-label={`${breakdown.title} breakdown`}
-    >
-      <div className={styles.header}>
-        <span className={styles.title}>{breakdown.title}</span>
-        <button className={styles.closeBtn} onClick={onClose} aria-label="Close">
-          <Close size="small" />
-        </button>
-      </div>
-
-      <p className={styles.formula}>{breakdown.formula}</p>
-
-      <ul className={styles.componentList}>
-        {breakdown.components.map((comp, i) => (
-          <li key={i} className={styles.componentRow}>
-            <span className={styles.componentOp}>{comp.operator ?? '+'}</span>
-            <span className={styles.componentLabel}>{comp.label}</span>
-            <span className={styles.componentValue}>${fmt(comp.value)}</span>
-          </li>
-        ))}
-      </ul>
-
-      <div className={styles.totalRow}>
-        <span className={styles.totalLabel}>{breakdown.totalLabel}</span>
-        <span className={styles.totalValue}>${fmt(breakdown.total)}</span>
-      </div>
-
-      {breakdown.footnote && (
-        <p className={styles.footnote}>{breakdown.footnote}</p>
-      )}
+    <div ref={ref}>
+      <SourcePopoverShell
+        title={breakdown.title}
+        subtitle={breakdown.formula}
+        onClose={onClose}
+        footnote={breakdown.footnote}
+        beakSide={beakSide}
+        style={{ position: 'fixed', top, left, transform: 'translateY(-50%)', zIndex: 300 }}
+        footer={<SourcePopoverFooter label={breakdown.totalLabel} value={breakdown.total} />}
+      >
+        <ul className={styles.calcList}>
+          {breakdown.components.map((comp, i) => (
+            <li key={i} className={styles.calcRow}>
+              <span className={styles.calcOp}>{comp.operator ?? '+'}</span>
+              <span className={styles.calcLabel}>{comp.label}</span>
+              <span className={styles.calcValue}>${fmt(comp.value)}</span>
+            </li>
+          ))}
+        </ul>
+      </SourcePopoverShell>
     </div>
   )
 }

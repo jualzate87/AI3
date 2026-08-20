@@ -1,4 +1,6 @@
-import { CircleCheck, PopIn } from '@design-systems/icons'
+import { ChevronRight, CircleCheck, CirclePlus, PopIn } from '@design-systems/icons'
+import { Button } from '@ids-ts/button'
+import '@ids-ts/button/dist/main.css'
 import sparklesIcon from '../../assets/icons/sparkles.svg'
 import AttentionCountBadge from './AttentionCountBadge'
 import TabReviewCountBadge from './TabReviewCountBadge'
@@ -52,6 +54,13 @@ interface ReviewTabProps {
   tabConfirmCounts?: Record<string, number>
   /** When true, shows Dock back control (popout window only) */
   isPopout?: boolean
+  /** Phase 1 preparer: show "+ Add item to review" at end of tab row */
+  showAddItem?: boolean
+  onAddItemClick?: () => void
+  /** Phase 1 preparer: jump to next unreviewed source document */
+  showNextDocument?: boolean
+  onNextDocumentClick?: () => void
+  unreviewedDocCount?: number
 }
 
 export default function ReviewTab({
@@ -68,6 +77,11 @@ export default function ReviewTab({
   tabConfirmStatus,
   tabConfirmCounts,
   isPopout = false,
+  showAddItem = true,
+  onAddItemClick,
+  showNextDocument = false,
+  onNextDocumentClick,
+  unreviewedDocCount = 0,
 }: ReviewTabProps) {
   const handleTabClick = (key: string, label: string) => {
     if (TAB_KEYS.has(key)) {
@@ -180,6 +194,31 @@ export default function ReviewTab({
             </div>
           </button>
         ))}
+      </div>
+
+      <div className={styles.tabActions}>
+        {showAddItem && onAddItemClick && (
+          <Button
+            priority="tertiary"
+            size="small"
+            className={styles.addItemBtn}
+            onClick={onAddItemClick}
+          >
+            <CirclePlus size="small" />
+            Add item to review
+          </Button>
+        )}
+        {showNextDocument && onNextDocumentClick && unreviewedDocCount > 0 && (
+          <Button
+            priority="primary"
+            size="small"
+            className={styles.nextDocBtn}
+            onClick={onNextDocumentClick}
+          >
+            Next document
+            <ChevronRight size="small" />
+          </Button>
+        )}
       </div>
 
       {isPopout && (

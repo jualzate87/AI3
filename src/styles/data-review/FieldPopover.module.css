@@ -10,51 +10,17 @@
   pointer-events: none;
 }
 
-/* The popover card itself — positioned fixed via portal to document.body */
+/* Animation + layout overrides on shared SourcePopover shell */
 .popover {
-  width: 360px;
-  min-width: 360px;
-  max-width: calc(100vw - 24px);
-  background: #ffffff;
-  border: 2px solid #236cff;
-  border-radius: 8px;
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.14), 0 1px 6px rgba(0, 0, 0, 0.08);
   pointer-events: all;
   animation: popoverIn 180ms cubic-bezier(0.2, 0, 0.25, 1) both;
   overflow: hidden;
-  box-sizing: border-box;
+  max-width: calc(100vw - 24px);
 }
 
 @keyframes popoverIn {
   from { opacity: 0; transform: translateY(-50%) scale(0.96); }
   to   { opacity: 1; transform: translateY(-50%) scale(1); }
-}
-
-/* Left-pointing caret */
-.popover::before {
-  content: '';
-  position: absolute;
-  left: -9px;
-  top: 50%;
-  transform: translateY(-50%);
-  width: 0;
-  height: 0;
-  border-top: 8px solid transparent;
-  border-bottom: 8px solid transparent;
-  border-right: 8px solid #236cff;
-}
-
-.popover::after {
-  content: '';
-  position: absolute;
-  left: -6px;
-  top: 50%;
-  transform: translateY(-50%);
-  width: 0;
-  height: 0;
-  border-top: 6px solid transparent;
-  border-bottom: 6px solid transparent;
-  border-right: 6px solid #ffffff;
 }
 
 /* ── Header ── */

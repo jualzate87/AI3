@@ -66,7 +66,6 @@ export default function PriorYear1040Fields({
   const [commentAnchor, setCommentAnchor] = useState<{ top: number; right: number } | null>(null)
   const commentRef = useRef<HTMLDivElement>(null)
   const highlightedRef = useRef<HTMLDivElement>(null)
-  const inputRef = useRef<HTMLInputElement>(null)
   const activeRowKey = resolveRowKey(selectedField)
 
   useEffect(() => {
@@ -85,11 +84,6 @@ export default function PriorYear1040Fields({
   useEffect(() => {
     if (!activeRowKey || !highlightedRef.current) return
     highlightedRef.current.scrollIntoView({ behavior: 'smooth', block: 'center' })
-    // Focus the AGI / target amount input so "Go to AGI input" lands on the field
-    const t = window.setTimeout(() => {
-      inputRef.current?.focus({ preventScroll: true })
-    }, 280)
-    return () => window.clearTimeout(t)
   }, [activeRowKey])
 
   const openComment = (fieldKey: string, btn: HTMLElement) => {
@@ -197,9 +191,10 @@ export default function PriorYear1040Fields({
                 {row.line}&nbsp;&nbsp;{row.label}
               </span>
               <input
-                ref={isSelected ? inputRef : undefined}
-                className={`${styles.fieldInput} ${isSelected ? inputHighlight : ''}`}
+                className={`${styles.fieldInput} ${styles.fieldInputSmall} ${styles.fieldInputDisplay} ${isSelected ? inputHighlight : ''}`}
                 readOnly
+                tabIndex={-1}
+                aria-readonly
                 value={row.amount}
                 style={row.bold ? { fontWeight: 600 } : undefined}
                 aria-label={row.key === '11' ? 'Adjusted gross income (line 11)' : undefined}

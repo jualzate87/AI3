@@ -12,6 +12,7 @@ import { displayEditableAmount, NEC_SOURCE_AMOUNT, parseAmountDraft, type LiveAm
 import DocVerifyHeaderActions from './DocVerifyHeaderActions'
 import QuestionnaireFieldNote from './QuestionnaireFieldNote'
 import styles from '../../styles/data-review/DetailFields.module.css'
+import { canEditField, type DetailFieldsVariant } from './fieldEditability'
 
 function CheckIcon() {
   return (
@@ -78,7 +79,7 @@ interface DetailFieldsNecProps {
   /** Phase 1 import flags — field key → validation message */
   flaggedFields?: Record<string, string>
   /** Input return mode — plain editable fields without verify header */
-  variant?: 'review' | 'input'
+  variant?: DetailFieldsVariant
   showEmptyWhenZero?: boolean
   /** Navigate to Schedule C gross receipts when NEC flows to the return */
   onOpenScheduleC?: () => void
@@ -129,7 +130,7 @@ export default function DetailFieldsNec({
   }, [selectedField])
 
   const startEdit = (field: string, currentValue: string) => {
-    if (importReadOnly) return
+    if (!canEditField(field, variant, importReadOnly)) return
     const clean = currentValue.replace(/,/g, '')
     setEditingField(field)
     setDraftValue(clean)
@@ -179,7 +180,8 @@ export default function DetailFieldsNec({
         ? fmt(amounts.necIncome)
         : null
     const currentVal = syncedNecDisplay ?? fieldOverrides[fieldKey] ?? (showEmptyWhenZero ? '' : defaultValue)
-    const isEditing = editingField === fieldKey
+    const editable = canEditField(fieldKey, variant, importReadOnly)
+    const isEditing = editable && editingField === fieldKey
     const isFlagged = fieldKey === 'nec-box1' && !!flaggedFields['nec-box1'] && !reviewedFields?.has(fieldKey)
     const isReviewed = reviewedFields?.has(fieldKey)
     const isSelected = selectedField === select || selectedField === fieldKey || selectedField === 'necIncome'
@@ -213,18 +215,20 @@ export default function DetailFieldsNec({
           {label}
         </DestinationFieldLabel>
         <input
-          className={`${styles.fieldInput} ${inputClass} ${isEditing ? styles.fieldInputEditing : isFlagged ? styles.fieldInputHighlightedOrange : isSelected ? (highlightMode === 'orange' ? styles.fieldInputHighlightedOrange : styles.fieldInputHighlighted) : ''}`}
-          readOnly={!isEditing}
+          className={`${styles.fieldInput} ${inputClass} ${!editable ? styles.fieldInputDisplay : ''} ${isEditing ? styles.fieldInputEditing : isFlagged ? styles.fieldInputHighlightedOrange : isSelected ? (highlightMode === 'orange' ? styles.fieldInputHighlightedOrange : styles.fieldInputHighlighted) : ''}`}
+          readOnly
+          tabIndex={editable ? undefined : -1}
+          aria-readonly={!editable}
           value={isEditing ? draftValue : currentVal}
-          onChange={e => setDraftValue(e.target.value)}
+          onChange={editable ? (e => setDraftValue(e.target.value)) : undefined}
           placeholder={!isEditing && isFlagged ? 'Not imported' : undefined}
           autoFocus={isEditing}
-          onClick={e => { e.stopPropagation(); if (!importReadOnly && !isEditing) startEdit(fieldKey, currentVal) }}
-          onBlur={commitStatic}
-          onKeyDown={e => {
+          onClick={editable ? (e => { e.stopPropagation(); if (!isEditing) startEdit(fieldKey, currentVal) }) : undefined}
+          onBlur={editable ? commitStatic : undefined}
+          onKeyDown={editable ? (e => {
             if (e.key === 'Enter') { e.preventDefault(); commitStatic() }
             if (e.key === 'Escape') cancelEdit()
-          }}
+          }) : undefined}
         />
         {isEditing ? (
           <div className={styles.editActions}>
@@ -247,7 +251,7 @@ export default function DetailFieldsNec({
               </Tooltip>
             )
           })()
-        ) : (
+        ) : importReadOnly || variant === 'input' || !editable ? null : (
           <div className={styles.fieldActions}>
             <Tooltip text="Mark as correct" placement="top">
               <button className={styles.markCorrectBtn} onClick={e => { e.stopPropagation(); onMarkReviewed?.(fieldKey) }}><CircleCheck size="small" /></button>

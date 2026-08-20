@@ -18,6 +18,7 @@ import {
 import DocumentPreview from './data-review/DocumentPreview'
 import Int1099FormPreview from './data-review/Int1099FormPreview'
 import { getSourceDocPreview } from './data-review/sourceDocImages'
+import { readManualDocAttachments } from '../lib/manualDocAttachments'
 import DetailFields, { W2_PAYER_TABS } from './data-review/DetailFields'
 import type { W2Employer } from './data-review/DetailFields'
 import DetailFields1099, { INT_PAYER_TABS, intVerifiedDocKey } from './data-review/DetailFields1099'
@@ -272,12 +273,15 @@ export default function DataReviewPopout() {
     document.addEventListener('pointercancel', onPointerUp)
   }, [previewWidth])
 
+  const manualAttachments = readManualDocAttachments()
+
   const sourceDocPreview = getSourceDocPreview({
     activeTopTab,
     activeSubTab,
     activeIntPayer,
     activeDivPayer,
     prior1040Images: [img1040PriorPage1, img1040PriorPage2],
+    manualAttachments,
   })
 
   return (
@@ -293,6 +297,10 @@ export default function DataReviewPopout() {
           typeReviewed={showPreparerImportPhase ? typeReviewed : undefined}
           tabConfirmStatus={reviewRole === 'reviewer' ? tabConfirmStatus : undefined}
           tabConfirmCounts={reviewRole === 'reviewer' ? tabConfirmCounts : undefined}
+          showAddItem={false}
+          showNextDocument={showPreparerImportPhase}
+          onNextDocumentClick={handleReviewNextDocument}
+          unreviewedDocCount={unreviewedDocCount}
           onTopTabChange={(tab) => { setActiveTopTab(tab); setSelectedField(null) }}
         />
 

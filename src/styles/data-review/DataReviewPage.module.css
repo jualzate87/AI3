@@ -328,7 +328,7 @@
   padding: var(--space-container-padding-small, 16px) var(--space-container-padding-medium, 20px);
   flex-shrink: 0;
   min-width: 0;
-  background: var(--color-container-background-secondary);
+  background: var(--color-container-background-primary);
   border-bottom: 1px solid var(--color-divider-tertiary, #e8edf0);
 }
 

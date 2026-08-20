@@ -422,8 +422,37 @@
   cursor: text;
 }
 
+/* Read-only form / summary display — bordered box, non-interactive (not greyed-out disabled) */
+.fieldInputDisplay {
+  cursor: default;
+  pointer-events: none;
+  background: var(--color-container-background-primary, #ffffff);
+  border-color: var(--color-input-border-primary, #c3ced5);
+  color: var(--color-text-primary, #21262a);
+}
+
+.fieldInputDisplay.fieldInputSmall {
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+
+.fieldInputDisplay:focus {
+  border-color: var(--color-input-border-primary, #c3ced5);
+  outline: none;
+}
+
 .fieldInput:focus {
   border-color: #205ea3;
+}
+
+/* Zebra striping for form field rows */
+.inputContainer .fieldRow:nth-child(even) {
+  background: var(--color-container-background-secondary, #f7f9fb);
+}
+
+.inputContainer .fieldRow:nth-child(even).fieldRowHighlighted,
+.inputContainer .fieldRow:nth-child(even).fieldRowHighlightedOrange {
+  background: rgba(32, 94, 163, 0.08);
 }
 
 /* Highlighted input — blue (generic popover / source navigation) */

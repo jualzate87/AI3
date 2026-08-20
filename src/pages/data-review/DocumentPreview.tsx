@@ -1,5 +1,8 @@
 import { useState, useRef, useEffect, useCallback } from 'react'
-import { ZoomOut, ZoomIn, Search } from '@design-systems/icons'
+import { ZoomOut, ZoomIn, Search, Upload, Document } from '@design-systems/icons'
+import { Button } from '@ids-ts/button'
+import '@ids-ts/button/dist/main.css'
+import { isManualImportDoc } from '../../data/documentImportMeta'
 import styles from '../../styles/data-review/DocumentPreview.module.css'
 
 interface DocumentPreviewProps {
@@ -7,8 +10,14 @@ interface DocumentPreviewProps {
   alt: string
   /** When set, renders custom content instead of image(s) */
   customContent?: React.ReactNode
-  /** Show API import badge in the preview toolbar when doc was imported via Filed */
+  /** Verify doc key — drives attach empty state for manual/pdf-only inputs */
   importDocKey?: string | null
+  /** Show attach empty state when no PDF is linked (manual review) */
+  showAttachEmpty?: boolean
+  attachEmptyTitle?: string
+  attachEmptyHint?: string
+  onUploadDocument?: () => void
+  onChooseAvailable?: () => void
 }
 
 const ZOOM_LEVELS = [50, 60, 65, 70, 75, 85, 100, 125, 150, 200]
@@ -33,11 +42,26 @@ const HIDDEN_LOUPE: LoupeState = {
   backgroundPosition: '0 0',
 }
 
-export default function DocumentPreview({ imageSrc, alt, customContent, importDocKey: _importDocKey }: DocumentPreviewProps) {
+export default function DocumentPreview({
+  imageSrc,
+  alt,
+  customContent,
+  importDocKey = null,
+  showAttachEmpty = false,
+  attachEmptyTitle = 'Attach a source document',
+  attachEmptyHint = 'Upload a new file or choose one that was already uploaded but not imported.',
+  onUploadDocument,
+  onChooseAvailable,
+}: DocumentPreviewProps) {
   const [zoomIndex, setZoomIndex] = useState(6) // default 100% — fit to viewer width
   const zoom = ZOOM_LEVELS[zoomIndex]
   const images = imageSrc ? (Array.isArray(imageSrc) ? imageSrc : [imageSrc]) : []
   const canMagnify = !customContent && images.length > 0
+  const needsManualAttach = Boolean(importDocKey && isManualImportDoc(importDocKey))
+  const showEmptyAttach =
+    !customContent &&
+    images.length === 0 &&
+    (showAttachEmpty || needsManualAttach)
   const [magnifyOn, setMagnifyOn] = useState(false)
   const [loupe, setLoupe] = useState<LoupeState>(HIDDEN_LOUPE)
 
@@ -184,6 +208,20 @@ export default function DocumentPreview({ imageSrc, alt, customContent, importDo
             style={{ width: customContent ? '100%' : `${zoom}%` }}
           >
             {customContent ?? (
+              showEmptyAttach ? (
+                <div className={styles.attachEmpty}>
+                  <p className={styles.attachEmptyTitle}>{attachEmptyTitle}</p>
+                  <p className={styles.attachEmptyHint}>{attachEmptyHint}</p>
+                  <div className={styles.attachEmptyActions}>
+                    <Button priority="secondary" size="medium" onClick={onUploadDocument}>
+                      <Upload size="small" /> Upload new document
+                    </Button>
+                    <Button priority="secondary" size="medium" onClick={onChooseAvailable}>
+                      <Document size="small" /> Choose from available
+                    </Button>
+                  </div>
+                </div>
+              ) : (
               <div className={images.length > 1 ? styles.pageStack : undefined}>
                 {images.map((src, i) => (
                   <img
@@ -195,6 +233,7 @@ export default function DocumentPreview({ imageSrc, alt, customContent, importDo
                   />
                 ))}
               </div>
+              )
             )}
           </div>
         </div>
@@ -216,7 +255,8 @@ export default function DocumentPreview({ imageSrc, alt, customContent, importDo
         />
       )}
 
-      {/* Zoom toolbar */}
+      {/* Zoom toolbar — hidden when attach empty state is showing */}
+      {!showEmptyAttach && (
       <div className={styles.toolbar}>
         <div className={styles.toolbarControls}>
           <span className={styles.zoomLevel}>{zoom}%</span>
@@ -252,6 +292,7 @@ export default function DocumentPreview({ imageSrc, alt, customContent, importDo
           )}
         </div>
       </div>
+      )}
     </div>
   )
 }

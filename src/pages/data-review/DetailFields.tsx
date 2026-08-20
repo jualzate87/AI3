@@ -13,6 +13,7 @@ import FieldAnnotationButton from './FieldAnnotationButton'
 import Tooltip from './Tooltip'
 import styles from '../../styles/data-review/DetailFields.module.css'
 import { displayEditableAmount } from '../../data/liveReturn'
+import { canEditField, type DetailFieldsVariant } from './fieldEditability'
 import { getBox12SubRowKeys, isBox12FlagResolved } from './phase1FieldSync'
 
 type FieldValuesKey = 'withholding' | 'box12' | 'taxableInterest' | 'qualifiedDivs'
@@ -79,7 +80,7 @@ interface DetailFieldsProps {
   /** Reviewer confirm mode — preparer attestations read-only; no import/OCR edit actions */
   importReadOnly?: boolean
   /** Input return mode — plain editable fields without verify header or review flags */
-  variant?: 'review' | 'input'
+  variant?: DetailFieldsVariant
   /** When true (pre-import manual entry), zero amounts render blank */
   showEmptyWhenZero?: boolean
 }
@@ -188,7 +189,7 @@ export default function DetailFields({
   }, [selectedField])
 
   const startEdit = (field: string, currentValue: string) => {
-    if (importReadOnly) return
+    if (!canEditField(field, variant, importReadOnly)) return
     const clean = currentValue.replace(/,/g, '')
     setEditingField(field)
     setDraftValue(clean)
@@ -302,7 +303,8 @@ export default function DetailFields({
           ? identityValues.ein
           : null
     const currentVal = identitySynced ?? fieldOverrides[key] ?? defaultValue
-    const isEditing = editingField === key
+    const editable = canEditField(key, variant, importReadOnly)
+    const isEditing = editable && editingField === key
     const isReviewed = reviewedFields?.has(key)
     // A flagged static row (e.g. missing EIN) shows the same orange dot + validation note as other import flags
     const isFlagged = !!flaggedFields[fieldKey] && !isReviewed
@@ -338,17 +340,19 @@ export default function DetailFields({
           </DestinationFieldLabel>
         )}
         <input
-          className={`${styles.fieldInput} ${inputClass} ${isEditing ? styles.fieldInputEditing : ''}`}
-          readOnly={!isEditing}
+          className={`${styles.fieldInput} ${inputClass} ${!editable ? styles.fieldInputDisplay : ''} ${isEditing ? styles.fieldInputEditing : ''}`}
+          readOnly
+          tabIndex={editable ? undefined : -1}
+          aria-readonly={!editable}
           value={isEditing ? draftValue : currentVal}
-          onChange={e => setDraftValue(e.target.value)}
+          onChange={editable ? (e => setDraftValue(e.target.value)) : undefined}
           autoFocus={isEditing}
-          onClick={e => { e.stopPropagation(); if (!importReadOnly && !isEditing) startEdit(key, currentVal) }}
-          onBlur={commitStatic}
-          onKeyDown={e => {
+          onClick={editable ? (e => { e.stopPropagation(); if (!isEditing) startEdit(key, currentVal) }) : undefined}
+          onBlur={editable ? commitStatic : undefined}
+          onKeyDown={editable ? (e => {
             if (e.key === 'Enter') { e.preventDefault(); commitStatic() }
             if (e.key === 'Escape') { e.preventDefault(); cancelEdit() }
-          }}
+          }) : undefined}
         />
         {isEditing ? (
           <div className={styles.editActions}>
@@ -369,14 +373,14 @@ export default function DetailFields({
               <button className={styles.reviewedBadge} style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 0, display: 'inline-flex', alignItems: 'center' }} onClick={e => { e.stopPropagation(); onMarkReviewed?.(key) }}><CircleCheck size="small" /></button>
             )}
           </Tooltip>
-        ) : importReadOnly ? null : (
+        ) : importReadOnly || variant === 'input' || !editable ? null : (
           <div className={styles.fieldActions}>
             <Tooltip text={reviewedTip(key, false)} placement="top"><button className={styles.markCorrectBtn} onClick={e => { e.stopPropagation(); onMarkReviewed?.(key) }}><CircleCheck size="small" /></button></Tooltip>
             {renderAnnotationBtn(key, label, employer.name)}
           </div>
         )}
-        {savedField === key && <span className={styles.recalcBadge}>Saved</span>}
-        {isEdited(key) && savedField !== key && (
+        {editable && savedField === key && <span className={styles.recalcBadge}>Saved</span>}
+        {editable && isEdited(key) && savedField !== key && (
           <Tooltip text={editMetaText(key)} placement="top">
             <span className={styles.editedBadge}>Edited</span>
           </Tooltip>
@@ -456,7 +460,7 @@ export default function DetailFields({
             value={editingField === 'wages' ? draftValue : fmt(currentWages)}
             onChange={e => setDraftValue(e.target.value)}
             autoFocus={editingField === 'wages'}
-            onClick={e => { e.stopPropagation(); if (!importReadOnly && editingField !== 'wages') startEdit('wages', currentWages.toString()) }}
+            onClick={e => { e.stopPropagation(); if (canEditField('wages', variant, importReadOnly) && editingField !== 'wages') startEdit('wages', currentWages.toString()) }}
             onBlur={commitWagesEdit}
             onKeyDown={e => {
               if (e.key === 'Enter') { e.preventDefault(); commitWagesEdit() }
@@ -502,7 +506,7 @@ export default function DetailFields({
             value={editingField === 'withholding' ? draftValue : (fieldValues?.withholding !== undefined ? fmt(fieldValues.withholding) : (showEmptyWhenZero ? '' : employer.federalTax))}
             onChange={e => setDraftValue(e.target.value)}
             autoFocus={editingField === 'withholding'}
-            onClick={e => { e.stopPropagation(); if (!importReadOnly && editingField !== 'withholding') startEdit('withholding', fieldValues?.withholding?.toString() ?? employer.federalTax) }}
+            onClick={e => { e.stopPropagation(); if (canEditField('withholding', variant, importReadOnly) && editingField !== 'withholding') startEdit('withholding', fieldValues?.withholding?.toString() ?? employer.federalTax) }}
             onBlur={() => commitEdit('withholding')}
             onKeyDown={e => { if (e.key === 'Enter') { e.preventDefault(); commitEdit('withholding') } if (e.key === 'Escape') cancelEdit() }}
           />
@@ -622,7 +626,7 @@ export default function DetailFields({
                         if (e.key === 'Escape') cancelEdit()
                       }}
                       style={{ width: 120, fontSize: 13, height: 32, padding: '5px 8px', boxSizing: 'border-box', border: `${isEditingAmt ? '2px' : '1px'} solid ${isEditingAmt ? '#205ea3' : isFlagged ? '#ff6a00' : '#c3ced5'}`, borderRadius: 4, background: isEditingAmt ? '#fff' : isFlagged ? 'rgba(255,187,0,0.25)' : '#fff', color: '#21262a', fontFamily: 'var(--font-family-component)', outline: 'none', flexShrink: 0, cursor: 'text' }}
-                      onClick={e => { e.stopPropagation(); if (!importReadOnly && !isEditingAmt) { startEdit(amtKey, amtVal) } }}
+                      onClick={e => { e.stopPropagation(); if (canEditField(amtKey, variant, importReadOnly) && !isEditingAmt) { startEdit(amtKey, amtVal) } }}
                     />
                     {isEditingAmt ? (
                       <div className={styles.editActions}>
@@ -668,7 +672,7 @@ export default function DetailFields({
                 value={editingField === 'box12' ? draftValue : (fieldValues?.box12 !== undefined && employer.box12Amount ? fieldValues.box12.toLocaleString() : (employer.box12Amount || '—'))}
                 onChange={e => setDraftValue(e.target.value)}
                 autoFocus={editingField === 'box12'}
-                onClick={e => { e.stopPropagation(); if (!importReadOnly && editingField !== 'box12') startEdit('box12', fieldValues?.box12?.toString() ?? employer.box12Amount ?? '') }}
+                onClick={e => { e.stopPropagation(); if (canEditField('box12', variant, importReadOnly) && editingField !== 'box12') startEdit('box12', fieldValues?.box12?.toString() ?? employer.box12Amount ?? '') }}
                 onBlur={() => commitEdit('box12')}
                 onKeyDown={e => { if (e.key === 'Enter') { e.preventDefault(); commitEdit('box12') } if (e.key === 'Escape') cancelEdit() }}
               />

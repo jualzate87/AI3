@@ -7,6 +7,7 @@ import { CLIENT_ADDRESS } from '../../data/clientAddress'
 import { displayEditableAmount, parseAmountDraft, type LiveAmounts } from '../../data/liveReturn'
 import DocVerifyHeaderActions from './DocVerifyHeaderActions'
 import styles from '../../styles/data-review/DetailFields.module.css'
+import { canEditField, type DetailFieldsVariant } from './fieldEditability'
 
 function CheckIcon() {
   return (
@@ -148,7 +149,8 @@ interface DetailFields1099Props {
   onVerifyDoc?: (docKey: string) => void
   flaggedFields?: Record<string, string>
   onAddFieldNote?: (text: string, context: string) => void
-  variant?: 'review' | 'input'
+  importReadOnly?: boolean
+  variant?: DetailFieldsVariant
   showEmptyWhenZero?: boolean
 }
 
@@ -175,6 +177,7 @@ export default function DetailFields1099({
   onVerifyDoc,
   flaggedFields = {},
   onAddFieldNote,
+  importReadOnly = false,
   variant = 'review',
   showEmptyWhenZero = false,
 }: DetailFields1099Props) {
@@ -203,6 +206,7 @@ export default function DetailFields1099({
   }, [selectedField])
 
   const startEdit = (field: string, currentValue: string) => {
+    if (!canEditField(field, variant, importReadOnly)) return
     const clean = currentValue.replace(/,/g, '')
     setEditingField(field)
     setDraftValue(clean)
@@ -279,7 +283,8 @@ export default function DetailFields1099({
     const currentVal = syncedInterest !== null
       ? syncedInterest
       : (fieldOverrides[fieldKey] ?? (showEmptyWhenZero ? '' : defaultValue))
-    const isEditing = editingField === fieldKey
+    const editable = canEditField(fieldKey, variant, importReadOnly)
+    const isEditing = editable && editingField === fieldKey
     const isReviewed = reviewedFields?.has(fieldKey)
     const isSelected = selectedField === fieldKey
     const flagUnresolved = !!(flagKey && flaggedFields[flagKey] && !reviewedFields?.has(flagKey))
@@ -315,15 +320,17 @@ export default function DetailFields1099({
           {label}
         </DestinationFieldLabel>
         <input
-          className={`${styles.fieldInput} ${inputClass} ${isEditing ? styles.fieldInputEditing : flagUnresolved ? styles.fieldInputHighlightedOrange : isSelected ? (highlightMode === 'orange' ? styles.fieldInputHighlightedOrange : styles.fieldInputHighlighted) : ''}`}
-          readOnly={!isEditing}
+          className={`${styles.fieldInput} ${inputClass} ${!editable ? styles.fieldInputDisplay : ''} ${isEditing ? styles.fieldInputEditing : flagUnresolved ? styles.fieldInputHighlightedOrange : isSelected ? (highlightMode === 'orange' ? styles.fieldInputHighlightedOrange : styles.fieldInputHighlighted) : ''}`}
+          readOnly
+          tabIndex={editable ? undefined : -1}
+          aria-readonly={!editable}
           value={isEditing ? draftValue : currentVal}
-          onChange={e => setDraftValue(e.target.value)}
+          onChange={editable ? (e => setDraftValue(e.target.value)) : undefined}
           placeholder={placeholder}
           autoFocus={isEditing}
-          onClick={e => { e.stopPropagation(); if (!isEditing) startEdit(fieldKey, currentVal) }}
-          onBlur={commitStatic}
-          onKeyDown={e => { if (e.key === 'Enter') { e.preventDefault(); commitStatic() } if (e.key === 'Escape') cancelEdit() }}
+          onClick={editable ? (e => { e.stopPropagation(); if (!isEditing) startEdit(fieldKey, currentVal) }) : undefined}
+          onBlur={editable ? commitStatic : undefined}
+          onKeyDown={editable ? (e => { if (e.key === 'Enter') { e.preventDefault(); commitStatic() } if (e.key === 'Escape') cancelEdit() }) : undefined}
         />
         {isEditing ? (
           <div className={styles.editActions}>
@@ -340,7 +347,7 @@ export default function DetailFields1099({
           <Tooltip text={reviewedTip(fieldKey, true)} placement="top">
             <button className={styles.reviewedBadge} style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 0, display: 'inline-flex', alignItems: 'center' }} onClick={e => { e.stopPropagation(); onMarkReviewed?.(fieldKey) }}><CircleCheck size="small" /></button>
           </Tooltip>
-        ) : (
+        ) : importReadOnly || variant === 'input' || !editable ? null : (
           <div className={styles.fieldActions}>
             <Tooltip text={reviewedTip(fieldKey, false)} placement="top"><button className={styles.markCorrectBtn} onClick={e => { e.stopPropagation(); onMarkReviewed?.(fieldKey) }}><CircleCheck size="small" /></button></Tooltip>
             {renderAnnotationBtn(fieldKey, label)}
@@ -428,7 +435,7 @@ export default function DetailFields1099({
                 value={editingField === 'taxableInterest' ? draftValue : (fieldValues?.taxableInterest !== undefined ? fmt(fieldValues.taxableInterest) : (showEmptyWhenZero ? '' : form.box1_interest))}
                 onChange={e => setDraftValue(e.target.value)}
                 autoFocus={editingField === 'taxableInterest'}
-                onClick={e => { e.stopPropagation(); if (editingField !== 'taxableInterest') startEdit('taxableInterest', fieldValues?.taxableInterest?.toString() ?? form.box1_interest) }}
+                onClick={e => { e.stopPropagation(); if (canEditField('taxableInterest', variant, importReadOnly) && editingField !== 'taxableInterest') startEdit('taxableInterest', fieldValues?.taxableInterest?.toString() ?? form.box1_interest) }}
                 onBlur={() => commitEdit('taxableInterest')}
                 onKeyDown={e => { if (e.key === 'Enter') { e.preventDefault(); commitEdit('taxableInterest') } if (e.key === 'Escape') cancelEdit() }}
               />

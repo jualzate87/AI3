@@ -15,8 +15,28 @@ import {
   isNoteLikeAnnotation,
   type AnnotationType,
   annotationTypeLabel,
+  annotationTypeDotColor,
 } from './annotationTypes'
 import styles from '../../styles/data-review/AnnotationPopover.module.css'
+
+function AnnotationTypeDot({ type }: { type: AnnotationType }) {
+  return (
+    <span
+      className={styles.typeDot}
+      style={{ backgroundColor: annotationTypeDotColor(type) }}
+      aria-hidden="true"
+    />
+  )
+}
+
+function AnnotationTypeOption({ type, label }: { type: AnnotationType; label: string }) {
+  return (
+    <span className={styles.typeOption}>
+      <AnnotationTypeDot type={type} />
+      <span>{label}</span>
+    </span>
+  )
+}
 
 export interface AnnotationPopoverProps {
   open: boolean
@@ -112,15 +132,17 @@ export default function AnnotationPopover({
             label="Type"
             size="small"
             value={annotationType}
+            displayedLabel="label"
             width="100%"
+            addonBeforeContent={<AnnotationTypeDot type={annotationType} />}
             stylePosition={{ zIndex: 10001 }}
             preventMenuOverflow={{ enabled: true, padding: 8 }}
             positions={['bottom', 'top']}
             onChange={handleTypeChange}
           >
             {typeOptions.map(opt => (
-              <MenuItem key={opt.value} value={opt.value}>
-                {opt.label}
+              <MenuItem key={opt.value} value={opt.value} label={opt.label}>
+                <AnnotationTypeOption type={opt.value} label={opt.label} />
               </MenuItem>
             ))}
           </Dropdown>
