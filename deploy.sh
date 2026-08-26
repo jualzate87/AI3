@@ -64,6 +64,8 @@ git worktree add -f "$WORKTREE_DIR" gh-pages 2>/dev/null || {
 
 find "$WORKTREE_DIR" -mindepth 1 -maxdepth 1 -not -name '.git' -exec rm -rf {} +
 cp -r "$REPO_ROOT/dist/." "$WORKTREE_DIR/"
+# Prevent Jekyll from stripping underscore-prefixed assets on GitHub Pages
+touch "$WORKTREE_DIR/.nojekyll"
 # SPA fallback for GitHub Pages
 cp "$REPO_ROOT/dist/index.html" "$WORKTREE_DIR/404.html" 2>/dev/null || true
 cd "$WORKTREE_DIR"
