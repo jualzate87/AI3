@@ -2377,9 +2377,6 @@ export default function DataReviewPage() {
                 <DocumentPreview
                   imageSrc={sourceDocPreview.imageSrc}
                   alt={sourceDocPreview.alt}
-                  importDocKey={activeVerifyDocKey}
-                  onUploadDocument={showPreparerImportPhase ? handleAddItemClick : undefined}
-                  onChooseAvailable={showPreparerImportPhase ? handleAddItemClick : undefined}
                   customContent={
                     sourceDocPreview.useInt1099UnwaveringHtml
                       ? <Int1099FormPreview />

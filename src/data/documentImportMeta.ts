@@ -17,16 +17,16 @@ export type DocumentImportMeta = {
 
 /** Per-document import metadata for Jessica Drake TY 2025 packet. */
 const DOC_IMPORT_META: Record<string, DocumentImportMeta> = {
-  techCircle: { importMode: 'api-filed', hasPdf: true, hasStructuredInput: true },
+  techCircle: { importMode: 'extracted', hasPdf: true, hasStructuredInput: true },
   bingEquipment: { importMode: 'manual', hasPdf: false, hasStructuredInput: false },
-  '1099-div-tokenFinancial': { importMode: 'api-filed', hasPdf: true, hasStructuredInput: true },
-  '1099-div-northmarkIndex': { importMode: 'api-filed', hasPdf: true, hasStructuredInput: true },
-  '1099-div-beaconDividend': { importMode: 'api-filed', hasPdf: true, hasStructuredInput: true },
-  '1099-int-unwaverIngFinancial': { importMode: 'api-filed', hasPdf: true, hasStructuredInput: true },
-  '1099-int-harborlineCredit': { importMode: 'api-filed', hasPdf: true, hasStructuredInput: true },
-  '1099-int-cascadeFederal': { importMode: 'api-filed', hasPdf: true, hasStructuredInput: true },
-  '1099-r': { importMode: 'pdf-only', hasPdf: true, hasStructuredInput: false },
-  '1099-nec': { importMode: 'api-filed', hasPdf: true, hasStructuredInput: true },
+  '1099-div-tokenFinancial': { importMode: 'extracted', hasPdf: true, hasStructuredInput: true },
+  '1099-div-northmarkIndex': { importMode: 'extracted', hasPdf: true, hasStructuredInput: true },
+  '1099-div-beaconDividend': { importMode: 'extracted', hasPdf: true, hasStructuredInput: true },
+  '1099-int-unwaverIngFinancial': { importMode: 'extracted', hasPdf: true, hasStructuredInput: true },
+  '1099-int-harborlineCredit': { importMode: 'extracted', hasPdf: true, hasStructuredInput: true },
+  '1099-int-cascadeFederal': { importMode: 'extracted', hasPdf: true, hasStructuredInput: true },
+  '1099-r': { importMode: 'extracted', hasPdf: true, hasStructuredInput: true },
+  '1099-nec': { importMode: 'extracted', hasPdf: true, hasStructuredInput: true },
 }
 
 export function getDocumentImportMeta(docKey: string): DocumentImportMeta | null {

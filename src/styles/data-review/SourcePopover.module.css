@@ -97,7 +97,7 @@
 .itemList {
   display: flex;
   flex-direction: column;
-  gap: var(--space-component-gap-x-small, 6px);
+  gap: var(--space-component-gap-small, 4px);
 }
 
 .sourceCard {
@@ -106,19 +106,24 @@
   gap: var(--space-component-gap-x-small, 4px);
   width: 100%;
   padding: var(--space-component-gap-x-small, 8px) var(--space-component-gap-small, 10px);
-  border: 1px solid var(--color-container-border-info);
+  border: 1px solid var(--color-divider-tertiary);
   border-radius: var(--radius-small, 6px);
-  background: var(--color-container-background-info);
+  background: var(--color-container-background-primary);
   cursor: pointer;
   text-align: left;
   font-family: var(--font-family-component);
   box-sizing: border-box;
-  transition: background 120ms ease, border-color 120ms ease;
+  transition: background 120ms ease, border-color 120ms ease, box-shadow 120ms ease;
 }
 
 .sourceCard:hover {
-  background: var(--color-container-background-info-secondary);
+  background: var(--color-container-background-secondary);
   border-color: var(--color-action-standard);
+}
+
+.sourceCard:active {
+  background: var(--color-container-background-tertiary);
+  border-color: var(--color-action-standard-active);
 }
 
 .sourceCard:focus-visible {
@@ -126,13 +131,16 @@
   outline-offset: 2px;
 }
 
+/* Non-navigating cards (calc / info) — same chrome, no hover link affordance */
 .sourceCardStatic {
   cursor: default;
 }
 
-.sourceCardStatic:hover {
-  background: var(--color-container-background-info);
-  border-color: var(--color-container-border-info);
+.sourceCardStatic:hover,
+.sourceCardStatic:active {
+  background: var(--color-container-background-primary);
+  border-color: var(--color-divider-tertiary);
+  box-shadow: none;
 }
 
 .cardMain {

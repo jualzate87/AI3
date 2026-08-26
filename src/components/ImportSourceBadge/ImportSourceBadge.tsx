@@ -6,13 +6,13 @@ export type ImportSourceBadgeVariant = 'api-filed' | 'import' | 'manual'
 
 const LABELS: Record<ImportSourceBadgeVariant, string> = {
   'api-filed': 'Imported via Filed API',
-  import: 'IMPORT',
+  import: 'Smart Return',
   manual: 'Manual entry',
 }
 
 const TOOLTIPS: Record<ImportSourceBadgeVariant, string> = {
   'api-filed': 'PDF and input values imported via Filed API',
-  import: 'Values extracted from uploaded document (OCR import)',
+  import: 'PDF and values imported via Smart Return native import',
   manual: 'No structured import — values were entered manually',
 }
 

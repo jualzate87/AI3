@@ -2,7 +2,6 @@ import { useState, useRef, useEffect, useCallback } from 'react'
 import { ZoomOut, ZoomIn, Search, Upload, Document } from '@design-systems/icons'
 import { Button } from '@ids-ts/button'
 import '@ids-ts/button/dist/main.css'
-import { isManualImportDoc } from '../../data/documentImportMeta'
 import styles from '../../styles/data-review/DocumentPreview.module.css'
 
 interface DocumentPreviewProps {
@@ -48,7 +47,7 @@ export default function DocumentPreview({
   customContent,
   importDocKey = null,
   showAttachEmpty = false,
-  attachEmptyTitle = 'Attach a source document',
+  attachEmptyTitle = 'No source document',
   attachEmptyHint = 'Upload a new file or choose one that was already uploaded but not imported.',
   onUploadDocument,
   onChooseAvailable,
@@ -57,11 +56,8 @@ export default function DocumentPreview({
   const zoom = ZOOM_LEVELS[zoomIndex]
   const images = imageSrc ? (Array.isArray(imageSrc) ? imageSrc : [imageSrc]) : []
   const canMagnify = !customContent && images.length > 0
-  const needsManualAttach = Boolean(importDocKey && isManualImportDoc(importDocKey))
-  const showEmptyAttach =
-    !customContent &&
-    images.length === 0 &&
-    (showAttachEmpty || needsManualAttach)
+  const showEmptyAttach = !customContent && images.length === 0
+  const showAttachActions = showEmptyAttach && Boolean(onUploadDocument || onChooseAvailable)
   const [magnifyOn, setMagnifyOn] = useState(false)
   const [loupe, setLoupe] = useState<LoupeState>(HIDDEN_LOUPE)
 
@@ -211,15 +207,23 @@ export default function DocumentPreview({
               showEmptyAttach ? (
                 <div className={styles.attachEmpty}>
                   <p className={styles.attachEmptyTitle}>{attachEmptyTitle}</p>
-                  <p className={styles.attachEmptyHint}>{attachEmptyHint}</p>
-                  <div className={styles.attachEmptyActions}>
-                    <Button priority="secondary" size="medium" onClick={onUploadDocument}>
-                      <Upload size="small" /> Upload new document
-                    </Button>
-                    <Button priority="secondary" size="medium" onClick={onChooseAvailable}>
-                      <Document size="small" /> Choose from available
-                    </Button>
-                  </div>
+                  {showAttachActions ? (
+                    <>
+                      <p className={styles.attachEmptyHint}>{attachEmptyHint}</p>
+                      <div className={styles.attachEmptyActions}>
+                        <Button priority="secondary" size="medium" onClick={onUploadDocument}>
+                          <Upload size="small" /> Upload new document
+                        </Button>
+                        <Button priority="secondary" size="medium" onClick={onChooseAvailable}>
+                          <Document size="small" /> Choose from available
+                        </Button>
+                      </div>
+                    </>
+                  ) : (
+                    <p className={styles.attachEmptyHint}>
+                      Use <strong>Add item to review</strong> to link a document and input screen.
+                    </p>
+                  )}
                 </div>
               ) : (
               <div className={images.length > 1 ? styles.pageStack : undefined}>

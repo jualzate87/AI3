@@ -172,11 +172,14 @@
 }
 
 .linkageSection {
-  border-top: 1px solid var(--color-divider-tertiary, #d4d7dc);
-  padding-top: var(--space-200, 12px);
+  margin-top: var(--space-200, 12px);
+  padding: var(--space-200, 12px);
+  border-radius: var(--radius-small, 6px);
+  background: var(--color-container-background-info);
+  border: 1px solid var(--color-container-border-info);
   display: flex;
   flex-direction: column;
-  gap: var(--space-100, 6px);
+  gap: var(--space-component-gap-small, 4px);
 }
 
 .linkageHeading {
@@ -190,11 +193,11 @@
 }
 
 .linkageSummary {
-  margin: 0 0 var(--space-100, 6px);
+  margin: 0 0 var(--space-component-gap-small, 4px);
   font-family: var(--font-family-body);
-  font-size: var(--font-size-body-4, 12px);
-  color: var(--color-text-secondary, #5d686f);
-  line-height: 1.4;
+  font-size: var(--font-size-body-3, 14px);
+  color: var(--color-text-primary);
+  line-height: 1.45;
 }
 
 .fieldLinkList {
