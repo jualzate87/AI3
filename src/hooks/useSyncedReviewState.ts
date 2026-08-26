@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
-import { PRE_IMPORT_AMOUNTS, SEED_AMOUNTS, type LiveAmounts } from '../data/liveReturn'
+import { SEED_AMOUNTS, type LiveAmounts } from '../data/liveReturn'
 import type { W2Employer } from '../pages/data-review/DetailFields'
 import type { TopTab } from '../pages/data-review/ReviewTab'
 import type { DivPayer } from '../pages/data-review/DetailFieldsDiv'
@@ -35,8 +35,6 @@ interface SyncedState {
   activeTopTab: TopTab
   activeSubTab: W2Employer
   selectedField: string | null
-  /** False until SmartReturn import completes — input fields stay empty until then. */
-  importCompleted: boolean
   /** All editable return amounts — single source of truth for 1040 recalculation */
   amounts: LiveAmounts
   reviewedFieldsList: [string, ReviewedEntry][]
@@ -84,7 +82,7 @@ interface SyncedState {
 
 const CHANNEL_NAME = 'protoc3-data-review-sync'
 // Bump whenever DEFAULT_STATE shape or seed values change so stale sessions reset.
-const STATE_VERSION = 30
+const STATE_VERSION = 31
 const STORAGE_KEY = 'protoc3-data-review-state-v' + STATE_VERSION
 /** Prior keys — sessionStorage (tab-scoped) and older localStorage versions */
 const LEGACY_STORAGE_KEYS = [
@@ -140,30 +138,17 @@ function hydrateSyncedState(raw: string): SyncedState {
     summaryFlaggedFieldsList?: unknown
     summaryFlagActivity?: unknown
   }
-  const importCompleted =
-    parsed.importCompleted ??
-    ((parsed.amounts?.wages ?? 0) > 0 || (parsed.amounts?.interestUnwavering ?? 0) > 0)
   return sanitizeSyncedState({
     ...DEFAULT_STATE,
     ...parsed,
-    importCompleted,
-    amounts: importCompleted
-      ? {
-          ...SEED_AMOUNTS,
-          ...(parsed.amounts ?? {}),
-          box12Rows: {
-            ...SEED_AMOUNTS.box12Rows,
-            ...(parsed.amounts?.box12Rows ?? {}),
-          },
-        }
-      : {
-          ...PRE_IMPORT_AMOUNTS,
-          ...(parsed.amounts ?? {}),
-          box12Rows: {
-            ...PRE_IMPORT_AMOUNTS.box12Rows,
-            ...(parsed.amounts?.box12Rows ?? {}),
-          },
-        },
+    amounts: {
+      ...SEED_AMOUNTS,
+      ...(parsed.amounts ?? {}),
+      box12Rows: {
+        ...SEED_AMOUNTS.box12Rows,
+        ...(parsed.amounts?.box12Rows ?? {}),
+      },
+    },
     manualChecklistItems: parsed.manualChecklistItems && typeof parsed.manualChecklistItems === 'object'
       ? parsed.manualChecklistItems as Record<string, boolean>
       : {},
@@ -430,8 +415,7 @@ const DEFAULT_STATE: SyncedState = {
   activeTopTab: 'w2s',
   activeSubTab: 'techCircle',
   selectedField: null,
-  importCompleted: false,
-  amounts: { ...PRE_IMPORT_AMOUNTS },
+  amounts: { ...SEED_AMOUNTS },
   reviewedFieldsList: [],
   editedFieldsList: [],
   verifiedDocsList: [],
@@ -507,7 +491,6 @@ function loadInitialState(): SyncedState {
 export function applyImportedAmounts(state: SyncedState): SyncedState {
   return sanitizeSyncedState({
     ...state,
-    importCompleted: true,
     amounts: {
       ...SEED_AMOUNTS,
       box12Rows: { ...SEED_AMOUNTS.box12Rows },
@@ -592,13 +575,6 @@ export function useSyncedReviewState() {
     stateRef.current = fresh
     setState(fresh)
     channelRef.current?.postMessage(fresh)
-  }, [])
-
-  /** Seed OCR/import values when entering review — Step 1 assumes documents are already imported. */
-  const ensureImportedAmounts = useCallback(() => {
-    if (stateRef.current.importCompleted) return
-    const next = applyImportedAmounts(stateRef.current)
-    publish(next)
   }, [])
 
   const publish = (next: SyncedState) => {
@@ -995,7 +971,6 @@ export function useSyncedReviewState() {
     selectedField: state.selectedField,
     setSelectedField: (field: string | null) => update({ selectedField: field }),
     amounts,
-    importCompleted: state.importCompleted,
     updateAmounts,
     wages,
     setWages,
@@ -1049,6 +1024,5 @@ export function useSyncedReviewState() {
     reviewerSignedOffFormsMeta: reviewerSignedOffForms,
     toggleReviewerFormSignOff,
     resetReviewState,
-    ensureImportedAmounts,
   }
 }

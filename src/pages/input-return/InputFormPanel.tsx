@@ -49,10 +49,7 @@ export default function InputFormPanel({
     setActiveDivPayer,
     activeIntPayer,
     setActiveIntPayer,
-    importCompleted,
   } = useSyncedReviewState()
-
-  const showEmptyWhenZero = !importCompleted
 
   const docTabs = getInputDocTabs(navItem.topTab)
   const activeDocKey =
@@ -118,7 +115,6 @@ export default function InputFormPanel({
         {navItem.topTab === 'w2s' && (
           <DetailFields
             variant="input"
-            showEmptyWhenZero={showEmptyWhenZero}
             formTitle="Details: Wages, Salaries, Tips (W-2)"
             selectedField={selectedField}
             onFieldSelect={setSelectedField}
@@ -182,7 +178,6 @@ export default function InputFormPanel({
         {navItem.topTab === '1099-divs' && (
           <DetailFieldsDiv
             variant="input"
-            showEmptyWhenZero={showEmptyWhenZero}
             activePayer={activeDivPayer}
             fieldValues={{ ...fieldValues, withholding: totalWithholding, divWithholding: amounts.divWithholding }}
             onFieldValueChange={(key, value) => {
@@ -202,7 +197,6 @@ export default function InputFormPanel({
         {navItem.topTab === '1099-ints' && (
           <DetailFields1099
             variant="input"
-            showEmptyWhenZero={showEmptyWhenZero}
             activePayer={activeIntPayer}
             fieldValues={{ ...fieldValues, withholding: totalWithholding }}
             onFieldValueChange={(key, value) => {
@@ -222,7 +216,6 @@ export default function InputFormPanel({
         {navItem.topTab === '1099-rs' && (
           <DetailFields1099R
             variant="input"
-            showEmptyWhenZero={showEmptyWhenZero}
             fieldValues={{ ...fieldValues, withholding: totalWithholding }}
             onFieldValueChange={(key, value) => {
               updateFieldValue(key as keyof typeof fieldValues, value)
@@ -241,7 +234,6 @@ export default function InputFormPanel({
         {navItem.topTab === '1099-necs' && (
           <DetailFieldsNec
             variant="input"
-            showEmptyWhenZero={showEmptyWhenZero}
             onAmountChange={(patch, editedKey) => {
               updateAmounts(patch)
               if (editedKey) markEdited(editedKey)

@@ -5,7 +5,7 @@ import { Badge } from '@ids-ts/badge'
 import '@ids-ts/badge/dist/main.css'
 import SegmentedButton from '@ids-ts/segmented-button'
 import '@ids-ts/segmented-button/dist/main.css'
-import { completeDocumentImport, resetPersistedReviewState } from '../../hooks/useSyncedReviewState'
+import { resetPersistedReviewState } from '../../hooks/useSyncedReviewState'
 import {
   buildHashRouteUrl,
   getStoredDemoRole,
@@ -27,7 +27,6 @@ function statusBadge(status: LaunchPoint['status']) {
 }
 
 function prepareDiagnosticsLaunch(): void {
-  completeDocumentImport()
   sessionStorage.setItem('protoc3-session-started', '1')
   sessionStorage.setItem('protoc3-imports-started', '1')
   sessionStorage.setItem('protoc3-phase', 'diagnostics')
