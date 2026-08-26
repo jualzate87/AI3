@@ -594,6 +594,13 @@ export function useSyncedReviewState() {
     channelRef.current?.postMessage(fresh)
   }, [])
 
+  /** Seed OCR/import values when entering review — Step 1 assumes documents are already imported. */
+  const ensureImportedAmounts = useCallback(() => {
+    if (stateRef.current.importCompleted) return
+    const next = applyImportedAmounts(stateRef.current)
+    publish(next)
+  }, [])
+
   const publish = (next: SyncedState) => {
     // Update the ref synchronously so back-to-back calls in the same tick (e.g.
     // fieldKeys.forEach(k => markReviewed(k))) each see the previous call's
@@ -1042,5 +1049,6 @@ export function useSyncedReviewState() {
     reviewerSignedOffFormsMeta: reviewerSignedOffForms,
     toggleReviewerFormSignOff,
     resetReviewState,
+    ensureImportedAmounts,
   }
 }

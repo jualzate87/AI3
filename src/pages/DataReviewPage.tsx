@@ -242,6 +242,8 @@ export default function DataReviewPage() {
     reviewerSignedOffFormsMeta,
     toggleReviewerFormSignOff,
     resetReviewState,
+    ensureImportedAmounts,
+    importCompleted,
   } = useSyncedReviewState()
   const liveTotals = computeLiveReturn(amounts)
   const total1a = liveTotals.wages
@@ -574,6 +576,7 @@ export default function DataReviewPage() {
   const hideOutputsForSourceFocusRef = useRef<() => void>(() => {})
 
   const startReviewingImports = useCallback(() => {
+    ensureImportedAmounts()
     setImportsStarted(true)
     setShow1040(true)
     const body = bodyRef.current
@@ -587,7 +590,13 @@ export default function DataReviewPage() {
     setRightPanelWidth(Math.max(floor, Math.min(preferred, maxRight)))
     openRightPanel('sources')
     hideOutputsForSourceFocusRef.current()
-  }, [openRightPanel])
+  }, [openRightPanel, ensureImportedAmounts])
+
+  // Step 1 assumes SmartReturn import finished — seed OCR amounts if launch point skipped hub.
+  useEffect(() => {
+    if (!isPreparerEntry || phase !== 'import' || importCompleted) return
+    ensureImportedAmounts()
+  }, [isPreparerEntry, phase, importCompleted, ensureImportedAmounts])
 
   /** Preparer import-first: size source panel on mount when landing with sources open */
   useEffect(() => {
