@@ -1,5 +1,6 @@
 import img1099IntHarborline from '../assets/source-docs/1099-int-harborline.jpg'
 import img1099DivBeacon from '../assets/source-docs/1099-div-beacon.jpg'
+import imgW2BingEquipment from '../assets/source-docs/w2-bing-equipment.png'
 
 /** Uploaded client documents not yet linked to a review input. */
 export type LibraryDocument = {
