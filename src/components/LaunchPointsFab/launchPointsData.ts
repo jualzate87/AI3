@@ -1,3 +1,5 @@
+import { PREPARER_DIAGNOSTICS_PATH } from '../../lib/prototypeRoutes'
+
 export type LaunchPointStatus = 'live' | 'stub'
 
 export type LaunchPoint = {
@@ -54,5 +56,12 @@ export const LAUNCH_POINTS: LaunchPoint[] = [
     status: 'live',
     description: '"Add new client → import 1040 → organizer"',
     route: '/smart-return',
+  },
+  {
+    id: 8,
+    title: 'Phase 2 — AI Diagnostics',
+    status: 'live',
+    description: 'Skip to Step 2 with the AI diagnostics panel open',
+    route: PREPARER_DIAGNOSTICS_PATH,
   },
 ]

@@ -6,6 +6,10 @@ export const REVIEWER_DATA_REVIEW_PATH =
 export const PREPARER_DATA_REVIEW_PATH =
   '/data-review?entry=input-return&role=preparer'
 
+/** Launch point — preparer lands in Phase 2 with AI diagnostics panel open (demo bypass). */
+export const PREPARER_DIAGNOSTICS_PATH =
+  '/data-review?entry=input-return&role=preparer&phase=diagnostics'
+
 export const VALID_DATA_REVIEW_ENTRIES = new Set(['input-return', 'review-return'])
 
 export const DEMO_ROLE_STORAGE_KEY = 'protoc-demo-role'

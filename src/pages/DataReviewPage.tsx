@@ -177,6 +177,8 @@ export default function DataReviewPage() {
   const entry = searchParams.get('entry')
   const roleParam = searchParams.get('role')
   const startReviewParam = searchParams.get('startReview') === 'true'
+  const phaseParam = searchParams.get('phase')
+  const launchDiagnostics = phaseParam === 'diagnostics'
 
   // Valid entries: input-return (preparer) or review-return (reviewer).
   const entryValid = entry != null && VALID_DATA_REVIEW_ENTRIES.has(entry)
@@ -1297,19 +1299,30 @@ export default function DataReviewPage() {
 
     const isFreshSession = !sessionStarted && !hasPersistedReview
 
-    if (isFreshSession) {
+    if (isFreshSession && !launchDiagnostics) {
       resetReviewState()
       setNotes([])
       try { localStorage.removeItem(NOTES_KEY) } catch { /* ignore */ }
       sessionStorage.setItem(SESSION_STARTED_KEY, '1')
       sessionStorage.setItem(SESSION_IMPORTS_KEY, '0')
       sessionStorage.setItem(SESSION_PHASE_KEY, 'import')
+    } else if (isFreshSession && launchDiagnostics) {
+      sessionStorage.setItem(SESSION_STARTED_KEY, '1')
+      sessionStorage.setItem(SESSION_IMPORTS_KEY, '1')
+      sessionStorage.setItem(SESSION_PHASE_KEY, 'diagnostics')
+      setImportsStarted(true)
+      setPhase('diagnostics')
     } else {
       const savedImports = sessionStorage.getItem(SESSION_IMPORTS_KEY) === '1'
       const savedPhase = sessionStorage.getItem(SESSION_PHASE_KEY)
-      setImportsStarted(savedImports)
-      if (savedPhase === 'import' || savedPhase === 'diagnostics') {
-        setPhase(savedPhase)
+      if (launchDiagnostics) {
+        setImportsStarted(true)
+        setPhase('diagnostics')
+      } else {
+        setImportsStarted(savedImports)
+        if (savedPhase === 'import' || savedPhase === 'diagnostics') {
+          setPhase(savedPhase)
+        }
       }
     }
 
@@ -1317,7 +1330,7 @@ export default function DataReviewPage() {
     setReviewPass(1)
     setReviewActor(PREPARER_NAME)
     setReviewerReviewStarted(false)
-    if (isFreshSession) {
+    if (isFreshSession && !launchDiagnostics) {
       setPhase('import')
       setImportsStarted(false)
       setSelectedField(null)
@@ -1332,7 +1345,7 @@ export default function DataReviewPage() {
     }
     setShow1040(true)
     setOutputFormId('summary')
-  }, [entry, roleParam, isPreparerEntry, location.key, resetReviewState])
+  }, [entry, roleParam, isPreparerEntry, location.key, resetReviewState, launchDiagnostics])
 
   // Persist preparer UI progress across Input return ↔ Data review navigation
   useEffect(() => {
@@ -1349,6 +1362,16 @@ export default function DataReviewPage() {
     handleReviewReturn()
   // eslint-disable-next-line react-hooks/exhaustive-deps -- run once on entry from SmartReturn
   }, [startReviewParam, entry])
+
+  // Launch point: ?phase=diagnostics opens Phase 2 and AI panel (bypasses Phase 1 lock).
+  const diagnosticsLaunchKey = useRef<string | null>(null)
+  useEffect(() => {
+    if (!isPreparerEntry || !launchDiagnostics) return
+    if (diagnosticsLaunchKey.current === location.key) return
+    diagnosticsLaunchKey.current = location.key
+    handleBeginDiagnostics()
+  // eslint-disable-next-line react-hooks/exhaustive-deps -- run once per navigation
+  }, [launchDiagnostics, isPreparerEntry, location.key])
 
   // End staged brief reveal after animation completes
   useEffect(() => {

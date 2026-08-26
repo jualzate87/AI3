@@ -10,6 +10,7 @@ import {
   buildHashRouteUrl,
   getStoredDemoRole,
   PREPARER_DATA_REVIEW_PATH,
+  PREPARER_DIAGNOSTICS_PATH,
   REVIEWER_DATA_REVIEW_PATH,
   setStoredDemoRole,
 } from '../../lib/prototypeRoutes'
@@ -23,6 +24,14 @@ function statusBadge(status: LaunchPoint['status']) {
     return <Badge status="success" label="LIVE" capitalization="uppercase" priority="secondary" />
   }
   return <Badge status="warn" label="STUB" capitalization="uppercase" priority="secondary" />
+}
+
+function prepareDiagnosticsLaunch(): void {
+  sessionStorage.setItem('protoc3-session-started', '1')
+  sessionStorage.setItem('protoc3-imports-started', '1')
+  sessionStorage.setItem('protoc3-phase', 'diagnostics')
+  sessionStorage.setItem('agentLoaded', '1')
+  setStoredDemoRole('preparer')
 }
 
 function resolveDemoRole(search: string): DemoRole {
@@ -73,6 +82,9 @@ export default function LaunchPointsFab() {
     (point: LaunchPoint) => {
       if (!point.route) return
       setOpen(false)
+      if (point.route === PREPARER_DIAGNOSTICS_PATH) {
+        prepareDiagnosticsLaunch()
+      }
       navigate(point.route)
     },
     [navigate],
@@ -88,6 +100,7 @@ export default function LaunchPointsFab() {
     sessionStorage.removeItem('protoc3-session-started')
     sessionStorage.removeItem('protoc3-imports-started')
     sessionStorage.removeItem('protoc3-phase')
+    sessionStorage.removeItem('agentLoaded')
     setStoredDemoRole('preparer')
     setOpen(false)
     window.location.assign(buildHashRouteUrl('/smart-return'))
