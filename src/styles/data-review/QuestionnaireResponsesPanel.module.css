@@ -175,8 +175,8 @@
   margin-top: var(--space-200, 12px);
   padding: var(--space-200, 12px);
   border-radius: var(--radius-small, 6px);
-  background: var(--color-container-background-info);
-  border: 1px solid var(--color-container-border-info);
+  background: var(--color-container-background-secondary);
+  border: 1px solid var(--color-divider-tertiary);
   display: flex;
   flex-direction: column;
   gap: var(--space-component-gap-small, 4px);
@@ -185,17 +185,18 @@
 .linkageHeading {
   margin: 0;
   font-family: var(--font-family-component);
-  font-size: var(--font-size-component-x-small, 12px);
-  font-weight: var(--font-weight-component-bold, 600);
+  font-size: var(--font-size-component-x-small);
+  font-weight: var(--font-weight-component-bold);
   letter-spacing: 0.02em;
   text-transform: uppercase;
-  color: var(--color-text-secondary, #5d686f);
+  color: var(--color-text-secondary);
 }
 
 .linkageSummary {
   margin: 0 0 var(--space-component-gap-small, 4px);
-  font-family: var(--font-family-body);
-  font-size: var(--font-size-body-3, 14px);
+  font-family: var(--font-family-component);
+  font-size: var(--font-size-component-x-small);
+  font-weight: var(--font-weight-component);
   color: var(--color-text-primary);
   line-height: 1.45;
 }
@@ -232,8 +233,9 @@
 .fieldLinkNote {
   margin: 0;
   padding-left: 0;
-  font-family: var(--font-family-body);
-  font-size: var(--font-size-body-4, 12px);
-  color: var(--color-text-secondary, #5d686f);
+  font-family: var(--font-family-component);
+  font-size: var(--font-size-component-x-small);
+  font-weight: var(--font-weight-component);
+  color: var(--color-text-secondary);
   line-height: 1.4;
 }
