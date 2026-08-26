@@ -64,14 +64,6 @@ export function canVerifyDoc(args: {
     return { allowed: true }
   }
 
-  const uncorrectedCriticalCount = countUncorrectedCriticalFlagsForDoc(
-    args.docKey,
-    args.reviewedFields,
-  )
-  if (uncorrectedCriticalCount > 0) {
-    return { allowed: false, reason: 'critical-flags', uncorrectedCriticalCount }
-  }
-
   if (key === 'techCircle' && args.amounts) {
     const missingIdentityFields = getTechCircleIdentityGaps(args.amounts)
     if (missingIdentityFields.length > 0) {

@@ -1,4 +1,3 @@
-import imgW2TechCircle from '../assets/source-docs/w2-tech-circle.jpg'
 import img1099IntHarborline from '../assets/source-docs/1099-int-harborline.jpg'
 import img1099DivBeacon from '../assets/source-docs/1099-div-beacon.jpg'
 
@@ -18,7 +17,7 @@ export const DOCUMENT_LIBRARY: LibraryDocument[] = [
     formType: 'W-2',
     label: 'W-2 — Bing Equipment Co.',
     payer: 'Bing Equipment Co.',
-    imageSrc: imgW2TechCircle,
+    imageSrc: imgW2BingEquipment,
     uploadedAt: 'Mar 12, 2025',
   },
   {

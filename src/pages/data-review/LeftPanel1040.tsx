@@ -25,6 +25,7 @@ import CoachTip from './CoachTip'
 import { TAX_CONTROL_ROWS, getControlSystemValues, type TaxControlDocEntry } from '../../data/sourceDocuments'
 import { CLIENT_ADDRESS, formatClientCityStateZip } from '../../data/clientAddress'
 import { summaryFieldHasUnresolvedFlags } from './phase1FieldSync'
+import { showSummaryImportAttention } from '../../lib/prototypeFeatureFlags'
 import { resolveFormLineHighlight, type Phase2IssueKey } from './phase2FlagSync'
 import {
   formatActivityMeta,
@@ -1119,7 +1120,7 @@ export default function LeftPanel1040({
                       const clickable  = !!row.field
                       const hasPopover = !!row.field && fieldHasPopover(row.field)
                       // System Phase 1 import attention — informational only; not the user flag
-                      const hasImportAttention = !!row.field && summaryFieldHasUnresolvedFlags(
+                      const hasImportAttention = showSummaryImportAttention() && !!row.field && summaryFieldHasUnresolvedFlags(
                         row.field,
                         reviewedFields instanceof Map ? reviewedFields : new Map([...reviewedFields].map(k => [k, true])),
                       )

@@ -86,15 +86,13 @@ describe('canVerifyDoc — Tech Circle identity gate', () => {
     expect(result).toEqual({ allowed: true })
   })
 
-  it('blocks techCircle when critical flags remain', () => {
+  it('allows techCircle verify even when critical flags remain (flags stay in state)', () => {
     const result = canVerifyDoc({
       docKey: 'techCircle',
       reviewedFields: emptyReviewed,
       amounts: { employeeSsn: '123-45-6789', employerEin: '12-3456789' },
     })
-    expect(result.allowed).toBe(false)
-    expect(result.reason).toBe('critical-flags')
-    expect(result.uncorrectedCriticalCount).toBeGreaterThan(0)
+    expect(result).toEqual({ allowed: true })
   })
 
   it('does not gate non-techCircle W-2 docs on identity', () => {

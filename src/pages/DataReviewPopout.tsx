@@ -44,6 +44,11 @@ import QuestionnaireResponsesPanel from './data-review/QuestionnaireResponsesPan
 import { useSyncedReviewState } from '../hooks/useSyncedReviewState'
 import { computeLiveReturn } from '../data/liveReturn'
 import { PHASE1_FLAG_MESSAGES } from './data-review/phase1FlagMessages'
+import {
+  importFlagCountForDisplay,
+  importFlagsForDisplay,
+  SHOW_IMPORT_FLAGS,
+} from '../lib/prototypeFeatureFlags'
 import img1040PriorPage1 from '../assets/jessica-1040-2024-variant-1.png'
 import img1040PriorPage2 from '../assets/jessica-1040-2024-variant-2.png'
 import { isDocShownVerified } from '../data/verifiedDocKeys'
@@ -304,7 +309,7 @@ export default function DataReviewPopout() {
           onTopTabChange={(tab) => { setActiveTopTab(tab); setSelectedField(null) }}
         />
 
-        {showPreparerImportPhase && unreviewedDocCount === 0 && phase1Remaining > 0 && (
+        {showPreparerImportPhase && SHOW_IMPORT_FLAGS && unreviewedDocCount === 0 && phase1Remaining > 0 && (
           <Phase1IssueBanner
             mode="flags"
             unresolvedCount={phase1Remaining}
@@ -318,7 +323,7 @@ export default function DataReviewPopout() {
           tabs={DIV_PAYER_TABS.map(t => ({
             ...t,
             needsReview: !isDocShownVerified(verifiedDocs, divVerifiedDocKey(t.key), reviewerConfirmedDocs),
-            flagCount: divPayerFieldCounts[t.key],
+            flagCount: importFlagCountForDisplay(divPayerFieldCounts[t.key]),
             showClearedCheck: isDocShownVerified(verifiedDocs, divVerifiedDocKey(t.key), reviewerConfirmedDocs),
             confirmStatus: peelDocConfirmStatus(divVerifiedDocKey(t.key)),
           }))}
@@ -331,7 +336,7 @@ export default function DataReviewPopout() {
           tabs={INT_PAYER_TABS.map(t => ({
             ...t,
             needsReview: !isDocShownVerified(verifiedDocs, intVerifiedDocKey(t.key), reviewerConfirmedDocs),
-            flagCount: intPayerFieldCounts[t.key],
+            flagCount: importFlagCountForDisplay(intPayerFieldCounts[t.key]),
             showClearedCheck: isDocShownVerified(verifiedDocs, intVerifiedDocKey(t.key), reviewerConfirmedDocs),
             confirmStatus: peelDocConfirmStatus(intVerifiedDocKey(t.key)),
           }))}
@@ -344,7 +349,7 @@ export default function DataReviewPopout() {
           tabs={W2_PAYER_TABS.map(t => ({
             ...t,
             needsReview: !isDocShownVerified(verifiedDocs, t.key, reviewerConfirmedDocs),
-            flagCount: w2PayerFieldCounts[t.key],
+            flagCount: importFlagCountForDisplay(w2PayerFieldCounts[t.key]),
             showClearedCheck: isDocShownVerified(verifiedDocs, t.key, reviewerConfirmedDocs),
             confirmStatus: peelDocConfirmStatus(t.key),
           }))}
@@ -357,7 +362,7 @@ export default function DataReviewPopout() {
           tabs={R_PAYER_TABS.map(t => ({
             ...t,
             needsReview: !isDocShownVerified(verifiedDocs, '1099-r', reviewerConfirmedDocs),
-            flagCount: countPhase1FlagsForRPayer(reviewedFields),
+            flagCount: importFlagCountForDisplay(countPhase1FlagsForRPayer(reviewedFields)),
             showClearedCheck: isDocShownVerified(verifiedDocs, '1099-r', reviewerConfirmedDocs),
             confirmStatus: peelDocConfirmStatus('1099-r'),
           }))}
@@ -370,7 +375,7 @@ export default function DataReviewPopout() {
           tabs={NEC_PAYER_TABS.map(t => ({
             ...t,
             needsReview: !isDocShownVerified(verifiedDocs, '1099-nec', reviewerConfirmedDocs),
-            flagCount: countPhase1FlagsForNecPayer(t.key, reviewedFields),
+            flagCount: importFlagCountForDisplay(countPhase1FlagsForNecPayer(t.key, reviewedFields)),
             showClearedCheck: isDocShownVerified(verifiedDocs, '1099-nec', reviewerConfirmedDocs),
             confirmStatus: peelDocConfirmStatus('1099-nec'),
           }))}
@@ -481,12 +486,12 @@ export default function DataReviewPopout() {
                 reviewerConfirmedDocs={reviewerConfirmedDocs}
                 reviewerConfirmedDocsMeta={reviewerConfirmedDocsMeta}
                 onVerifyDoc={toggleVerifiedDoc}
-                flaggedFields={{
+                flaggedFields={importFlagsForDisplay({
                   ssn: PHASE1_FLAG_MESSAGES.w2.ssn,
                   wages: PHASE1_FLAG_MESSAGES.w2.wages,
                   box12: PHASE1_FLAG_MESSAGES.w2.box12,
                   ein: PHASE1_FLAG_MESSAGES.w2.ein,
-                }}
+                })}
               />
             )}
             {activeTopTab === '1099-divs' && (
@@ -517,12 +522,12 @@ export default function DataReviewPopout() {
                 onVerifyDoc={toggleVerifiedDoc}
                 reviewerConfirmedDocs={reviewerConfirmedDocs}
                 reviewerConfirmedDocsMeta={reviewerConfirmedDocsMeta}
-                flaggedFields={{
+                flaggedFields={importFlagsForDisplay({
                   divCollectibles: PHASE1_FLAG_MESSAGES.div.divCollectibles,
                   divNonDiv: PHASE1_FLAG_MESSAGES.div.divNonDiv,
                   fedTaxWithheld: PHASE1_FLAG_MESSAGES.div.fedTaxWithheld,
                   ordinaryDivs: PHASE1_FLAG_MESSAGES.div.ordinaryDivs,
-                }}
+                })}
               />
             )}
             {activeTopTab === '1099-ints' && (
@@ -554,9 +559,9 @@ export default function DataReviewPopout() {
                 onVerifyDoc={toggleVerifiedDoc}
                 reviewerConfirmedDocs={reviewerConfirmedDocs}
                 reviewerConfirmedDocsMeta={reviewerConfirmedDocsMeta}
-                flaggedFields={{
+                flaggedFields={importFlagsForDisplay({
                   taxableInterest: PHASE1_FLAG_MESSAGES.int.taxableInterest,
-                }}
+                })}
               />
             )}
             {activeTopTab === '1099-rs' && (
@@ -581,9 +586,9 @@ export default function DataReviewPopout() {
                 onVerifyDoc={toggleVerifiedDoc}
                 reviewerConfirmedDocs={reviewerConfirmedDocs}
                 reviewerConfirmedDocsMeta={reviewerConfirmedDocsMeta}
-                flaggedFields={{
+                flaggedFields={importFlagsForDisplay({
                   grossDistrib: PHASE1_FLAG_MESSAGES.r.grossDistrib,
-                }}
+                })}
               />
             )}
             {activeTopTab === '1099-necs' && (
@@ -608,9 +613,9 @@ export default function DataReviewPopout() {
                 onVerifyDoc={toggleVerifiedDoc}
                 reviewerConfirmedDocs={reviewerConfirmedDocs}
                 reviewerConfirmedDocsMeta={reviewerConfirmedDocsMeta}
-                flaggedFields={{
+                flaggedFields={importFlagsForDisplay({
                   'nec-box1': PHASE1_FLAG_MESSAGES.nec.necBox1,
-                }}
+                })}
               />
             )}
             {activeTopTab === 'questionnaire' && (

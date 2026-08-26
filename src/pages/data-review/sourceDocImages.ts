@@ -7,6 +7,7 @@ import type { IntPayer } from './DetailFields1099'
 import { INT_PAYER_TABS } from './DetailFields1099'
 
 import imgW2TechCircle from '../../assets/source-docs/w2-tech-circle.jpg'
+import imgW2BingEquipment from '../../assets/source-docs/w2-bing-equipment.png'
 import img1099IntUnwavering from '../../assets/source-docs/1099-int-unwavering.jpg'
 import img1099IntHarborline from '../../assets/source-docs/1099-int-harborline.jpg'
 import img1099IntCascade from '../../assets/source-docs/1099-int-cascade.jpg'
@@ -89,7 +90,10 @@ export function getSourceDocPreview({
         }
       }
       if (activeSubTab === 'bingEquipment') {
-        return { alt: 'W-2 Bing Equipment — attach a source document' }
+        return {
+          imageSrc: attached ?? imgW2BingEquipment,
+          alt: 'W-2 Bing Equipment Co.',
+        }
       }
       return {
         imageSrc: imgW2TechCircle,

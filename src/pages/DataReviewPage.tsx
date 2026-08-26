@@ -126,6 +126,11 @@ import {
 } from './data-review/phase2FlagSync'
 import { PHASE1_FLAG_MESSAGES } from './data-review/phase1FlagMessages'
 import { buildYoyInputFlags, mergeInputFlags } from './data-review/yoyInputFlags'
+import {
+  importFlagCountForDisplay,
+  importFlagsForDisplay,
+  SHOW_IMPORT_FLAGS,
+} from '../lib/prototypeFeatureFlags'
 import { computeLiveReturn } from '../data/liveReturn'
 import { navigationForSourceDoc } from '../data/sourceDocuments'
 import img1040PriorPage1 from '../assets/jessica-1040-2024-variant-1.png'
@@ -887,6 +892,7 @@ export default function DataReviewPage() {
       ensureSourcePanelVisible()
     } else if (phase === 'diagnostics') {
       setFromAgent(true)
+      setAgentView('report')
       openDiagnosticsSourceSplitRef.current()
     } else if (!importsStarted) {
       startReviewingImports()
@@ -1739,6 +1745,13 @@ export default function DataReviewPage() {
   const openDiagnosticsSourceSplit = useCallback(() => {
     setFromAgent(true)
     setAgentView('report')
+    const body = bodyRef.current
+    const bodyW = body
+      ? (body.clientWidth || body.getBoundingClientRect().width)
+      : window.innerWidth
+    const preferredAgent = Math.round(bodyW * 0.33)
+    const maxAgent = Math.max(360, Math.min(Math.round(bodyW * 0.45), bodyW - RIGHT_PANEL_MIN_WIDTH - PANEL_DRAG_HANDLE_WIDTH * 2))
+    setAgentPanelWidth(Math.max(360, Math.min(preferredAgent, maxAgent)))
     if (rightPanelMode === 'closed') {
       openRightPanel('ai+sources')
     } else {
@@ -2226,7 +2239,7 @@ export default function DataReviewPage() {
                   </IconControl>
                 </div>
               </div>
-              {showPreparerImportPhase && unreviewedDocCount === 0 && phase1Remaining > 0 && (
+              {showPreparerImportPhase && SHOW_IMPORT_FLAGS && unreviewedDocCount === 0 && phase1Remaining > 0 && (
                 <Phase1IssueBanner
                   mode="flags"
                   unresolvedCount={phase1Remaining}
@@ -2271,7 +2284,7 @@ export default function DataReviewPage() {
                   tabs={DIV_PAYER_TABS.map(t => ({
                     ...t,
                     needsReview: !isDocShownVerified(verifiedDocs, divVerifiedDocKey(t.key), reviewerConfirmedDocs),
-                    flagCount: divPayerFieldCounts[t.key],
+                    flagCount: importFlagCountForDisplay(divPayerFieldCounts[t.key]),
                     showClearedCheck: isDocShownVerified(verifiedDocs, divVerifiedDocKey(t.key), reviewerConfirmedDocs),
                     confirmStatus: peelDocConfirmStatus(divVerifiedDocKey(t.key)),
                   }))}
@@ -2284,7 +2297,7 @@ export default function DataReviewPage() {
                   tabs={INT_PAYER_TABS.map(t => ({
                     ...t,
                     needsReview: !isDocShownVerified(verifiedDocs, intVerifiedDocKey(t.key), reviewerConfirmedDocs),
-                    flagCount: intPayerFieldCounts[t.key],
+                    flagCount: importFlagCountForDisplay(intPayerFieldCounts[t.key]),
                     showClearedCheck: isDocShownVerified(verifiedDocs, intVerifiedDocKey(t.key), reviewerConfirmedDocs),
                     confirmStatus: peelDocConfirmStatus(intVerifiedDocKey(t.key)),
                   }))}
@@ -2297,7 +2310,7 @@ export default function DataReviewPage() {
                   tabs={W2_PAYER_TABS.map(t => ({
                     ...t,
                     needsReview: !isDocShownVerified(verifiedDocs, t.key, reviewerConfirmedDocs),
-                    flagCount: w2PayerFieldCounts[t.key],
+                    flagCount: importFlagCountForDisplay(w2PayerFieldCounts[t.key]),
                     showClearedCheck: isDocShownVerified(verifiedDocs, t.key, reviewerConfirmedDocs),
                     confirmStatus: peelDocConfirmStatus(t.key),
                   }))}
@@ -2310,7 +2323,7 @@ export default function DataReviewPage() {
                   tabs={R_PAYER_TABS.map(t => ({
                     ...t,
                     needsReview: !isDocShownVerified(verifiedDocs, '1099-r', reviewerConfirmedDocs),
-                    flagCount: countPhase1FlagsForRPayer(reviewedFields),
+                    flagCount: importFlagCountForDisplay(countPhase1FlagsForRPayer(reviewedFields)),
                     showClearedCheck: isDocShownVerified(verifiedDocs, '1099-r', reviewerConfirmedDocs),
                     confirmStatus: peelDocConfirmStatus('1099-r'),
                   }))}
@@ -2323,7 +2336,7 @@ export default function DataReviewPage() {
                   tabs={NEC_PAYER_TABS.map(t => ({
                     ...t,
                     needsReview: !isDocShownVerified(verifiedDocs, '1099-nec', reviewerConfirmedDocs),
-                    flagCount: countPhase1FlagsForNecPayer(t.key, reviewedFields),
+                    flagCount: importFlagCountForDisplay(countPhase1FlagsForNecPayer(t.key, reviewedFields)),
                     showClearedCheck: isDocShownVerified(verifiedDocs, '1099-nec', reviewerConfirmedDocs),
                     confirmStatus: peelDocConfirmStatus('1099-nec'),
                   }))}
@@ -2471,12 +2484,12 @@ export default function DataReviewPage() {
                   reviewerConfirmedDocs={reviewerConfirmedDocs}
                   reviewerConfirmedDocsMeta={reviewerConfirmedDocsMeta}
                   onVerifyDoc={toggleVerifiedDoc}
-                  flaggedFields={mergeInputFlags({
+                  flaggedFields={importFlagsForDisplay(mergeInputFlags({
                     ssn: PHASE1_FLAG_MESSAGES.w2.ssn,
                     wages: PHASE1_FLAG_MESSAGES.w2.wages,
                     box12: PHASE1_FLAG_MESSAGES.w2.box12,
                     ein: PHASE1_FLAG_MESSAGES.w2.ein,
-                  }, yoyInputFlags)}
+                  }, yoyInputFlags))}
                 />
               )}
               {activeTopTab === '1099-divs' && (
@@ -2507,12 +2520,12 @@ export default function DataReviewPage() {
                   onVerifyDoc={toggleVerifiedDoc}
                   reviewerConfirmedDocs={reviewerConfirmedDocs}
                   reviewerConfirmedDocsMeta={reviewerConfirmedDocsMeta}
-                  flaggedFields={mergeInputFlags({
+                  flaggedFields={importFlagsForDisplay(mergeInputFlags({
                     divCollectibles: PHASE1_FLAG_MESSAGES.div.divCollectibles,
                     divNonDiv: PHASE1_FLAG_MESSAGES.div.divNonDiv,
                     fedTaxWithheld: PHASE1_FLAG_MESSAGES.div.fedTaxWithheld,
                     ordinaryDivs: PHASE1_FLAG_MESSAGES.div.ordinaryDivs,
-                  }, yoyInputFlags)}
+                  }, yoyInputFlags))}
                   onAddFieldNote={(text, context) => handleAddNote(text, context)}
                 />
               )}
@@ -2545,9 +2558,9 @@ export default function DataReviewPage() {
                   onVerifyDoc={toggleVerifiedDoc}
                   reviewerConfirmedDocs={reviewerConfirmedDocs}
                   reviewerConfirmedDocsMeta={reviewerConfirmedDocsMeta}
-                  flaggedFields={mergeInputFlags({
+                  flaggedFields={importFlagsForDisplay(mergeInputFlags({
                     taxableInterest: PHASE1_FLAG_MESSAGES.int.taxableInterest,
-                  }, yoyInputFlags)}
+                  }, yoyInputFlags))}
                   onAddFieldNote={(text, context) => handleAddNote(text, context)}
                 />
               )}
@@ -2573,9 +2586,9 @@ export default function DataReviewPage() {
                   onVerifyDoc={toggleVerifiedDoc}
                   reviewerConfirmedDocs={reviewerConfirmedDocs}
                   reviewerConfirmedDocsMeta={reviewerConfirmedDocsMeta}
-                  flaggedFields={mergeInputFlags({
+                  flaggedFields={importFlagsForDisplay(mergeInputFlags({
                     grossDistrib: PHASE1_FLAG_MESSAGES.r.grossDistrib,
-                  }, yoyInputFlags)}
+                  }, yoyInputFlags))}
                   onAddFieldNote={(text, context) => handleAddNote(text, context)}
                 />
               )}
@@ -2601,9 +2614,9 @@ export default function DataReviewPage() {
                   onVerifyDoc={toggleVerifiedDoc}
                   reviewerConfirmedDocs={reviewerConfirmedDocs}
                   reviewerConfirmedDocsMeta={reviewerConfirmedDocsMeta}
-                  flaggedFields={mergeInputFlags({
+                  flaggedFields={importFlagsForDisplay(mergeInputFlags({
                     'nec-box1': PHASE1_FLAG_MESSAGES.nec.necBox1,
-                  }, yoyInputFlags)}
+                  }, yoyInputFlags))}
                   onAddFieldNote={(text, context) => handleAddNote(text, context)}
                   onOpenScheduleC={handleOpenScheduleC}
                 />

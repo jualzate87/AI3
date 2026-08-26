@@ -6,7 +6,6 @@ import type { DivPayer } from '../pages/data-review/DetailFieldsDiv'
 import type { IntPayer } from '../pages/data-review/DetailFields1099'
 import { PHASE1_TO_PHASE2_ISSUES } from '../pages/data-review/phase2FlagSync'
 import { canVerifyDoc } from '../pages/data-review/docReviewStatus'
-import { getPhase1FlagKeysForVerifiedDoc } from '../pages/data-review/phase1FieldSync'
 import { normalizeVerifiedDocEntries, normalizeVerifiedDocKey } from '../data/verifiedDocKeys'
 import type { MilestoneCompletion } from '../data/reviewMilestones'
 import {
@@ -444,27 +443,8 @@ function enforceMutualExclusion(state: SyncedState): SyncedState {
 }
 
 function reconcileVerifiedDocFlags(state: SyncedState): SyncedState {
-  // If a doc is Verified but its Phase 1 flags were never written (stale session /
-  // older Mark as verified), clear those flags so tab badges match what the user sees.
-  if (!state.verifiedDocsList.length) return state
-  const nextReviewed = new Map(state.reviewedFieldsList)
-  let changed = false
-  const stamp = sanitizeActivityEntry(
-    state.verifiedDocsList[0]?.[1],
-    PREPARER_NAME,
-    formatActivityTimestamp(),
-  )
-  const { at, by } = stamp
-  for (const [docKey] of state.verifiedDocsList) {
-    for (const flag of getPhase1FlagKeysForVerifiedDoc(docKey)) {
-      if (!nextReviewed.has(flag)) {
-        nextReviewed.set(flag, { by, at })
-        changed = true
-      }
-    }
-  }
-  if (!changed) return state
-  return { ...state, reviewedFieldsList: Array.from(nextReviewed.entries()) }
+  // Mark-as-verified no longer auto-clears Phase 1 flags — keep reviewedFields as persisted.
+  return state
 }
 
 function isFreshPreparerEntry(): boolean {
@@ -740,27 +720,10 @@ export function useSyncedReviewState() {
       return
     }
 
-    const at = formatActivityTimestamp()
-    const flagKeys = getPhase1FlagKeysForVerifiedDoc(docKey)
-    const autoAdded = flagKeys.filter(k => !reviewedMap.has(k))
-    const nextReviewed = new Map(reviewedMap)
-    autoAdded.forEach(f => {
-      nextReviewed.set(f, { by: PREPARER_NAME, at })
-      const linked = PHASE1_TO_PHASE2_ISSUES[f]
-      if (linked) {
-        linked.forEach(issueKey => {
-          if (!nextReviewed.has(issueKey)) nextReviewed.set(issueKey, { by: PREPARER_NAME, at })
-        })
-      }
-    })
-    if (autoAdded.length > 0) {
-      autoFlagsMap.set(docKey, autoAdded)
-    }
     nextVerified.set(docKey, nowEntry())
     update({
       verifiedDocsList: Array.from(nextVerified.entries()),
       verifiedDocAutoFlagsList: Array.from(autoFlagsMap.entries()),
-      reviewedFieldsList: Array.from(nextReviewed.entries()),
     })
   }
 
