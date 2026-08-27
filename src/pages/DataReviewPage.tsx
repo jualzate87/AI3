@@ -2660,15 +2660,8 @@ export default function DataReviewPage() {
 
               {(rightPanelMode === 'ai' || diagnosticsSourceSplit) && (
               <div
-                style={diagnosticsSourceSplit ? {
-                  display: 'flex',
-                  flexDirection: 'column',
-                  width: agentPanelWidth,
-                  flexShrink: 0,
-                  minWidth: 0,
-                  minHeight: 0,
-                  overflow: 'hidden',
-                } : undefined}
+                className={`${styles.agentColumn} ${diagnosticsSourceSplit ? styles.agentColumnSplit : ''}`}
+                style={diagnosticsSourceSplit ? { width: agentPanelWidth } : undefined}
               >
                 <AgentLoadingPane
                   onClose={handleAgentClose}
