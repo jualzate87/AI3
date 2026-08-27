@@ -82,7 +82,7 @@ export default function AddItemReviewPane({
     <div className={styles.root}>
       <div className={styles.peelRow}>
         <span className={styles.newDocPill}>New document</span>
-        <ImportSourceBadge variant="manual" />
+        <ImportSourceBadge variant="import" />
       </div>
 
       <div className={styles.split}>

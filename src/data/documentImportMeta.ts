@@ -18,7 +18,7 @@ export type DocumentImportMeta = {
 /** Per-document import metadata for Jessica Drake TY 2025 packet. */
 const DOC_IMPORT_META: Record<string, DocumentImportMeta> = {
   techCircle: { importMode: 'extracted', hasPdf: true, hasStructuredInput: true },
-  bingEquipment: { importMode: 'manual', hasPdf: true, hasStructuredInput: false },
+  bingEquipment: { importMode: 'extracted', hasPdf: true, hasStructuredInput: true },
   '1099-div-tokenFinancial': { importMode: 'extracted', hasPdf: true, hasStructuredInput: true },
   '1099-div-northmarkIndex': { importMode: 'extracted', hasPdf: true, hasStructuredInput: true },
   '1099-div-beaconDividend': { importMode: 'extracted', hasPdf: true, hasStructuredInput: true },
