@@ -55,7 +55,14 @@ interface IssueDetailPaneProps {
   summary: string
   taxImpact: string
   rootCause: string
-  tableRows: { label: string; cols: string[]; total?: boolean; badge?: 'red' | 'orange' | 'grey' | 'green' | 'blue' }[]
+  tableRows: {
+    label: string
+    cols: string[]
+    total?: boolean
+    badge?: 'red' | 'orange' | 'grey' | 'green' | 'blue'
+    fixField?: string
+    fixTab?: string
+  }[]
   tableHeaders: string[]
   suggestedActions: string[]
   /** @deprecated prefer `actions` - kept for label fallback */
@@ -232,33 +239,66 @@ export default function IssueDetailPane({
           <div className={styles.section}>
             <p className={styles.sectionTitle}>Calculations</p>
             {(() => {
-              const hasBadge = tableRows.some(r => r.badge)
-              const colCount = tableHeaders.length - 1
-              /* Fixed tracks are content-only; 20px column-gap lives outside them */
-              const gridCols = hasBadge
-                ? `1fr repeat(${colCount - 1}, minmax(64px, auto)) minmax(56px, auto)`
-                : `1fr repeat(${colCount}, minmax(72px, auto))`
+              const hasFixColumn = tableRows.some(r => r.cols.some(c => c === 'Fix'))
+              const rowGridClass = hasFixColumn ? styles.tableRowFix : styles.tableRowBadge
               return (
                 <div className={styles.tableCard}>
-                  <div className={`${styles.tableRow} ${styles.tableHeaderRow}`} style={{ gridTemplateColumns: gridCols }}>
+                  <div className={`${styles.tableRow} ${rowGridClass} ${styles.tableHeaderRow}`}>
                     {tableHeaders.map((h, i) => (
-                      <span key={i} className={i === 0 ? styles.cellLabel : styles.cellValue}>{h}</span>
+                      <span
+                        key={i}
+                        className={
+                          i === 0
+                            ? styles.cellLabel
+                            : i === tableHeaders.length - 1
+                              ? styles.cellAction
+                              : styles.cellValue
+                        }
+                      >
+                        {h}
+                      </span>
                     ))}
                   </div>
                   {tableRows.map((row, i) => (
                     <div
                       key={row.label}
-                      className={`${styles.tableRow} ${i < tableRows.length - 1 ? styles.tableRowBorder : ''} ${row.total ? styles.tableRowTotal : ''}`}
-                      style={{ gridTemplateColumns: gridCols }}
+                      className={`${styles.tableRow} ${rowGridClass} ${i < tableRows.length - 1 ? styles.tableRowBorder : ''} ${row.total ? styles.tableRowTotal : ''}`}
                     >
-                      <span className={styles.cellLabel}>{row.label}</span>
-                      {row.cols.map((val, ci) => (
-                        <span key={ci} className={styles.cellValue}>
-                          {row.badge && ci === row.cols.length - 1
-                            ? <span className={`${styles.deltaBadge} ${styles[`deltaBadge${row.badge.charAt(0).toUpperCase()}${row.badge.slice(1)}`]}`}>{val}</span>
-                            : val}
-                        </span>
-                      ))}
+                      <span className={styles.cellLabel} title={row.label}>{row.label}</span>
+                      {row.cols.map((val, ci) => {
+                        const isLast = ci === row.cols.length - 1
+                        const isFix = val === 'Fix'
+                        const isBadge = Boolean(row.badge && isLast && !isFix)
+                        if (isFix) {
+                          return (
+                            <span key={ci} className={styles.cellAction}>
+                              <Button
+                                priority="secondary"
+                                size="small"
+                                onClick={() => onGoToInput?.({
+                                  type: 'goToInput',
+                                  label: 'Fix',
+                                  field: row.fixField,
+                                  tab: row.fixTab,
+                                })}
+                              >
+                                Fix
+                              </Button>
+                            </span>
+                          )
+                        }
+                        return (
+                          <span key={ci} className={styles.cellValue} title={val}>
+                            {isBadge
+                              ? (
+                                <span className={`${styles.deltaBadge} ${styles[`deltaBadge${row.badge!.charAt(0).toUpperCase()}${row.badge!.slice(1)}`]}`}>
+                                  {val}
+                                </span>
+                              )
+                              : val}
+                          </span>
+                        )
+                      })}
                     </div>
                   ))}
                 </div>

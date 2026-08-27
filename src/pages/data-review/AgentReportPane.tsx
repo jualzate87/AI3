@@ -93,7 +93,14 @@ type IssueCard = {
   rootCause: string
   clientResponseNote?: string
   questionnaireResponseId?: QuestionnaireResponseId
-  tableRows: { label: string; cols: string[]; total?: boolean; badge?: 'red' | 'orange' | 'grey' | 'green' | 'blue' }[]
+  tableRows: {
+    label: string
+    cols: string[]
+    total?: boolean
+    badge?: 'red' | 'orange' | 'grey' | 'green' | 'blue'
+    fixField?: string
+    fixTab?: string
+  }[]
   tableHeaders: string[]
   suggestedActions: string[]
   actions: IssueAction[]
@@ -128,7 +135,8 @@ function buildImportMismatchesIssue(amounts: LiveAmounts): IssueCard {
     tableRows: gaps.slice(0, 6).map((g, i) => ({
       label: g.label,
       cols: [g.returnValue, g.sourceValue, 'Fix'],
-      badge: (i === 0 ? 'red' : 'orange') as 'red' | 'orange',
+      fixField: g.field,
+      fixTab: g.tab,
       total: i === gaps.length - 1 || i === 5,
     })),
     tableHeaders: ['Field', 'On return', 'On source', ''],
