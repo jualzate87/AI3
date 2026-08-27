@@ -133,14 +133,12 @@
   opacity: 0.7;
 }
 
-/* Dock-back button — shown in the popout window instead of the pop-out icon */
+/* Dock-back button — inline in tabActions (popout window) so it never overlaps Next document */
 .dockBackBtn {
-  position: absolute;
-  top: 9px;
-  right: 12px;
   display: flex;
   align-items: center;
   gap: 5px;
+  flex-shrink: 0;
   background: none;
   border: 1px solid #c8d3da;
   border-radius: 4px;
@@ -150,7 +148,6 @@
   font-weight: 600;
   padding: 3px 8px 3px 6px;
   line-height: 1;
-  z-index: 2;
   white-space: nowrap;
   transition: background 120ms ease, border-color 120ms ease;
 }

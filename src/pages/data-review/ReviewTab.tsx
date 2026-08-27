@@ -219,19 +219,18 @@ export default function ReviewTab({
             <ChevronRight size="small" />
           </Button>
         )}
+        {isPopout && (
+          <button
+            type="button"
+            className={styles.dockBackBtn}
+            aria-label="Dock back to main window"
+            onClick={() => window.close()}
+          >
+            <PopIn size="small" />
+            Dock back
+          </button>
+        )}
       </div>
-
-      {isPopout && (
-        <button
-          type="button"
-          className={styles.dockBackBtn}
-          aria-label="Dock back to main window"
-          onClick={() => window.close()}
-        >
-          <PopIn size="small" />
-          Dock back
-        </button>
-      )}
     </div>
   )
 }
