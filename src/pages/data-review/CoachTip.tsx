@@ -1,4 +1,5 @@
 import { cloneElement, isValidElement, type MouseEvent, type ReactElement, type ReactNode } from 'react'
+import { SHOW_FIELD_INFO_POINTERS } from '../../lib/prototypeFeatureFlags'
 import styles from '../../styles/data-review/CoachTip.module.css'
 
 type CoachTipProps = {
@@ -69,7 +70,7 @@ export default function CoachTip({
 
   return (
     <span className={`${styles.wrap} ${open ? styles.wrapOpen : ''}`}>
-      {showDot && open && (
+      {SHOW_FIELD_INFO_POINTERS && showDot && open && (
         <span className={`${styles.dot} ${dotClass}`} aria-hidden>
           <span className={styles.dotPulse} />
         </span>

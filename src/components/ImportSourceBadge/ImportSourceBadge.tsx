@@ -37,7 +37,7 @@ type Props = {
   className?: string
 }
 
-/** Audit-log style import badge — API purple, OCR green, or neutral manual. */
+/** Audit-log style import badge — API purple, neutral Smart return, or neutral manual. */
 export default function ImportSourceBadge({ variant, docKey, className }: Props) {
   const meta = docKey ? getDocumentImportMeta(docKey) : null
 

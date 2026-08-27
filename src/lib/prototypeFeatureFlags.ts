@@ -8,6 +8,9 @@ export const SHOW_IMPORT_FLAGS = false
 /** When false, SSN/EIN identity gates are skipped — preparers can mark verified without identity fields. */
 export const SHOW_VERIFY_IDENTITY_GATES = false
 
+/** When false, pink coach pointer dots on (i) info icons and other CoachTip anchors are hidden. */
+export const SHOW_FIELD_INFO_POINTERS = false
+
 /** Mask flag counts for tab/peel badges when import flags are hidden. */
 export function importFlagCountForDisplay(count: number): number {
   return SHOW_IMPORT_FLAGS ? count : 0
