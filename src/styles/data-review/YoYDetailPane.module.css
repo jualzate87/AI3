@@ -511,6 +511,16 @@
   white-space: nowrap;
 }
 
+.cellLabelLink {
+  display: block;
+  max-width: 100%;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  text-align: left;
+}
+
 .cellValue {
   font-family: var(--font-family-component) !important;
   font-size: 12px;

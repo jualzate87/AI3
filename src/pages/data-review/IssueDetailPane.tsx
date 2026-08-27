@@ -4,6 +4,8 @@ import { Button } from '@ids-ts/button'
 import '@ids-ts/button/dist/main.css'
 import { DropdownButton, MenuItem } from '@ids-ts/dropdown-button'
 import '@ids-ts/dropdown-button/dist/main.css'
+import { LinkActionButton } from '@ids-ts/link-action-button'
+import '@ids-ts/link-action-button/dist/main.css'
 import brandBallsIcon from '../../assets/icons/brand-balls.svg'
 import Tooltip from './Tooltip'
 import styles from '../../styles/data-review/YoYDetailPane.module.css'
@@ -264,7 +266,24 @@ export default function IssueDetailPane({
                       key={row.label}
                       className={`${styles.tableRow} ${rowGridClass} ${i < tableRows.length - 1 ? styles.tableRowBorder : ''} ${row.total ? styles.tableRowTotal : ''}`}
                     >
-                      <span className={styles.cellLabel} title={row.label}>{row.label}</span>
+                      <span className={styles.cellLabel} title={row.label}>
+                        {row.fixField && onGoToInput ? (
+                          <LinkActionButton
+                            className={styles.cellLabelLink}
+                            size="small"
+                            onClick={() => onGoToInput({
+                              type: 'goToInput',
+                              label: row.label,
+                              field: row.fixField,
+                              tab: row.fixTab,
+                            })}
+                          >
+                            {row.label}
+                          </LinkActionButton>
+                        ) : (
+                          row.label
+                        )}
+                      </span>
                       {row.cols.map((val, ci) => {
                         const isLast = ci === row.cols.length - 1
                         const isFix = val === 'Fix'
