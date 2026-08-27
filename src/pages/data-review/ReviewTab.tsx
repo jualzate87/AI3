@@ -54,7 +54,7 @@ interface ReviewTabProps {
   tabConfirmCounts?: Record<string, number>
   /** When true, shows Dock back control (popout window only) */
   isPopout?: boolean
-  /** Phase 1 preparer: show "+ Add item to review" at end of tab row */
+  /** Phase 1 preparer: show "+ Add source" at end of tab row */
   showAddItem?: boolean
   onAddItemClick?: () => void
   /** Phase 1 preparer: jump to next unreviewed source document */
@@ -202,10 +202,11 @@ export default function ReviewTab({
             priority="tertiary"
             size="small"
             className={styles.addItemBtn}
+            aria-label="Add source"
             onClick={onAddItemClick}
           >
             <CirclePlus size="small" />
-            Add item to review
+            Add source
           </Button>
         )}
         {showNextDocument && onNextDocumentClick && unreviewedDocCount > 0 && (

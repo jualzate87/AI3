@@ -109,13 +109,13 @@
   background: rgba(57, 58, 61, 0.06);
 }
 
-/* ── Scrollable pane — 80px top offset clears AI diagnostics header; min-height:0 enables scroll ── */
+/* ── Scrollable pane — 16px below AI diagnostics header; min-height:0 enables scroll ── */
 .pane {
   flex: 1 1 0%;
   min-height: 0;
   overflow-x: hidden;
   overflow-y: auto;
-  padding: var(--size-action-min-width-small, 80px) var(--space-container-padding-small, 16px) var(--space-container-padding-small, 16px);
+  padding: var(--space-container-padding-small, 16px);
   display: flex;
   flex-direction: column;
   -webkit-overflow-scrolling: touch;

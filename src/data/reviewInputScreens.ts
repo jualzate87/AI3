@@ -19,7 +19,7 @@ function isImportReady(docKey: string): boolean {
   return mode === 'api-filed' || mode === 'extracted'
 }
 
-/** All return inputs available in Input return — used in Add item to review. */
+/** All return inputs available in Input return — used in Add source flow. */
 export const REVIEW_INPUT_SCREENS: ReviewInputScreen[] = [
   ...W2_PAYER_TABS.map(t => ({
     id: `w2-${t.key}`,

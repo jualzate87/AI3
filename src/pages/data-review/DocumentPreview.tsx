@@ -221,7 +221,7 @@ export default function DocumentPreview({
                     </>
                   ) : (
                     <p className={styles.attachEmptyHint}>
-                      Use <strong>Add item to review</strong> to link a document and input screen.
+                      Use <strong>Add source</strong> to link a document and input screen.
                     </p>
                   )}
                 </div>
