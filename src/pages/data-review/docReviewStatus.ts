@@ -17,6 +17,7 @@ import {
 import type { TopTab } from './ReviewTab'
 import { QUESTIONNAIRE_DOC_KEY, QUESTIONNAIRE_HUB_LABEL } from './questionnaireData'
 import { isManualImportDoc } from '../../data/documentImportMeta'
+import { SHOW_VERIFY_IDENTITY_GATES } from '../../lib/prototypeFeatureFlags'
 import { isDocShownVerified, isVerifiedInSet, normalizeVerifiedDocKey } from '../../data/verifiedDocKeys'
 
 export type IdentityField = 'ssn' | 'ein'
@@ -64,7 +65,7 @@ export function canVerifyDoc(args: {
     return { allowed: true }
   }
 
-  if (key === 'techCircle' && args.amounts) {
+  if (SHOW_VERIFY_IDENTITY_GATES && key === 'techCircle' && args.amounts) {
     const missingIdentityFields = getTechCircleIdentityGaps(args.amounts)
     if (missingIdentityFields.length > 0) {
       const reason: DocVerifyBlockReason =

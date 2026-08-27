@@ -56,25 +56,22 @@ describe('canVerifyDoc — Tech Circle identity gate', () => {
     ['ein-techCircle', {}],
   ])
 
-  it('blocks techCircle when SSN and EIN are blank', () => {
+  it('allows techCircle when identity gates are hidden (SHOW_VERIFY_IDENTITY_GATES=false)', () => {
     const result = canVerifyDoc({
       docKey: 'techCircle',
       reviewedFields: clearedReviewed,
       amounts: { employeeSsn: '', employerEin: '' },
     })
-    expect(result.allowed).toBe(false)
-    expect(result.reason).toBe('missing-identity')
-    expect(result.missingIdentityFields).toEqual(['ssn', 'ein'])
+    expect(result).toEqual({ allowed: true })
   })
 
-  it('blocks techCircle when only SSN is missing', () => {
+  it('allows techCircle with partial identity when gates are hidden', () => {
     const result = canVerifyDoc({
       docKey: 'techCircle',
       reviewedFields: clearedReviewed,
       amounts: { employeeSsn: '   ', employerEin: '12-3456789' },
     })
-    expect(result.allowed).toBe(false)
-    expect(result.reason).toBe('missing-ssn')
+    expect(result).toEqual({ allowed: true })
   })
 
   it('allows techCircle when identity fields are filled and flags cleared', () => {

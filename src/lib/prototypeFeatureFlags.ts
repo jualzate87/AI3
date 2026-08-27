@@ -5,6 +5,9 @@
 /** When false, Phase 1 import/OCR flags remain in reviewedFields but are hidden in the UI. */
 export const SHOW_IMPORT_FLAGS = false
 
+/** When false, SSN/EIN identity gates are skipped — preparers can mark verified without identity fields. */
+export const SHOW_VERIFY_IDENTITY_GATES = false
+
 /** Mask flag counts for tab/peel badges when import flags are hidden. */
 export function importFlagCountForDisplay(count: number): number {
   return SHOW_IMPORT_FLAGS ? count : 0
