@@ -431,7 +431,14 @@ export default function DetailFields({
       </div>
 
       {/* Scrollable input fields */}
-      <div className={styles.inputContainer}>
+      <div
+        className={[
+          styles.inputContainer,
+          variant === 'input' ? styles.inputContainerInput : '',
+        ]
+          .filter(Boolean)
+          .join(' ')}
+      >
         {/* Employer Information section */}
         <div className={styles.sectionHeader}>
           Employer Information (MANDATORY for e-file)

@@ -2,7 +2,9 @@ import { useEffect, useState } from 'react'
 import { useNavigate, useSearchParams } from 'react-router-dom'
 import SmartReturnHeader from './SmartReturnHeader'
 import ReturnContextRail from '../components/ReturnContextRail'
+import LeftNavPTO from './data-review/LeftNavPTO'
 import InputMenuNav from './input-return/InputMenuNav'
+import { openHashRoute, PREPARER_DATA_REVIEW_PATH } from '../lib/prototypeRoutes'
 import InputFormPanel from './input-return/InputFormPanel'
 import {
   inputNavItemById,
@@ -116,9 +118,14 @@ export default function InputReturnPage() {
 
   return (
     <div className={styles.page} data-theme="intuit">
-      <SmartReturnHeader activeTab="inputreturn" />
+      <SmartReturnHeader
+        activeTab="inputreturn"
+        showReviewReturn
+        onReviewReturn={() => openHashRoute(PREPARER_DATA_REVIEW_PATH)}
+      />
 
       <div className={styles.body}>
+        <LeftNavPTO />
         <div className={styles.contentArea}>
           <InputMenuNav
             activeItemId={activeItemId}

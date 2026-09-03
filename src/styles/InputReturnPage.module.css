@@ -13,6 +13,13 @@
   overflow: hidden;
 }
 
+.body {
+  display: flex;
+  flex: 1;
+  min-height: 0;
+  overflow: hidden;
+}
+
 .contentArea {
   display: flex;
   flex: 1;
@@ -35,6 +42,7 @@
   padding-right: var(--space-component-padding-medium, 12px);
   overflow: hidden;
   border-right: 1px solid var(--color-divider-tertiary, #c3ced5);
+  font-family: var(--font-family-component);
 }
 
 .menuPanelCollapsed {
@@ -57,6 +65,7 @@
 }
 
 .menuTitle {
+  font-family: var(--font-family-component);
   font-size: var(--font-size-component-medium, 16px);
   font-weight: var(--font-weight-component-bold, 600);
   color: var(--color-text-primary, #21262a);
@@ -151,6 +160,7 @@
   overflow-x: hidden;
   margin-right: calc(-1 * var(--space-component-padding-medium, 12px));
   padding-right: var(--space-component-padding-medium, 12px);
+  font-family: var(--font-family-component);
 }
 
 .navCategoryGroup {
@@ -169,6 +179,7 @@
   border-right: 1px solid var(--color-divider-tertiary, #c3ced5);
   width: 100%;
   text-align: left;
+  font-family: var(--font-family-component);
 }
 
 .navCategoryLast {
@@ -176,6 +187,7 @@
 }
 
 .navCategoryLabel {
+  font-family: var(--font-family-component) !important;
   font-size: var(--font-size-component-small, 14px);
   font-weight: var(--font-weight-component-bold, 600);
   line-height: 20px;
@@ -201,6 +213,7 @@
   border-right: 1px solid var(--color-divider-tertiary, #c3ced5);
   cursor: pointer;
   text-align: left;
+  font-family: var(--font-family-component);
 }
 
 .navPrimary:hover {
@@ -208,17 +221,18 @@
 }
 
 .navPrimaryActive {
-  background: var(--color-container-background-primary, #ffffff);
+  background: var(--color-container-background-secondary, #f0f4f6);
 }
 
 .navPrimaryActive .navPrimaryLabel {
-  color: var(--color-action-standard, #0077c5);
+  color: var(--color-action-standard, #205ea3);
   font-weight: var(--font-weight-component-semibold, 500);
 }
 
 .navPrimaryLabel {
   flex: 1;
   min-width: 0;
+  font-family: var(--font-family-component) !important;
   font-size: var(--font-size-component-small, 14px);
   font-weight: var(--font-weight-component, 400);
   line-height: 20px;
@@ -235,28 +249,35 @@
   align-items: center;
   width: 100%;
   padding: 12px 10px 12px 32px;
-  background: var(--color-container-background-secondary, #f0f4f6);
+  background: var(--color-container-background-primary, #ffffff);
   border: none;
   border-left: 1px solid var(--color-divider-tertiary, #c3ced5);
   border-right: 1px solid var(--color-divider-tertiary, #c3ced5);
   cursor: pointer;
   text-align: left;
+  font-family: var(--font-family-component);
 }
 
 .navSecondary:hover {
-  background: var(--color-container-background-tertiary, #e2e9ed);
+  background: var(--color-container-background-secondary, #f0f4f6);
 }
 
 .navSecondaryActive {
-  background: var(--color-container-background-tertiary, #e2e9ed);
+  background: var(--color-container-background-secondary, #f0f4f6);
   border-left: 4px solid var(--color-action-standard, #205ea3);
   padding-left: 28px;
 }
 
+.navSecondaryActive .navSecondaryLabel {
+  color: var(--color-action-standard, #205ea3);
+  font-weight: var(--font-weight-component-semibold, 500);
+}
+
 .navSecondaryLabel {
-  font-size: var(--font-size-component-small, 14px);
+  font-family: var(--font-family-component) !important;
+  font-size: var(--font-size-component-x-small, 12px);
   font-weight: var(--font-weight-component, 400);
-  line-height: 20px;
+  line-height: 18px;
   color: var(--color-text-primary, #21262a);
   white-space: nowrap;
 }

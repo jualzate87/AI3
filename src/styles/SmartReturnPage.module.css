@@ -12,6 +12,13 @@
   --color-action-standard-active: #174d87;
 }
 
+.body {
+  display: flex;
+  flex: 1;
+  min-height: 0;
+  overflow: hidden;
+}
+
 .rightSide {
   flex: 1;
   display: flex;

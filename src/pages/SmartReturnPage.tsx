@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import { useSearchParams } from 'react-router-dom'
 import SmartReturnHeader from './SmartReturnHeader'
 import SmartReturnDocumentHub from './SmartReturnDocumentHub'
+import LeftNavPTO from './data-review/LeftNavPTO'
 import styles from '../styles/SmartReturnPage.module.css'
 import {
   openHashRoute,
@@ -47,14 +48,17 @@ export default function SmartReturnPage() {
 
   return (
     <div className={styles.page} data-theme="intuit">
-      <div className={styles.rightSide}>
-        <SmartReturnHeader
-          activeTab="smartreturn"
-          showReviewReturn={isReviewer}
-          onReviewReturn={handleReviewReturn}
-        />
+      <div className={styles.body}>
+        <LeftNavPTO />
+        <div className={styles.rightSide}>
+          <SmartReturnHeader
+            activeTab="smartreturn"
+            showReviewReturn={isReviewer}
+            onReviewReturn={handleReviewReturn}
+          />
 
-        <SmartReturnDocumentHub readOnly={isReviewer} />
+          <SmartReturnDocumentHub readOnly={isReviewer} />
+        </div>
       </div>
     </div>
   )

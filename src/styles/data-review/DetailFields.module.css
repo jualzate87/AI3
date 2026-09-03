@@ -118,6 +118,11 @@
   min-height: 0;
 }
 
+/* Input-return variant — all-white field rows; section headers stay gray */
+.inputContainerInput {
+  background: var(--color-container-background-primary, #ffffff);
+}
+
 .titleRow {
   display: flex;
   align-items: center;
@@ -327,6 +332,7 @@
   margin: 0 var(--space-container-padding-medium, 20px);
   border-bottom: 1px solid var(--color-divider-tertiary, #e8edf0);
   min-width: 0;
+  background: var(--color-container-background-primary, #ffffff);
   transition: background 160ms ease, box-shadow 160ms ease;
 }
 
@@ -445,14 +451,32 @@
   border-color: #205ea3;
 }
 
-/* Zebra striping for form field rows */
-.inputContainer .fieldRow:nth-child(even) {
+/* Zebra striping — review flow only; input-return uses all-white field rows */
+.inputContainer:not(.inputContainerInput) .fieldRow:nth-child(even) {
   background: var(--color-container-background-secondary, #f7f9fb);
 }
 
-.inputContainer .fieldRow:nth-child(even).fieldRowHighlighted,
-.inputContainer .fieldRow:nth-child(even).fieldRowHighlightedOrange {
+.inputContainer:not(.inputContainerInput) .fieldRow:nth-child(even).fieldRowHighlighted,
+.inputContainer:not(.inputContainerInput) .fieldRow:nth-child(even).fieldRowHighlightedOrange {
   background: rgba(32, 94, 163, 0.08);
+}
+
+/* Input-return: white rows, gray section headers only */
+.inputContainerInput .fieldRow,
+.inputContainerInput .multiFieldRow {
+  background: var(--color-container-background-primary, #ffffff);
+}
+
+.inputContainerInput .fieldRow:nth-child(even),
+.inputContainerInput .multiFieldRow:nth-child(even) {
+  background: var(--color-container-background-primary, #ffffff);
+}
+
+.inputContainerInput .fieldRow:hover,
+.inputContainerInput .multiFieldRow:hover,
+.inputContainerInput .fieldRowHasNote,
+.inputContainerInput .fieldRowCommentOpen {
+  background: var(--color-container-background-primary, #ffffff);
 }
 
 /* Highlighted input — blue (generic popover / source navigation) */
@@ -693,6 +717,7 @@
   padding: 8px 0;
   margin: 0 20px;
   border-bottom: 1px solid #c3ced5;
+  background: var(--color-container-background-primary, #ffffff);
 }
 
 .multiFieldInputs {

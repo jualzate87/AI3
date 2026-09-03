@@ -296,7 +296,14 @@ export default function DetailFieldsNec({
         </div>
       </div>
 
-      <div className={styles.inputContainer}>
+      <div
+        className={[
+          styles.inputContainer,
+          variant === 'input' ? styles.inputContainerInput : '',
+        ]
+          .filter(Boolean)
+          .join(' ')}
+      >
 
         {scheduleCNeedsSetup && (
           <div className={styles.necSchCMessage}>

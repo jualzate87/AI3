@@ -10,6 +10,7 @@ import '@ids-ts/progress-bar/dist/main.css'
 import { H5, B2, B3 } from '@ids-ts/typography'
 import '@ids-ts/typography/dist/main.css'
 import SmartReturnHeader from './SmartReturnHeader'
+import LeftNavPTO from './data-review/LeftNavPTO'
 import styles from '../styles/ImportConfirmationPage.module.css'
 import { completeDocumentImport } from '../hooks/useSyncedReviewState'
 import { openHashRoute, PREPARER_DATA_REVIEW_PATH } from '../lib/prototypeRoutes'
@@ -48,7 +49,9 @@ export default function ImportConfirmationPage() {
     <div className={styles.page} data-theme="intuit">
       <SmartReturnHeader activeTab="smartreturn" />
 
-      <div className={styles.main}>
+      <div className={styles.body}>
+        <LeftNavPTO />
+        <div className={styles.main}>
         <nav className={styles.breadcrumb} aria-label="Breadcrumb">
           <Button
             priority="borderless"
@@ -100,6 +103,7 @@ export default function ImportConfirmationPage() {
           <Button priority="borderless" onClick={handleBackToSmartReturn}>
             Back
           </Button>
+        </div>
         </div>
       </div>
     </div>

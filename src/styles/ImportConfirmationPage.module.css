@@ -16,6 +16,14 @@
   flex-direction: column;
   overflow-y: auto;
   min-height: 0;
+  min-width: 0;
+}
+
+.body {
+  display: flex;
+  flex: 1;
+  min-height: 0;
+  overflow: hidden;
 }
 
 .breadcrumb {
