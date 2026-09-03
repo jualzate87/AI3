@@ -11,6 +11,7 @@ import { CLIENT_ADDRESS } from '../../data/clientAddress'
 import { displayEditableAmount, NEC_SOURCE_AMOUNT, parseAmountDraft, type LiveAmounts } from '../../data/liveReturn'
 import DocVerifyHeaderActions from './DocVerifyHeaderActions'
 import QuestionnaireFieldNote from './QuestionnaireFieldNote'
+import DetailSectionHeader from './DetailSectionHeader'
 import styles from '../../styles/data-review/DetailFields.module.css'
 import { canEditField, type DetailFieldsVariant } from './fieldEditability'
 
@@ -83,6 +84,7 @@ interface DetailFieldsNecProps {
   showEmptyWhenZero?: boolean
   /** Navigate to Schedule C gross receipts when NEC flows to the return */
   onOpenScheduleC?: () => void
+  onViewSourceDocuments?: () => void
 }
 
 export default function DetailFieldsNec({
@@ -108,6 +110,7 @@ export default function DetailFieldsNec({
   variant = 'review',
   showEmptyWhenZero = false,
   onOpenScheduleC,
+  onViewSourceDocuments,
 }: DetailFieldsNecProps) {
   const fmt = (n: number) => displayEditableAmount(n, showEmptyWhenZero)
   const highlightedRef = useRef<HTMLDivElement>(null)
@@ -324,9 +327,9 @@ export default function DetailFieldsNec({
         )}
 
         {/* ── Payer Information ── */}
-        <div className={styles.sectionHeader}>
+        <DetailSectionHeader variant={variant} onViewSourceDocuments={onViewSourceDocuments}>
           Payer Information (MANDATORY for e-file)
-        </div>
+        </DetailSectionHeader>
 
         {renderStaticRow('nec-ein', "(a) Payer's federal ID number (EIN)", PAYER_DATA.ein)}
         {renderStaticRow('nec-payerName', "(b) Payer's name", PAYER_DATA.name, styles.fieldInputWide)}
@@ -335,7 +338,9 @@ export default function DetailFieldsNec({
         {renderStaticRow('nec-phone', "Payer's telephone number", PAYER_DATA.payerPhone)}
 
         {/* ── Recipient Information ── */}
-        <div className={styles.sectionHeader}>Recipient Information</div>
+        <DetailSectionHeader variant={variant} onViewSourceDocuments={onViewSourceDocuments}>
+          Recipient Information
+        </DetailSectionHeader>
 
         {renderStaticRow('nec-ssn', "(c) Recipient's SSN or ITIN", RECIPIENT_DATA.ssn)}
         {renderStaticRow('nec-recipientName', "(d) Recipient's name", RECIPIENT_DATA.name, styles.fieldInputWide)}
@@ -343,14 +348,18 @@ export default function DetailFieldsNec({
         {renderStaticRow('nec-recipientCityStateZip', 'City / State / ZIP code', `${RECIPIENT_DATA.city}, ${RECIPIENT_DATA.state} ${RECIPIENT_DATA.zip}`, styles.fieldInputWide)}
 
         {/* ── Nonemployee Compensation ── */}
-        <div className={styles.sectionHeader}>Nonemployee Compensation</div>
+        <DetailSectionHeader variant={variant} onViewSourceDocuments={onViewSourceDocuments}>
+          Nonemployee Compensation
+        </DetailSectionHeader>
 
         {renderStaticRow('nec-box1', '(1) Nonemployee compensation', FORM_DATA.box1_nonemployeeComp, styles.fieldInputSmall, 'nec-box1')}
         <QuestionnaireFieldNote fieldKey="nec-box1" />
         {renderStaticRow('nec-fedTaxWithheld', '(4) Federal income tax withheld', FORM_DATA.box4_fedTaxWithheld)}
 
         {/* ── State Tax Information ── */}
-        <div className={styles.sectionHeader}>State Tax Information</div>
+        <DetailSectionHeader variant={variant} onViewSourceDocuments={onViewSourceDocuments}>
+          State Tax Information
+        </DetailSectionHeader>
 
         {renderStaticRow('nec-stateTaxId', "(5) State / Payer's state ID number", FORM_DATA.box5_stateTaxId)}
         {renderStaticRow('nec-stateTax', '(6) State income tax withheld', FORM_DATA.box6_stateTax)}

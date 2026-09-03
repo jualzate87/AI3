@@ -9,6 +9,7 @@ import DetailFields1099R from '../data-review/DetailFields1099R'
 import DetailFieldsNec from '../data-review/DetailFieldsNec'
 import PeelTab from '../data-review/PeelTab'
 import { resolveActiveVerifyDocKey } from '../../data/documentImportMeta'
+import { openHashRoute, PREPARER_DATA_REVIEW_PATH } from '../../lib/prototypeRoutes'
 import {
   applyInputDocKey,
   getInputDocTabs,
@@ -86,6 +87,10 @@ export default function InputFormPanel({
   const handleDocTabChange = (docKey: string) => {
     applyInputDocKey(navItem.topTab, docKey, docSetters)
     onDocChange?.(docKey)
+  }
+
+  const handleViewSourceDocuments = () => {
+    openHashRoute(PREPARER_DATA_REVIEW_PATH)
   }
 
   return (
@@ -172,6 +177,7 @@ export default function InputFormPanel({
             }}
             fieldOverrides={fieldOverrides}
             onFieldOverride={setFieldOverride}
+            onViewSourceDocuments={handleViewSourceDocuments}
           />
         )}
 
@@ -191,6 +197,7 @@ export default function InputFormPanel({
             amounts={amounts}
             fieldOverrides={fieldOverrides}
             onFieldOverride={setFieldOverride}
+            onViewSourceDocuments={handleViewSourceDocuments}
           />
         )}
 
@@ -210,6 +217,7 @@ export default function InputFormPanel({
             amounts={amounts}
             fieldOverrides={fieldOverrides}
             onFieldOverride={setFieldOverride}
+            onViewSourceDocuments={handleViewSourceDocuments}
           />
         )}
 
@@ -228,6 +236,7 @@ export default function InputFormPanel({
             amounts={amounts}
             fieldOverrides={fieldOverrides}
             onFieldOverride={setFieldOverride}
+            onViewSourceDocuments={handleViewSourceDocuments}
           />
         )}
 
@@ -241,6 +250,7 @@ export default function InputFormPanel({
             amounts={amounts}
             fieldOverrides={fieldOverrides}
             onFieldOverride={setFieldOverride}
+            onViewSourceDocuments={handleViewSourceDocuments}
           />
         )}
       </div>

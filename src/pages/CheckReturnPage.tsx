@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import LeftNavPTO from './data-review/LeftNavPTO'
 import SmartReturnHeader from './SmartReturnHeader'
 import CheckReturnNav, { type ContentView } from './check-return/CheckReturnNav'
+import { openHashRoute, PREPARER_DATA_REVIEW_PATH } from '../lib/prototypeRoutes'
 import layout from '../styles/CoreScreenLayout.module.css'
 import styles from '../styles/CheckReturnPage.module.css'
 
@@ -89,7 +90,11 @@ export default function CheckReturnPage() {
       <div className={layout.body}>
         <LeftNavPTO />
         <div className={layout.rightSide}>
-          <SmartReturnHeader activeTab="checkreturns" />
+          <SmartReturnHeader
+            activeTab="checkreturns"
+            showViewSourceDocuments
+            onViewSourceDocuments={() => openHashRoute(PREPARER_DATA_REVIEW_PATH)}
+          />
           <div className={styles.contentArea}>
             <CheckReturnNav
               contentView={contentView}

@@ -1,8 +1,8 @@
 import { useNavigate } from 'react-router-dom'
 import {
   Question, Notification, Settings, Lock, PersonThree,
-ChevronDown, List, Edit, Checklist,
-  Send, CloudUpload, AlarmClock, Rocket,
+  ChevronDown, List, Edit, Checklist,
+  Send, CloudUpload, AlarmClock, Rocket, PopOut,
 } from '@design-systems/icons'
 import { Button } from '@ids-ts/button'
 import '@ids-ts/button/dist/main.css'
@@ -17,6 +17,9 @@ interface SmartReturnHeaderProps {
   /** Primary styling after review has started */
   reviewReturnStarted?: boolean
   onReviewReturn?: () => void
+  /** Show View source documents CTA in tab row (Check return) */
+  showViewSourceDocuments?: boolean
+  onViewSourceDocuments?: () => void
 }
 
 export default function SmartReturnHeader({
@@ -24,6 +27,8 @@ export default function SmartReturnHeader({
   showReviewReturn = false,
   reviewReturnStarted = false,
   onReviewReturn,
+  showViewSourceDocuments = false,
+  onViewSourceDocuments,
 }: SmartReturnHeaderProps) {
   const navigate = useNavigate()
 
@@ -139,6 +144,18 @@ export default function SmartReturnHeader({
               className={styles.reviewReturnBtn}
             >
               Review return
+            </Button>
+          )}
+          {showViewSourceDocuments && (
+            <Button
+              priority="secondary"
+              purpose="passive"
+              onClick={onViewSourceDocuments}
+              automationId="view-source-documents-header-cta"
+              className={styles.viewSourceDocumentsHeaderBtn}
+            >
+              <PopOut size="small" aria-hidden />
+              View source documents
             </Button>
           )}
         </div>

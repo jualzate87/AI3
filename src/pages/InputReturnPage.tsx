@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { useNavigate, useSearchParams } from 'react-router-dom'
+import { useSearchParams } from 'react-router-dom'
 import SmartReturnHeader from './SmartReturnHeader'
 import ReturnContextRail from '../components/ReturnContextRail'
 import LeftNavPTO from './data-review/LeftNavPTO'
@@ -24,7 +24,6 @@ import layout from '../styles/CoreScreenLayout.module.css'
 import styles from '../styles/InputReturnPage.module.css'
 
 export default function InputReturnPage() {
-  const navigate = useNavigate()
   const [searchParams, setSearchParams] = useSearchParams()
   const formParam = searchParams.get(INPUT_FORM_PARAM) as InputNavItemId | null
   const docParam = searchParams.get(INPUT_DOC_PARAM)
@@ -145,12 +144,6 @@ export default function InputReturnPage() {
               onDocChange={handleDocChange}
             />
             <ReturnContextRail />
-          </div>
-
-          <div className={styles.footerBar}>
-            <button type="button" className={styles.footerLink} onClick={() => navigate('/import-confirmation')}>
-              Back to import confirmation
-            </button>
           </div>
         </div>
       </div>

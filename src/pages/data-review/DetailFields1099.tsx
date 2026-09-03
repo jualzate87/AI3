@@ -6,6 +6,7 @@ import { DestinationFieldLabel } from './DestinationFieldLabel'
 import { CLIENT_ADDRESS } from '../../data/clientAddress'
 import { displayEditableAmount, parseAmountDraft, type LiveAmounts } from '../../data/liveReturn'
 import DocVerifyHeaderActions from './DocVerifyHeaderActions'
+import DetailSectionHeader from './DetailSectionHeader'
 import styles from '../../styles/data-review/DetailFields.module.css'
 import { canEditField, type DetailFieldsVariant } from './fieldEditability'
 
@@ -152,6 +153,7 @@ interface DetailFields1099Props {
   importReadOnly?: boolean
   variant?: DetailFieldsVariant
   showEmptyWhenZero?: boolean
+  onViewSourceDocuments?: () => void
 }
 
 export default function DetailFields1099({
@@ -180,6 +182,7 @@ export default function DetailFields1099({
   importReadOnly = false,
   variant = 'review',
   showEmptyWhenZero = false,
+  onViewSourceDocuments,
 }: DetailFields1099Props) {
   const fmt = (n: number) => displayEditableAmount(n, showEmptyWhenZero)
   const highlightedRef = useRef<HTMLDivElement>(null)
@@ -393,9 +396,9 @@ export default function DetailFields1099({
       <div className={styles.inputContainer}>
 
         {/* ── Payer Information ── */}
-        <div className={styles.sectionHeader}>
+        <DetailSectionHeader variant={variant} onViewSourceDocuments={onViewSourceDocuments}>
           Payer Information (MANDATORY for e-file)
-        </div>
+        </DetailSectionHeader>
 
         {renderReadOnlyRow(`payerEin-${activePayer}`, "(a) Payer's federal ID number (EIN)", payer.ein)}
         {renderReadOnlyRow(`payerName-${activePayer}`, "(b) Payer's name", payer.name, styles.fieldInputWide)}
@@ -404,7 +407,9 @@ export default function DetailFields1099({
         {renderReadOnlyRow(`payerPhone-${activePayer}`, "Payer's telephone number", payer.payerPhone)}
 
         {/* ── Recipient Information ── */}
-        <div className={styles.sectionHeader}>Recipient Information</div>
+        <DetailSectionHeader variant={variant} onViewSourceDocuments={onViewSourceDocuments}>
+          Recipient Information
+        </DetailSectionHeader>
 
         {renderReadOnlyRow(`recipientSsn-${activePayer}`, "(c) Recipient's SSN or ITIN", RECIPIENT_DATA.ssn)}
         {renderReadOnlyRow(`recipientName-${activePayer}`, "(d) Recipient's name", RECIPIENT_DATA.name, styles.fieldInputWide)}
@@ -412,7 +417,9 @@ export default function DetailFields1099({
         {renderReadOnlyRow(`recipientCityStateZip-${activePayer}`, 'City / State / ZIP code', `${RECIPIENT_DATA.city}, ${RECIPIENT_DATA.state} ${RECIPIENT_DATA.zip}`, styles.fieldInputWide)}
 
         {/* ── Interest Income ── */}
-        <div className={styles.sectionHeader}>Interest Income</div>
+        <DetailSectionHeader variant={variant} onViewSourceDocuments={onViewSourceDocuments}>
+          Interest Income
+        </DetailSectionHeader>
 
         {isPrimary ? (
           <>
@@ -480,7 +487,9 @@ export default function DetailFields1099({
         {renderReadOnlyRow(`bondPremium-${activePayer}`, '(11) Bond premium', form.box11_bondPremium)}
 
         {/* ── State Tax Information ── */}
-        <div className={styles.sectionHeader}>State Tax Information</div>
+        <DetailSectionHeader variant={variant} onViewSourceDocuments={onViewSourceDocuments}>
+          State Tax Information
+        </DetailSectionHeader>
 
         {renderReadOnlyRow(`stateTaxId-${activePayer}`, "(13) State / Payer's state ID number", form.box13_stateTaxId)}
         {renderReadOnlyRow(`stateTax-${activePayer}`, '(14) State income tax withheld', form.box14_stateTax)}

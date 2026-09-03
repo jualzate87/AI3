@@ -6,6 +6,7 @@ import { DestinationFieldLabel } from './DestinationFieldLabel'
 import { CLIENT_ADDRESS } from '../../data/clientAddress'
 import { displayEditableAmount, parseAmountDraft, type LiveAmounts } from '../../data/liveReturn'
 import DocVerifyHeaderActions from './DocVerifyHeaderActions'
+import DetailSectionHeader from './DetailSectionHeader'
 import styles from '../../styles/data-review/DetailFields.module.css'
 import { canEditField, type DetailFieldsVariant } from './fieldEditability'
 
@@ -72,6 +73,7 @@ interface DetailFields1099RProps {
   /** Input return mode — plain editable fields without verify header */
   variant?: DetailFieldsVariant
   showEmptyWhenZero?: boolean
+  onViewSourceDocuments?: () => void
 }
 
 export default function DetailFields1099R({
@@ -96,6 +98,7 @@ export default function DetailFields1099R({
   flaggedFields = {},
   variant = 'review',
   showEmptyWhenZero = false,
+  onViewSourceDocuments,
 }: DetailFields1099RProps) {
   const fmt = (n: number) => displayEditableAmount(n, showEmptyWhenZero)
   const highlightedRef = useRef<HTMLDivElement>(null)
@@ -295,9 +298,9 @@ export default function DetailFields1099R({
       >
 
         {/* ── Payer Information ── */}
-        <div className={styles.sectionHeader}>
+        <DetailSectionHeader variant={variant} onViewSourceDocuments={onViewSourceDocuments}>
           Payer Information (MANDATORY for e-file)
-        </div>
+        </DetailSectionHeader>
 
         {renderStaticRow('r-ein', '(a) Payer\'s federal ID number (EIN)', PAYER_DATA.ein)}
         {renderStaticRow('r-payerName', '(b) Payer\'s name', PAYER_DATA.name, styles.fieldInputWide)}
@@ -305,7 +308,9 @@ export default function DetailFields1099R({
         {renderStaticRow('r-cityStateZip', 'City / State / ZIP code', `${PAYER_DATA.city}, ${PAYER_DATA.state} ${PAYER_DATA.zip}`, styles.fieldInputWide)}
 
         {/* ── Recipient Information ── */}
-        <div className={styles.sectionHeader}>Recipient Information</div>
+        <DetailSectionHeader variant={variant} onViewSourceDocuments={onViewSourceDocuments}>
+          Recipient Information
+        </DetailSectionHeader>
 
         {renderStaticRow('r-ssn', 'Recipient\'s TIN', RECIPIENT_DATA.ssn)}
         {renderStaticRow('r-recipientName', 'Recipient\'s name', RECIPIENT_DATA.name, styles.fieldInputWide)}
@@ -313,7 +318,9 @@ export default function DetailFields1099R({
         {renderStaticRow('r-recipientCityStateZip', 'City / State / ZIP code', `${RECIPIENT_DATA.city}, ${RECIPIENT_DATA.state} ${RECIPIENT_DATA.zip}`, styles.fieldInputWide)}
 
         {/* ── Distribution Income ── */}
-        <div className={styles.sectionHeader}>Distribution Income</div>
+        <DetailSectionHeader variant={variant} onViewSourceDocuments={onViewSourceDocuments}>
+          Distribution Income
+        </DetailSectionHeader>
 
         {renderStaticRow('r-grossDistrib', '(1) Gross distribution', FORM_DATA.box1_grossDistrib, styles.fieldInputSmall, 'grossDistrib', 'grossDistrib', 'grossDistrib-meridian')}
         {renderStaticRow('r-taxableAmt', '(2a) Taxable amount', FORM_DATA.box2a_taxableAmt)}

@@ -305,23 +305,6 @@
   flex-direction: column;
 }
 
-.footerBar {
-  flex-shrink: 0;
-  padding: var(--space-component-padding-medium, 12px) var(--space-medium, 20px);
-  border-top: 1px solid var(--color-divider-tertiary, #c3ced5);
-  background: var(--color-page-background-primary, #ffffff);
-}
-
-.footerLink {
-  border: none;
-  background: none;
-  cursor: pointer;
-  font-family: var(--font-family-component);
-  font-size: var(--font-size-component-small, 14px);
-  color: var(--color-action-standard, #205ea3);
-  padding: 0;
-}
-
 .visuallyHidden {
   position: absolute;
   width: 1px;

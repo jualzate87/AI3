@@ -7,6 +7,7 @@ import { CLIENT_ADDRESS } from '../../data/clientAddress'
 import { displayEditableAmount, parseAmountDraft, type LiveAmounts } from '../../data/liveReturn'
 import DocVerifyHeaderActions from './DocVerifyHeaderActions'
 import QuestionnaireFieldNote from './QuestionnaireFieldNote'
+import DetailSectionHeader from './DetailSectionHeader'
 import styles from '../../styles/data-review/DetailFields.module.css'
 import { canEditField, type DetailFieldsVariant } from './fieldEditability'
 
@@ -152,6 +153,7 @@ interface DetailFieldsDivProps {
   /** Input return mode — plain editable fields without verify header */
   variant?: DetailFieldsVariant
   showEmptyWhenZero?: boolean
+  onViewSourceDocuments?: () => void
 }
 
 export default function DetailFieldsDiv({
@@ -179,6 +181,7 @@ export default function DetailFieldsDiv({
   importReadOnly = false,
   variant = 'review',
   showEmptyWhenZero = false,
+  onViewSourceDocuments,
 }: DetailFieldsDivProps) {
   const fmt = (n: number) => displayEditableAmount(n, showEmptyWhenZero)
 
@@ -402,9 +405,9 @@ export default function DetailFieldsDiv({
       <div className={styles.inputContainer}>
 
         {/* ── Payer Information ── */}
-        <div className={styles.sectionHeader}>
+        <DetailSectionHeader variant={variant} onViewSourceDocuments={onViewSourceDocuments}>
           Payer Information (MANDATORY for e-file)
-        </div>
+        </DetailSectionHeader>
 
         {renderReadOnlyRow(`payerEin-${activePayer}`, "(a) Payer's federal ID number (EIN)", payer.ein)}
         {renderReadOnlyRow(`payerName-${activePayer}`, "(b) Payer's name", payer.name, { inputClass: styles.fieldInputWide })}
@@ -413,7 +416,9 @@ export default function DetailFieldsDiv({
         {renderReadOnlyRow(`payerPhone-${activePayer}`, "Payer's telephone number", payer.payerPhone)}
 
         {/* ── Recipient Information ── */}
-        <div className={styles.sectionHeader}>Recipient Information</div>
+        <DetailSectionHeader variant={variant} onViewSourceDocuments={onViewSourceDocuments}>
+          Recipient Information
+        </DetailSectionHeader>
 
         {renderReadOnlyRow(`recipientSsn-${activePayer}`, 'SS # on account', RECIPIENT_DATA.ssn)}
         {renderReadOnlyRow(`recipientName-${activePayer}`, "Recipient's name", RECIPIENT_DATA.name, { inputClass: styles.fieldInputWide })}
@@ -421,7 +426,9 @@ export default function DetailFieldsDiv({
         {renderReadOnlyRow(`recipientCityStateZip-${activePayer}`, 'City / State / ZIP code', `${RECIPIENT_DATA.city}, ${RECIPIENT_DATA.state} ${RECIPIENT_DATA.zip}`, { inputClass: styles.fieldInputWide })}
 
         {/* ── Dividend Income ── */}
-        <div className={styles.sectionHeader}>Dividend Income</div>
+        <DetailSectionHeader variant={variant} onViewSourceDocuments={onViewSourceDocuments}>
+          Dividend Income
+        </DetailSectionHeader>
 
         {renderReadOnlyRow(`ordinaryDivs-${activePayer}`, '(1a) Total ordinary dividends', form.box1a_totalOrdinary, {
           fieldKeyOverride: activePayer === 'northmarkIndex' ? 'ordinaryDivs' : undefined,

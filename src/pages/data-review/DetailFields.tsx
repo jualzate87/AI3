@@ -11,6 +11,7 @@ import QuestionnaireFieldNote from './QuestionnaireFieldNote'
 import { DestinationFieldLabel } from './DestinationFieldLabel'
 import FieldAnnotationButton from './FieldAnnotationButton'
 import Tooltip from './Tooltip'
+import DetailSectionHeader from './DetailSectionHeader'
 import styles from '../../styles/data-review/DetailFields.module.css'
 import { displayEditableAmount } from '../../data/liveReturn'
 import { canEditField, type DetailFieldsVariant } from './fieldEditability'
@@ -83,6 +84,8 @@ interface DetailFieldsProps {
   variant?: DetailFieldsVariant
   /** When true (pre-import manual entry), zero amounts render blank */
   showEmptyWhenZero?: boolean
+  /** Input return — open source document preview for current doc */
+  onViewSourceDocuments?: () => void
 }
 
 // Static non-wages fields per employer
@@ -153,6 +156,7 @@ export default function DetailFields({
   importReadOnly = false,
   variant = 'review',
   showEmptyWhenZero = false,
+  onViewSourceDocuments,
 }: DetailFieldsProps) {
   const employer = EMPLOYER_DATA[activeSubTab]
   const currentWages = wages[activeSubTab]
@@ -440,9 +444,12 @@ export default function DetailFields({
           .join(' ')}
       >
         {/* Employer Information section */}
-        <div className={styles.sectionHeader}>
+        <DetailSectionHeader
+          variant={variant}
+          onViewSourceDocuments={onViewSourceDocuments}
+        >
           Employer Information (MANDATORY for e-file)
-        </div>
+        </DetailSectionHeader>
 
         {renderStaticRow('ssn', '(a) Employee social security number', 'Not found')}
         {renderStaticRow('ein', '(b) Employer identification number', activeSubTab === 'techCircle' ? 'Not found' : (employer.id || 'Not found'))}
@@ -451,7 +458,12 @@ export default function DetailFields({
         {renderStaticRow('cityStateZip', 'City / State / ZIP code', `${employer.city}, ${employer.state} ${employer.zip}`, styles.fieldInputWide)}
 
         {/* Wages section — same grey header as Employer Information */}
-        <div className={styles.sectionHeader}>Wages</div>
+        <DetailSectionHeader
+          variant={variant}
+          onViewSourceDocuments={onViewSourceDocuments}
+        >
+          Wages
+        </DetailSectionHeader>
 
         {/* (1) Wages — editable, drives 1040 line 1a */}
         <div
