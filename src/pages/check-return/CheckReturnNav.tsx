@@ -164,8 +164,13 @@ export default function CheckReturnNav({
   onSelectForm,
 }: CheckReturnNavProps) {
   const navigate = useNavigate()
-  const [formsExpanded, setFormsExpanded] = useState(true)
-  const [taxSummaryExpanded, setTaxSummaryExpanded] = useState(true)
+  const [expandedCategory, setExpandedCategory] = useState<'forms' | 'tax-summary' | null>(
+    'forms',
+  )
+
+  const toggleCategory = (category: 'forms' | 'tax-summary') => {
+    setExpandedCategory(prev => (prev === category ? null : category))
+  }
   const [formsMode, setFormsMode] = useState<'applicable' | 'all'>('applicable')
   const [formSearch, setFormSearch] = useState('')
   const [expandedJurisdictions, setExpandedJurisdictions] = useState<Record<string, boolean>>({
@@ -203,11 +208,11 @@ export default function CheckReturnNav({
         <div className={styles.navSection}>
           <NavCategoryHeader
             label="Forms"
-            expanded={formsExpanded}
-            onToggle={() => setFormsExpanded(prev => !prev)}
+            expanded={expandedCategory === 'forms'}
+            onToggle={() => toggleCategory('forms')}
           />
 
-          {formsExpanded && (
+          {expandedCategory === 'forms' && (
             <div className={styles.formsPanel}>
               <div className={styles.formsControls}>
                 <SegmentedButton
@@ -232,6 +237,7 @@ export default function CheckReturnNav({
                   aria-label="Search forms"
                   placeholder="Search forms"
                   size="small"
+                  width="100%"
                   className={styles.formsSearchField}
                   value={formSearch}
                   onChange={e => setFormSearch(e.target.value)}
@@ -277,11 +283,11 @@ export default function CheckReturnNav({
         <div className={styles.navSection}>
           <NavCategoryHeader
             label="Tax Summary"
-            expanded={taxSummaryExpanded}
-            onToggle={() => setTaxSummaryExpanded(prev => !prev)}
+            expanded={expandedCategory === 'tax-summary'}
+            onToggle={() => toggleCategory('tax-summary')}
           />
 
-          {taxSummaryExpanded &&
+          {expandedCategory === 'tax-summary' &&
             TAX_SUMMARY_ITEMS.map(item => (
               <NavSecondaryItem
                 key={item.id}

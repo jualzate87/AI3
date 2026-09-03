@@ -11,7 +11,7 @@
   min-height: 0;
   overflow: hidden;
   padding: var(--space-container-padding-medium);
-  gap: var(--space-component-gap-x-small);
+  gap: 2px;
   background: var(--color-page-background-primary);
 }
 

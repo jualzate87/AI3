@@ -75,8 +75,10 @@
 .formsControls {
   display: flex;
   flex-direction: column;
-  gap: var(--space-component-gap-small, 8px);
+  gap: 4px;
+  width: 100%;
   padding: 12px;
+  box-sizing: border-box;
 }
 
 .formsSegmented {
@@ -85,17 +87,37 @@
 
 .formsSegmented :global(section) {
   width: 100%;
-  display: flex;
+  display: block;
 }
 
-.formsSegmented :global(button) {
+.formsSegmented :global([class*='miniRenderContainer']) {
+  width: 100%;
+  margin-top: 0 !important;
+}
+
+.formsSegmented :global([class*='miniWrapper']) {
+  position: relative !important;
+  width: 100%;
+}
+
+.formsSegmented :global([class*='miniWrapper']) button {
   flex: 1;
   min-height: 28px;
+  margin-top: 0 !important;
+  margin-bottom: 0 !important;
   font-family: var(--font-family-component);
   font-size: var(--font-size-component-small, 14px);
   font-weight: var(--font-weight-component-bold, 600);
   line-height: 20px;
   border-color: var(--color-container-border-primary, #c3ced5) !important;
+}
+
+.formsSegmented :global([class*='miniWrapper']) button:first-child {
+  margin-left: 0 !important;
+}
+
+.formsSegmented :global([class*='miniWrapper']) button:last-child {
+  margin-right: 0 !important;
 }
 
 .formsSegmented :global(button[aria-pressed='true']) {
@@ -106,6 +128,7 @@
 
 .formsSearchField {
   width: 100%;
+  display: block;
 }
 
 .formsSearchField :global(input) {
