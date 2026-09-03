@@ -8,6 +8,7 @@ import { displayEditableAmount, parseAmountDraft, type LiveAmounts } from '../..
 import DocVerifyHeaderActions from './DocVerifyHeaderActions'
 import QuestionnaireFieldNote from './QuestionnaireFieldNote'
 import DetailSectionHeader from './DetailSectionHeader'
+import InputFormPageHeader, { type InputDocTabItem } from '../input-return/InputFormPageHeader'
 import styles from '../../styles/data-review/DetailFields.module.css'
 import { canEditField, type DetailFieldsVariant } from './fieldEditability'
 
@@ -154,6 +155,9 @@ interface DetailFieldsDivProps {
   variant?: DetailFieldsVariant
   showEmptyWhenZero?: boolean
   onViewSourceDocuments?: () => void
+  docTabs?: InputDocTabItem[]
+  activeDocKey?: string
+  onDocTabChange?: (key: string) => void
 }
 
 export default function DetailFieldsDiv({
@@ -182,6 +186,9 @@ export default function DetailFieldsDiv({
   variant = 'review',
   showEmptyWhenZero = false,
   onViewSourceDocuments,
+  docTabs,
+  activeDocKey,
+  onDocTabChange,
 }: DetailFieldsDivProps) {
   const fmt = (n: number) => displayEditableAmount(n, showEmptyWhenZero)
 
@@ -382,25 +389,32 @@ export default function DetailFieldsDiv({
 
   return (
     <div className={styles.container}>
-      {/* Page header */}
-      <div className={styles.pageHeader}>
-        <div className={styles.headerActions}>
-          <div className={styles.headerTitleRow}>
-            <h2 className={styles.headerTitle}>Details: Dividend Income (1099-DIV)</h2>
+      {variant === 'input' ? (
+        <InputFormPageHeader
+          title="Details: Dividend Income (1099-DIV)"
+          onViewSourceDocuments={onViewSourceDocuments}
+          docTabs={docTabs}
+          activeDocKey={activeDocKey}
+          onDocTabChange={onDocTabChange}
+        />
+      ) : (
+        <div className={styles.pageHeader}>
+          <div className={styles.headerActions}>
+            <div className={styles.headerTitleRow}>
+              <h2 className={styles.headerTitle}>Details: Dividend Income (1099-DIV)</h2>
+            </div>
+            <DocVerifyHeaderActions
+              docKey={docKey}
+              verifiedDocs={verifiedDocs}
+              verifiedDocsMeta={verifiedDocsMeta}
+              reviewerConfirmedDocs={reviewerConfirmedDocs}
+              reviewerConfirmedDocsMeta={reviewerConfirmedDocsMeta}
+              onVerifyDoc={onVerifyDoc}
+              reviewedFields={reviewedFields}
+            />
           </div>
-          {variant !== 'input' && (
-          <DocVerifyHeaderActions
-            docKey={docKey}
-            verifiedDocs={verifiedDocs}
-            verifiedDocsMeta={verifiedDocsMeta}
-            reviewerConfirmedDocs={reviewerConfirmedDocs}
-            reviewerConfirmedDocsMeta={reviewerConfirmedDocsMeta}
-            onVerifyDoc={onVerifyDoc}
-            reviewedFields={reviewedFields}
-          />
-          )}
         </div>
-      </div>
+      )}
 
       <div className={styles.inputContainer}>
 

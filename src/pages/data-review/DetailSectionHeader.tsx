@@ -1,5 +1,4 @@
-import { Button } from '@ids-ts/button'
-import '@ids-ts/button/dist/main.css'
+import ViewSourceDocumentsButton from '../../components/ViewSourceDocumentsButton'
 import styles from '../../styles/data-review/DetailFields.module.css'
 import type { DetailFieldsVariant } from './fieldEditability'
 
@@ -14,20 +13,20 @@ export default function DetailSectionHeader({
   variant,
   onViewSourceDocuments,
 }: DetailSectionHeaderProps) {
+  const showViewSource = variant === 'input' && onViewSourceDocuments
+
   return (
-    <div className={styles.sectionHeader}>
+    <div
+      className={[
+        styles.sectionHeader,
+        variant === 'input' ? styles.sectionHeaderInput : '',
+      ]
+        .filter(Boolean)
+        .join(' ')}
+    >
       <span className={styles.sectionHeaderLabel}>{children}</span>
-      {variant === 'input' && onViewSourceDocuments && (
-        <Button
-          priority="secondary"
-          purpose="passive"
-          size="small"
-          className={styles.viewSourceDocumentsBtn}
-          onClick={onViewSourceDocuments}
-        >
-          <span className={styles.viewSourceDocumentsDot} aria-hidden />
-          View source documents
-        </Button>
+      {showViewSource && (
+        <ViewSourceDocumentsButton onClick={onViewSourceDocuments} />
       )}
     </div>
   )

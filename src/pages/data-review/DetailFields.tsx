@@ -12,6 +12,7 @@ import { DestinationFieldLabel } from './DestinationFieldLabel'
 import FieldAnnotationButton from './FieldAnnotationButton'
 import Tooltip from './Tooltip'
 import DetailSectionHeader from './DetailSectionHeader'
+import InputFormPageHeader, { type InputDocTabItem } from '../input-return/InputFormPageHeader'
 import styles from '../../styles/data-review/DetailFields.module.css'
 import { displayEditableAmount } from '../../data/liveReturn'
 import { canEditField, type DetailFieldsVariant } from './fieldEditability'
@@ -86,6 +87,10 @@ interface DetailFieldsProps {
   showEmptyWhenZero?: boolean
   /** Input return — open source document preview for current doc */
   onViewSourceDocuments?: () => void
+  /** Input return — L2 document tabs below page title */
+  docTabs?: InputDocTabItem[]
+  activeDocKey?: string
+  onDocTabChange?: (key: string) => void
 }
 
 // Static non-wages fields per employer
@@ -157,6 +162,9 @@ export default function DetailFields({
   variant = 'review',
   showEmptyWhenZero = false,
   onViewSourceDocuments,
+  docTabs,
+  activeDocKey,
+  onDocTabChange,
 }: DetailFieldsProps) {
   const employer = EMPLOYER_DATA[activeSubTab]
   const currentWages = wages[activeSubTab]
@@ -410,29 +418,36 @@ export default function DetailFields({
 
   return (
     <div className={styles.container}>
-      {/* Page header */}
-      <div className={styles.pageHeader}>
-        <div className={styles.headerActions}>
-          <div className={styles.headerTitleRow}>
-            <h2 className={styles.headerTitle}>{formTitle}</h2>
+      {variant === 'input' ? (
+        <InputFormPageHeader
+          title={formTitle}
+          onViewSourceDocuments={onViewSourceDocuments}
+          docTabs={docTabs}
+          activeDocKey={activeDocKey}
+          onDocTabChange={onDocTabChange}
+        />
+      ) : (
+        <div className={styles.pageHeader}>
+          <div className={styles.headerActions}>
+            <div className={styles.headerTitleRow}>
+              <h2 className={styles.headerTitle}>{formTitle}</h2>
+            </div>
+            <DocVerifyHeaderActions
+              docKey={activeSubTab}
+              verifiedDocs={verifiedDocs}
+              verifiedDocsMeta={verifiedDocsMeta}
+              reviewerConfirmedDocs={reviewerConfirmedDocs}
+              reviewerConfirmedDocsMeta={reviewerConfirmedDocsMeta}
+              onVerifyDoc={onVerifyDoc}
+              reviewedFields={reviewedFields}
+              amounts={{
+                employeeSsn: identityValues?.ssn ?? '',
+                employerEin: identityValues?.ein ?? '',
+              }}
+            />
           </div>
-          {variant !== 'input' && (
-          <DocVerifyHeaderActions
-            docKey={activeSubTab}
-            verifiedDocs={verifiedDocs}
-            verifiedDocsMeta={verifiedDocsMeta}
-            reviewerConfirmedDocs={reviewerConfirmedDocs}
-            reviewerConfirmedDocsMeta={reviewerConfirmedDocsMeta}
-            onVerifyDoc={onVerifyDoc}
-            reviewedFields={reviewedFields}
-            amounts={{
-              employeeSsn: identityValues?.ssn ?? '',
-              employerEin: identityValues?.ein ?? '',
-            }}
-          />
-          )}
         </div>
-      </div>
+      )}
 
       {/* Scrollable input fields */}
       <div
@@ -444,10 +459,7 @@ export default function DetailFields({
           .join(' ')}
       >
         {/* Employer Information section */}
-        <DetailSectionHeader
-          variant={variant}
-          onViewSourceDocuments={onViewSourceDocuments}
-        >
+        <DetailSectionHeader variant={variant} onViewSourceDocuments={onViewSourceDocuments}>
           Employer Information (MANDATORY for e-file)
         </DetailSectionHeader>
 
@@ -458,10 +470,7 @@ export default function DetailFields({
         {renderStaticRow('cityStateZip', 'City / State / ZIP code', `${employer.city}, ${employer.state} ${employer.zip}`, styles.fieldInputWide)}
 
         {/* Wages section — same grey header as Employer Information */}
-        <DetailSectionHeader
-          variant={variant}
-          onViewSourceDocuments={onViewSourceDocuments}
-        >
+        <DetailSectionHeader variant={variant} onViewSourceDocuments={onViewSourceDocuments}>
           Wages
         </DetailSectionHeader>
 

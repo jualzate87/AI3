@@ -1,7 +1,7 @@
 /* Check Return Page — Figma node 33983:32489 */
 
 .page {
-  background: var(--color-page-background-secondary);
+  background: var(--color-page-background-primary);
   font-family: var(--font-family-component) !important;
 }
 
@@ -12,7 +12,7 @@
   overflow: hidden;
   padding: var(--space-container-padding-medium);
   gap: var(--space-component-gap-x-small);
-  background: var(--color-page-background-secondary);
+  background: var(--color-page-background-primary);
 }
 
 .mainContent {

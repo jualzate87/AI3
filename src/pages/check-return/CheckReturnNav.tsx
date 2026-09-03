@@ -1,6 +1,6 @@
 import { useMemo, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { ChevronDown, ChevronUp, Search } from '@design-systems/icons'
+import { ChevronDown, ChevronRight, ChevronUp, Search } from '@design-systems/icons'
 import { NumericBadge } from '@ids-ts/badge'
 import '@ids-ts/badge/dist/main.css'
 import SegmentedButton from '@ids-ts/segmented-button'
@@ -139,7 +139,7 @@ export default function CheckReturnNav({
             {formsExpanded ? (
               <ChevronUp size="small" className={styles.navSectionChevron} aria-hidden />
             ) : (
-              <ChevronDown size="small" className={styles.navSectionChevron} aria-hidden />
+              <ChevronRight size="small" className={styles.navSectionChevron} aria-hidden />
             )}
           </button>
 
@@ -168,6 +168,7 @@ export default function CheckReturnNav({
                   aria-label="Search forms"
                   placeholder="Search forms"
                   size="small"
+                  className={styles.formsSearchField}
                   value={formSearch}
                   onChange={e => setFormSearch(e.target.value)}
                   addonBefore={<Search size="small" aria-hidden />}
@@ -223,12 +224,12 @@ export default function CheckReturnNav({
             {taxSummaryExpanded ? (
               <ChevronUp size="small" className={styles.navSectionChevron} aria-hidden />
             ) : (
-              <ChevronDown size="small" className={styles.navSectionChevron} aria-hidden />
+              <ChevronRight size="small" className={styles.navSectionChevron} aria-hidden />
             )}
           </button>
 
           {taxSummaryExpanded && (
-            <div className={styles.navSectionPanel}>
+            <div className={`${styles.navSectionPanel} ${styles.navSectionPanelLast}`}>
               {TAX_SUMMARY_ITEMS.map(item => (
                 <NavListItem
                   key={item.id}

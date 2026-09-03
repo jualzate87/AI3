@@ -2,8 +2,8 @@
 .container {
   display: flex;
   flex-direction: column;
-  gap: 16px;
-  background: #ffffff;
+  gap: 0;
+  background: var(--color-page-background-primary, #ffffff);
   flex: 1 1 0%;
   overflow: hidden;
   width: 100%;
@@ -19,6 +19,36 @@
   gap: 0;
   width: 100%;
   flex-shrink: 0;
+}
+
+/* Input return page header — title row + doc tabs (Figma 33983:34996) */
+.pageHeaderInput {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+  width: 100%;
+  flex-shrink: 0;
+  background: var(--color-page-background-primary, #ffffff);
+}
+
+.inputHeaderTitleRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-component-gap-medium, 12px);
+  padding: var(--space-container-padding-medium, 20px) var(--space-container-padding-medium, 20px) var(--space-component-padding-small, 8px);
+  min-width: 0;
+}
+
+.inputHeaderTitle {
+  flex: 1;
+  min-width: 0;
+  margin: 0;
+  font-family: var(--font-family-component);
+  font-size: var(--font-size-heading-6, 20px);
+  font-weight: var(--font-weight-heading, 500);
+  line-height: 28px;
+  color: var(--color-text-primary, #21262a);
 }
 
 .headerActions {
@@ -180,12 +210,15 @@
   background: var(--color-container-background-positive, #E5F4D9);
 }
 
-/* Sub-tab bar */
+/* Sub-tab bar — directly below page title (Figma 33983:34996) */
 .subTabBar {
   display: flex;
-  align-items: flex-start;
-  padding: 0 20px;
+  align-items: flex-end;
+  padding: 0 var(--space-container-padding-medium, 20px);
   width: 100%;
+  flex-shrink: 0;
+  border-bottom: 1px solid var(--color-divider-tertiary, #c3ced5);
+  background: var(--color-page-background-primary, #ffffff);
 }
 
 .subTabMenu {
@@ -203,7 +236,12 @@
   flex-direction: column;
   gap: 2px;
   align-items: flex-start;
+  padding: 0 var(--space-component-padding-large, 16px);
   border-bottom: 2px solid #c3ced5;
+  background: none;
+  border-top: none;
+  border-left: none;
+  border-right: none;
 }
 
 .subTabActive {
@@ -216,6 +254,11 @@
   align-items: center;
   justify-content: center;
   padding: 6px 0;
+  background: none;
+  border: none;
+  cursor: pointer;
+  font: inherit;
+  color: inherit;
 }
 
 .subTabLabel {
@@ -243,8 +286,8 @@
 
 .subTabBorderFill {
   border-bottom: 2px solid #c3ced5;
-  flex-shrink: 0;
-  width: 32px;
+  flex: 1;
+  min-width: 0;
   align-self: stretch;
 }
 
@@ -320,6 +363,19 @@
 .sectionHeaderLabel {
   flex: 1;
   min-width: 0;
+}
+
+.sectionHeaderInput {
+  margin-top: 0;
+  padding: var(--space-component-padding-small, 10px) var(--space-container-padding-medium, 20px);
+  min-height: 44px;
+  font-size: var(--font-size-component-medium, 16px);
+  font-weight: var(--font-weight-component-semibold, 500);
+  letter-spacing: normal;
+  text-transform: none;
+  line-height: 24px;
+  color: var(--color-text-primary, #21262a);
+  align-items: center;
 }
 
 .viewSourceDocumentsBtn {

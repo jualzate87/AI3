@@ -4,16 +4,18 @@
   width: 315px;
   min-width: 315px;
   flex-shrink: 0;
-  padding: var(--space-container-padding-small);
+  padding: var(--space-container-padding-small, 16px);
   height: fit-content;
   max-height: 100%;
   overflow-y: auto;
+  background: var(--color-page-background-primary, #ffffff);
 }
 
 .leftNav {
   width: 283px;
   display: flex;
   flex-direction: column;
+  background: var(--color-page-background-primary, #ffffff);
 }
 
 /* Level 1 accordion sections */
@@ -26,12 +28,12 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: var(--space-component-gap-small);
-  padding: var(--space-component-stack-padding-x-large) var(--space-component-inline-padding-large);
-  background: var(--color-page-background-primary);
-  border-top: 1px solid var(--color-container-border-primary);
-  border-left: 1px solid var(--color-container-border-primary);
-  border-right: 1px solid var(--color-container-border-primary);
+  gap: var(--space-component-gap-small, 8px);
+  padding: 12px 10px;
+  background: var(--color-page-background-primary, #ffffff);
+  border-top: 1px solid var(--color-container-border-primary, #c3ced5);
+  border-left: 1px solid var(--color-container-border-primary, #c3ced5);
+  border-right: 1px solid var(--color-container-border-primary, #c3ced5);
   width: 100%;
   cursor: pointer;
   text-align: left;
@@ -39,43 +41,81 @@
   font-family: inherit;
 }
 
+.navSection:first-child .navSectionHeader {
+  border-top: none;
+}
+
 .navSectionHeader:hover {
-  background: var(--color-page-background-secondary);
+  background: var(--color-page-background-secondary, #f4f5f8);
 }
 
 .navSectionLabel {
   font-family: var(--font-family-component);
-  font-size: var(--font-size-component-small);
-  font-weight: var(--font-weight-component-bold);
+  font-size: var(--font-size-component-small, 14px);
+  font-weight: var(--font-weight-component-bold, 600);
   line-height: 20px;
-  color: var(--color-text-primary);
+  color: var(--color-text-primary, #21262a);
   white-space: nowrap;
 }
 
 .navSectionChevron {
   flex-shrink: 0;
-  color: var(--color-icon-primary);
+  color: var(--color-icon-primary, #393a3d);
 }
 
 .navSectionPanel {
   display: flex;
   flex-direction: column;
-  gap: var(--space-component-gap-small);
-  padding: var(--space-component-stack-padding-large) var(--space-component-inline-padding-large);
-  background: var(--color-page-background-secondary);
-  border-left: 1px solid var(--color-container-border-primary);
-  border-right: 1px solid var(--color-container-border-primary);
+  gap: var(--space-component-gap-small, 8px);
+  padding: var(--space-component-stack-padding-large, 12px) var(--space-component-inline-padding-large, 12px);
+  background: var(--color-page-background-secondary, #f4f5f8);
+  border-left: 1px solid var(--color-container-border-primary, #c3ced5);
+  border-right: 1px solid var(--color-container-border-primary, #c3ced5);
+}
+
+.navSectionPanelLast {
+  border-bottom: 1px solid var(--color-container-border-primary, #c3ced5);
 }
 
 /* Forms controls */
 .formsControls {
   display: flex;
   flex-direction: column;
-  gap: var(--space-component-gap-small);
+  gap: var(--space-component-gap-small, 8px);
 }
 
 .formsSegmented {
   width: 100%;
+}
+
+.formsSegmented :global(section) {
+  width: 100%;
+}
+
+.formsSegmented :global(button) {
+  flex: 1;
+  font-family: var(--font-family-component);
+  font-size: var(--font-size-component-small, 14px);
+  border-color: var(--color-divider-tertiary, #c3ced5) !important;
+}
+
+.formsSegmented :global(button[aria-pressed='true']) {
+  background: var(--color-container-background-inverse, #393a3d) !important;
+  color: var(--color-text-inverse, #ffffff) !important;
+  border-color: var(--color-container-background-inverse, #393a3d) !important;
+}
+
+.formsSearchField {
+  width: 100%;
+}
+
+.formsSearchField :global(input) {
+  border-color: var(--color-divider-tertiary, #c3ced5) !important;
+  box-shadow: none !important;
+}
+
+.formsSearchField :global([class*='TextField']) {
+  border-color: var(--color-divider-tertiary, #c3ced5);
 }
 
 /* Level 2 jurisdiction groups (US, CA) */
@@ -88,9 +128,9 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: var(--space-component-gap-small);
+  gap: var(--space-component-gap-small, 8px);
   width: 100%;
-  padding: var(--space-component-stack-padding-small) 0;
+  padding: var(--space-component-stack-padding-small, 8px) 0;
   background: transparent;
   border: none;
   cursor: pointer;
@@ -100,16 +140,16 @@
 
 .navGroupLabel {
   font-family: var(--font-family-component);
-  font-size: var(--font-size-component-x-small);
-  font-weight: var(--font-weight-component-bold);
+  font-size: var(--font-size-component-x-small, 12px);
+  font-weight: var(--font-weight-component-bold, 600);
   line-height: 17px;
-  color: var(--color-text-secondary);
+  color: var(--color-text-secondary, #5d686f);
   text-transform: uppercase;
 }
 
 .navGroupChevron {
   flex-shrink: 0;
-  color: var(--color-icon-secondary);
+  color: var(--color-icon-secondary, #6b6c72);
 }
 
 .navGroupPanel {
@@ -122,31 +162,31 @@
   display: flex;
   align-items: center;
   width: 100%;
-  padding: var(--space-component-stack-padding-medium) var(--space-component-inline-padding-small);
-  padding-left: var(--space-component-inline-padding-medium);
+  padding: var(--space-component-stack-padding-medium, 10px) var(--space-component-inline-padding-small, 8px);
+  padding-left: var(--space-component-inline-padding-medium, 12px);
   background: transparent;
   border: none;
   border-left: 4px solid transparent;
   border-radius: var(--radius-small, 4px);
   font-family: var(--font-family-component);
-  font-size: var(--font-size-component-small);
-  font-weight: var(--font-weight-component);
+  font-size: var(--font-size-component-small, 14px);
+  font-weight: var(--font-weight-component, 400);
   line-height: 20px;
-  color: var(--color-text-primary);
+  color: var(--color-text-primary, #21262a);
   text-align: left;
   cursor: pointer;
 }
 
 .navListItem:hover {
-  background: var(--color-page-background-tertiary);
+  background: var(--color-page-background-tertiary, #e8edf0);
 }
 
 .navListItemActive {
-  background: var(--color-page-background-tertiary);
-  border-left-color: var(--color-action-standard);
-  padding-left: calc(var(--space-component-inline-padding-medium) - 4px);
-  font-weight: var(--font-weight-component-semibold);
-  color: var(--color-action-standard);
+  background: var(--color-container-background-info, #ebf4ff);
+  border-left-color: var(--color-action-standard, #205ea3);
+  padding-left: calc(var(--space-component-inline-padding-medium, 12px) - 4px);
+  font-weight: var(--font-weight-component-semibold, 500);
+  color: var(--color-action-standard, #205ea3);
 }
 
 /* Flat nav items below Tax Summary */
@@ -154,12 +194,12 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: var(--space-component-gap-small);
-  padding: var(--space-component-stack-padding-x-large) var(--space-component-inline-padding-large);
-  background: var(--color-page-background-primary);
-  border-top: 1px solid var(--color-container-border-primary);
-  border-left: 1px solid var(--color-container-border-primary);
-  border-right: 1px solid var(--color-container-border-primary);
+  gap: var(--space-component-gap-small, 8px);
+  padding: 12px 10px;
+  background: var(--color-page-background-primary, #ffffff);
+  border-top: 1px solid var(--color-container-border-primary, #c3ced5);
+  border-left: 1px solid var(--color-container-border-primary, #c3ced5);
+  border-right: 1px solid var(--color-container-border-primary, #c3ced5);
   width: 100%;
   cursor: pointer;
   text-align: left;
@@ -168,19 +208,19 @@
 }
 
 .navFlatItem:hover {
-  background: var(--color-page-background-secondary);
+  background: var(--color-page-background-secondary, #f4f5f8);
 }
 
 .navFlatItemLast {
-  border-bottom: 1px solid var(--color-container-border-primary);
+  border-bottom: 1px solid var(--color-container-border-primary, #c3ced5);
 }
 
 .navFlatLabel {
   font-family: var(--font-family-component);
-  font-size: var(--font-size-component-small);
-  font-weight: var(--font-weight-component-bold);
+  font-size: var(--font-size-component-small, 14px);
+  font-weight: var(--font-weight-component-bold, 600);
   line-height: 20px;
-  color: var(--color-text-primary);
+  color: var(--color-text-primary, #21262a);
   white-space: nowrap;
 }
 

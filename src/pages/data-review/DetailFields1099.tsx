@@ -7,6 +7,7 @@ import { CLIENT_ADDRESS } from '../../data/clientAddress'
 import { displayEditableAmount, parseAmountDraft, type LiveAmounts } from '../../data/liveReturn'
 import DocVerifyHeaderActions from './DocVerifyHeaderActions'
 import DetailSectionHeader from './DetailSectionHeader'
+import InputFormPageHeader, { type InputDocTabItem } from '../input-return/InputFormPageHeader'
 import styles from '../../styles/data-review/DetailFields.module.css'
 import { canEditField, type DetailFieldsVariant } from './fieldEditability'
 
@@ -154,6 +155,9 @@ interface DetailFields1099Props {
   variant?: DetailFieldsVariant
   showEmptyWhenZero?: boolean
   onViewSourceDocuments?: () => void
+  docTabs?: InputDocTabItem[]
+  activeDocKey?: string
+  onDocTabChange?: (key: string) => void
 }
 
 export default function DetailFields1099({
@@ -183,6 +187,9 @@ export default function DetailFields1099({
   variant = 'review',
   showEmptyWhenZero = false,
   onViewSourceDocuments,
+  docTabs,
+  activeDocKey,
+  onDocTabChange,
 }: DetailFields1099Props) {
   const fmt = (n: number) => displayEditableAmount(n, showEmptyWhenZero)
   const highlightedRef = useRef<HTMLDivElement>(null)
@@ -373,25 +380,32 @@ export default function DetailFields1099({
 
   return (
     <div className={styles.container}>
-      {/* Page header */}
-      <div className={styles.pageHeader}>
-        <div className={styles.headerActions}>
-          <div className={styles.headerTitleRow}>
-            <h2 className={styles.headerTitle}>Details: Interest Income (1099-INT)</h2>
+      {variant === 'input' ? (
+        <InputFormPageHeader
+          title="Details: Interest Income (1099-INT)"
+          onViewSourceDocuments={onViewSourceDocuments}
+          docTabs={docTabs}
+          activeDocKey={activeDocKey}
+          onDocTabChange={onDocTabChange}
+        />
+      ) : (
+        <div className={styles.pageHeader}>
+          <div className={styles.headerActions}>
+            <div className={styles.headerTitleRow}>
+              <h2 className={styles.headerTitle}>Details: Interest Income (1099-INT)</h2>
+            </div>
+            <DocVerifyHeaderActions
+              docKey={docKey}
+              verifiedDocs={verifiedDocs}
+              verifiedDocsMeta={verifiedDocsMeta}
+              reviewerConfirmedDocs={reviewerConfirmedDocs}
+              reviewerConfirmedDocsMeta={reviewerConfirmedDocsMeta}
+              onVerifyDoc={onVerifyDoc}
+              reviewedFields={reviewedFields}
+            />
           </div>
-          {variant !== 'input' && (
-          <DocVerifyHeaderActions
-            docKey={docKey}
-            verifiedDocs={verifiedDocs}
-            verifiedDocsMeta={verifiedDocsMeta}
-            reviewerConfirmedDocs={reviewerConfirmedDocs}
-            reviewerConfirmedDocsMeta={reviewerConfirmedDocsMeta}
-            onVerifyDoc={onVerifyDoc}
-            reviewedFields={reviewedFields}
-          />
-          )}
         </div>
-      </div>
+      )}
 
       <div className={styles.inputContainer}>
 
