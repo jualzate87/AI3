@@ -40,8 +40,19 @@
   min-width: 0;
 }
 
-.pageHeaderInput:has(.subTabBar) .inputHeaderTitleRow {
+.pageHeaderInput:has(.inputDocPeelTabs) .inputHeaderTitleRow {
   padding-bottom: var(--space-component-padding-small, 8px);
+}
+
+.inputDocPeelTabs {
+  flex-shrink: 0;
+  min-width: 0;
+  border-bottom: 1px solid var(--color-divider-tertiary, #d5dee3);
+}
+
+.inputDocPeelTabs > div {
+  border-bottom: none;
+  padding: 0 var(--space-container-padding-medium, 20px) var(--space-component-padding-medium, 12px);
 }
 
 .inputHeaderTitle {

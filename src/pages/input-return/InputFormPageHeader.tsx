@@ -1,8 +1,8 @@
 import ViewSourceDocumentsButton from '../../components/ViewSourceDocumentsButton'
-import InputDocTabBar, { type InputDocTabItem } from './InputDocTabBar'
+import PeelTab from '../data-review/PeelTab'
 import styles from '../../styles/data-review/DetailFields.module.css'
 
-export type { InputDocTabItem }
+export type InputDocTabItem = { key: string; label: string }
 
 interface InputFormPageHeaderProps {
   title: string
@@ -29,11 +29,13 @@ export default function InputFormPageHeader({
         <ViewSourceDocumentsButton onClick={onViewSourceDocuments} />
       </div>
       {showDocTabs && (
-        <InputDocTabBar
-          tabs={docTabs}
-          activeKey={activeDocKey}
-          onChange={onDocTabChange}
-        />
+        <div className={styles.inputDocPeelTabs}>
+          <PeelTab
+            tabs={docTabs}
+            activeKey={activeDocKey}
+            onChange={onDocTabChange}
+          />
+        </div>
       )}
     </div>
   )
