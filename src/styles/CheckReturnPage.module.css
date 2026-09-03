@@ -1,182 +1,199 @@
-/* Check Return Page — Screen 33 — exact Figma values */
+/* Check Return Page — Figma node 33983:32489 */
 
 .page {
-  background: var(--page\/background\/secondary, #f0f4f6);
+  background: var(--color-page-background-secondary);
   font-family: var(--font-family-component) !important;
 }
 
-/* Content area: left nav + main, with padding matching Figma 20px */
 .contentArea {
   display: flex;
   flex: 1;
   min-height: 0;
   overflow: hidden;
-  padding: 20px;
-  gap: 20px;
-  background: var(--page\/background\/secondary, #f0f4f6);
+  padding: var(--space-container-padding-medium);
+  gap: var(--space-component-gap-x-small);
+  background: var(--color-page-background-secondary);
 }
 
-/* ── Left Check Navigation ── */
-/* Figma: white bg items, border #c3ced5, category 44px */
-.leftNav {
-  width: 283px;
-  min-width: 283px;
+/* Input menu — 315px with 16px inner padding */
+.inputMenu {
+  width: 315px;
+  min-width: 315px;
   flex-shrink: 0;
-  display: flex;
-  flex-direction: column;
+  padding: var(--space-container-padding-small);
   height: fit-content;
 }
 
-/* Category item — white bg, border-top+left+right #c3ced5, 14px Demi */
+.leftNav {
+  width: 283px;
+  display: flex;
+  flex-direction: column;
+}
+
+/* Category item — white bg, bordered */
 .navCategory {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 12px 10px;
-  background: var(--page\/background\/primary, #ffffff);
-  border-top: 1px solid #c3ced5;
-  border-left: 1px solid #c3ced5;
-  border-right: 1px solid #c3ced5;
+  padding: var(--space-component-stack-padding-x-large) var(--space-component-inline-padding-large);
+  background: var(--color-page-background-primary);
+  border-top: 1px solid var(--color-container-border-primary);
+  border-left: 1px solid var(--color-container-border-primary);
+  border-right: 1px solid var(--color-container-border-primary);
   width: 100%;
   cursor: pointer;
   text-align: left;
 }
+
 .navCategory:hover {
-  background: #f0f4f6;
+  background: var(--color-page-background-secondary);
 }
 
 .navCategoryLast {
-  border-bottom: 1px solid #c3ced5;
+  border-bottom: 1px solid var(--color-container-border-primary);
 }
 
 .navCategoryLabel {
   font-family: var(--font-family-component) !important;
-  font-size: 14px;
-  font-weight: 600;
+  font-size: var(--font-size-component-small);
+  font-weight: var(--font-weight-component-bold);
   line-height: 20px;
-  color: var(--text\/primary, #21262a);
+  color: var(--color-text-primary);
   white-space: nowrap;
 }
 
-/* Secondary item — bg #f0f4f6, pl: 32px */
+.navBadge {
+  display: flex;
+  align-items: center;
+  padding: 2px;
+}
+
+/* Secondary nav items */
 .navSecondary {
   display: flex;
   align-items: center;
-  padding: 12px 10px 12px 32px;
-  background: var(--container\/background\/secondary, #f0f4f6);
+  padding: var(--space-component-stack-padding-x-large) var(--space-component-inline-padding-large) var(--space-component-stack-padding-x-large) 32px;
+  background: var(--color-page-background-secondary);
   width: 100%;
   cursor: pointer;
 }
+
 .navSecondary:hover {
-  background: #e2e9ed;
+  background: var(--color-page-background-tertiary);
 }
 
-/* Active secondary — bg #e2e9ed, border-left: 4px solid #205ea3 */
 .navSecondaryActive {
-  background: #e2e9ed;
-  border-left: 4px solid #205ea3;
-  padding-left: 28px; /* 32px - 4px border */
+  background: var(--color-page-background-tertiary);
+  border-left: 4px solid var(--color-action-standard);
+  padding-left: 28px;
 }
 
 .navSecondaryLabel {
   font-family: var(--font-family-component) !important;
-  font-size: 14px;
-  font-weight: 400;
+  font-size: var(--font-size-component-small);
+  font-weight: var(--font-weight-component);
   line-height: 20px;
-  color: var(--text\/primary, #21262a);
+  color: var(--color-text-primary);
   white-space: nowrap;
 }
 
-/* ── Main content ── */
+/* Main content panel */
 .mainContent {
   flex: 1;
-  display: flex;
-  flex-direction: column;
-  gap: 16px;
-  overflow-y: auto;
   min-width: 0;
+  overflow-y: auto;
+  background: var(--color-page-background-primary);
 }
 
-/* Title — 20px Medium #21262a */
+.formsListContainer {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-column-gap-large);
+  padding: var(--space-component-stack-padding-x-large) var(--space-container-padding-medium) var(--space-container-padding-medium);
+}
+
+/* Title — 24px Medium */
 .sectionTitle {
   font-family: var(--font-family-component) !important;
-  font-size: 20px;
-  font-weight: 500;
-  line-height: 28px;
-  color: #21262a;
+  font-size: var(--font-size-component-x-large);
+  font-weight: var(--font-weight-heading);
+  line-height: 25.6px;
+  color: var(--color-text-primary);
   margin: 0;
 }
 
-/* Table container — border: 1px solid #c3ced5, border-radius: 16px, padding: 16px */
-.tableContainer {
-  background: #ffffff;
-  border: 1px solid #c3ced5;
-  border-radius: 16px;
-  padding: 16px;
-  overflow: hidden;
+.tableScroll {
+  overflow-x: auto;
+  padding-bottom: var(--space-container-padding-medium);
 }
 
-/* Table row — border-bottom: 1px solid #d5dee3 */
-.tableRow {
-  display: flex;
-  align-items: center;
-  border-bottom: 1px solid #d5dee3;
-  padding: 0;
+/* Summary table — flat bordered grid per Figma */
+.summaryTable {
+  width: 100%;
+  border-collapse: collapse;
+  table-layout: fixed;
 }
 
-.tableRowHeader {
-  border-bottom: 1px solid #d5dee3;
-}
-
-.tableRowLast {
-  border-bottom: none;
-}
-
-/* Columns — label takes 352px (from Figma), values flex:1 */
-.colLabel {
-  width: 352px;
-  min-width: 352px;
-  padding: 8px;
+.tableHeaderRow th {
+  border-bottom: 2px solid var(--color-divider-tertiary);
+  padding: 7px 8px 9px;
   font-family: var(--font-family-component) !important;
-  font-size: 14px;
-  font-weight: 400;
+  font-size: var(--font-size-component-x-small);
+  font-weight: var(--font-weight-component-bold);
+  line-height: 17.14px;
+  color: var(--color-text-primary);
+  text-transform: uppercase;
+  text-align: left;
+  vertical-align: bottom;
+}
+
+.tableHeaderRow th:not(:first-child) {
+  border-left: 1px solid var(--color-divider-tertiary);
+}
+
+.colLabel {
+  width: 62%;
+  padding: 17px 8px 16px;
+  font-family: var(--font-family-component) !important;
+  font-size: var(--font-size-component-small);
+  font-weight: var(--font-weight-component);
   line-height: 20px;
-  color: #21262a;
+  color: var(--color-text-primary);
+  text-align: left;
+  vertical-align: top;
 }
 
 .colValue {
-  flex: 1;
-  padding: 8px;
+  width: 13%;
+  padding: 17px 8px 16px;
   font-family: var(--font-family-component) !important;
-  font-size: 14px;
-  font-weight: 400;
+  font-size: var(--font-size-component-small);
+  font-weight: var(--font-weight-component);
   line-height: 20px;
-  color: #21262a;
+  color: var(--color-text-primary);
+  text-align: left;
+  vertical-align: top;
+  border-top: 1px solid var(--color-divider-tertiary);
 }
 
-.colDemi {
-  font-weight: 600;
+.dataRow .colValue {
+  border-left: none;
 }
 
-.colAction {
-  width: 44px;
-  min-width: 44px;
-  padding: 8px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
+.sectionRow th {
+  border-top: 1px solid var(--color-divider-tertiary);
+  border-bottom: 2px solid var(--color-divider-tertiary);
+  padding: 7.5px 8px 9px;
+  font-family: var(--font-family-component) !important;
+  font-size: var(--font-size-component-x-small);
+  font-weight: var(--font-weight-component-bold);
+  line-height: 17.14px;
+  color: var(--color-text-primary);
+  text-transform: uppercase;
+  text-align: left;
 }
 
-.expandBtn {
-  background: none;
-  border: none;
-  cursor: pointer;
-  padding: 6px;
-  border-radius: 4px;
-  color: #393a3d;
-  display: flex;
-  align-items: center;
-}
-.expandBtn:hover {
-  background: rgba(226, 233, 237, 0.6);
+.dataRow .colLabel {
+  border-top: 1px solid var(--color-divider-tertiary);
+  font-weight: var(--font-weight-component);
 }
