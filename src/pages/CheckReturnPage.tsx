@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { useSearchParams } from 'react-router-dom'
 import LeftNavPTO from './data-review/LeftNavPTO'
 import SmartReturnHeader from './SmartReturnHeader'
@@ -77,7 +77,6 @@ export default function CheckReturnPage() {
     openFormFromUrl ? '1040' : null,
   )
   const [outputFormId, setOutputFormId] = useState<OutputFormId>(initialForm)
-  const [refreshNotice, setRefreshNotice] = useState<string | null>(null)
 
   useEffect(() => {
     const el = document.documentElement
@@ -120,16 +119,6 @@ export default function CheckReturnPage() {
     }
   }
 
-  const handleRefreshForms = useCallback(() => {
-    setRefreshNotice('Forms refreshed')
-  }, [])
-
-  useEffect(() => {
-    if (!refreshNotice) return
-    const timer = window.setTimeout(() => setRefreshNotice(null), 2400)
-    return () => window.clearTimeout(timer)
-  }, [refreshNotice])
-
   return (
     <div className={`${layout.page} ${styles.page}`} data-theme="intuit">
       <div className={layout.body}>
@@ -139,9 +128,6 @@ export default function CheckReturnPage() {
             activeTab="checkreturns"
             showViewSourceDocuments
             onViewSourceDocuments={() => openSourceDocumentReviewPopout()}
-            showRefreshForms
-            onRefreshForms={handleRefreshForms}
-            refreshNotice={refreshNotice}
           />
           <div className={styles.contentArea}>
             <CheckReturnNav
