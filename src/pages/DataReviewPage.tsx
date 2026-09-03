@@ -1,8 +1,6 @@
 import { useState, useCallback, useRef, useEffect } from 'react'
 import { useLocation, useNavigate, useSearchParams } from 'react-router-dom'
 import {
-  PREPARER_DATA_REVIEW_PATH,
-  REVIEWER_DATA_REVIEW_PATH,
   VALID_DATA_REVIEW_ENTRIES,
   setStoredDemoRole,
   buildHashRouteUrl,
@@ -46,7 +44,8 @@ import {
   getReviewActor,
   STORAGE_KEY,
 } from '../hooks/useSyncedReviewState'
-import { resolveActiveVerifyDocKey } from '../data/documentImportMeta'
+import { openSourceDocumentById, openSourceDocumentFromFieldOrigin } from '../lib/sourceDocPopoutNavigation'
+import type { FieldOriginSource } from '../data/fieldOrigins'
 import intuitAssistIcon from '../assets/icons/intuit-assist.svg'
 import LeftPanel1040 from './data-review/LeftPanel1040'
 import ReviewTab from './data-review/ReviewTab'
@@ -190,16 +189,12 @@ export default function DataReviewPage() {
   useEffect(() => {
     const legacyAgent = searchParams.get('agent') === 'true'
     if (legacyAgent && !entryValid) {
-      navigate(PREPARER_DATA_REVIEW_PATH, { replace: true })
+      navigate('/input-return', { replace: true })
       return
     }
     if (entryValid) return
-    if (roleParam === 'reviewer' || searchParams.get('startReview') === 'true') {
-      navigate(REVIEWER_DATA_REVIEW_PATH, { replace: true })
-      return
-    }
     navigate('/smart-return', { replace: true })
-  }, [entry, entryValid, roleParam, searchParams, navigate])
+  }, [entry, entryValid, searchParams, navigate])
 
   // Source-doc review state — flags, reviewed fields, active tab, editable field
   // values — persisted in localStorage via useSyncedReviewState (cross-tab handoff).
@@ -880,48 +875,13 @@ export default function DataReviewPage() {
   }, [phase, reviewRole, setSelectedField, importsStarted, startReviewingImports, ensureSourcePanelVisible])
 
   const handleNavigateToSourceDoc = useCallback((docId: string) => {
-    const nav = navigationForVerifiedDocKey(docId) ?? navigationForSourceDoc(docId)
-    if (!nav) return
-    
-    setActiveTopTab(nav.tab)
-    if (nav.subTab) setActiveSubTab(nav.subTab)
-    if (nav.divPayer) setActiveDivPayer(nav.divPayer)
-    if (nav.intPayer) setActiveIntPayer(nav.intPayer)
+    openSourceDocumentById(docId, selectedField, setSelectedField)
+  }, [selectedField, setSelectedField])
 
-    if (reviewRole === 'reviewer') {
-      ensureSourcePanelVisible()
-    } else if (phase === 'diagnostics') {
-      setFromAgent(true)
-      setAgentView('report')
-      openDiagnosticsSourceSplitRef.current()
-    } else if (!importsStarted) {
-      startReviewingImports()
-    } else {
-      ensureSourcePanelVisible()
-      hideOutputsForSourceFocusRef.current()
-    }
-  }, [
-    reviewRole,
-    phase,
-    rightPanelMode,
-    importsStarted,
-    startReviewingImports,
-    ensureSourcePanelVisible,
-    setActiveTopTab,
-    setActiveSubTab,
-    setActiveDivPayer,
-    setActiveIntPayer,
-  ])
-
-  /** From FieldPopover source row — jump to doc + highlight the matching detail field. */
-  const handleNavigateSource = useCallback((source: {
-    docId: string
-    detailFieldId: string
-    label: string
-  }) => {
-    handleNavigateToSourceDoc(source.docId)
-    setSelectedField(source.detailFieldId)
-  }, [handleNavigateToSourceDoc, setSelectedField])
+  /** From FieldPopover source row — open detached source-document review. */
+  const handleNavigateSource = useCallback((source: FieldOriginSource) => {
+    openSourceDocumentFromFieldOrigin(source, setSelectedField)
+  }, [setSelectedField])
 
   /** ProtoC: 1040 row click selects/highlights only — does not open Sources until user follows a source link or banner CTA. */
   const handle1040FieldClick = useCallback((field1040: string | null) => {

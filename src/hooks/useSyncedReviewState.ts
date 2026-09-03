@@ -926,6 +926,14 @@ export function useSyncedReviewState() {
     update({ completedMilestones: next })
   }
 
+  const getSyncedSnapshot = useCallback((): SyncedState => {
+    return JSON.parse(JSON.stringify(stateRef.current)) as SyncedState
+  }, [])
+
+  const restoreSyncedSnapshot = useCallback((snapshot: SyncedState) => {
+    publish(snapshot)
+  }, [])
+
   return {
     activeTopTab: state.activeTopTab,
     setActiveTopTab: (tab: TopTab) => update({ activeTopTab: tab }),
@@ -987,5 +995,7 @@ export function useSyncedReviewState() {
     reviewerSignedOffFormsMeta: reviewerSignedOffForms,
     toggleReviewerFormSignOff,
     resetReviewState,
+    getSyncedSnapshot,
+    restoreSyncedSnapshot,
   }
 }

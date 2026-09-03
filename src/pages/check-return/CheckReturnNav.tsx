@@ -4,9 +4,10 @@ import { ChevronDown, ChevronLeft, ChevronRight, ChevronUp, Search } from '@desi
 import { NumericBadge } from '@ids-ts/badge'
 import '@ids-ts/badge/dist/main.css'
 import ModeSegmentedControl from '../../components/ModeSegmentedControl'
+import { OUTPUT_REVIEW_PATH } from '../../lib/prototypeRoutes'
 import styles from '../../styles/check-return/CheckReturnNav.module.css'
 
-export type ContentView = 'federal-summary' | 'california-summary' | 'form-1040'
+export type ContentView = 'federal-summary' | 'california-summary' | 'form-output'
 
 const APPLICABLE_FORMS = [
   {
@@ -228,7 +229,7 @@ export default function CheckReturnNav({
             ariaLabel="Input or review"
             options={[
               { id: 'input', label: 'Input', onClick: () => navigate('/input-return') },
-              { id: 'review', label: 'Review', onClick: () => navigate('/data-review') },
+              { id: 'review', label: 'Review', onClick: () => navigate(OUTPUT_REVIEW_PATH) },
             ]}
           />
 
@@ -298,7 +299,7 @@ export default function CheckReturnNav({
                         <NavSecondaryItem
                           key={form}
                           label={form}
-                          active={selectedForm === form && contentView === 'form-1040'}
+                          active={selectedForm === form && contentView === 'form-output'}
                           onClick={() => onSelectForm(form)}
                         />
                       ))}

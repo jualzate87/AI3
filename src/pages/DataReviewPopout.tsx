@@ -1,6 +1,12 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
-import { DotsSix } from '@design-systems/icons'
+import { useSearchParams } from 'react-router-dom'
+import { ChevronRight, Close, DotsSix } from '@design-systems/icons'
+import { Button } from '@ids-ts/button'
+import '@ids-ts/button/dist/main.css'
+import { IconControl } from '@ids-ts/icon-control'
+import '@ids-ts/icon-control/dist/main.css'
 import ReviewTab from './data-review/ReviewTab'
+import type { TopTab } from './data-review/ReviewTab'
 import ImportSourceBadge from '../components/ImportSourceBadge/ImportSourceBadge'
 import Phase1IssueBanner from './data-review/Phase1IssueBanner'
 import {
@@ -41,6 +47,8 @@ import DetailFields1099R, { R_PAYER_TABS } from './data-review/DetailFields1099R
 import DetailFieldsNec, { NEC_PAYER_TABS } from './data-review/DetailFieldsNec'
 import PeelTab from './data-review/PeelTab'
 import QuestionnaireResponsesPanel from './data-review/QuestionnaireResponsesPanel'
+import DocReviewProgress from './data-review/DocReviewProgress'
+import UnsavedChangesModal from './data-review/UnsavedChangesModal'
 import { useSyncedReviewState } from '../hooks/useSyncedReviewState'
 import { computeLiveReturn } from '../data/liveReturn'
 import { PHASE1_FLAG_MESSAGES } from './data-review/phase1FlagMessages'
@@ -62,7 +70,21 @@ import styles from '../styles/data-review/DataReviewPopout.module.css'
 // preview zoom/pan, all live-synced via useSyncedReviewState (BroadcastChannel).
 // See DataReviewPage.tsx's right panel for the layout this mirrors.
 
+const POPOUT_TOP_TABS = new Set<string>([
+  'w2s',
+  '1099-divs',
+  '1099-ints',
+  '1099-rs',
+  '1099-necs',
+  'questionnaire',
+])
+
 export default function DataReviewPopout() {
+  const [searchParams] = useSearchParams()
+  const [sessionDirty, setSessionDirty] = useState(false)
+  const [unsavedModalOpen, setUnsavedModalOpen] = useState(false)
+  const initialNavApplied = useRef(false)
+
   const reviewRole = getStoredDemoRole() ?? 'preparer'
   const isReviewerConfirmMode = reviewRole === 'reviewer'
 
@@ -88,7 +110,97 @@ export default function DataReviewPopout() {
     reviewerConfirmedDocs,
     reviewerConfirmedDocsMeta,
     toggleVerifiedDoc,
+    getSyncedSnapshot,
+    restoreSyncedSnapshot,
   } = useSyncedReviewState()
+
+  const baselineRef = useRef<ReturnType<typeof getSyncedSnapshot> | null>(null)
+
+  const touchDirty = useCallback(() => setSessionDirty(true), [])
+
+  const markFieldEdited = useCallback((fieldKey: string) => {
+    markEdited(fieldKey)
+    touchDirty()
+  }, [markEdited, touchDirty])
+
+  const handleFieldOverride = useCallback((fieldKey: string, value: string) => {
+    setFieldOverride(fieldKey, value)
+    touchDirty()
+  }, [setFieldOverride, touchDirty])
+
+  useEffect(() => {
+    if (initialNavApplied.current) return
+    initialNavApplied.current = true
+    const tab = searchParams.get('tab')
+    if (tab && POPOUT_TOP_TABS.has(tab)) {
+      setActiveTopTab(tab as TopTab)
+    }
+    const subTab = searchParams.get('subTab')
+    if (subTab === 'techCircle' || subTab === 'bingEquipment') {
+      setActiveSubTab(subTab)
+    }
+    const divPayer = searchParams.get('divPayer')
+    if (divPayer === 'beacon' || divPayer === 'northmark' || divPayer === 'token') {
+      setActiveDivPayer(divPayer)
+    }
+    const intPayer = searchParams.get('intPayer')
+    if (
+      intPayer === 'harborline'
+      || intPayer === 'cascade'
+      || intPayer === 'unwavering'
+    ) {
+      setActiveIntPayer(intPayer)
+    }
+  }, [
+    searchParams,
+    setActiveTopTab,
+    setActiveSubTab,
+    setActiveDivPayer,
+    setActiveIntPayer,
+  ])
+
+  useEffect(() => {
+    if (!baselineRef.current) {
+      baselineRef.current = getSyncedSnapshot()
+    }
+  }, [getSyncedSnapshot])
+
+  const requestClose = useCallback(() => {
+    if (sessionDirty) {
+      setUnsavedModalOpen(true)
+      return
+    }
+    window.close()
+  }, [sessionDirty])
+
+  const handleStayEditing = useCallback(() => {
+    setUnsavedModalOpen(false)
+  }, [])
+
+  const handleLeaveWithoutSaving = useCallback(() => {
+    if (baselineRef.current) {
+      restoreSyncedSnapshot(baselineRef.current)
+    }
+    setSessionDirty(false)
+    setUnsavedModalOpen(false)
+    window.close()
+  }, [restoreSyncedSnapshot])
+
+  const handleSaveAndRecalculate = useCallback(() => {
+    baselineRef.current = getSyncedSnapshot()
+    setSessionDirty(false)
+    setUnsavedModalOpen(false)
+  }, [getSyncedSnapshot])
+
+  useEffect(() => {
+    const onBeforeUnload = (event: BeforeUnloadEvent) => {
+      if (!sessionDirty) return
+      event.preventDefault()
+      event.returnValue = ''
+    }
+    window.addEventListener('beforeunload', onBeforeUnload)
+    return () => window.removeEventListener('beforeunload', onBeforeUnload)
+  }, [sessionDirty])
 
   const liveTotals = computeLiveReturn(amounts)
   const totalWithholding = liveTotals.totalWithholding
@@ -291,9 +403,40 @@ export default function DataReviewPopout() {
 
   return (
     <div className={styles.page}>
+      <header className={styles.titleBar}>
+        <h1 className={styles.titleBarHeading}>Source document review</h1>
+        <IconControl
+          aria-label="Close source document review"
+          size="medium"
+          shape="square"
+          onClick={requestClose}
+        >
+          <Close />
+        </IconControl>
+      </header>
+
+      <div className={styles.walkNav}>
+        <DocReviewProgress
+          variant="compact"
+          className={styles.walkProgress}
+          verified={verifiedDocCount}
+          total={totalDocCount}
+        />
+        {showPreparerImportPhase && unreviewedDocCount > 0 && (
+          <Button
+            priority="primary"
+            size="small"
+            onClick={handleReviewNextDocument}
+          >
+            Next document
+            <ChevronRight size="small" />
+          </Button>
+        )}
+      </div>
+
+      <div className={styles.bodyArea}>
       <div className={styles.headerStack}>
         <ReviewTab
-          isPopout
           activeTopTab={activeTopTab}
           unreviewedCounts={showPreparerImportPhase ? tabUnreviewedCounts : undefined}
           verifiedDocs={verifiedDocs}
@@ -303,8 +446,7 @@ export default function DataReviewPopout() {
           tabConfirmStatus={reviewRole === 'reviewer' ? tabConfirmStatus : undefined}
           tabConfirmCounts={reviewRole === 'reviewer' ? tabConfirmCounts : undefined}
           showAddItem={false}
-          showNextDocument={showPreparerImportPhase}
-          onNextDocumentClick={handleReviewNextDocument}
+          showNextDocument={false}
           unreviewedDocCount={unreviewedDocCount}
           onTopTabChange={(tab) => { setActiveTopTab(tab); setSelectedField(null) }}
         />
@@ -433,16 +575,16 @@ export default function DataReviewPopout() {
                 wages={{ bingEquipment: 0, techCircle: wages.techCircle }}
                 onWageChange={(employer, value) => {
                   setWages({ ...wages, [employer]: value })
-                  markEdited(`wages-${employer}`)
+                  markFieldEdited(`wages-${employer}`)
                 }}
                 fieldValues={{ ...fieldValues, withholding: fieldValues.withholding[activeSubTab] }}
                 onFieldValueChange={(key, value) => {
                   if (key === 'withholding' && typeof value === 'number') {
                     updateField('withholding', { techCircle: value })
-                    markEdited('withholding')
+                    markFieldEdited('withholding')
                   } else {
                     updateField(key as keyof typeof fieldValues, value as number)
-                    markEdited(String(key))
+                    markFieldEdited(String(key))
                   }
                 }}
                 box12Rows={amounts.box12Rows}
@@ -453,12 +595,12 @@ export default function DataReviewPopout() {
                       [sub]: { ...amounts.box12Rows[sub], ...patch },
                     },
                   })
-                  markEdited(`box12${sub}-${activeSubTab}`)
+                  markFieldEdited(`box12${sub}-${activeSubTab}`)
                 }}
                 onIdentityChange={(kind, value) => {
                   if (kind === 'ssn') updateAmounts({ employeeSsn: value })
                   else updateAmounts({ employerEin: value })
-                  markEdited(kind === 'ssn' ? 'ssn-techCircle' : 'ein-techCircle')
+                  markFieldEdited(kind === 'ssn' ? 'ssn-techCircle' : 'ein-techCircle')
                 }}
                 identityValues={{ ssn: amounts.employeeSsn, ein: amounts.employerEin }}
                 box13={{
@@ -472,7 +614,7 @@ export default function DataReviewPopout() {
                     ...(patch.statutoryEmployee !== undefined ? { box13StatutoryEmployee: patch.statutoryEmployee } : {}),
                     ...(patch.thirdPartySickPay !== undefined ? { box13ThirdPartySickPay: patch.thirdPartySickPay } : {}),
                   })
-                  markEdited('box13')
+                  markFieldEdited('box13')
                 }}
                 onMarkReviewed={handleMarkReviewed}
                 onMarkReviewedBulk={handleMarkReviewedBulk}
@@ -480,7 +622,7 @@ export default function DataReviewPopout() {
                 editedFields={editedFields}
                 editedFieldsMeta={editedFieldsMeta}
                 fieldOverrides={fieldOverrides}
-                onFieldOverride={setFieldOverride}
+                onFieldOverride={handleFieldOverride}
                 verifiedDocs={verifiedDocs}
                 verifiedDocsMeta={verifiedDocsMeta}
                 reviewerConfirmedDocs={reviewerConfirmedDocs}
@@ -504,11 +646,12 @@ export default function DataReviewPopout() {
                 fieldValues={{ ...fieldValues, withholding: totalWithholding, divWithholding: amounts.divWithholding }}
                 onFieldValueChange={(key, value) => {
                   updateField(key as keyof typeof fieldValues, value)
-                  markEdited(String(key))
+                  markFieldEdited(String(key))
                 }}
                 onAmountChange={(patch, editedKey) => {
                   updateAmounts(patch)
-                  if (editedKey) markEdited(editedKey)
+                  if (editedKey) markFieldEdited(editedKey)
+                  else touchDirty()
                 }}
                 amounts={amounts}
                 onMarkReviewed={handleMarkReviewed}
@@ -516,7 +659,7 @@ export default function DataReviewPopout() {
                 reviewedFields={reviewedFields}
                 editedFields={editedFields}
                 fieldOverrides={fieldOverrides}
-                onFieldOverride={setFieldOverride}
+                onFieldOverride={handleFieldOverride}
                 verifiedDocs={verifiedDocs}
                 verifiedDocsMeta={verifiedDocsMeta}
                 onVerifyDoc={toggleVerifiedDoc}
@@ -540,11 +683,12 @@ export default function DataReviewPopout() {
                 fieldValues={{ ...fieldValues, withholding: totalWithholding }}
                 onFieldValueChange={(key, value) => {
                   updateField(key as keyof typeof fieldValues, value)
-                  markEdited(String(key))
+                  markFieldEdited(String(key))
                 }}
                 onAmountChange={(patch, editedKey) => {
                   updateAmounts(patch)
-                  if (editedKey) markEdited(editedKey)
+                  if (editedKey) markFieldEdited(editedKey)
+                  else touchDirty()
                 }}
                 amounts={amounts}
                 onMarkReviewed={handleMarkReviewed}
@@ -553,7 +697,7 @@ export default function DataReviewPopout() {
                 editedFields={editedFields}
                 editedFieldsMeta={editedFieldsMeta}
                 fieldOverrides={fieldOverrides}
-                onFieldOverride={setFieldOverride}
+                onFieldOverride={handleFieldOverride}
                 verifiedDocs={verifiedDocs}
                 verifiedDocsMeta={verifiedDocsMeta}
                 onVerifyDoc={toggleVerifiedDoc}
@@ -573,14 +717,15 @@ export default function DataReviewPopout() {
                 amounts={amounts}
                 onAmountChange={(patch, editedKey) => {
                   updateAmounts(patch)
-                  if (editedKey) markEdited(editedKey)
+                  if (editedKey) markFieldEdited(editedKey)
+                  else touchDirty()
                 }}
                 onMarkReviewed={handleMarkReviewed}
                 onMarkReviewedBulk={handleMarkReviewedBulk}
                 reviewedFields={reviewedFields}
                 editedFields={editedFields}
                 fieldOverrides={fieldOverrides}
-                onFieldOverride={setFieldOverride}
+                onFieldOverride={handleFieldOverride}
                 verifiedDocs={verifiedDocs}
                 verifiedDocsMeta={verifiedDocsMeta}
                 onVerifyDoc={toggleVerifiedDoc}
@@ -600,14 +745,15 @@ export default function DataReviewPopout() {
                 amounts={amounts}
                 onAmountChange={(patch, editedKey) => {
                   updateAmounts(patch)
-                  if (editedKey) markEdited(editedKey)
+                  if (editedKey) markFieldEdited(editedKey)
+                  else touchDirty()
                 }}
                 onMarkReviewed={handleMarkReviewed}
                 onMarkReviewedBulk={handleMarkReviewedBulk}
                 reviewedFields={reviewedFields}
                 editedFields={editedFields}
                 fieldOverrides={fieldOverrides}
-                onFieldOverride={setFieldOverride}
+                onFieldOverride={handleFieldOverride}
                 verifiedDocs={verifiedDocs}
                 verifiedDocsMeta={verifiedDocsMeta}
                 onVerifyDoc={toggleVerifiedDoc}
@@ -629,7 +775,24 @@ export default function DataReviewPopout() {
             )}
           </div>
         </div>
+      </div>
 
+      <footer className={styles.footer}>
+        <Button priority="tertiary" onClick={requestClose}>
+          Cancel
+        </Button>
+        <div className={styles.footerActions}>
+          <Button priority="primary" onClick={handleSaveAndRecalculate}>
+            Save and recalculate return
+          </Button>
+        </div>
+      </footer>
+
+      <UnsavedChangesModal
+        open={unsavedModalOpen}
+        onStay={handleStayEditing}
+        onLeaveWithoutSaving={handleLeaveWithoutSaving}
+      />
     </div>
   )
 }

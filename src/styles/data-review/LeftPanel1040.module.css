@@ -8,6 +8,18 @@
   background: #ffffff;
 }
 
+.embeddedInCheckReturn {
+  height: auto;
+  flex: 1;
+  min-height: 0;
+}
+
+.embeddedDocumentViewer {
+  padding: var(--space-component-padding-medium, 12px) 0
+    var(--space-container-padding-medium, 20px);
+  justify-content: flex-start;
+}
+
 /* Scrollable viewer */
 .documentViewer {
   flex: 1;

@@ -176,6 +176,10 @@ interface LeftPanel1040Props {
    * (open flags / note contexts). null = show all.
    */
   focusFields?: Set<string> | null
+  /** Check return embed — hide internal form dropdown; nav drives form selection */
+  showFormSelector?: boolean
+  /** Check return embed — tighter layout inside main panel */
+  embeddedInCheckReturn?: boolean
 }
 
 const PRIOR_YEAR = PRIOR_YEAR_1040_VALUES
@@ -256,6 +260,8 @@ export default function LeftPanel1040({
   outputSourcesCoachOpen = false,
   onDismissOutputSourcesCoach,
   focusFields = null,
+  showFormSelector = true,
+  embeddedInCheckReturn = false,
 }: LeftPanel1040Props) {
   // Hooks first — keep order stable across renders
   const [internalOutputFormId, setInternalOutputFormId] = useState<OutputFormId>('summary')
@@ -954,8 +960,22 @@ export default function LeftPanel1040({
 
   const showOutputToolbar = isReviewerRole && onToggleFormSignOff
 
+  const panelClass = [
+    styles.leftPanel,
+    embeddedInCheckReturn ? styles.embeddedInCheckReturn : '',
+  ]
+    .filter(Boolean)
+    .join(' ')
+
+  const viewerClass = [
+    styles.documentViewer,
+    embeddedInCheckReturn ? styles.embeddedDocumentViewer : '',
+  ]
+    .filter(Boolean)
+    .join(' ')
+
   return (
-    <div className={styles.leftPanel}>
+    <div className={panelClass}>
 
       {/* ── Toolbar: per-form sign-off (reviewer) ── */}
       {showOutputToolbar && (
@@ -979,7 +999,7 @@ export default function LeftPanel1040({
         <div className={styles.summaryWrapper}>
           <div className={styles.summaryCard}>
             <div className={styles.summaryCardHeader}>
-              {outputFormDropdown}
+              {showFormSelector && outputFormDropdown}
               <div className={styles.summaryCardHeaderTitles}>
                 <span className={styles.summaryCardLabel}>RETURN BREAKDOWN</span>
                 <span className={styles.summaryCardSub}>Line-by-line · 2025 return</span>
@@ -1419,12 +1439,12 @@ export default function LeftPanel1040({
         />
       )}
 
-      <div className={styles.documentViewer} style={{ display: view === 'table' ? 'none' : undefined }}>
+      <div className={viewerClass} style={{ display: view === 'table' ? 'none' : undefined }}>
         <div className={styles.formOutputColumn}>
         {outputFormId !== 'summary' && outputFormId !== '1040' ? (
           <>
             <div className={styles.outputPanelHeader}>
-              {outputFormDropdown}
+              {showFormSelector && outputFormDropdown}
             </div>
             <OutputFormViews
             formId={outputFormId}
@@ -1451,9 +1471,11 @@ export default function LeftPanel1040({
           </>
         ) : (
         <div className={`${styles.formDoc} ${styles.formDocDigitized}`}>
-          <div className={styles.summaryCardHeader}>
-            {outputFormDropdown}
-          </div>
+          {showFormSelector && (
+            <div className={styles.summaryCardHeader}>
+              {outputFormDropdown}
+            </div>
+          )}
 
           {/* ── IRS Header ── */}
           <div className={styles.irsHeader}>

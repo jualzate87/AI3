@@ -1,9 +1,15 @@
-import { useEffect, useState } from 'react'
+import { useCallback, useEffect, useMemo, useState } from 'react'
+import { useSearchParams } from 'react-router-dom'
 import LeftNavPTO from './data-review/LeftNavPTO'
 import SmartReturnHeader from './SmartReturnHeader'
 import ReturnContextRail from '../components/ReturnContextRail'
 import CheckReturnNav, { type ContentView } from './check-return/CheckReturnNav'
-import { openHashRoute, PREPARER_DATA_REVIEW_PATH } from '../lib/prototypeRoutes'
+import OutputReviewPanel from './check-return/OutputReviewPanel'
+import {
+  checkReturnFormToOutputId,
+} from './check-return/outputFormNav'
+import type { OutputFormId } from './data-review/outputForms'
+import { openSourceDocumentReviewPopout } from '../lib/prototypeRoutes'
 import layout from '../styles/CoreScreenLayout.module.css'
 import styles from '../styles/CheckReturnPage.module.css'
 import panel from '../styles/shared/ReturnMainPanel.module.css'
@@ -51,9 +57,27 @@ const TABLE_ROWS: TableRow[] = [
   { type: 'data', label: 'Effective tax rate', v2023: '18.3%', v2024: '0.0%', diff: '18.3%' },
 ]
 
+function resolveInitialOutputForm(searchParams: URLSearchParams): OutputFormId {
+  const formParam = searchParams.get('form')
+  if (formParam === '1040' || formParam === 'sch1' || formParam === 'schC' || formParam === 'schD' || formParam === 'schA') {
+    return formParam as OutputFormId
+  }
+  return '1040'
+}
+
 export default function CheckReturnPage() {
-  const [contentView, setContentView] = useState<ContentView>('federal-summary')
-  const [selectedForm, setSelectedForm] = useState<string | null>(null)
+  const [searchParams] = useSearchParams()
+  const initialForm = useMemo(() => resolveInitialOutputForm(searchParams), [searchParams])
+  const openFormFromUrl = searchParams.get('form') != null
+
+  const [contentView, setContentView] = useState<ContentView>(() =>
+    openFormFromUrl ? 'form-output' : 'federal-summary',
+  )
+  const [selectedForm, setSelectedForm] = useState<string | null>(() =>
+    openFormFromUrl ? '1040' : null,
+  )
+  const [outputFormId, setOutputFormId] = useState<OutputFormId>(initialForm)
+  const [refreshNotice, setRefreshNotice] = useState<string | null>(null)
 
   useEffect(() => {
     const el = document.documentElement
@@ -70,6 +94,13 @@ export default function CheckReturnPage() {
     }
   }, [])
 
+  useEffect(() => {
+    if (!openFormFromUrl) return
+    setContentView('form-output')
+    setSelectedForm('1040')
+    setOutputFormId(initialForm)
+  }, [openFormFromUrl, initialForm])
+
   const handleSelectFederal = () => {
     setContentView('federal-summary')
     setSelectedForm(null)
@@ -82,10 +113,22 @@ export default function CheckReturnPage() {
 
   const handleSelectForm = (form: string) => {
     setSelectedForm(form)
-    if (form === '1040') {
-      setContentView('form-1040')
+    const mapped = checkReturnFormToOutputId(form)
+    if (mapped) {
+      setOutputFormId(mapped)
+      setContentView('form-output')
     }
   }
+
+  const handleRefreshForms = useCallback(() => {
+    setRefreshNotice('Forms refreshed')
+  }, [])
+
+  useEffect(() => {
+    if (!refreshNotice) return
+    const timer = window.setTimeout(() => setRefreshNotice(null), 2400)
+    return () => window.clearTimeout(timer)
+  }, [refreshNotice])
 
   return (
     <div className={`${layout.page} ${styles.page}`} data-theme="intuit">
@@ -95,7 +138,10 @@ export default function CheckReturnPage() {
           <SmartReturnHeader
             activeTab="checkreturns"
             showViewSourceDocuments
-            onViewSourceDocuments={() => openHashRoute(PREPARER_DATA_REVIEW_PATH)}
+            onViewSourceDocuments={() => openSourceDocumentReviewPopout()}
+            showRefreshForms
+            onRefreshForms={handleRefreshForms}
+            refreshNotice={refreshNotice}
           />
           <div className={styles.contentArea}>
             <CheckReturnNav
@@ -106,7 +152,13 @@ export default function CheckReturnPage() {
               onSelectForm={handleSelectForm}
             />
 
-            <main className={panel.pageScroll}>
+            <main
+              className={
+                contentView === 'form-output'
+                  ? `${panel.pageScroll} ${styles.outputMain}`
+                  : panel.pageScroll
+              }
+            >
               {contentView === 'federal-summary' && (
                 <div className={panel.contentBody}>
                   <h1 className={panel.pageTitle}>
@@ -152,16 +204,21 @@ export default function CheckReturnPage() {
                 </div>
               )}
 
-              {contentView === 'form-1040' && (
-                <div className={panel.contentBody}>
-                  <h1 className={panel.pageTitle}>1040: 2024 U.S. Individual Income Tax Return</h1>
-                  <p className={panel.bodyText}>
-                    Double-click a field to jump to the input screen. Right-click for more options.
-                  </p>
-                  <div className={styles.formPreviewPlaceholder} aria-label="Form 1040 preview placeholder">
-                    <p>Form 1040 preview</p>
-                  </div>
-                </div>
+              {contentView === 'form-output' && (
+                <>
+                  {checkReturnFormToOutputId(selectedForm ?? '1040') ? (
+                    <OutputReviewPanel outputFormId={outputFormId} />
+                  ) : (
+                    <div className={panel.contentBody}>
+                      <h1 className={panel.pageTitle}>
+                        {selectedForm ?? 'Form'} preview
+                      </h1>
+                      <p className={panel.bodyText}>
+                        This form is not interactive in the prototype yet. Select 1040, Sch 1, Sch C, or Sch D from the Forms list.
+                      </p>
+                    </div>
+                  )}
+                </>
               )}
             </main>
             <ReturnContextRail className={styles.contextRail} />

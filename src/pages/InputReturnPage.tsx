@@ -4,7 +4,8 @@ import SmartReturnHeader from './SmartReturnHeader'
 import ReturnContextRail from '../components/ReturnContextRail'
 import LeftNavPTO from './data-review/LeftNavPTO'
 import InputMenuNav from './input-return/InputMenuNav'
-import { openHashRoute, PREPARER_DATA_REVIEW_PATH } from '../lib/prototypeRoutes'
+import { useNavigate } from 'react-router-dom'
+import { OUTPUT_REVIEW_PATH } from '../lib/prototypeRoutes'
 import InputFormPanel from './input-return/InputFormPanel'
 import {
   inputNavItemById,
@@ -24,6 +25,7 @@ import layout from '../styles/CoreScreenLayout.module.css'
 import styles from '../styles/InputReturnPage.module.css'
 
 export default function InputReturnPage() {
+  const navigate = useNavigate()
   const [searchParams, setSearchParams] = useSearchParams()
   const formParam = searchParams.get(INPUT_FORM_PARAM) as InputNavItemId | null
   const docParam = searchParams.get(INPUT_DOC_PARAM)
@@ -124,7 +126,7 @@ export default function InputReturnPage() {
           <SmartReturnHeader
             activeTab="inputreturn"
             showReviewReturn
-            onReviewReturn={() => openHashRoute(PREPARER_DATA_REVIEW_PATH)}
+            onReviewReturn={() => navigate(OUTPUT_REVIEW_PATH)}
           />
 
           <div className={styles.contentArea}>

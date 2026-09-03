@@ -7,7 +7,7 @@ import FusionShell from './components/FusionShell'
 import { FUSION_CONFIG } from './navigation'
 import { repairIncomingRoute, resolveCatchAllRoute } from './lib/prototypeRoutes'
 import LaunchPointsFab from './components/LaunchPointsFab/LaunchPointsFab'
-import DataReviewPage from './pages/DataReviewPage'
+import DataReviewRoute from './pages/DataReviewRoute'
 import DataReviewPopout from './pages/DataReviewPopout'
 import SmartReturnPage from './pages/SmartReturnPage'
 import ImportConfirmationPage from './pages/ImportConfirmationPage'
@@ -65,7 +65,7 @@ export default function App() {
             <Route path="/smart-return" element={<SmartReturnPage />} />
             <Route path="/import-confirmation" element={<ImportConfirmationPage />} />
             <Route path="/input-return" element={<InputReturnPage />} />
-            <Route path="/data-review" element={<DataReviewPage />} />
+            <Route path="/data-review" element={<DataReviewRoute />} />
             <Route path="/data-review-popout" element={<DataReviewPopout />} />
             <Route path="/check-return" element={<CheckReturnPage />} />
             <Route path="/check-return/insights" element={<ReturnInsightsPage />} />

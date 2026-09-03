@@ -8,7 +8,7 @@ import DetailFieldsDiv from '../data-review/DetailFieldsDiv'
 import DetailFields1099R from '../data-review/DetailFields1099R'
 import DetailFieldsNec from '../data-review/DetailFieldsNec'
 import { resolveActiveVerifyDocKey } from '../../data/documentImportMeta'
-import { openHashRoute, PREPARER_DATA_REVIEW_PATH } from '../../lib/prototypeRoutes'
+import { openSourceDocumentReviewPopout } from '../../lib/prototypeRoutes'
 import {
   applyInputDocKey,
   getInputDocTabs,
@@ -90,7 +90,12 @@ export default function InputFormPanel({
   }
 
   const handleViewSourceDocuments = () => {
-    openHashRoute(PREPARER_DATA_REVIEW_PATH)
+    openSourceDocumentReviewPopout({
+      tab: navItem.topTab,
+      subTab: activeSubTab,
+      divPayer: activeDivPayer,
+      intPayer: activeIntPayer,
+    })
   }
 
   return (

@@ -24,6 +24,12 @@
   overflow-x: auto;
 }
 
+.outputMain {
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
 .formPreviewPlaceholder {
   display: flex;
   align-items: center;

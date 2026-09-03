@@ -20,6 +20,10 @@ interface SmartReturnHeaderProps {
   /** Show View source documents CTA in tab row (Check return) */
   showViewSourceDocuments?: boolean
   onViewSourceDocuments?: () => void
+  /** Show Refresh forms in tab row (Check return output review) */
+  showRefreshForms?: boolean
+  onRefreshForms?: () => void
+  refreshNotice?: string | null
 }
 
 export default function SmartReturnHeader({
@@ -29,6 +33,9 @@ export default function SmartReturnHeader({
   onReviewReturn,
   showViewSourceDocuments = false,
   onViewSourceDocuments,
+  showRefreshForms = false,
+  onRefreshForms,
+  refreshNotice = null,
 }: SmartReturnHeaderProps) {
   const navigate = useNavigate()
 
@@ -132,6 +139,20 @@ export default function SmartReturnHeader({
           <span className={styles.tabMeta}>
             <CloudUpload size="small" /> Saved at 11:34 AM
           </span>
+          {refreshNotice && (
+            <span className={styles.refreshNotice} role="status">
+              {refreshNotice}
+            </span>
+          )}
+          {showRefreshForms && (
+            <button
+              type="button"
+              className={styles.refreshFormsBtn}
+              onClick={onRefreshForms}
+            >
+              Refresh forms
+            </button>
+          )}
           {showReviewReturn && (
             <Button
               priority="secondary"

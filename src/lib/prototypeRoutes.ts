@@ -1,10 +1,13 @@
 /** Hash-route helpers — keep GitHub Pages base path (/AI3/) in sync. */
 
-export const REVIEWER_DATA_REVIEW_PATH =
-  '/data-review?entry=review-return&role=reviewer&startReview=true'
+/** Output review — interactive 1040 + schedules on Check return (no source-doc rail). */
+export const OUTPUT_REVIEW_PATH = '/check-return?form=1040'
 
-export const PREPARER_DATA_REVIEW_PATH =
-  '/data-review?entry=input-return&role=preparer'
+/** @deprecated Prefer `/input-return` — kept for legacy links. */
+export const PREPARER_DATA_REVIEW_PATH = '/input-return'
+
+/** @deprecated Prefer OUTPUT_REVIEW_PATH — kept for legacy links. */
+export const REVIEWER_DATA_REVIEW_PATH = OUTPUT_REVIEW_PATH
 
 /** Launch point — preparer lands in Phase 2 with AI diagnostics panel open (demo bypass). */
 export const PREPARER_DIAGNOSTICS_PATH =
@@ -46,6 +49,37 @@ export function openHashRoute(route: string, target = '_blank'): void {
   window.open(buildHashRouteUrl(route), target, 'noopener,noreferrer')
 }
 
+export const SOURCE_DOCUMENT_REVIEW_POPOUT_PATH = '/data-review-popout'
+
+export type SourceDocumentPopoutContext = {
+  tab?: string
+  subTab?: string
+  divPayer?: string
+  intPayer?: string
+}
+
+/** Build hash route for the detached source-document review window. */
+export function buildSourceDocumentPopoutRoute(context?: SourceDocumentPopoutContext): string {
+  const params = new URLSearchParams()
+  if (context?.tab) params.set('tab', context.tab)
+  if (context?.subTab) params.set('subTab', context.subTab)
+  if (context?.divPayer) params.set('divPayer', context.divPayer)
+  if (context?.intPayer) params.set('intPayer', context.intPayer)
+  const qs = params.toString()
+  return qs ? `${SOURCE_DOCUMENT_REVIEW_POPOUT_PATH}?${qs}` : SOURCE_DOCUMENT_REVIEW_POPOUT_PATH
+}
+
+/** Open source document review in a new window (doc preview + input fields). */
+export function openSourceDocumentReviewPopout(
+  context?: SourceDocumentPopoutContext,
+): Window | null {
+  return window.open(
+    buildHashRouteUrl(buildSourceDocumentPopoutRoute(context)),
+    '_blank',
+    'noopener,noreferrer,width=1447,height=960',
+  )
+}
+
 /** Persist demo role for catch-all redirects when hash has no role param. */
 export function setStoredDemoRole(role: 'preparer' | 'reviewer'): void {
   try {
@@ -64,15 +98,35 @@ export function getStoredDemoRole(): 'preparer' | 'reviewer' | null {
   }
 }
 
-/** Unknown hash routes → reviewer data-review or SmartReturn landing. */
-export function resolveCatchAllRoute(search = ''): string {
+/**
+ * Legacy `/data-review` hash routes → split preparer/reviewer experiences.
+ * Returns null when the combined diagnostics demo should still render.
+ */
+export function resolveDataReviewRedirect(search = ''): string | null {
   const params = new URLSearchParams(search.startsWith('?') ? search.slice(1) : search)
-  if (params.get('role') === 'reviewer' || params.get('startReview') === 'true') {
-    return REVIEWER_DATA_REVIEW_PATH
+  if (params.get('phase') === 'diagnostics') return null
+
+  const entry = params.get('entry')
+  if (entry === 'input-return') return '/input-return'
+  if (
+    entry === 'review-return' ||
+    params.get('role') === 'reviewer' ||
+    params.get('startReview') === 'true'
+  ) {
+    return OUTPUT_REVIEW_PATH
   }
-  if (getStoredDemoRole() === 'reviewer') {
-    return REVIEWER_DATA_REVIEW_PATH
-  }
+  return '/smart-return'
+}
+
+function applyDataReviewRedirect(route: string): string {
+  if (!route.startsWith('/data-review')) return route
+  const q = route.indexOf('?')
+  const search = q === -1 ? '' : route.slice(q + 1)
+  return resolveDataReviewRedirect(search) ?? route
+}
+
+/** Unknown hash routes → SmartReturn landing (role stored separately). */
+export function resolveCatchAllRoute(_search = ''): string {
   return '/smart-return'
 }
 
@@ -115,5 +169,7 @@ export function normalizeHashRoute(): string | null {
 
 /** Run all hash/path repairs; returns route to navigate or null. */
 export function repairIncomingRoute(): string | null {
-  return repairBarePathRoute() ?? normalizeHashRoute()
+  const raw = repairBarePathRoute() ?? normalizeHashRoute()
+  if (!raw) return null
+  return applyDataReviewRedirect(raw)
 }

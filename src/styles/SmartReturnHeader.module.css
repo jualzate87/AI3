@@ -377,3 +377,30 @@
   background: var(--color-container-background-secondary) !important;
   border-color: var(--color-text-secondary) !important;
 }
+
+.refreshFormsBtn {
+  display: flex;
+  align-items: center;
+  padding: 6px 8px;
+  background: var(--color-container-background-primary);
+  border: 2px solid var(--color-text-primary);
+  border-radius: var(--radius-x-small, 4px);
+  font-family: var(--font-family-component);
+  font-size: var(--font-size-component-medium, 16px);
+  font-weight: var(--font-weight-component-semibold, 600);
+  color: var(--color-text-primary);
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.refreshFormsBtn:hover {
+  background: var(--color-container-background-secondary);
+}
+
+.refreshNotice {
+  font-family: var(--font-family-component);
+  font-size: var(--font-size-component-small);
+  font-weight: var(--font-weight-component-semibold);
+  color: var(--color-text-positive, #00856d);
+  white-space: nowrap;
+}

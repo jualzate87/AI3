@@ -1,4 +1,4 @@
-/* Popout window — full viewport, no page scroll bleed */
+/* Popout window — Figma detached source document review (33946:97706) */
 .page {
   display: flex;
   flex-direction: column;
@@ -7,6 +7,8 @@
   min-height: 0;
   overflow: hidden;
   background: var(--color-page-background-primary, #ffffff);
+  border: 1px solid var(--color-container-border-primary, #c3ced5);
+  border-radius: var(--radius-medium, 8px);
 }
 
 @supports (height: 100dvh) {
@@ -15,9 +17,54 @@
   }
 }
 
+.titleBar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-shrink: 0;
+  height: 60px;
+  padding: 0 var(--space-container-padding-medium, 20px);
+  background: var(--color-container-background-secondary, #f4f5f8);
+  border-bottom: 1px solid var(--color-container-border-primary, #c3ced5);
+}
+
+.titleBarHeading {
+  margin: 0;
+  font-family: var(--font-family-heading);
+  font-size: var(--font-size-heading-5, 24px);
+  font-weight: var(--font-weight-heading, 600);
+  line-height: 1.3;
+  color: var(--color-text-primary, #393a3d);
+}
+
+.walkNav {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: var(--space-column-gap-medium, 16px);
+  flex-shrink: 0;
+  padding: var(--space-small, 12px) var(--space-container-padding-medium, 20px);
+  border-bottom: 1px solid var(--color-divider-tertiary, #d4d7dc);
+}
+
+.walkProgress {
+  align-items: flex-start;
+  width: auto;
+  min-width: 12.125rem;
+}
+
 .headerStack {
   flex-shrink: 0;
   min-width: 0;
+  border-bottom: 1px solid var(--color-divider-tertiary, #d4d7dc);
+}
+
+.bodyArea {
+  display: flex;
+  flex-direction: column;
+  flex: 1 1 0%;
+  min-height: 0;
+  overflow: hidden;
 }
 
 .splitPane {
@@ -55,4 +102,24 @@
   padding: var(--space-component-inline-padding-small, 6px) var(--space-container-padding-medium, 20px);
   background: var(--color-container-background-primary, #ffffff);
   border-bottom: 1px solid var(--color-divider-tertiary, #d4d7dc);
+}
+
+.footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-shrink: 0;
+  min-height: 68px;
+  padding: var(--space-container-padding-small, 16px) var(--space-container-padding-medium, 20px);
+  background: var(--color-container-background-primary, #ffffff);
+  border-top: 1px solid var(--color-container-border-primary, #d4d7dc);
+  box-shadow: 0 6px 12px rgba(0, 0, 0, 0.2);
+}
+
+.footerActions {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: var(--space-column-gap-small, 16px);
+  margin-left: auto;
 }
