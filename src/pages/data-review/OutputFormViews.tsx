@@ -977,10 +977,18 @@ export default function OutputFormViews({
           sumLabel={flyout.sumLabel}
           sumValue={flyout.sumValue}
           footnote={flyout.footnote}
-          onNavigateToDoc={
+          detailFieldIdByDocId={flyout.detailByDocId}
+          onViewDocument={
             flyout.mode === 'source'
               ? docId => {
-                  const detailFieldId = flyout.detailByDocId?.[docId]
+                  onNavigateToSourceDoc?.(docId)
+                  closeFlyout()
+                }
+              : undefined
+          }
+          onViewInput={
+            flyout.mode === 'source'
+              ? (docId, detailFieldId) => {
                   const item = flyout.items.find(d => d.docId === docId)
                   if (detailFieldId && onNavigateSource) {
                     onNavigateSource({

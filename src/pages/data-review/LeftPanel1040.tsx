@@ -1414,10 +1414,18 @@ export default function LeftPanel1040({
           sumLabel={summaryFlyout.sumLabel}
           sumValue={summaryFlyout.sumValue}
           footnote={summaryFlyout.footnote}
-          onNavigateToDoc={
+          detailFieldIdByDocId={summaryFlyout.detailByDocId}
+          onViewDocument={
             summaryFlyout.mode === 'source'
               ? docId => {
-                  const detailFieldId = summaryFlyout.detailByDocId?.[docId]
+                  onNavigateToSourceDoc?.(docId)
+                  clearSummaryFlyouts()
+                }
+              : undefined
+          }
+          onViewInput={
+            summaryFlyout.mode === 'source'
+              ? (docId, detailFieldId) => {
                   const item = summaryFlyout.items.find(d => d.docId === docId)
                   if (detailFieldId && onNavigateSource) {
                     onNavigateSource({
@@ -1637,9 +1645,14 @@ export default function LeftPanel1040({
         <FieldPopover
           fieldName={popoverField}
           anchorRect={popoverRect}
+          variant={embeddedInCheckReturn ? 'output' : 'default'}
           origin={getFieldOrigin(popoverField, originTotals, liveAmounts)}
           liveCurrent={getFieldLiveCurrent(popoverField, originTotals)}
           onClose={handleClosePopover}
+          onNavigateToSourceDoc={docId => {
+            handleDismissPopoverKeepSelection()
+            onNavigateToSourceDoc?.(docId)
+          }}
           onNavigateSource={(source) => {
             handleDismissPopoverKeepSelection()
             onNavigateSource?.(source)

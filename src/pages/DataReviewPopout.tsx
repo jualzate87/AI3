@@ -60,7 +60,7 @@ import img1040PriorPage1 from '../assets/jessica-1040-2024-variant-1.png'
 import img1040PriorPage2 from '../assets/jessica-1040-2024-variant-2.png'
 import { isDocShownVerified } from '../data/verifiedDocKeys'
 import { resolveActiveVerifyDocKey } from '../data/documentImportMeta'
-import { getStoredDemoRole } from '../lib/prototypeRoutes'
+import { getStoredDemoRole, SOURCE_DOC_POPOUT_NAV_CHANNEL, type SourceDocumentPopoutContext } from '../lib/prototypeRoutes'
 import dragStyles from '../styles/data-review/DragHandle.module.css'
 import styles from '../styles/data-review/DataReviewPopout.module.css'
 
@@ -78,12 +78,58 @@ const POPOUT_TOP_TABS = new Set<string>([
   'questionnaire',
 ])
 
+function applyPopoutContext(
+  context: SourceDocumentPopoutContext,
+  handlers: {
+    setActiveTopTab: (tab: TopTab) => void
+    setActiveSubTab: (subTab: W2Employer) => void
+    setActiveDivPayer: (payer: DivPayer) => void
+    setActiveIntPayer: (payer: IntPayer) => void
+    setSelectedField: (field: string | null) => void
+  },
+): void {
+  const { tab, subTab, divPayer, intPayer, field } = context
+  if (tab && POPOUT_TOP_TABS.has(tab)) {
+    handlers.setActiveTopTab(tab as TopTab)
+  }
+  if (subTab === 'techCircle' || subTab === 'bingEquipment') {
+    handlers.setActiveSubTab(subTab)
+  }
+  if (divPayer === 'beacon' || divPayer === 'northmark' || divPayer === 'token') {
+    handlers.setActiveDivPayer(divPayer)
+  }
+  if (
+    intPayer === 'harborline'
+    || intPayer === 'cascade'
+    || intPayer === 'unwavering'
+  ) {
+    handlers.setActiveIntPayer(intPayer)
+  }
+  if (field) {
+    handlers.setSelectedField(field)
+  }
+}
+
+function contextFromSearchParams(params: URLSearchParams): SourceDocumentPopoutContext {
+  const context: SourceDocumentPopoutContext = {}
+  const tab = params.get('tab')
+  if (tab) context.tab = tab
+  const subTab = params.get('subTab')
+  if (subTab) context.subTab = subTab
+  const divPayer = params.get('divPayer')
+  if (divPayer) context.divPayer = divPayer
+  const intPayer = params.get('intPayer')
+  if (intPayer) context.intPayer = intPayer
+  const field = params.get('field')
+  if (field) context.field = field
+  return context
+}
+
 export default function DataReviewPopout() {
   const [searchParams] = useSearchParams()
   const [sessionDirty, setSessionDirty] = useState(false)
   const [unsavedModalOpen, setUnsavedModalOpen] = useState(false)
   const [recalculatedFields, setRecalculatedFields] = useState<Set<string>>(new Set())
-  const initialNavApplied = useRef(false)
 
   const reviewRole = getStoredDemoRole() ?? 'preparer'
   const isReviewerConfirmMode = reviewRole === 'reviewer'
@@ -135,36 +181,48 @@ export default function DataReviewPopout() {
     touchDirty()
   }, [setFieldOverride, touchDirty])
 
+  const applyPopoutNavigation = useCallback((context: SourceDocumentPopoutContext) => {
+    applyPopoutContext(context, {
+      setActiveTopTab,
+      setActiveSubTab,
+      setActiveDivPayer,
+      setActiveIntPayer,
+      setSelectedField,
+    })
+  }, [setActiveTopTab, setActiveSubTab, setActiveDivPayer, setActiveIntPayer, setSelectedField])
+
   useEffect(() => {
-    if (initialNavApplied.current) return
-    initialNavApplied.current = true
-    const tab = searchParams.get('tab')
-    if (tab && POPOUT_TOP_TABS.has(tab)) {
-      setActiveTopTab(tab as TopTab)
+    applyPopoutNavigation(contextFromSearchParams(searchParams))
+  }, [searchParams, applyPopoutNavigation])
+
+  useEffect(() => {
+    const onHashChange = () => {
+      const hash = window.location.hash.replace(/^#/, '')
+      const q = hash.indexOf('?')
+      if (q === -1) return
+      applyPopoutNavigation(contextFromSearchParams(new URLSearchParams(hash.slice(q + 1))))
     }
-    const subTab = searchParams.get('subTab')
-    if (subTab === 'techCircle' || subTab === 'bingEquipment') {
-      setActiveSubTab(subTab)
+
+    const onMessage = (event: MessageEvent) => {
+      if (event.origin !== window.location.origin) return
+      if (event.data?.type !== 'source-doc-popout-nav') return
+      applyPopoutNavigation(event.data.context ?? {})
     }
-    const divPayer = searchParams.get('divPayer')
-    if (divPayer === 'beacon' || divPayer === 'northmark' || divPayer === 'token') {
-      setActiveDivPayer(divPayer)
+
+    const navChannel = new BroadcastChannel(SOURCE_DOC_POPOUT_NAV_CHANNEL)
+    navChannel.onmessage = (event: MessageEvent<SourceDocumentPopoutContext>) => {
+      applyPopoutNavigation(event.data ?? {})
     }
-    const intPayer = searchParams.get('intPayer')
-    if (
-      intPayer === 'harborline'
-      || intPayer === 'cascade'
-      || intPayer === 'unwavering'
-    ) {
-      setActiveIntPayer(intPayer)
+
+    window.addEventListener('hashchange', onHashChange)
+    window.addEventListener('message', onMessage)
+
+    return () => {
+      window.removeEventListener('hashchange', onHashChange)
+      window.removeEventListener('message', onMessage)
+      navChannel.close()
     }
-  }, [
-    searchParams,
-    setActiveTopTab,
-    setActiveSubTab,
-    setActiveDivPayer,
-    setActiveIntPayer,
-  ])
+  }, [applyPopoutNavigation])
 
   useEffect(() => {
     if (!baselineRef.current) {

@@ -14,7 +14,7 @@ import LeftNavPTO from './data-review/LeftNavPTO'
 import layout from '../styles/CoreScreenLayout.module.css'
 import styles from '../styles/ImportConfirmationPage.module.css'
 import { completeDocumentImport } from '../hooks/useSyncedReviewState'
-import { OUTPUT_REVIEW_PATH } from '../lib/prototypeRoutes'
+import { openReviewReturnPopout } from '../lib/prototypeRoutes'
 
 export default function ImportConfirmationPage() {
   const navigate = useNavigate()
@@ -43,7 +43,7 @@ export default function ImportConfirmationPage() {
   }
 
   const handleReviewReturn = () => {
-    navigate(OUTPUT_REVIEW_PATH)
+    openReviewReturnPopout('1040')
   }
 
   return (

@@ -5,7 +5,7 @@ import ReturnContextRail from '../components/ReturnContextRail'
 import LeftNavPTO from './data-review/LeftNavPTO'
 import InputMenuNav from './input-return/InputMenuNav'
 import { useNavigate } from 'react-router-dom'
-import { OUTPUT_REVIEW_PATH } from '../lib/prototypeRoutes'
+import { openReviewReturnPopout } from '../lib/prototypeRoutes'
 import InputFormPanel from './input-return/InputFormPanel'
 import {
   inputNavItemById,
@@ -126,7 +126,7 @@ export default function InputReturnPage() {
           <SmartReturnHeader
             activeTab="inputreturn"
             showReviewReturn
-            onReviewReturn={() => navigate(OUTPUT_REVIEW_PATH)}
+            onReviewReturn={() => openReviewReturnPopout('1040')}
           />
 
           <div className={styles.contentArea}>

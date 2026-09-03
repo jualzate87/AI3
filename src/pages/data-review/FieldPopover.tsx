@@ -7,6 +7,10 @@ import { getQuestionnairePopoverSupplement } from './questionnaireData'
 import {
   SourcePopoverFooter,
   SourcePopoverItems,
+  SourcePopoverShell,
+  computeSourcePopoverPosition,
+  sourceDocCountSubtitle,
+  sourcePopoverTitle,
   type SourcePopoverItem,
 } from './SourcePopover'
 import styles from '../../styles/data-review/FieldPopover.module.css'
@@ -190,10 +194,14 @@ interface FieldPopoverProps {
   /** Viewport rect of the value cell — used for fixed positioning */
   anchorRect: DOMRect
   onClose: () => void
+  /** Output screens (Check return) use the unified Figma source popover — no YoY / assist header. */
+  variant?: 'default' | 'output'
   /** Legacy source-link handler (label match) */
   onViewSource?: (fieldName: string, sourceLabel?: string) => void
   /** Navigate to a specific source document + highlight the detail field */
   onNavigateSource?: (source: FieldOriginSource) => void
+  /** Open source document preview only (View document). */
+  onNavigateToSourceDoc?: (docId: string) => void
   /** Live origin breakdown (sources / calc) */
   origin?: FieldOrigin | null
   /** Override current-year amount (live totals) */
@@ -220,8 +228,10 @@ export default function FieldPopover({
   fieldName,
   anchorRect,
   onClose,
+  variant = 'default',
   onViewSource,
   onNavigateSource,
+  onNavigateToSourceDoc,
   origin,
   liveCurrent,
 }: FieldPopoverProps) {
@@ -299,11 +309,6 @@ export default function FieldPopover({
     onViewSource?.(fieldName, s.label)
   }
 
-  const handleSourceNavigate = (docId: string) => {
-    const match = sources?.find(s => s.docId === docId)
-    if (match) handleSourceClick(match)
-    else onViewSource?.(fieldName)
-  }
 
   const sourcePopoverItems: SourcePopoverItem[] = hasOriginSources
     ? sources!.map(s => ({
@@ -311,6 +316,7 @@ export default function FieldPopover({
         label: s.box ? `${s.label} · ${s.box}` : s.label,
         amount: s.amount,
         docId: s.docId,
+        detailFieldId: s.detailFieldId,
       }))
     : (legacySources ?? []).map(s => ({
         id: s.label,
@@ -320,6 +326,112 @@ export default function FieldPopover({
 
   const sourceTotal = sourcePopoverItems.reduce((sum, item) => sum + (item.amount ?? 0), 0)
   const showSourceBlock = sourcePopoverItems.length > 0
+  const isOutputVariant = variant === 'output'
+
+  const handleViewDocument = (docId: string) => {
+    const match = sources?.find(s => s.docId === docId)
+    if (onNavigateToSourceDoc) {
+      onNavigateToSourceDoc(docId)
+    } else if (match) {
+      handleSourceClick(match)
+    } else {
+      onViewSource?.(fieldName)
+    }
+    onClose()
+  }
+
+  const handleViewInput = (docId: string, detailFieldId?: string) => {
+    const match = sources?.find(s => s.docId === docId)
+    if (match && onNavigateSource) {
+      onNavigateSource({
+        ...match,
+        detailFieldId: detailFieldId ?? match.detailFieldId,
+      })
+    } else if (onNavigateToSourceDoc) {
+      onNavigateToSourceDoc(docId)
+    } else {
+      onViewSource?.(fieldName, match?.label)
+    }
+    onClose()
+  }
+
+  if (isOutputVariant) {
+    const { top, left, beakSide } = computeSourcePopoverPosition(anchorRect, POPOVER_WIDTH)
+    const shellTitle = showSourceBlock
+      ? sourcePopoverTitle(label, 'source')
+      : label
+
+    return createPortal(
+      <div ref={ref} style={{ position: 'fixed', top, left, transform: 'translateY(-50%)', zIndex: 10000 }}>
+        <SourcePopoverShell
+          title={shellTitle}
+          subtitle={showSourceBlock ? sourceDocCountSubtitle(sourcePopoverItems) : undefined}
+          onClose={onClose}
+          beakSide={beakSide}
+          className={`${sourceStyles.popoverWide} ${styles.popover}`}
+          style={{ width: POPOVER_WIDTH }}
+          footer={
+            showSourceBlock ? (
+              <SourcePopoverFooter label="Total from sources" value={sourceTotal} variant="source" />
+            ) : calc ? (
+              <SourcePopoverFooter label={calc.totalLabel} value={calc.total} variant="calc" />
+            ) : undefined
+          }
+        >
+          {showSourceBlock && (
+            <SourcePopoverItems
+              mode="source"
+              items={sourcePopoverItems}
+              onViewDocument={hasOriginSources ? handleViewDocument : undefined}
+              onViewInput={hasOriginSources ? handleViewInput : undefined}
+              onItemClick={
+                !hasOriginSources
+                  ? item => {
+                      onViewSource?.(fieldName, item.label)
+                      onClose()
+                    }
+                  : undefined
+              }
+            />
+          )}
+
+          {note && (
+            <p className={sourceStyles.itemNote}>{note}</p>
+          )}
+
+          {calc && calc.components.length > 0 && (
+            <>
+              <p className={sourceStyles.calcFormula}>{calc.formula}</p>
+              <ul className={sourceStyles.calcList}>
+                {calc.components.map((comp, i) => (
+                  <li key={i} className={sourceStyles.calcRow}>
+                    <span className={sourceStyles.calcOp}>{comp.operator ?? '+'}</span>
+                    <span className={sourceStyles.calcLabel}>{comp.label}</span>
+                    <span className={sourceStyles.calcValue}>${fmt(comp.amount)}</span>
+                  </li>
+                ))}
+              </ul>
+              {calc.footnote && <p className={sourceStyles.footnote}>{calc.footnote}</p>}
+            </>
+          )}
+
+          {questionnaireSupplement.length > 0 && (
+            <>
+              {questionnaireSupplement.map(item => (
+                <p key={`${item.topic}-${item.note}`} className={styles.noteText}>
+                  <strong>{item.topic}</strong>
+                  {' — '}
+                  {item.note}
+                  <span className={styles.questionnaireSource}> ({item.sourceLabel})</span>
+                </p>
+              ))}
+            </>
+          )}
+        </SourcePopoverShell>
+      </div>,
+      document.body,
+    )
+  }
 
   return createPortal(
     <div
@@ -397,19 +509,20 @@ export default function FieldPopover({
       {showSourceBlock && (
         <div className={styles.sourcesSection}>
           <p className={sourceStyles.subtitle}>
-            Select a source below to open its document.
+            {sourceDocCountSubtitle(sourcePopoverItems)}
           </p>
           <SourcePopoverItems
             mode="source"
             items={sourcePopoverItems}
-            onNavigateToDoc={hasOriginSources ? handleSourceNavigate : undefined}
+            onViewDocument={hasOriginSources ? handleViewDocument : undefined}
+            onViewInput={hasOriginSources ? handleViewInput : undefined}
             onItemClick={
               !hasOriginSources
                 ? item => onViewSource?.(fieldName, item.label)
                 : undefined
             }
           />
-          <SourcePopoverFooter label="Total from sources" value={sourceTotal} />
+          <SourcePopoverFooter label="Total from sources" value={sourceTotal} variant="source" />
         </div>
       )}
 

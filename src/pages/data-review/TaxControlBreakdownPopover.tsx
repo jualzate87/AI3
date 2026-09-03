@@ -54,7 +54,7 @@ export default function TaxControlBreakdownPopover({
         footnote={breakdown.footnote}
         beakSide={beakSide}
         style={{ position: 'fixed', top, left, transform: 'translateY(-50%)', zIndex: 300 }}
-        footer={<SourcePopoverFooter label={breakdown.totalLabel} value={breakdown.total} />}
+        footer={<SourcePopoverFooter label={breakdown.totalLabel} value={breakdown.total} variant="calc" />}
       >
         <ul className={styles.calcList}>
           {breakdown.components.map((comp, i) => (

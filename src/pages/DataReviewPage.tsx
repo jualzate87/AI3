@@ -3,7 +3,7 @@ import { useLocation, useNavigate, useSearchParams } from 'react-router-dom'
 import {
   VALID_DATA_REVIEW_ENTRIES,
   setStoredDemoRole,
-  buildHashRouteUrl,
+  openSourceDocumentReviewPopout,
 } from '../lib/prototypeRoutes'
 import { useSyncedReviewState } from '../hooks/useSyncedReviewState'
 import { DotsSix, Panel, ChevronLeft, ChevronRight, CommentDots, ClockCounterclockwise, PopOut } from '@design-systems/icons'
@@ -891,12 +891,12 @@ export default function DataReviewPage() {
   }, [phase, reviewRole, setSelectedField, importsStarted, startReviewingImports, ensureSourcePanelVisible])
 
   const handleNavigateToSourceDoc = useCallback((docId: string) => {
-    openSourceDocumentById(docId, selectedField, setSelectedField)
+    openSourceDocumentById(docId, selectedField, setSelectedField, 'document')
   }, [selectedField, setSelectedField])
 
   /** From FieldPopover source row — open detached source-document review. */
   const handleNavigateSource = useCallback((source: FieldOriginSource) => {
-    openSourceDocumentFromFieldOrigin(source, setSelectedField)
+    openSourceDocumentFromFieldOrigin(source, setSelectedField, 'input')
   }, [setSelectedField])
 
   /** ProtoC: 1040 row click selects/highlights only — does not open Sources until user follows a source link or banner CTA. */
@@ -1487,11 +1487,7 @@ export default function DataReviewPage() {
 
   const handlePopOutSourcePanel = useCallback(() => {
     setPoppedOut(true)
-    const popoutWindow = window.open(
-      buildHashRouteUrl('/data-review-popout'),
-      '_blank',
-      'width=950,height=900',
-    )
+    const popoutWindow = openSourceDocumentReviewPopout()
     if (popoutWindow) {
       const checkClosed = window.setInterval(() => {
         if (popoutWindow.closed) {

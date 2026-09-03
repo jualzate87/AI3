@@ -1,0 +1,60 @@
+/* Figma node 34240:165564 — focused review return window header */
+
+.header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-shrink: 0;
+  min-height: 63px;
+  padding: 0 var(--space-container-padding-medium, 20px);
+  background: var(--color-page-background-secondary, #f0f4f6);
+  border-bottom: 1px solid var(--color-container-border-primary, #c3ced5);
+}
+
+.metaGroup {
+  display: flex;
+  align-items: center;
+  gap: var(--space-column-gap-medium, 16px);
+}
+
+.clientName {
+  font-family: var(--font-family-component);
+  font-size: var(--font-size-component-medium);
+  font-weight: var(--font-weight-component-bold);
+  line-height: 1.2;
+  color: var(--color-text-primary);
+}
+
+.divider {
+  width: 1px;
+  height: 38px;
+  background: var(--color-divider-tertiary);
+}
+
+.metaItem {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-component-gap-x-small, 4px);
+  padding: var(--space-component-gap-x-small, 8px);
+}
+
+.metaLabel {
+  font-family: var(--font-family-component);
+  font-size: var(--font-size-body-4);
+  color: var(--color-text-secondary);
+  line-height: 1.33;
+}
+
+.metaValue {
+  font-family: var(--font-family-component);
+  font-size: var(--font-size-component-medium);
+  font-weight: var(--font-weight-component-bold);
+  color: var(--color-text-primary);
+  line-height: 1.5;
+}
+
+.actions {
+  display: flex;
+  align-items: center;
+  gap: var(--space-column-gap-medium, 16px);
+}

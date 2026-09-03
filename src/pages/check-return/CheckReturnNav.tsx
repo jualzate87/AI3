@@ -4,7 +4,6 @@ import { ChevronDown, ChevronLeft, ChevronRight, ChevronUp, Search } from '@desi
 import { NumericBadge } from '@ids-ts/badge'
 import '@ids-ts/badge/dist/main.css'
 import ModeSegmentedControl from '../../components/ModeSegmentedControl'
-import { OUTPUT_REVIEW_PATH } from '../../lib/prototypeRoutes'
 import styles from '../../styles/check-return/CheckReturnNav.module.css'
 
 export type ContentView = 'federal-summary' | 'california-summary' | 'form-output'
@@ -54,6 +53,7 @@ const DIAGNOSTIC_NAV_ITEMS: { label: string; badge?: number }[] = [
 ]
 
 interface CheckReturnNavProps {
+  variant?: 'full' | 'focused'
   contentView: ContentView
   selectedForm: string | null
   onSelectFederal: () => void
@@ -155,6 +155,7 @@ function NavFlatRow({
 }
 
 export default function CheckReturnNav({
+  variant = 'full',
   contentView,
   selectedForm,
   onSelectFederal,
@@ -162,8 +163,9 @@ export default function CheckReturnNav({
   onSelectForm,
 }: CheckReturnNavProps) {
   const navigate = useNavigate()
+  const focused = variant === 'focused'
   const [expandedCategory, setExpandedCategory] = useState<'forms' | 'tax-summary' | null>(
-    'forms',
+    focused ? 'forms' : 'forms',
   )
 
   const toggleCategory = (category: 'forms' | 'tax-summary') => {
@@ -214,7 +216,7 @@ export default function CheckReturnNav({
       ) : (
         <>
           <div className={styles.menuHeader}>
-            <span className={styles.menuTitle}>Check menu</span>
+            <span className={styles.menuTitle}>{focused ? 'Review return' : 'Check menu'}</span>
             <button
               type="button"
               className={styles.menuCollapseBtn}
@@ -225,16 +227,28 @@ export default function CheckReturnNav({
             </button>
           </div>
 
-          <ModeSegmentedControl
-            ariaLabel="Input or review"
-            options={[
-              { id: 'input', label: 'Input', onClick: () => navigate('/input-return') },
-              { id: 'review', label: 'Review', onClick: () => navigate(OUTPUT_REVIEW_PATH) },
-            ]}
-          />
-
           <div className={styles.menuNavScroll}>
             <nav className={styles.leftNav}>
+        {focused && (
+          <div className={styles.navSection}>
+            <NavCategoryHeader
+              label="Tax Summary"
+              expanded={expandedCategory === 'tax-summary'}
+              onToggle={() => toggleCategory('tax-summary')}
+            />
+
+            {expandedCategory === 'tax-summary' &&
+              TAX_SUMMARY_ITEMS.map(item => (
+                <NavSecondaryItem
+                  key={item.id}
+                  label={item.label}
+                  active={contentView === item.id}
+                  onClick={item.id === 'federal-summary' ? onSelectFederal : onSelectCalifornia}
+                />
+              ))}
+          </div>
+        )}
+
         {/* Level 1: Forms */}
         <div className={styles.navSection}>
           <NavCategoryHeader
@@ -310,36 +324,41 @@ export default function CheckReturnNav({
           )}
         </div>
 
-        {/* Level 1: Tax Summary */}
-        <div className={styles.navSection}>
-          <NavCategoryHeader
-            label="Tax Summary"
-            expanded={expandedCategory === 'tax-summary'}
-            onToggle={() => toggleCategory('tax-summary')}
-          />
+        {!focused && (
+          <div className={styles.navSection}>
+            <NavCategoryHeader
+              label="Tax Summary"
+              expanded={expandedCategory === 'tax-summary'}
+              onToggle={() => toggleCategory('tax-summary')}
+            />
 
-          {expandedCategory === 'tax-summary' &&
-            TAX_SUMMARY_ITEMS.map(item => (
-              <NavSecondaryItem
-                key={item.id}
-                label={item.label}
-                active={contentView === item.id}
-                onClick={item.id === 'federal-summary' ? onSelectFederal : onSelectCalifornia}
-              />
+            {expandedCategory === 'tax-summary' &&
+              TAX_SUMMARY_ITEMS.map(item => (
+                <NavSecondaryItem
+                  key={item.id}
+                  label={item.label}
+                  active={contentView === item.id}
+                  onClick={item.id === 'federal-summary' ? onSelectFederal : onSelectCalifornia}
+                />
+              ))}
+          </div>
+        )}
+
+        {!focused && (
+          <>
+            <NavFlatRow
+              label="Return Insights"
+              onClick={() => navigate('/check-return/insights')}
+            />
+
+            {DIAGNOSTIC_NAV_ITEMS.map(item => (
+              <NavFlatRow key={item.label} label={item.label} badge={item.badge} />
             ))}
-        </div>
 
-        <NavFlatRow
-          label="Return Insights"
-          onClick={() => navigate('/check-return/insights')}
-        />
-
-        {DIAGNOSTIC_NAV_ITEMS.map(item => (
-          <NavFlatRow key={item.label} label={item.label} badge={item.badge} />
-        ))}
-
-        <NavFlatRow label="Overrides" />
-        <NavFlatRow label="Suggestions" isLast />
+            <NavFlatRow label="Overrides" />
+            <NavFlatRow label="Suggestions" isLast />
+          </>
+        )}
             </nav>
           </div>
         </>

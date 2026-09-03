@@ -5,14 +5,12 @@ import SmartReturnDocumentHub from './SmartReturnDocumentHub'
 import LeftNavPTO from './data-review/LeftNavPTO'
 import layout from '../styles/CoreScreenLayout.module.css'
 import styles from '../styles/SmartReturnPage.module.css'
-import { useNavigate } from 'react-router-dom'
 import {
-  OUTPUT_REVIEW_PATH,
+  openReviewReturnPopout,
   setStoredDemoRole,
 } from '../lib/prototypeRoutes'
 
 export default function SmartReturnPage() {
-  const navigate = useNavigate()
   const [searchParams] = useSearchParams()
   const roleParam = searchParams.get('role')
   const [reviewRole, setReviewRole] = useState<'preparer' | 'reviewer'>(() =>
@@ -43,7 +41,7 @@ export default function SmartReturnPage() {
   }, [])
 
   const handleReviewReturn = () => {
-    navigate(OUTPUT_REVIEW_PATH)
+    openReviewReturnPopout('1040')
   }
 
   const isReviewer = reviewRole === 'reviewer'

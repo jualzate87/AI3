@@ -1,5 +1,5 @@
 import { useEffect, useRef, type ReactNode } from 'react'
-import { Close, Document } from '@design-systems/icons'
+import { Close, Document, Edit } from '@design-systems/icons'
 import type { TaxControlDocEntry } from '../../data/sourceDocuments'
 import { parseCurrency } from '../../data/sourceDocuments'
 import styles from '../../styles/data-review/SourcePopover.module.css'
@@ -9,8 +9,10 @@ export type SourcePopoverItem = {
   id: string
   label: string
   amount?: number
-  /** When set in `source` mode, card click opens this document. */
+  /** When set in `source` mode, card actions open this document. */
   docId?: string
+  /** Detail field for View input navigation. */
+  detailFieldId?: string
   /** Optional body text (info cards / notes). */
   note?: string
 }
@@ -18,7 +20,7 @@ export type SourcePopoverItem = {
 export type SourcePopoverMode = 'source' | 'calc' | 'info'
 
 const DEFAULT_SUBTITLE: Record<SourcePopoverMode, string> = {
-  source: 'Select a source below to open its document.',
+  source: '',
   calc: 'Amounts included in this total.',
   info: 'About this amount.',
 }
@@ -31,6 +33,17 @@ const DEFAULT_SUM_LABEL: Record<SourcePopoverMode, string> = {
 
 function fmt(n: number) {
   return n.toLocaleString()
+}
+
+export function sourcePopoverTitle(rowLabel: string, mode: SourcePopoverMode = 'source'): string {
+  if (mode !== 'source') return rowLabel
+  if (rowLabel.toLowerCase().startsWith('inputs for ')) return rowLabel
+  return `Inputs for ${rowLabel}`
+}
+
+export function sourceDocCountSubtitle(items: SourcePopoverItem[]): string {
+  const count = items.filter(item => item.docId).length || items.length
+  return `${count} document${count === 1 ? '' : 's'}`
 }
 
 export function computeSourcePopoverPosition(anchorRect: DOMRect, popWidth = 300) {
@@ -47,6 +60,10 @@ export function computeSourcePopoverPosition(anchorRect: DOMRect, popWidth = 300
 interface SourcePopoverItemsProps {
   mode?: SourcePopoverMode
   items: SourcePopoverItem[]
+  detailFieldIdByDocId?: Record<string, string>
+  onViewDocument?: (docId: string) => void
+  onViewInput?: (docId: string, detailFieldId?: string) => void
+  /** @deprecated Use onViewDocument */
   onNavigateToDoc?: (docId: string) => void
   /** Click handler for cards without doc navigation (legacy label-only sources). */
   onItemClick?: (item: SourcePopoverItem) => void
@@ -56,14 +73,21 @@ interface SourcePopoverItemsProps {
 export function SourcePopoverItems({
   mode = 'source',
   items,
+  detailFieldIdByDocId,
+  onViewDocument,
+  onViewInput,
   onNavigateToDoc,
   onItemClick,
 }: SourcePopoverItemsProps) {
+  const handleViewDocument = onViewDocument ?? onNavigateToDoc
+
   return (
     <div className={styles.itemList}>
       {items.map(item => {
-        const isSourceNav = mode === 'source' && !!item.docId && !!onNavigateToDoc
-        const isLegacyClick = !isSourceNav && !!onItemClick
+        const docId = item.docId
+        const detailFieldId = item.detailFieldId ?? (docId ? detailFieldIdByDocId?.[docId] : undefined)
+        const showDocActions = mode === 'source' && !!docId && (!!handleViewDocument || !!onViewInput)
+        const isLegacyClick = !showDocActions && !!onItemClick
         const amount = item.amount
         const content = (
           <>
@@ -74,26 +98,44 @@ export function SourcePopoverItems({
               )}
             </div>
             {item.note && <p className={styles.itemNote}>{item.note}</p>}
-            {isSourceNav && (
-              <span className={styles.viewSource}>
-                <Document size="small" />
-                View source
-              </span>
+            {showDocActions && (
+              <div className={styles.cardActions}>
+                {handleViewDocument && (
+                  <button
+                    type="button"
+                    className={styles.cardActionLink}
+                    onClick={() => handleViewDocument(docId!)}
+                  >
+                    <Document size="small" aria-hidden />
+                    View document
+                  </button>
+                )}
+                {handleViewDocument && onViewInput && (
+                  <span className={styles.cardActionSep} aria-hidden>|</span>
+                )}
+                {onViewInput && (
+                  <button
+                    type="button"
+                    className={styles.cardActionLink}
+                    onClick={() => onViewInput(docId!, detailFieldId)}
+                  >
+                    <Edit size="small" aria-hidden />
+                    View input
+                  </button>
+                )}
+              </div>
             )}
           </>
         )
 
-        if (isSourceNav || isLegacyClick) {
+        if (isLegacyClick) {
           return (
             <button
               key={item.id}
               type="button"
               className={styles.sourceCard}
-              onClick={() => {
-                if (isSourceNav) onNavigateToDoc?.(item.docId!)
-                else onItemClick?.(item)
-              }}
-              aria-label={`View source document for ${item.label}`}
+              onClick={() => onItemClick?.(item)}
+              aria-label={`View source for ${item.label}`}
             >
               {content}
             </button>
@@ -118,11 +160,12 @@ export function SourcePopoverItems({
 interface SourcePopoverFooterProps {
   label: string
   value: number
+  variant?: 'source' | 'calc' | 'info'
 }
 
-export function SourcePopoverFooter({ label, value }: SourcePopoverFooterProps) {
+export function SourcePopoverFooter({ label, value, variant = 'source' }: SourcePopoverFooterProps) {
   return (
-    <div className={styles.footerRow}>
+    <div className={variant === 'source' ? styles.footerRowPlain : styles.footerRow}>
       <span className={styles.footerLabel}>{label}</span>
       <span className={styles.footerValue}>${fmt(value)}</span>
     </div>
@@ -186,6 +229,10 @@ interface SourcePopoverProps {
   sumLabel?: string
   sumValue?: number
   footnote?: string
+  detailFieldIdByDocId?: Record<string, string>
+  onViewDocument?: (docId: string) => void
+  onViewInput?: (docId: string, detailFieldId?: string) => void
+  /** @deprecated Use onViewDocument */
   onNavigateToDoc?: (docId: string) => void
   anchorRect: DOMRect
   onClose: () => void
@@ -200,6 +247,9 @@ export default function SourcePopover({
   sumLabel,
   sumValue,
   footnote,
+  detailFieldIdByDocId,
+  onViewDocument,
+  onViewInput,
   onNavigateToDoc,
   anchorRect,
   onClose,
@@ -228,26 +278,32 @@ export default function SourcePopover({
   const footerValue = sumValue ?? itemsSum
   const showFooter = sumLabel !== undefined || mode !== 'info' || items.some(i => i.amount !== undefined)
   const footerLabel = sumLabel ?? DEFAULT_SUM_LABEL[mode]
+  const displayTitle = sourcePopoverTitle(rowLabel, mode)
+  const displaySubtitle = subtitle
+    ?? (mode === 'source' ? sourceDocCountSubtitle(items) : DEFAULT_SUBTITLE[mode])
   const { top, left, beakSide } = computeSourcePopoverPosition(anchorRect)
 
   return (
     <div ref={ref}>
       <SourcePopoverShell
-        title={rowLabel}
-        subtitle={subtitle ?? DEFAULT_SUBTITLE[mode]}
+        title={displayTitle}
+        subtitle={displaySubtitle}
         onClose={onClose}
         footnote={footnote}
         beakSide={beakSide}
         style={{ position: 'fixed', top, left, transform: 'translateY(-50%)', zIndex: 300 }}
         footer={
           showFooter ? (
-            <SourcePopoverFooter label={footerLabel} value={footerValue} />
+            <SourcePopoverFooter label={footerLabel} value={footerValue} variant={mode} />
           ) : undefined
         }
       >
         <SourcePopoverItems
           mode={mode}
           items={items}
+          detailFieldIdByDocId={detailFieldIdByDocId}
+          onViewDocument={onViewDocument}
+          onViewInput={onViewInput}
           onNavigateToDoc={onNavigateToDoc}
         />
       </SourcePopoverShell>

@@ -2,12 +2,15 @@
 
 .popover {
   position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-component-gap-large, 16px);
   width: 300px;
   background: var(--color-container-background-primary);
-  border: 1px solid var(--color-divider-tertiary);
+  border: 1px solid var(--color-container-border-primary, var(--color-divider-tertiary));
   border-radius: var(--radius-medium, 8px);
-  box-shadow: var(--elevation-overlay, 0 4px 16px rgba(0, 0, 0, 0.12));
-  padding: var(--space-container-padding-x-small, 12px) var(--space-component-gap-medium, 14px);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+  padding: var(--space-container-padding-x-small, 12px);
   box-sizing: border-box;
 }
 
@@ -31,7 +34,7 @@
   transform: translateY(-50%);
   border-top: 8px solid transparent;
   border-bottom: 8px solid transparent;
-  border-right: 8px solid var(--color-divider-tertiary);
+  border-right: 8px solid var(--color-container-border-primary, var(--color-divider-tertiary));
 }
 
 .popoverBeakLeft::after {
@@ -47,7 +50,7 @@
   transform: translateY(-50%);
   border-top: 8px solid transparent;
   border-bottom: 8px solid transparent;
-  border-left: 8px solid var(--color-divider-tertiary);
+  border-left: 8px solid var(--color-container-border-primary, var(--color-divider-tertiary));
 }
 
 .popoverBeakRight::after {
@@ -62,14 +65,16 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  margin-bottom: var(--space-component-gap-x-small, 6px);
+  gap: var(--space-component-gap-small, 8px);
 }
 
 .title {
   font-family: var(--font-family-component);
-  font-size: var(--font-size-component-small);
+  font-size: var(--font-size-component-medium);
   font-weight: var(--font-weight-component-bold);
   color: var(--color-text-primary);
+  line-height: 1.25;
+  min-width: 0;
 }
 
 .closeBtn {
@@ -80,6 +85,7 @@
   color: var(--color-text-secondary);
   display: flex;
   align-items: center;
+  flex-shrink: 0;
 }
 
 .closeBtn:hover {
@@ -87,43 +93,37 @@
 }
 
 .subtitle {
-  font-family: var(--font-family-component);
-  font-size: var(--font-size-component-x-small);
+  font-family: var(--font-family-body);
+  font-size: var(--font-size-body-4);
   color: var(--color-text-secondary);
-  margin: 0 0 var(--space-component-gap-small, 10px);
-  line-height: 1.4;
+  margin: calc(-1 * var(--space-component-gap-small, 8px)) 0 0;
+  line-height: 1.33;
 }
 
 .itemList {
   display: flex;
   flex-direction: column;
-  gap: var(--space-component-gap-small, 4px);
+  gap: var(--space-component-gap-small, 8px);
 }
 
 .sourceCard {
   display: flex;
   flex-direction: column;
-  gap: var(--space-component-gap-x-small, 4px);
+  gap: var(--space-component-gap-small, 8px);
   width: 100%;
-  padding: var(--space-component-gap-x-small, 8px) var(--space-component-gap-small, 10px);
-  border: 1px solid var(--color-divider-tertiary);
-  border-radius: var(--radius-small, 6px);
+  padding: var(--space-component-gap-small, 8px);
+  border: 1px solid var(--color-container-border-primary, var(--color-divider-tertiary));
+  border-radius: var(--radius-large, 8px);
   background: var(--color-container-background-primary);
   cursor: pointer;
   text-align: left;
   font-family: var(--font-family-component);
   box-sizing: border-box;
-  transition: background 120ms ease, border-color 120ms ease, box-shadow 120ms ease;
+  transition: background 120ms ease, border-color 120ms ease;
 }
 
 .sourceCard:hover {
   background: var(--color-container-background-secondary);
-  border-color: var(--color-action-standard);
-}
-
-.sourceCard:active {
-  background: var(--color-container-background-tertiary);
-  border-color: var(--color-action-standard-active);
 }
 
 .sourceCard:focus-visible {
@@ -131,42 +131,35 @@
   outline-offset: 2px;
 }
 
-/* Non-navigating cards (calc / info) — same chrome, no hover link affordance */
 .sourceCardStatic {
   cursor: default;
 }
 
-.sourceCardStatic:hover,
-.sourceCardStatic:active {
+.sourceCardStatic:hover {
   background: var(--color-container-background-primary);
-  border-color: var(--color-divider-tertiary);
-  box-shadow: none;
+  border-color: var(--color-container-border-primary, var(--color-divider-tertiary));
 }
 
 .cardMain {
   display: flex;
   align-items: baseline;
   justify-content: space-between;
-  gap: var(--space-component-gap-x-small, 8px);
+  gap: var(--space-component-gap-small, 8px);
   min-width: 0;
 }
 
 .cardLabel {
-  font-size: var(--font-size-component-x-small);
-  font-weight: var(--font-weight-component-semibold);
-  color: var(--color-action-standard);
+  font-size: var(--font-size-body-3);
+  font-weight: var(--font-weight-body-semibold);
+  color: var(--color-text-primary);
   line-height: 1.35;
   min-width: 0;
   overflow-wrap: anywhere;
 }
 
-.sourceCardStatic .cardLabel {
-  color: var(--color-text-primary);
-}
-
 .cardAmount {
-  font-size: var(--font-size-component-small);
-  font-weight: var(--font-weight-component-bold);
+  font-size: var(--font-size-body-3);
+  font-weight: var(--font-weight-body-semibold);
   color: var(--color-text-primary);
   white-space: nowrap;
   flex-shrink: 0;
@@ -182,41 +175,74 @@
   line-height: 1.4;
 }
 
-.viewSource {
+.cardActions {
+  display: flex;
+  align-items: center;
+  gap: var(--space-component-gap-small, 8px);
+  flex-wrap: wrap;
+}
+
+.cardActionLink {
   display: inline-flex;
   align-items: center;
   gap: var(--space-component-gap-x-small, 4px);
-  font-size: var(--font-size-component-x-small);
-  font-weight: var(--font-weight-component-semibold);
-  color: var(--color-action-standard);
+  padding: 0;
+  border: none;
+  background: none;
+  cursor: pointer;
+  font-family: var(--font-family-component);
+  font-size: var(--font-size-body-4);
+  font-weight: var(--font-weight-component);
+  color: var(--color-link-text, var(--color-action-standard));
+  line-height: 1.33;
+}
+
+.cardActionLink:hover {
+  text-decoration: underline;
+}
+
+.cardActionLink:focus-visible {
+  outline: 2px solid var(--color-action-standard);
+  outline-offset: 2px;
+}
+
+.cardActionSep {
+  font-size: var(--font-size-body-4);
+  color: var(--color-text-tertiary);
+  line-height: 1;
 }
 
 .footerRow {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-top: var(--space-component-gap-small, 10px);
-  padding-top: var(--space-component-gap-small, 10px);
+  padding-top: var(--space-component-gap-small, 8px);
   border-top: 1px solid var(--color-divider-tertiary);
+}
+
+.footerRowPlain {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
 }
 
 .footerLabel {
   font-family: var(--font-family-component);
-  font-size: var(--font-size-component-x-small);
-  font-weight: var(--font-weight-component-bold);
-  color: var(--color-text-secondary);
+  font-size: var(--font-size-body-3);
+  font-weight: var(--font-weight-body-semibold);
+  color: var(--color-text-primary);
 }
 
 .footerValue {
   font-family: var(--font-family-component);
-  font-size: var(--font-size-component-medium);
-  font-weight: var(--font-weight-component-bold);
+  font-size: var(--font-size-body-3);
+  font-weight: var(--font-weight-body-semibold);
   color: var(--color-text-primary);
   font-variant-numeric: tabular-nums;
 }
 
 .footnote {
-  margin: var(--space-component-gap-x-small, 8px) 0 0;
+  margin: 0;
   font-family: var(--font-family-component);
   font-size: var(--font-size-component-x-small);
   color: var(--color-text-secondary);
@@ -225,7 +251,7 @@
 
 /* Calc breakdown rows (shared with FieldPopover calc section) */
 .calcFormula {
-  margin: 0 0 var(--space-component-gap-x-small, 8px);
+  margin: 0;
   font-family: var(--font-family-component);
   font-size: var(--font-size-component-x-small);
   color: var(--color-text-secondary);

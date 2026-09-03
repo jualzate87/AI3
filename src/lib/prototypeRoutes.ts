@@ -20,6 +20,7 @@ export const DEMO_ROLE_STORAGE_KEY = 'protoc-demo-role'
 /** Known hash routes (longest match first). */
 const KNOWN_HASH_ROUTES = [
   '/check-return/insights',
+  '/check-return-popout',
   '/check-return',
   '/import-confirmation',
   '/input-return',
@@ -51,11 +52,20 @@ export function openHashRoute(route: string, target = '_blank'): void {
 
 export const SOURCE_DOCUMENT_REVIEW_POPOUT_PATH = '/data-review-popout'
 
+/** BroadcastChannel for navigating an already-open source-doc popout. */
+export const SOURCE_DOC_POPOUT_NAV_CHANNEL = 'protoc3-source-doc-popout-nav'
+
+const SOURCE_DOC_POPOUT_WINDOW_NAME = 'smartreview-source-doc-review'
+
+let sourceDocPopoutWindow: Window | null = null
+
 export type SourceDocumentPopoutContext = {
   tab?: string
   subTab?: string
   divPayer?: string
   intPayer?: string
+  /** Detail field to focus in the input panel (View input). */
+  field?: string
 }
 
 /** Build hash route for the detached source-document review window. */
@@ -65,19 +75,87 @@ export function buildSourceDocumentPopoutRoute(context?: SourceDocumentPopoutCon
   if (context?.subTab) params.set('subTab', context.subTab)
   if (context?.divPayer) params.set('divPayer', context.divPayer)
   if (context?.intPayer) params.set('intPayer', context.intPayer)
+  if (context?.field) params.set('field', context.field)
   const qs = params.toString()
   return qs ? `${SOURCE_DOCUMENT_REVIEW_POPOUT_PATH}?${qs}` : SOURCE_DOCUMENT_REVIEW_POPOUT_PATH
 }
 
-/** Open source document review in a new window (doc preview + input fields). */
+function postPopoutNavigation(context?: SourceDocumentPopoutContext): void {
+  try {
+    const channel = new BroadcastChannel(SOURCE_DOC_POPOUT_NAV_CHANNEL)
+    channel.postMessage(context ?? {})
+    channel.close()
+  } catch {
+    // ignore — hash update still applies on reload
+  }
+  if (sourceDocPopoutWindow && !sourceDocPopoutWindow.closed) {
+    sourceDocPopoutWindow.postMessage(
+      { type: 'source-doc-popout-nav', context: context ?? {} },
+      window.location.origin,
+    )
+  }
+}
+
+/** Open source document review — reuses one popout window when already open. */
 export function openSourceDocumentReviewPopout(
   context?: SourceDocumentPopoutContext,
 ): Window | null {
-  return window.open(
-    buildHashRouteUrl(buildSourceDocumentPopoutRoute(context)),
-    '_blank',
-    'noopener,noreferrer,width=1447,height=960',
+  const url = buildHashRouteUrl(buildSourceDocumentPopoutRoute(context))
+
+  if (sourceDocPopoutWindow && !sourceDocPopoutWindow.closed) {
+    sourceDocPopoutWindow.focus()
+    try {
+      const hashRoute = buildSourceDocumentPopoutRoute(context)
+      const base = getPrototypeBaseUrl()
+      sourceDocPopoutWindow.location.replace(`${base}#${hashRoute}`)
+    } catch {
+      sourceDocPopoutWindow.location.href = url
+    }
+    postPopoutNavigation(context)
+    return sourceDocPopoutWindow
+  }
+
+  sourceDocPopoutWindow = window.open(
+    url,
+    SOURCE_DOC_POPOUT_WINDOW_NAME,
+    'width=1447,height=960',
   )
+  return sourceDocPopoutWindow
+}
+
+/** Focused review-return popout — tax summary + output forms only. */
+export const CHECK_RETURN_POPOUT_PATH = '/check-return-popout'
+
+const REVIEW_RETURN_POPOUT_WINDOW_NAME = 'smartreview-review-return'
+
+let reviewReturnPopoutWindow: Window | null = null
+
+/** Build hash route for the focused review-return popout window. */
+export function buildReviewReturnPopoutRoute(form: string = '1040'): string {
+  return `${CHECK_RETURN_POPOUT_PATH}?form=${form}`
+}
+
+/** Open focused review-return window — reuses existing window when already open. */
+export function openReviewReturnPopout(form: string = '1040'): Window | null {
+  const url = buildHashRouteUrl(buildReviewReturnPopoutRoute(form))
+
+  if (reviewReturnPopoutWindow && !reviewReturnPopoutWindow.closed) {
+    reviewReturnPopoutWindow.focus()
+    try {
+      const base = getPrototypeBaseUrl()
+      reviewReturnPopoutWindow.location.replace(`${base}#${buildReviewReturnPopoutRoute(form)}`)
+    } catch {
+      reviewReturnPopoutWindow.location.href = url
+    }
+    return reviewReturnPopoutWindow
+  }
+
+  reviewReturnPopoutWindow = window.open(
+    url,
+    REVIEW_RETURN_POPOUT_WINDOW_NAME,
+    'width=1280,height=900',
+  )
+  return reviewReturnPopoutWindow
 }
 
 /** Persist demo role for catch-all redirects when hash has no role param. */

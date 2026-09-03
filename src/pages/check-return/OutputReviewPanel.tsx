@@ -60,18 +60,18 @@ export default function OutputReviewPanel({ outputFormId }: OutputReviewPanelPro
     [setSelectedField],
   )
 
-  const handleNavigateSource = useCallback(
-    (source: FieldOriginSource) => {
-      openSourceDocumentFromFieldOrigin(source, setSelectedField)
-    },
-    [setSelectedField],
-  )
-
   const handleNavigateToSourceDoc = useCallback(
     (docId: string) => {
-      openSourceDocumentById(docId, selectedField, setSelectedField)
+      openSourceDocumentById(docId, selectedField, setSelectedField, 'document')
     },
     [selectedField, setSelectedField],
+  )
+
+  const handleViewSourceInput = useCallback(
+    (source: FieldOriginSource) => {
+      openSourceDocumentFromFieldOrigin(source, setSelectedField, 'input')
+    },
+    [setSelectedField],
   )
 
   const title = outputFormDisplayTitle(outputFormId)
@@ -128,7 +128,7 @@ export default function OutputReviewPanel({ outputFormId }: OutputReviewPanelPro
           liveAmounts={amounts}
           editedFields={editedFields}
           outputFormId={outputFormId}
-          onNavigateSource={handleNavigateSource}
+          onNavigateSource={handleViewSourceInput}
           onNavigateToSourceDoc={handleNavigateToSourceDoc}
         />
       </div>

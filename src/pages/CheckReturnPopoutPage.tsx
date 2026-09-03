@@ -1,17 +1,12 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useCallback, useEffect, useMemo, useState } from 'react'
 import { useSearchParams } from 'react-router-dom'
-import LeftNavPTO from './data-review/LeftNavPTO'
-import SmartReturnHeader from './SmartReturnHeader'
-import ReturnContextRail from '../components/ReturnContextRail'
 import CheckReturnNav, { type ContentView } from './check-return/CheckReturnNav'
 import CheckReturnMainContent from './check-return/CheckReturnMainContent'
-import {
-  checkReturnFormToOutputId,
-} from './check-return/outputFormNav'
+import ReviewReturnPopoutHeader from './check-return/ReviewReturnPopoutHeader'
+import { checkReturnFormToOutputId } from './check-return/outputFormNav'
 import type { OutputFormId } from './data-review/outputForms'
 import { openSourceDocumentReviewPopout } from '../lib/prototypeRoutes'
-import layout from '../styles/CoreScreenLayout.module.css'
-import styles from '../styles/CheckReturnPage.module.css'
+import styles from '../styles/check-return/CheckReturnPopoutPage.module.css'
 
 function resolveInitialOutputForm(searchParams: URLSearchParams): OutputFormId {
   const formParam = searchParams.get('form')
@@ -21,17 +16,21 @@ function resolveInitialOutputForm(searchParams: URLSearchParams): OutputFormId {
   return '1040'
 }
 
-export default function CheckReturnPage() {
+const FORM_PARAM_LABELS: Record<string, string> = {
+  '1040': '1040',
+  sch1: 'Sch 1',
+  schC: 'Sch C',
+  schD: 'Sch D',
+  schA: 'Sch A',
+}
+
+/** Focused review-return window — tax summary + output forms only (Figma 34240:165563). */
+export default function CheckReturnPopoutPage() {
   const [searchParams] = useSearchParams()
   const initialForm = useMemo(() => resolveInitialOutputForm(searchParams), [searchParams])
-  const openFormFromUrl = searchParams.get('form') != null
 
-  const [contentView, setContentView] = useState<ContentView>(() =>
-    openFormFromUrl ? 'form-output' : 'federal-summary',
-  )
-  const [selectedForm, setSelectedForm] = useState<string | null>(() =>
-    openFormFromUrl ? '1040' : null,
-  )
+  const [contentView, setContentView] = useState<ContentView>('form-output')
+  const [selectedForm, setSelectedForm] = useState<string | null>('1040')
   const [outputFormId, setOutputFormId] = useState<OutputFormId>(initialForm)
 
   useEffect(() => {
@@ -50,11 +49,12 @@ export default function CheckReturnPage() {
   }, [])
 
   useEffect(() => {
-    if (!openFormFromUrl) return
+    const formParam = searchParams.get('form')
+    if (!formParam) return
+    setOutputFormId(resolveInitialOutputForm(searchParams))
+    setSelectedForm(FORM_PARAM_LABELS[formParam] ?? '1040')
     setContentView('form-output')
-    setSelectedForm('1040')
-    setOutputFormId(initialForm)
-  }, [openFormFromUrl, initialForm])
+  }, [searchParams])
 
   const handleSelectFederal = () => {
     setContentView('federal-summary')
@@ -75,33 +75,30 @@ export default function CheckReturnPage() {
     }
   }
 
-  return (
-    <div className={`${layout.page} ${styles.page}`} data-theme="intuit">
-      <div className={layout.body}>
-        <LeftNavPTO />
-        <div className={layout.rightSide}>
-          <SmartReturnHeader
-            activeTab="checkreturns"
-            showViewSourceDocuments
-            onViewSourceDocuments={() => openSourceDocumentReviewPopout()}
-          />
-          <div className={styles.contentArea}>
-            <CheckReturnNav
-              contentView={contentView}
-              selectedForm={selectedForm}
-              onSelectFederal={handleSelectFederal}
-              onSelectCalifornia={handleSelectCalifornia}
-              onSelectForm={handleSelectForm}
-            />
+  const handleRefreshForms = useCallback(() => {
+    window.location.reload()
+  }, [])
 
-            <CheckReturnMainContent
-              contentView={contentView}
-              selectedForm={selectedForm}
-              outputFormId={outputFormId}
-            />
-            <ReturnContextRail className={styles.contextRail} />
-          </div>
-        </div>
+  return (
+    <div className={styles.page} data-theme="intuit">
+      <ReviewReturnPopoutHeader
+        onViewSourceDocuments={() => openSourceDocumentReviewPopout()}
+        onRefreshForms={handleRefreshForms}
+      />
+      <div className={styles.body}>
+        <CheckReturnNav
+          variant="focused"
+          contentView={contentView}
+          selectedForm={selectedForm}
+          onSelectFederal={handleSelectFederal}
+          onSelectCalifornia={handleSelectCalifornia}
+          onSelectForm={handleSelectForm}
+        />
+        <CheckReturnMainContent
+          contentView={contentView}
+          selectedForm={selectedForm}
+          outputFormId={outputFormId}
+        />
       </div>
     </div>
   )

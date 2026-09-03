@@ -26,7 +26,7 @@
         var hash = window.location.hash.replace(/^#/, '')
         if (hash.length > 0 && hash.indexOf('%2F') === -1 && hash.indexOf('%2f') === -1) return
         var path = window.location.pathname
-        var routes = ['check-return/insights', 'check-return', 'input-return', 'import-confirmation', 'data-review-popout', 'data-review', 'smart-return']
+        var routes = ['check-return/insights', 'check-return-popout', 'check-return', 'input-return', 'import-confirmation', 'data-review-popout', 'data-review', 'smart-return']
         for (var i = 0; i < routes.length; i++) {
           var route = routes[i]
           var suffix = '/' + route
