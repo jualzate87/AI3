@@ -9,7 +9,7 @@ export type ModeSegmentOption = {
 type ModeSegmentedControlProps = {
   ariaLabel: string
   options: ModeSegmentOption[]
-  activeId: string
+  activeId?: string
   className?: string
 }
 
@@ -27,7 +27,7 @@ export default function ModeSegmentedControl({
       aria-label={ariaLabel}
     >
       {options.map(option => {
-        const isActive = option.id === activeId
+        const isActive = activeId != null && option.id === activeId
 
         if (isActive) {
           return (

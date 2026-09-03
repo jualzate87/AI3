@@ -1,11 +1,9 @@
 import { useMemo, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { ChevronDown, ChevronRight, ChevronUp, Search } from '@design-systems/icons'
+import { ChevronDown, ChevronLeft, ChevronRight, ChevronUp, Search } from '@design-systems/icons'
 import { NumericBadge } from '@ids-ts/badge'
 import '@ids-ts/badge/dist/main.css'
 import ModeSegmentedControl from '../../components/ModeSegmentedControl'
-import { TextField } from '@ids-ts/text-field'
-import '@ids-ts/text-field/dist/main.css'
 import styles from '../../styles/check-return/CheckReturnNav.module.css'
 
 export type ContentView = 'federal-summary' | 'california-summary' | 'form-1040'
@@ -172,6 +170,7 @@ export default function CheckReturnNav({
   }
   const [formsMode, setFormsMode] = useState<'applicable' | 'all'>('applicable')
   const [formSearch, setFormSearch] = useState('')
+  const [collapsed, setCollapsed] = useState(false)
   const [expandedJurisdictions, setExpandedJurisdictions] = useState<Record<string, boolean>>({
     US: true,
     CA: true,
@@ -201,8 +200,40 @@ export default function CheckReturnNav({
   }
 
   return (
-    <nav className={styles.inputMenu} aria-label="Check return navigation">
-      <div className={styles.leftNav}>
+    <aside className={collapsed ? styles.menuPanelCollapsed : styles.menuPanel} aria-label="Check return navigation">
+      {collapsed ? (
+        <button
+          type="button"
+          className={styles.menuCollapseBtn}
+          aria-label="Expand check menu"
+          onClick={() => setCollapsed(false)}
+        >
+          <ChevronLeft size="small" aria-hidden />
+        </button>
+      ) : (
+        <>
+          <div className={styles.menuHeader}>
+            <span className={styles.menuTitle}>Check menu</span>
+            <button
+              type="button"
+              className={styles.menuCollapseBtn}
+              aria-label="Collapse check menu"
+              onClick={() => setCollapsed(true)}
+            >
+              <ChevronLeft size="small" aria-hidden />
+            </button>
+          </div>
+
+          <ModeSegmentedControl
+            ariaLabel="Input or review"
+            options={[
+              { id: 'input', label: 'Input', onClick: () => navigate('/input-return') },
+              { id: 'review', label: 'Review', onClick: () => navigate('/data-review') },
+            ]}
+          />
+
+          <div className={styles.menuNavScroll}>
+            <nav className={styles.leftNav}>
         {/* Level 1: Forms */}
         <div className={styles.navSection}>
           <NavCategoryHeader
@@ -231,16 +262,17 @@ export default function CheckReturnNav({
                   ]}
                 />
 
-                <TextField
-                  aria-label="Search forms"
-                  placeholder="Search forms"
-                  size="small"
-                  width="100%"
-                  className={styles.formsSearchField}
-                  value={formSearch}
-                  onChange={e => setFormSearch(e.target.value)}
-                  addonBefore={<Search size="small" aria-hidden />}
-                />
+                <label className={styles.searchWrap}>
+                  <span className={styles.visuallyHidden}>Search forms</span>
+                  <Search size="small" className={styles.searchIcon} aria-hidden />
+                  <input
+                    type="search"
+                    className={styles.searchInput}
+                    placeholder="Search forms"
+                    value={formSearch}
+                    onChange={e => setFormSearch(e.target.value)}
+                  />
+                </label>
               </div>
 
               {filteredFormGroups.map(group => {
@@ -307,7 +339,10 @@ export default function CheckReturnNav({
 
         <NavFlatRow label="Overrides" />
         <NavFlatRow label="Suggestions" isLast />
-      </div>
-    </nav>
+            </nav>
+          </div>
+        </>
+      )}
+    </aside>
   )
 }

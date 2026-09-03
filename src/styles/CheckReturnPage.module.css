@@ -10,9 +10,8 @@
   flex: 1;
   min-height: 0;
   overflow: hidden;
-  padding: var(--space-container-padding-medium) 0 var(--space-container-padding-medium)
-    var(--space-container-padding-medium);
-  gap: 2px;
+  gap: 0;
+  padding: 0;
   background: var(--color-page-background-primary);
 }
 
