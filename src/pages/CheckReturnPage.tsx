@@ -1,14 +1,9 @@
-import { useEffect, useMemo, useState } from 'react'
-import { useNavigate } from 'react-router-dom'
-import { ChevronDown, ChevronUp, Search } from '@design-systems/icons'
-import { NumericBadge } from '@ids-ts/badge'
-import '@ids-ts/badge/dist/main.css'
+import { useEffect, useState } from 'react'
 import LeftNavPTO from './data-review/LeftNavPTO'
 import SmartReturnHeader from './SmartReturnHeader'
+import CheckReturnNav, { type ContentView } from './check-return/CheckReturnNav'
 import layout from '../styles/CoreScreenLayout.module.css'
 import styles from '../styles/CheckReturnPage.module.css'
-
-type ContentView = 'federal-summary' | 'california-summary' | 'form-1040'
 
 type TableRow =
   | { type: 'section'; label: string }
@@ -53,51 +48,8 @@ const TABLE_ROWS: TableRow[] = [
   { type: 'data', label: 'Effective tax rate', v2023: '18.3%', v2024: '0.0%', diff: '18.3%' },
 ]
 
-const APPLICABLE_FORMS = [
-  {
-    jurisdiction: 'US',
-    forms: ['Letter (US Standard)', 'General Info.', '1040', 'Sch 1', 'Sch B', 'Sch D'],
-  },
-  {
-    jurisdiction: 'CA',
-    forms: ['540', 'Sch CA (540)'],
-  },
-]
-
-const ALL_FORMS = [
-  {
-    jurisdiction: 'US',
-    forms: [
-      'Letter (US Standard)',
-      'General Info.',
-      '1040',
-      'Sch 1',
-      'Sch 2',
-      'Sch 3',
-      'Sch B',
-      'Sch D',
-      'Sch E',
-      'Form 8949',
-    ],
-  },
-  {
-    jurisdiction: 'CA',
-    forms: ['540', 'Sch CA (540)', 'Sch P (540)'],
-  },
-]
-
-const DIAGNOSTIC_NAV_ITEMS: { label: string; badge?: number }[] = [
-  { label: 'Fatal Diagnostics', badge: 1 },
-  { label: 'EF Critical diagnostics', badge: 3 },
-  { label: 'Critical Diagnostics', badge: 1 },
-]
-
 export default function CheckReturnPage() {
-  const navigate = useNavigate()
   const [contentView, setContentView] = useState<ContentView>('federal-summary')
-  const [formsExpanded, setFormsExpanded] = useState(true)
-  const [formsMode, setFormsMode] = useState<'applicable' | 'all'>('applicable')
-  const [formSearch, setFormSearch] = useState('')
   const [selectedForm, setSelectedForm] = useState<string | null>(null)
 
   useEffect(() => {
@@ -114,22 +66,6 @@ export default function CheckReturnPage() {
       el.style.removeProperty('--color-action-standard-active')
     }
   }, [])
-
-  const formGroups = formsMode === 'applicable' ? APPLICABLE_FORMS : ALL_FORMS
-  const normalizedSearch = formSearch.trim().toLowerCase()
-
-  const filteredFormGroups = useMemo(
-    () =>
-      formGroups
-        .map(group => ({
-          ...group,
-          forms: group.forms.filter(
-            form => !normalizedSearch || form.toLowerCase().includes(normalizedSearch),
-          ),
-        }))
-        .filter(group => group.forms.length > 0),
-    [formGroups, normalizedSearch],
-  )
 
   const handleSelectFederal = () => {
     setContentView('federal-summary')
@@ -155,125 +91,13 @@ export default function CheckReturnPage() {
         <div className={layout.rightSide}>
           <SmartReturnHeader activeTab="checkreturns" />
           <div className={styles.contentArea}>
-            <nav className={styles.inputMenu} aria-label="Check return navigation">
-              <div className={styles.leftNav}>
-                <div className={styles.navCategoryGroup}>
-                  <button
-                    type="button"
-                    className={styles.navCategory}
-                    aria-expanded={formsExpanded}
-                    onClick={() => setFormsExpanded(prev => !prev)}
-                  >
-                    <span className={styles.navCategoryLabel}>Forms</span>
-                    {formsExpanded ? (
-                      <ChevronUp size="small" className={styles.navCategoryChevron} aria-hidden />
-                    ) : (
-                      <ChevronDown size="small" className={styles.navCategoryChevron} aria-hidden />
-                    )}
-                  </button>
-
-                  {formsExpanded && (
-                    <div className={styles.formsPanel}>
-                      <div className={styles.formsToggle} role="tablist" aria-label="Form filter">
-                        <button
-                          type="button"
-                          role="tab"
-                          aria-selected={formsMode === 'applicable'}
-                          className={`${styles.formsToggleBtn} ${formsMode === 'applicable' ? styles.formsToggleBtnActive : ''}`}
-                          onClick={() => setFormsMode('applicable')}
-                        >
-                          Applicable
-                        </button>
-                        <button
-                          type="button"
-                          role="tab"
-                          aria-selected={formsMode === 'all'}
-                          className={`${styles.formsToggleBtn} ${formsMode === 'all' ? styles.formsToggleBtnActive : ''}`}
-                          onClick={() => setFormsMode('all')}
-                        >
-                          All
-                        </button>
-                      </div>
-
-                      <label className={styles.searchWrap}>
-                        <span className={styles.visuallyHidden}>Search forms</span>
-                        <Search size="small" className={styles.searchIcon} aria-hidden />
-                        <input
-                          type="search"
-                          className={styles.searchInput}
-                          placeholder="Search forms"
-                          value={formSearch}
-                          onChange={e => setFormSearch(e.target.value)}
-                        />
-                      </label>
-
-                      {filteredFormGroups.map(group => (
-                        <div key={group.jurisdiction} className={styles.formJurisdiction}>
-                          <div className={styles.formJurisdictionLabel}>{group.jurisdiction}</div>
-                          {group.forms.map(form => {
-                            const isActive = selectedForm === form && contentView === 'form-1040' && form === '1040'
-                            return (
-                              <button
-                                key={form}
-                                type="button"
-                                className={`${styles.formListItem} ${isActive ? styles.formListItemActive : ''}`}
-                                onClick={() => handleSelectForm(form)}
-                              >
-                                {form}
-                              </button>
-                            )
-                          })}
-                        </div>
-                      ))}
-                    </div>
-                  )}
-                </div>
-
-                <div className={styles.navCategory}>
-                  <span className={styles.navCategoryLabel}>Tax Summary</span>
-                </div>
-                <button
-                  type="button"
-                  className={`${styles.navSecondary} ${contentView === 'federal-summary' ? styles.navSecondaryActive : ''}`}
-                  onClick={handleSelectFederal}
-                >
-                  <span className={styles.navSecondaryLabel}>Federal Income Tax Summary</span>
-                </button>
-                <button
-                  type="button"
-                  className={`${styles.navSecondary} ${contentView === 'california-summary' ? styles.navSecondaryActive : ''}`}
-                  onClick={handleSelectCalifornia}
-                >
-                  <span className={styles.navSecondaryLabel}>California Tax Summary</span>
-                </button>
-
-                <button
-                  type="button"
-                  className={styles.navCategory}
-                  onClick={() => navigate('/check-return/insights')}
-                >
-                  <span className={styles.navCategoryLabel}>Return Insights</span>
-                </button>
-
-                {DIAGNOSTIC_NAV_ITEMS.map(item => (
-                  <div key={item.label} className={styles.navCategory}>
-                    <span className={styles.navCategoryLabel}>{item.label}</span>
-                    {item.badge != null && (
-                      <span className={styles.navBadge}>
-                        <NumericBadge quantity={String(item.badge)} maxLimit={99} />
-                      </span>
-                    )}
-                  </div>
-                ))}
-
-                <div className={styles.navCategory}>
-                  <span className={styles.navCategoryLabel}>Overrides</span>
-                </div>
-                <div className={`${styles.navCategory} ${styles.navCategoryLast}`}>
-                  <span className={styles.navCategoryLabel}>Suggestions</span>
-                </div>
-              </div>
-            </nav>
+            <CheckReturnNav
+              contentView={contentView}
+              selectedForm={selectedForm}
+              onSelectFederal={handleSelectFederal}
+              onSelectCalifornia={handleSelectCalifornia}
+              onSelectForm={handleSelectForm}
+            />
 
             <main className={styles.mainContent}>
               {contentView === 'federal-summary' && (

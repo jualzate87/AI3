@@ -1,0 +1,196 @@
+/* Check Return left navigation — Figma node 33983:32489 */
+
+.inputMenu {
+  width: 315px;
+  min-width: 315px;
+  flex-shrink: 0;
+  padding: var(--space-container-padding-small);
+  height: fit-content;
+  max-height: 100%;
+  overflow-y: auto;
+}
+
+.leftNav {
+  width: 283px;
+  display: flex;
+  flex-direction: column;
+}
+
+/* Level 1 accordion sections */
+.navSection {
+  display: flex;
+  flex-direction: column;
+}
+
+.navSectionHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-component-gap-small);
+  padding: var(--space-component-stack-padding-x-large) var(--space-component-inline-padding-large);
+  background: var(--color-page-background-primary);
+  border-top: 1px solid var(--color-container-border-primary);
+  border-left: 1px solid var(--color-container-border-primary);
+  border-right: 1px solid var(--color-container-border-primary);
+  width: 100%;
+  cursor: pointer;
+  text-align: left;
+  border-bottom: none;
+  font-family: inherit;
+}
+
+.navSectionHeader:hover {
+  background: var(--color-page-background-secondary);
+}
+
+.navSectionLabel {
+  font-family: var(--font-family-component);
+  font-size: var(--font-size-component-small);
+  font-weight: var(--font-weight-component-bold);
+  line-height: 20px;
+  color: var(--color-text-primary);
+  white-space: nowrap;
+}
+
+.navSectionChevron {
+  flex-shrink: 0;
+  color: var(--color-icon-primary);
+}
+
+.navSectionPanel {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-component-gap-small);
+  padding: var(--space-component-stack-padding-large) var(--space-component-inline-padding-large);
+  background: var(--color-page-background-secondary);
+  border-left: 1px solid var(--color-container-border-primary);
+  border-right: 1px solid var(--color-container-border-primary);
+}
+
+/* Forms controls */
+.formsControls {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-component-gap-small);
+}
+
+.formsSegmented {
+  width: 100%;
+}
+
+/* Level 2 jurisdiction groups (US, CA) */
+.navGroup {
+  display: flex;
+  flex-direction: column;
+}
+
+.navGroupHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-component-gap-small);
+  width: 100%;
+  padding: var(--space-component-stack-padding-small) 0;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  text-align: left;
+  font-family: inherit;
+}
+
+.navGroupLabel {
+  font-family: var(--font-family-component);
+  font-size: var(--font-size-component-x-small);
+  font-weight: var(--font-weight-component-bold);
+  line-height: 17px;
+  color: var(--color-text-secondary);
+  text-transform: uppercase;
+}
+
+.navGroupChevron {
+  flex-shrink: 0;
+  color: var(--color-icon-secondary);
+}
+
+.navGroupPanel {
+  display: flex;
+  flex-direction: column;
+}
+
+/* Level 3 selectable items — shared by forms and tax summaries */
+.navListItem {
+  display: flex;
+  align-items: center;
+  width: 100%;
+  padding: var(--space-component-stack-padding-medium) var(--space-component-inline-padding-small);
+  padding-left: var(--space-component-inline-padding-medium);
+  background: transparent;
+  border: none;
+  border-left: 4px solid transparent;
+  border-radius: var(--radius-small, 4px);
+  font-family: var(--font-family-component);
+  font-size: var(--font-size-component-small);
+  font-weight: var(--font-weight-component);
+  line-height: 20px;
+  color: var(--color-text-primary);
+  text-align: left;
+  cursor: pointer;
+}
+
+.navListItem:hover {
+  background: var(--color-page-background-tertiary);
+}
+
+.navListItemActive {
+  background: var(--color-page-background-tertiary);
+  border-left-color: var(--color-action-standard);
+  padding-left: calc(var(--space-component-inline-padding-medium) - 4px);
+  font-weight: var(--font-weight-component-semibold);
+  color: var(--color-action-standard);
+}
+
+/* Flat nav items below Tax Summary */
+.navFlatItem {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-component-gap-small);
+  padding: var(--space-component-stack-padding-x-large) var(--space-component-inline-padding-large);
+  background: var(--color-page-background-primary);
+  border-top: 1px solid var(--color-container-border-primary);
+  border-left: 1px solid var(--color-container-border-primary);
+  border-right: 1px solid var(--color-container-border-primary);
+  width: 100%;
+  cursor: pointer;
+  text-align: left;
+  border-bottom: none;
+  font-family: inherit;
+}
+
+.navFlatItem:hover {
+  background: var(--color-page-background-secondary);
+}
+
+.navFlatItemLast {
+  border-bottom: 1px solid var(--color-container-border-primary);
+}
+
+.navFlatLabel {
+  font-family: var(--font-family-component);
+  font-size: var(--font-size-component-small);
+  font-weight: var(--font-weight-component-bold);
+  line-height: 20px;
+  color: var(--color-text-primary);
+  white-space: nowrap;
+}
+
+.navBadge {
+  display: flex;
+  align-items: center;
+  padding: 2px;
+}
+
+.navBadge :global([class*='NumericBadge']) {
+  background: var(--color-container-feedback-negative, #d52b1e);
+  color: var(--color-text-on-fill, #ffffff);
+}
