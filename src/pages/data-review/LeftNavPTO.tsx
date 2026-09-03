@@ -1,5 +1,34 @@
-import idsLogo from '../../assets/ids-logo.svg'
+import { useId } from 'react'
 import styles from '../../styles/data-review/LeftNavPTO.module.css'
+
+function ProConnectLogo() {
+  const clipId = useId()
+
+  return (
+    <svg
+      width="26"
+      height="26"
+      viewBox="0 0 26 26"
+      fill="none"
+      xmlns="http://www.w3.org/2000/svg"
+      className={styles.logoImg}
+      role="img"
+      aria-label="Intuit ProConnect"
+    >
+      <g clipPath={`url(#${clipId})`}>
+        <path
+          d="M13 0C5.82969 0 0 5.82969 0 13C0 20.1703 5.82969 26 13 26C20.1703 26 26 20.1703 26 13C26 5.82969 20.1703 0 13 0ZM7.15 16.8391C6.825 16.5141 6.825 16.0062 7.15 15.6812L14.3 8.53125H8.59219C8.14531 8.53125 7.77969 8.16562 7.77969 7.71875V6.90625H16.25C16.9813 6.90625 17.3266 7.77969 16.8188 8.2875L7.71875 17.4078L7.15 16.8391ZM19.0938 18.2406H18.2812C17.8344 18.2406 17.4688 17.875 17.4688 17.4281V11.7L10.3187 18.85C9.99375 19.175 9.48594 19.175 9.16094 18.85L8.59219 18.2812L17.6922 9.18125C18.2 8.67344 19.0734 9.03906 19.0734 9.75V18.2406H19.0938Z"
+          fill="white"
+        />
+      </g>
+      <defs>
+        <clipPath id={clipId}>
+          <rect width="26" height="26" fill="white" />
+        </clipPath>
+      </defs>
+    </svg>
+  )
+}
 
 interface NavItemProps {
   icon: React.ReactNode
@@ -28,7 +57,7 @@ export default function LeftNavPTO() {
     <div className={styles.nav}>
       {/* Logo */}
       <div className={styles.logo}>
-        <img src={idsLogo} alt="Intuit ProConnect" className={styles.logoImg} />
+        <ProConnectLogo />
       </div>
 
       {/* Nav links */}
