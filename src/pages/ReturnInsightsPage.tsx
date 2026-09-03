@@ -2,6 +2,7 @@ import { useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import LeftNavPTO from './data-review/LeftNavPTO'
 import SmartReturnHeader from './SmartReturnHeader'
+import ReturnContextRail from '../components/ReturnContextRail'
 import layout from '../styles/CoreScreenLayout.module.css'
 import styles from '../styles/ReturnInsightsPage.module.css'
 
@@ -64,6 +65,7 @@ export default function ReturnInsightsPage() {
               className={styles.insightsImage}
             />
           </div>
+          <ReturnContextRail className={styles.contextRail} />
           </div>
         </div>
       </div>

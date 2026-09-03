@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import LeftNavPTO from './data-review/LeftNavPTO'
 import SmartReturnHeader from './SmartReturnHeader'
+import ReturnContextRail from '../components/ReturnContextRail'
 import CheckReturnNav, { type ContentView } from './check-return/CheckReturnNav'
 import { openHashRoute, PREPARER_DATA_REVIEW_PATH } from '../lib/prototypeRoutes'
 import layout from '../styles/CoreScreenLayout.module.css'
@@ -162,6 +163,7 @@ export default function CheckReturnPage() {
                 </div>
               )}
             </main>
+            <ReturnContextRail className={styles.contextRail} />
           </div>
         </div>
       </div>
