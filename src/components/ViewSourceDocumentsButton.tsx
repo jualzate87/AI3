@@ -1,6 +1,6 @@
+import { PopOut } from '@design-systems/icons'
 import { Button } from '@ids-ts/button'
 import '@ids-ts/button/dist/main.css'
-import styles from '../styles/data-review/DetailFields.module.css'
 
 interface ViewSourceDocumentsButtonProps {
   onClick?: () => void
@@ -18,10 +18,11 @@ export default function ViewSourceDocumentsButton({
       priority="secondary"
       purpose="passive"
       size="small"
-      className={[styles.viewSourceDocumentsBtn, className].filter(Boolean).join(' ')}
+      className={className}
       onClick={onClick}
+      automationId="view-source-documents-cta"
     >
-      <span className={styles.viewSourceDocumentsDot} aria-hidden />
+      <PopOut size="small" aria-hidden />
       View source documents
     </Button>
   )

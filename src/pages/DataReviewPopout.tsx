@@ -36,8 +36,6 @@ import {
   buildTabReviewCounts,
   buildTabUnreviewedCounts,
   buildTypeReviewed,
-  getNextUnreviewedSourceDoc,
-  getUnreviewedSourceDocs,
   buildTabConfirmCounts,
   buildTabConfirmStatus,
   countVerifiedPacketDocs,
@@ -50,6 +48,7 @@ import QuestionnaireResponsesPanel from './data-review/QuestionnaireResponsesPan
 import DocReviewProgress from './data-review/DocReviewProgress'
 import UnsavedChangesModal from './data-review/UnsavedChangesModal'
 import { useSyncedReviewState } from '../hooks/useSyncedReviewState'
+import { usePacketDocReviewControls } from '../hooks/usePacketDocReviewControls'
 import { computeLiveReturn } from '../data/liveReturn'
 import { PHASE1_FLAG_MESSAGES } from './data-review/phase1FlagMessages'
 import {
@@ -230,8 +229,7 @@ export default function DataReviewPopout() {
     applyVerifyNavigation(next.field)
   }, [reviewedFields, selectedField, applyVerifyNavigation])
 
-  // Derived review status must be computed before handleReviewNextDocument —
-  // that callback's dependency array reads unreviewedSourceDocs (TDZ crash if reversed).
+  // Derived review status for tab badges and peel tabs.
   const tabFlagCounts = getTabFlagCounts(reviewedFields)
   const tabInitialFlagCounts = getTabInitialFlagCounts()
   const divPayerFieldCounts: Record<DivPayer, number> = Object.fromEntries(
@@ -257,14 +255,27 @@ export default function DataReviewPopout() {
     intCounts: intPayerFieldCounts,
     rRemaining: tabFlagCounts['1099-rs'] ?? 0,
   })
-  const unreviewedSourceDocs = getUnreviewedSourceDocs({
+  const {
+    unreviewedDocCount,
+    handleTopTabChange,
+    handlePeelDocChange,
+    handleReviewNextDocument,
+    handleVerifyDoc,
+  } = usePacketDocReviewControls({
+    reviewedFields,
     verifiedDocs,
-    w2Counts: w2PayerFieldCounts,
-    divCounts: divPayerFieldCounts,
-    intCounts: intPayerFieldCounts,
-    rRemaining: tabFlagCounts['1099-rs'] ?? 0,
+    activeTopTab,
+    activeSubTab,
+    activeDivPayer,
+    activeIntPayer,
+    setActiveTopTab,
+    setActiveSubTab,
+    setActiveDivPayer,
+    setActiveIntPayer,
+    setSelectedField,
+    toggleVerifiedDoc,
+    onAfterMutation: touchDirty,
   })
-  const unreviewedDocCount = unreviewedSourceDocs.length
   const { verified: verifiedDocCount, total: totalDocCount } = countVerifiedPacketDocs({
     verifiedDocs,
     reviewerConfirmedDocs,
@@ -301,23 +312,6 @@ export default function DataReviewPopout() {
     activeIntPayer,
   })
   const phase1FullyComplete = unreviewedDocCount === 0
-  const handleReviewNextDocument = useCallback(() => {
-    const next = getNextUnreviewedSourceDoc(unreviewedSourceDocs, {
-      tab: activeTopTab,
-      w2SubTab: activeSubTab,
-      divPayer: activeDivPayer,
-      intPayer: activeIntPayer,
-    })
-    if (!next) return
-    setActiveTopTab(next.tab)
-    if (next.w2SubTab) setActiveSubTab(next.w2SubTab)
-    if (next.divPayer) setActiveDivPayer(next.divPayer)
-    if (next.intPayer) setActiveIntPayer(next.intPayer)
-    setSelectedField(null)
-  }, [
-    unreviewedSourceDocs, activeTopTab, activeSubTab, activeDivPayer, activeIntPayer,
-    setActiveTopTab, setActiveSubTab, setActiveDivPayer, setActiveIntPayer, setSelectedField,
-  ])
 
   const rightRef = useRef<HTMLDivElement>(null)
   const [previewWidth, setPreviewWidth] = useState(40)
@@ -448,7 +442,7 @@ export default function DataReviewPopout() {
           showAddItem={false}
           showNextDocument={false}
           unreviewedDocCount={unreviewedDocCount}
-          onTopTabChange={(tab) => { setActiveTopTab(tab); setSelectedField(null) }}
+          onTopTabChange={handleTopTabChange}
         />
 
         {showPreparerImportPhase && SHOW_IMPORT_FLAGS && unreviewedDocCount === 0 && phase1Remaining > 0 && (
@@ -470,7 +464,7 @@ export default function DataReviewPopout() {
             confirmStatus: peelDocConfirmStatus(divVerifiedDocKey(t.key)),
           }))}
           activeKey={activeDivPayer}
-          onChange={key => setActiveDivPayer(key as DivPayer)}
+          onChange={handlePeelDocChange}
         />
       )}
       {activeTopTab === '1099-ints' && (
@@ -483,7 +477,7 @@ export default function DataReviewPopout() {
             confirmStatus: peelDocConfirmStatus(intVerifiedDocKey(t.key)),
           }))}
           activeKey={activeIntPayer}
-          onChange={key => setActiveIntPayer(key as IntPayer)}
+          onChange={handlePeelDocChange}
         />
       )}
       {activeTopTab === 'w2s' && (
@@ -496,7 +490,7 @@ export default function DataReviewPopout() {
             confirmStatus: peelDocConfirmStatus(t.key),
           }))}
           activeKey={activeSubTab}
-          onChange={key => setActiveSubTab(key as W2Employer)}
+          onChange={handlePeelDocChange}
         />
       )}
       {activeTopTab === '1099-rs' && (
@@ -627,7 +621,7 @@ export default function DataReviewPopout() {
                 verifiedDocsMeta={verifiedDocsMeta}
                 reviewerConfirmedDocs={reviewerConfirmedDocs}
                 reviewerConfirmedDocsMeta={reviewerConfirmedDocsMeta}
-                onVerifyDoc={toggleVerifiedDoc}
+                onVerifyDoc={handleVerifyDoc}
                 flaggedFields={importFlagsForDisplay({
                   ssn: PHASE1_FLAG_MESSAGES.w2.ssn,
                   wages: PHASE1_FLAG_MESSAGES.w2.wages,
@@ -662,7 +656,7 @@ export default function DataReviewPopout() {
                 onFieldOverride={handleFieldOverride}
                 verifiedDocs={verifiedDocs}
                 verifiedDocsMeta={verifiedDocsMeta}
-                onVerifyDoc={toggleVerifiedDoc}
+                onVerifyDoc={handleVerifyDoc}
                 reviewerConfirmedDocs={reviewerConfirmedDocs}
                 reviewerConfirmedDocsMeta={reviewerConfirmedDocsMeta}
                 flaggedFields={importFlagsForDisplay({
@@ -700,7 +694,7 @@ export default function DataReviewPopout() {
                 onFieldOverride={handleFieldOverride}
                 verifiedDocs={verifiedDocs}
                 verifiedDocsMeta={verifiedDocsMeta}
-                onVerifyDoc={toggleVerifiedDoc}
+                onVerifyDoc={handleVerifyDoc}
                 reviewerConfirmedDocs={reviewerConfirmedDocs}
                 reviewerConfirmedDocsMeta={reviewerConfirmedDocsMeta}
                 flaggedFields={importFlagsForDisplay({
@@ -728,7 +722,7 @@ export default function DataReviewPopout() {
                 onFieldOverride={handleFieldOverride}
                 verifiedDocs={verifiedDocs}
                 verifiedDocsMeta={verifiedDocsMeta}
-                onVerifyDoc={toggleVerifiedDoc}
+                onVerifyDoc={handleVerifyDoc}
                 reviewerConfirmedDocs={reviewerConfirmedDocs}
                 reviewerConfirmedDocsMeta={reviewerConfirmedDocsMeta}
                 flaggedFields={importFlagsForDisplay({
@@ -756,7 +750,7 @@ export default function DataReviewPopout() {
                 onFieldOverride={handleFieldOverride}
                 verifiedDocs={verifiedDocs}
                 verifiedDocsMeta={verifiedDocsMeta}
-                onVerifyDoc={toggleVerifiedDoc}
+                onVerifyDoc={handleVerifyDoc}
                 reviewerConfirmedDocs={reviewerConfirmedDocs}
                 reviewerConfirmedDocsMeta={reviewerConfirmedDocsMeta}
                 flaggedFields={importFlagsForDisplay({
@@ -768,7 +762,7 @@ export default function DataReviewPopout() {
               <QuestionnaireResponsesPanel
                 verifiedDocs={verifiedDocs}
                 verifiedDocsMeta={verifiedDocsMeta}
-                onVerifyDoc={toggleVerifiedDoc}
+                onVerifyDoc={handleVerifyDoc}
                 reviewerConfirmedDocs={reviewerConfirmedDocs}
                 reviewerConfirmedDocsMeta={reviewerConfirmedDocsMeta}
               />

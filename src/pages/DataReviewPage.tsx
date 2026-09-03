@@ -78,9 +78,8 @@ import {
   countDocsIncompleteForReviewer,
   countVerifiedPacketDocs,
   getDocConfirmStatus,
-  getNextUnreviewedSourceDoc,
-  getUnreviewedSourceDocs,
 } from './data-review/docReviewStatus'
+import { buildUnreviewedSourceDocs, selectNextUnreviewedPacketDoc } from './data-review/packetDocNavigation'
 import { isDocShownVerified, navigationForVerifiedDocKey } from '../data/verifiedDocKeys'
 import DetailFields1099R, { R_PAYER_TABS } from './data-review/DetailFields1099R'
 import DetailFieldsNec, { NEC_PAYER_TABS } from './data-review/DetailFieldsNec'
@@ -440,12 +439,9 @@ export default function DataReviewPage() {
     return status
   }
 
-  const unreviewedSourceDocs = getUnreviewedSourceDocs({
+  const unreviewedSourceDocs = buildUnreviewedSourceDocs({
     verifiedDocs,
-    w2Counts: w2PayerFieldCounts,
-    divCounts: divPayerFieldCounts,
-    intCounts: intPayerFieldCounts,
-    rRemaining: tabFlagCounts['1099-rs'] ?? 0,
+    reviewedFields,
   })
   const unreviewedDocCount = unreviewedSourceDocs.length
   const { verified: verifiedDocCount, total: totalDocCount } = countVerifiedPacketDocs({
@@ -745,18 +741,23 @@ export default function DataReviewPage() {
     } else {
       ensureSourcePanelVisible()
     }
-    const next = getNextUnreviewedSourceDoc(unreviewedSourceDocs, {
-      tab: activeTopTab,
-      w2SubTab: activeSubTab,
-      divPayer: activeDivPayer,
-      intPayer: activeIntPayer,
-    })
+    const next = selectNextUnreviewedPacketDoc(
+      unreviewedSourceDocs,
+      {
+        tab: activeTopTab,
+        w2SubTab: activeSubTab,
+        divPayer: activeDivPayer,
+        intPayer: activeIntPayer,
+      },
+      {
+        setActiveTopTab,
+        setActiveSubTab,
+        setActiveDivPayer,
+        setActiveIntPayer,
+        setSelectedField,
+      },
+    )
     if (!next) return
-    setActiveTopTab(next.tab)
-    if (next.w2SubTab) setActiveSubTab(next.w2SubTab)
-    if (next.divPayer) setActiveDivPayer(next.divPayer)
-    if (next.intPayer) setActiveIntPayer(next.intPayer)
-    setSelectedField(null)
     setActiveIssueField(null)
     setActiveDiagnosticKey(null)
     if (next.tab === 'questionnaire') setQuestionnaireHighlightId(null)

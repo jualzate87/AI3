@@ -128,6 +128,7 @@ export default function SmartReturnHeader({
             <Send size="small" /> File return
           </button>
         </div>
+        <div className={styles.tabRowSpacer} aria-hidden />
         <div className={styles.tabsRight}>
           <span className={styles.tabMeta}>
             <CloudUpload size="small" /> Saved at 11:34 AM
@@ -138,7 +139,6 @@ export default function SmartReturnHeader({
               purpose="passive"
               onClick={onReviewReturn}
               automationId="review-return-header-cta"
-              className={styles.reviewReturnBtn}
             >
               Review return
             </Button>
@@ -149,7 +149,6 @@ export default function SmartReturnHeader({
               purpose="passive"
               onClick={onViewSourceDocuments}
               automationId="view-source-documents-header-cta"
-              className={styles.viewSourceDocumentsHeaderBtn}
             >
               <PopOut size="small" aria-hidden />
               View source documents
