@@ -39,6 +39,8 @@ interface SyncedState {
   reviewedFieldsList: [string, ReviewedEntry][]
   /** Field keys the preparer has edited+saved this session (with who/when) */
   editedFieldsList: [string, ActivityEntry][]
+  /** Field keys changed but not yet saved via Save and recalculate */
+  unsavedFieldsList: string[]
   /** Docs marked verified — with who/when */
   verifiedDocsList: [string, ActivityEntry][]
   /** Phase 1 flag keys auto-cleared when each doc was verified — restored on un-verify */
@@ -81,7 +83,7 @@ interface SyncedState {
 
 const CHANNEL_NAME = 'protoc3-data-review-sync'
 // Bump whenever DEFAULT_STATE shape or seed values change so stale sessions reset.
-const STATE_VERSION = 31
+const STATE_VERSION = 32
 const STORAGE_KEY = 'protoc3-data-review-state-v' + STATE_VERSION
 /** Prior keys — sessionStorage (tab-scoped) and older localStorage versions */
 const LEGACY_STORAGE_KEYS = [
@@ -158,6 +160,9 @@ function hydrateSyncedState(raw: string): SyncedState {
       : [],
     reviewedFieldsList: migrateActivityList(parsed.reviewedFieldsList),
     editedFieldsList: migrateActivityList(parsed.editedFieldsList),
+    unsavedFieldsList: Array.isArray(parsed.unsavedFieldsList)
+      ? parsed.unsavedFieldsList.filter((k): k is string => typeof k === 'string')
+      : [],
     verifiedDocAutoFlagsList: migrateVerifiedDocAutoFlagsList(parsed.verifiedDocAutoFlagsList),
     ...migrateDualSlotLists(parsed),
     completedMilestones: migrateCompletedMilestones(parsed.completedMilestones),
@@ -180,6 +185,9 @@ export function sanitizeSyncedState(state: SyncedState): SyncedState {
     ...state,
     reviewedFieldsList: migrateActivityList(state.reviewedFieldsList),
     editedFieldsList: migrateActivityList(state.editedFieldsList),
+    unsavedFieldsList: Array.isArray(state.unsavedFieldsList)
+      ? state.unsavedFieldsList.filter((k): k is string => typeof k === 'string')
+      : [],
     verifiedDocAutoFlagsList: migrateVerifiedDocAutoFlagsList(state.verifiedDocAutoFlagsList),
     ...dualSlots,
     completedMilestones: migrateCompletedMilestones(state.completedMilestones),
@@ -417,6 +425,7 @@ const DEFAULT_STATE: SyncedState = {
   amounts: { ...SEED_AMOUNTS },
   reviewedFieldsList: [],
   editedFieldsList: [],
+  unsavedFieldsList: [],
   verifiedDocsList: [],
   verifiedDocAutoFlagsList: [],
   summaryCheckedFieldsList: [],
@@ -576,6 +585,44 @@ export function useSyncedReviewState() {
   const reviewedFields = new Map(state.reviewedFieldsList)
   const editedFields = new Map(state.editedFieldsList)
   const editedFieldKeys = new Set(state.editedFieldsList.map(([k]) => k))
+  const unsavedFieldKeys = new Set(state.unsavedFieldsList)
+
+  const applyUnsavedFieldPatch = (fieldKey: string): Partial<SyncedState> => {
+    const unsaved = new Set(stateRef.current.unsavedFieldsList)
+    unsaved.add(fieldKey)
+    const clearedReviewer = reviewerConfirmKeysToClear(
+      stateRef.current.reviewerConfirmedFieldsList,
+      fieldKey,
+    )
+    const stale = applyEditStaleMarkers(stateRef.current, fieldKey)
+    return {
+      unsavedFieldsList: [...unsaved],
+      ...(clearedReviewer.length !== stateRef.current.reviewerConfirmedFieldsList.length
+        ? { reviewerConfirmedFieldsList: clearedReviewer }
+        : {}),
+      ...(stale.length !== stateRef.current.reviewerConfirmStaleFieldsList.length
+        || stale.some((k, i) => k !== stateRef.current.reviewerConfirmStaleFieldsList[i])
+        ? { reviewerConfirmStaleFieldsList: stale }
+        : {}),
+    }
+  }
+
+  const markUnsaved = (fieldKey: string) => {
+    update(applyUnsavedFieldPatch(fieldKey))
+  }
+
+  const commitUnsavedEdits = (): string[] => {
+    const keys = [...stateRef.current.unsavedFieldsList]
+    if (!keys.length) return []
+    const nextEdited = new Map(stateRef.current.editedFieldsList)
+    const entry = nowEntry()
+    keys.forEach(k => nextEdited.set(k, entry))
+    update({
+      editedFieldsList: Array.from(nextEdited.entries()),
+      unsavedFieldsList: [],
+    })
+    return keys
+  }
 
   const markEdited = (fieldKey: string) => {
     const next = new Map(stateRef.current.editedFieldsList)
@@ -616,22 +663,11 @@ export function useSyncedReviewState() {
     })
   }
 
-  /** Persist a static/detail field value and stamp it as edited. */
+  /** Persist a static/detail field value — marks unsaved until Save and recalculate. */
   const setFieldOverride = (fieldKey: string, value: string) => {
-    const nextEdited = new Map(stateRef.current.editedFieldsList)
-    nextEdited.set(fieldKey, nowEntry())
-    const clearedReviewer = reviewerConfirmKeysToClear(
-      stateRef.current.reviewerConfirmedFieldsList,
-      fieldKey,
-    )
-    const stale = applyEditStaleMarkers(stateRef.current, fieldKey)
     update({
       fieldOverrides: { ...stateRef.current.fieldOverrides, [fieldKey]: value },
-      editedFieldsList: Array.from(nextEdited.entries()),
-      ...(clearedReviewer.length !== stateRef.current.reviewerConfirmedFieldsList.length
-        ? { reviewerConfirmedFieldsList: clearedReviewer }
-        : {}),
-      reviewerConfirmStaleFieldsList: stale,
+      ...applyUnsavedFieldPatch(fieldKey),
     })
   }
 
@@ -952,6 +988,10 @@ export function useSyncedReviewState() {
     editedFields: editedFieldKeys,
     /** Full who/when map for edited fields */
     editedFieldsMeta: editedFields,
+    /** Field keys with unsaved edits (pending Save and recalculate) */
+    unsavedFields: unsavedFieldKeys,
+    markUnsaved,
+    commitUnsavedEdits,
     markEdited,
     markEditedBulk,
     fieldOverrides: state.fieldOverrides,

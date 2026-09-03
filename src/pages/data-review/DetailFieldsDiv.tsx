@@ -11,6 +11,7 @@ import DetailSectionHeader from './DetailSectionHeader'
 import InputFormPageHeader, { type InputDocTabItem } from '../input-return/InputFormPageHeader'
 import styles from '../../styles/data-review/DetailFields.module.css'
 import { canEditField, type DetailFieldsVariant } from './fieldEditability'
+import { FieldEditStatusBadges } from './fieldEditStatus'
 
 function CheckIcon() {
   return (
@@ -138,7 +139,8 @@ interface DetailFieldsDivProps {
   onMarkReviewed?: (field: string) => void
   onMarkReviewedBulk?: (fields: string[]) => void
   reviewedFields?: Map<string, { by: string; at: string }>
-  editedFields?: Set<string>
+  unsavedFields?: Set<string>
+  recalculatedFields?: Set<string>
   /** Persisted static field values */
   fieldOverrides?: Record<string, string>
   /** Persist a static field edit (also stamps Edited badge) */
@@ -172,7 +174,8 @@ export default function DetailFieldsDiv({
   onMarkReviewed,
   onMarkReviewedBulk,
   reviewedFields,
-  editedFields: syncedEditedFields,
+  unsavedFields,
+  recalculatedFields,
   fieldOverrides = {},
   onFieldOverride,
   verifiedDocs,
@@ -196,9 +199,6 @@ export default function DetailFieldsDiv({
   const [editingField, setEditingField] = useState<string | null>(null)
   const [draftValue, setDraftValue] = useState('')
   const [originalValue, setOriginalValue] = useState('')
-  const [savedField, setSavedField] = useState<string | null>(null)
-  const [localEdited, setLocalEdited] = useState<Set<string>>(new Set())
-  const isEdited = (key: string) => syncedEditedFields?.has(key) || localEdited.has(key)
   // Field key whose comment popover is currently open + its anchor position (fixed)
   useEffect(() => {
     if (selectedField && highlightedRef.current) {
@@ -220,9 +220,6 @@ export default function DetailFieldsDiv({
       const num = parseFloat(draftValue.replace(/,/g, '')) || 0
       onFieldValueChange?.(field, num)
       onAmountChange?.({ qualifiedDivsToken: num }, 'qualifiedDivs')
-      setLocalEdited(prev => new Set(prev).add(field))
-      setSavedField(field)
-      setTimeout(() => setSavedField(null), 3500)
       onMarkReviewed?.(field)
     }
     setEditingField(null)
@@ -300,9 +297,6 @@ export default function DetailFieldsDiv({
       if (editingField !== fieldKey) return
       if (draftValue !== originalValue) {
         onFieldOverride?.(fieldKey, draftValue)
-        setLocalEdited(prev => new Set(prev).add(fieldKey))
-        setSavedField(fieldKey)
-        setTimeout(() => setSavedField(null), 3500)
         const num = parseAmountDraft(draftValue)
         if (fieldKey === 'fedTaxWithheld') {
           onAmountChange?.({ divWithholding: num }, 'fedTaxWithheld')
@@ -374,8 +368,12 @@ export default function DetailFieldsDiv({
               {renderAnnotationBtn(fieldKey, label)}
             </div>
           )}
-          {savedField === fieldKey && <span className={styles.recalcBadge}>{flowsTo1040 ? '1040 updated' : 'Saved'}</span>}
-          {isEdited(fieldKey) && savedField !== fieldKey && <span className={styles.editedBadge}>Edited</span>}
+          <FieldEditStatusBadges
+            fieldKey={fieldKey}
+            unsavedFields={unsavedFields}
+            recalculatedFields={recalculatedFields}
+            flowsTo1040={flowsTo1040}
+          />
         </div>
         <ValidationNote fieldKey={flagKey} reviewedKey={reviewedKey} />
       </>
@@ -495,8 +493,12 @@ export default function DetailFieldsDiv({
                   {renderAnnotationBtn('qualifiedDivs', '(1b) Qualified dividends')}
                 </div>
               )}
-              {savedField === 'qualifiedDivs' && <span className={styles.recalcBadge}>1040 updated</span>}
-              {isEdited('qualifiedDivs') && savedField !== 'qualifiedDivs' && <span className={styles.editedBadge}>Edited</span>}
+              <FieldEditStatusBadges
+                fieldKey="qualifiedDivs"
+                unsavedFields={unsavedFields}
+                recalculatedFields={recalculatedFields}
+                flowsTo1040
+              />
             </div>
             <ValidationNote fieldKey="qualifiedDivs" />
           </>

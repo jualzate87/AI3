@@ -242,6 +242,21 @@ export default function DataReviewPage() {
     toggleReviewerFormSignOff,
     resetReviewState,
   } = useSyncedReviewState()
+  const [recalculatedFields, setRecalculatedFields] = useState<Set<string>>(new Set())
+  const flashRecalculatedField = useCallback((fieldKey: string) => {
+    setRecalculatedFields(prev => new Set(prev).add(fieldKey))
+    window.setTimeout(() => {
+      setRecalculatedFields(prev => {
+        const next = new Set(prev)
+        next.delete(fieldKey)
+        return next
+      })
+    }, 3500)
+  }, [])
+  const saveFieldEditOnMain = useCallback((fieldKey: string) => {
+    markEdited(fieldKey)
+    flashRecalculatedField(fieldKey)
+  }, [markEdited, flashRecalculatedField])
   const liveTotals = computeLiveReturn(amounts)
   const total1a = liveTotals.wages
   const totalWithholding = liveTotals.totalWithholding
@@ -2386,16 +2401,16 @@ export default function DataReviewPage() {
                   wages={{ bingEquipment: 0, techCircle: wages.techCircle }}
                   onWageChange={(employer, value) => {
                     setWages({ ...wages, [employer]: value })
-                    markEdited(`wages-${employer}`)
+                    saveFieldEditOnMain(`wages-${employer}`)
                   }}
                   fieldValues={{ ...fieldValues, withholding: fieldValues.withholding[activeSubTab] }}
                   onFieldValueChange={(key, value) => {
                     if (key === 'withholding' && typeof value === 'number') {
                       updateField('withholding', { techCircle: value })
-                      markEdited('withholding')
+                      saveFieldEditOnMain('withholding')
                     } else {
                       updateField(key as keyof typeof fieldValues, value as number)
-                      markEdited(String(key))
+                      saveFieldEditOnMain(String(key))
                     }
                   }}
                   box12Rows={amounts.box12Rows}
@@ -2406,12 +2421,12 @@ export default function DataReviewPage() {
                         [sub]: { ...amounts.box12Rows[sub], ...patch },
                       },
                     })
-                    markEdited(`box12${sub}-${activeSubTab}`)
+                    saveFieldEditOnMain(`box12${sub}-${activeSubTab}`)
                   }}
                   onIdentityChange={(kind, value) => {
                     if (kind === 'ssn') updateAmounts({ employeeSsn: value })
                     else updateAmounts({ employerEin: value })
-                    markEdited(kind === 'ssn' ? 'ssn-techCircle' : 'ein-techCircle')
+                    saveFieldEditOnMain(kind === 'ssn' ? 'ssn-techCircle' : 'ein-techCircle')
                   }}
                   identityValues={{ ssn: amounts.employeeSsn, ein: amounts.employerEin }}
                   box13={{
@@ -2431,12 +2446,12 @@ export default function DataReviewPage() {
                         ? { box13ThirdPartySickPay: patch.thirdPartySickPay }
                         : {}),
                     })
-                    markEdited('box13')
+                    saveFieldEditOnMain('box13')
                   }}
                   onMarkReviewed={handleMarkReviewed}
                   onMarkReviewedBulk={handleMarkReviewedBulk}
                   reviewedFields={reviewedFields}
-                  editedFields={editedFields}
+                  recalculatedFields={recalculatedFields}
                   editedFieldsMeta={editedFieldsMeta}
                   fieldOverrides={fieldOverrides}
                   onFieldOverride={setFieldOverride}
@@ -2463,17 +2478,17 @@ export default function DataReviewPage() {
                   fieldValues={{ ...fieldValues, withholding: totalWithholding, divWithholding: amounts.divWithholding }}
                   onFieldValueChange={(key, value) => {
                     updateField(key as keyof typeof fieldValues, value)
-                    markEdited(String(key))
+                    saveFieldEditOnMain(String(key))
                   }}
                   onAmountChange={(patch, editedKey) => {
                     updateAmounts(patch)
-                    if (editedKey) markEdited(editedKey)
+                    if (editedKey) saveFieldEditOnMain(editedKey)
                   }}
                   amounts={amounts}
                   onMarkReviewed={handleMarkReviewed}
                   onMarkReviewedBulk={handleMarkReviewedBulk}
                   reviewedFields={reviewedFields}
-                  editedFields={editedFields}
+                  recalculatedFields={recalculatedFields}
                   fieldOverrides={fieldOverrides}
                   onFieldOverride={setFieldOverride}
                   verifiedDocs={verifiedDocs}
@@ -2500,17 +2515,17 @@ export default function DataReviewPage() {
                   fieldValues={{ ...fieldValues, withholding: totalWithholding }}
                   onFieldValueChange={(key, value) => {
                     updateField(key as keyof typeof fieldValues, value)
-                    markEdited(String(key))
+                    saveFieldEditOnMain(String(key))
                   }}
                   onAmountChange={(patch, editedKey) => {
                     updateAmounts(patch)
-                    if (editedKey) markEdited(editedKey)
+                    if (editedKey) saveFieldEditOnMain(editedKey)
                   }}
                   amounts={amounts}
                   onMarkReviewed={handleMarkReviewed}
                   onMarkReviewedBulk={handleMarkReviewedBulk}
                   reviewedFields={reviewedFields}
-                  editedFields={editedFields}
+                  recalculatedFields={recalculatedFields}
                   editedFieldsMeta={editedFieldsMeta}
                   fieldOverrides={fieldOverrides}
                   onFieldOverride={setFieldOverride}
@@ -2534,12 +2549,12 @@ export default function DataReviewPage() {
                   amounts={amounts}
                   onAmountChange={(patch, editedKey) => {
                     updateAmounts(patch)
-                    if (editedKey) markEdited(editedKey)
+                    if (editedKey) saveFieldEditOnMain(editedKey)
                   }}
                   onMarkReviewed={handleMarkReviewed}
                   onMarkReviewedBulk={handleMarkReviewedBulk}
                   reviewedFields={reviewedFields}
-                  editedFields={editedFields}
+                  recalculatedFields={recalculatedFields}
                   fieldOverrides={fieldOverrides}
                   onFieldOverride={setFieldOverride}
                   verifiedDocs={verifiedDocs}
@@ -2562,12 +2577,12 @@ export default function DataReviewPage() {
                   amounts={amounts}
                   onAmountChange={(patch, editedKey) => {
                     updateAmounts(patch)
-                    if (editedKey) markEdited(editedKey)
+                    if (editedKey) saveFieldEditOnMain(editedKey)
                   }}
                   onMarkReviewed={handleMarkReviewed}
                   onMarkReviewedBulk={handleMarkReviewedBulk}
                   reviewedFields={reviewedFields}
-                  editedFields={editedFields}
+                  recalculatedFields={recalculatedFields}
                   fieldOverrides={fieldOverrides}
                   onFieldOverride={setFieldOverride}
                   verifiedDocs={verifiedDocs}

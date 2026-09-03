@@ -528,30 +528,24 @@
   border-color: #205ea3;
 }
 
-/* Zebra striping — review flow only; input-return uses all-white field rows */
-.inputContainer:not(.inputContainerInput) .fieldRow:nth-child(even) {
-  background: var(--color-container-background-secondary, #f7f9fb);
-}
-
-.inputContainer:not(.inputContainerInput) .fieldRow:nth-child(even).fieldRowHighlighted,
-.inputContainer:not(.inputContainerInput) .fieldRow:nth-child(even).fieldRowHighlightedOrange {
-  background: rgba(32, 94, 163, 0.08);
-}
-
-/* Input-return: white rows, gray section headers only */
-.inputContainerInput .fieldRow,
-.inputContainerInput .multiFieldRow {
+/* White field rows everywhere — gray background reserved for section subheaders only */
+.inputContainer .fieldRow,
+.inputContainer .multiFieldRow {
   background: var(--color-container-background-primary, #ffffff);
 }
 
-.inputContainerInput .fieldRow:nth-child(even),
-.inputContainerInput .multiFieldRow:nth-child(even) {
+.inputContainer .fieldRow:nth-child(even),
+.inputContainer .multiFieldRow:nth-child(even) {
   background: var(--color-container-background-primary, #ffffff);
 }
 
-.inputContainerInput .fieldRow:hover,
-.inputContainerInput .multiFieldRow:hover,
-.inputContainerInput .fieldRowHasNote,
+.inputContainer .fieldRow:hover,
+.inputContainer .multiFieldRow:hover,
+.inputContainer .fieldRowHasNote {
+  background: var(--color-container-background-primary, #ffffff);
+}
+
+/* Input-return: suppress comment-open tint so rows stay white */
 .inputContainerInput .fieldRowCommentOpen {
   background: var(--color-container-background-primary, #ffffff);
 }

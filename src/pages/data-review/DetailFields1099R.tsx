@@ -9,6 +9,7 @@ import DocVerifyHeaderActions from './DocVerifyHeaderActions'
 import DetailSectionHeader from './DetailSectionHeader'
 import styles from '../../styles/data-review/DetailFields.module.css'
 import { canEditField, type DetailFieldsVariant } from './fieldEditability'
+import { FieldEditStatusBadges } from './fieldEditStatus'
 
 function CheckIcon() {
   return (
@@ -57,7 +58,8 @@ interface DetailFields1099RProps {
   onMarkReviewed?: (field: string) => void
   onMarkReviewedBulk?: (fields: string[]) => void
   reviewedFields?: Map<string, { by: string; at: string }>
-  editedFields?: Set<string>
+  unsavedFields?: Set<string>
+  recalculatedFields?: Set<string>
   /** Persisted static field values */
   fieldOverrides?: Record<string, string>
   /** Persist a static field edit (also stamps Edited badge) */
@@ -85,7 +87,8 @@ export default function DetailFields1099R({
   onMarkReviewed,
   onMarkReviewedBulk,
   reviewedFields,
-  editedFields: syncedEditedFields,
+  unsavedFields,
+  recalculatedFields,
   fieldOverrides = {},
   onFieldOverride,
   verifiedDocs,
@@ -105,9 +108,6 @@ export default function DetailFields1099R({
   const [editingField, setEditingField] = useState<string | null>(null)
   const [draftValue, setDraftValue] = useState('')
   const [originalValue, setOriginalValue] = useState('')
-  const [savedField, setSavedField] = useState<string | null>(null)
-  const [localEdited, setLocalEdited] = useState<Set<string>>(new Set())
-  const isEdited = (key: string) => syncedEditedFields?.has(key) || localEdited.has(key)
 
   useEffect(() => {
     if (selectedField && highlightedRef.current) {
@@ -129,9 +129,6 @@ export default function DetailFields1099R({
     if (editingField !== fieldKey) return
     if (draftValue !== originalValue) {
       onFieldOverride?.(fieldKey, draftValue)
-      setLocalEdited(prev => new Set(prev).add(fieldKey))
-      setSavedField(fieldKey)
-      setTimeout(() => setSavedField(null), 3500)
       // Flow Box 4 withholding / Box 2a taxable into live 1040 amounts
       if (fieldKey === 'r-fedTaxWithheld') {
         onAmountChange?.({ rWithholding: parseAmountDraft(draftValue) }, 'r-fedTaxWithheld')
@@ -259,8 +256,12 @@ export default function DetailFields1099R({
             {renderAnnotationBtn(fieldKey, label)}
           </div>
         )}
-        {savedField === fieldKey && <span className={styles.recalcBadge}>{flowsTo1040 ? '1040 updated' : 'Saved'}</span>}
-        {isEdited(fieldKey) && savedField !== fieldKey && <span className={styles.editedBadge}>Edited</span>}
+        <FieldEditStatusBadges
+          fieldKey={fieldKey}
+          unsavedFields={unsavedFields}
+          recalculatedFields={recalculatedFields}
+          flowsTo1040={flowsTo1040}
+        />
       </div>
       {flaggedFields[issueKey] && <ValidationNote issueKey={issueKey} resolveKey={resolveKey} />}
       </>

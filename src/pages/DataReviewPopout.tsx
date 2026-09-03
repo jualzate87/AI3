@@ -82,6 +82,7 @@ export default function DataReviewPopout() {
   const [searchParams] = useSearchParams()
   const [sessionDirty, setSessionDirty] = useState(false)
   const [unsavedModalOpen, setUnsavedModalOpen] = useState(false)
+  const [recalculatedFields, setRecalculatedFields] = useState<Set<string>>(new Set())
   const initialNavApplied = useRef(false)
 
   const reviewRole = getStoredDemoRole() ?? 'preparer'
@@ -95,9 +96,10 @@ export default function DataReviewPopout() {
     amounts, updateAmounts,
     fieldValues, updateFieldValue,
     reviewedFields,
-    editedFields,
     editedFieldsMeta,
-    markEdited,
+    unsavedFields,
+    markUnsaved,
+    commitUnsavedEdits,
     fieldOverrides,
     setFieldOverride,
     activeDivPayer, setActiveDivPayer,
@@ -118,9 +120,15 @@ export default function DataReviewPopout() {
   const touchDirty = useCallback(() => setSessionDirty(true), [])
 
   const markFieldEdited = useCallback((fieldKey: string) => {
-    markEdited(fieldKey)
+    markUnsaved(fieldKey)
     touchDirty()
-  }, [markEdited, touchDirty])
+  }, [markUnsaved, touchDirty])
+
+  const flashRecalculatedFields = useCallback((keys: string[]) => {
+    if (!keys.length) return
+    setRecalculatedFields(new Set(keys))
+    window.setTimeout(() => setRecalculatedFields(new Set()), 3500)
+  }, [])
 
   const handleFieldOverride = useCallback((fieldKey: string, value: string) => {
     setFieldOverride(fieldKey, value)
@@ -186,10 +194,12 @@ export default function DataReviewPopout() {
   }, [restoreSyncedSnapshot])
 
   const handleSaveAndRecalculate = useCallback(() => {
+    const committed = commitUnsavedEdits()
+    flashRecalculatedFields(committed)
     baselineRef.current = getSyncedSnapshot()
     setSessionDirty(false)
     setUnsavedModalOpen(false)
-  }, [getSyncedSnapshot])
+  }, [commitUnsavedEdits, flashRecalculatedFields, getSyncedSnapshot])
 
   useEffect(() => {
     const onBeforeUnload = (event: BeforeUnloadEvent) => {
@@ -613,7 +623,8 @@ export default function DataReviewPopout() {
                 onMarkReviewed={handleMarkReviewed}
                 onMarkReviewedBulk={handleMarkReviewedBulk}
                 reviewedFields={reviewedFields}
-                editedFields={editedFields}
+                unsavedFields={unsavedFields}
+                recalculatedFields={recalculatedFields}
                 editedFieldsMeta={editedFieldsMeta}
                 fieldOverrides={fieldOverrides}
                 onFieldOverride={handleFieldOverride}
@@ -651,7 +662,8 @@ export default function DataReviewPopout() {
                 onMarkReviewed={handleMarkReviewed}
                 onMarkReviewedBulk={handleMarkReviewedBulk}
                 reviewedFields={reviewedFields}
-                editedFields={editedFields}
+                unsavedFields={unsavedFields}
+                recalculatedFields={recalculatedFields}
                 fieldOverrides={fieldOverrides}
                 onFieldOverride={handleFieldOverride}
                 verifiedDocs={verifiedDocs}
@@ -688,7 +700,8 @@ export default function DataReviewPopout() {
                 onMarkReviewed={handleMarkReviewed}
                 onMarkReviewedBulk={handleMarkReviewedBulk}
                 reviewedFields={reviewedFields}
-                editedFields={editedFields}
+                unsavedFields={unsavedFields}
+                recalculatedFields={recalculatedFields}
                 editedFieldsMeta={editedFieldsMeta}
                 fieldOverrides={fieldOverrides}
                 onFieldOverride={handleFieldOverride}
@@ -717,7 +730,8 @@ export default function DataReviewPopout() {
                 onMarkReviewed={handleMarkReviewed}
                 onMarkReviewedBulk={handleMarkReviewedBulk}
                 reviewedFields={reviewedFields}
-                editedFields={editedFields}
+                unsavedFields={unsavedFields}
+                recalculatedFields={recalculatedFields}
                 fieldOverrides={fieldOverrides}
                 onFieldOverride={handleFieldOverride}
                 verifiedDocs={verifiedDocs}
@@ -745,7 +759,8 @@ export default function DataReviewPopout() {
                 onMarkReviewed={handleMarkReviewed}
                 onMarkReviewedBulk={handleMarkReviewedBulk}
                 reviewedFields={reviewedFields}
-                editedFields={editedFields}
+                unsavedFields={unsavedFields}
+                recalculatedFields={recalculatedFields}
                 fieldOverrides={fieldOverrides}
                 onFieldOverride={handleFieldOverride}
                 verifiedDocs={verifiedDocs}

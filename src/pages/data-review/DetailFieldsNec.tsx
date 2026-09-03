@@ -14,6 +14,7 @@ import QuestionnaireFieldNote from './QuestionnaireFieldNote'
 import DetailSectionHeader from './DetailSectionHeader'
 import styles from '../../styles/data-review/DetailFields.module.css'
 import { canEditField, type DetailFieldsVariant } from './fieldEditability'
+import { FieldEditStatusBadges } from './fieldEditStatus'
 
 function CheckIcon() {
   return (
@@ -65,7 +66,8 @@ interface DetailFieldsNecProps {
   onMarkReviewed?: (field: string) => void
   onMarkReviewedBulk?: (fields: string[]) => void
   reviewedFields?: Map<string, { by: string; at: string }>
-  editedFields?: Set<string>
+  unsavedFields?: Set<string>
+  recalculatedFields?: Set<string>
   /** Persisted static field values */
   fieldOverrides?: Record<string, string>
   /** Persist a static field edit (also stamps Edited badge) */
@@ -96,7 +98,8 @@ export default function DetailFieldsNec({
   onMarkReviewed,
   onMarkReviewedBulk,
   reviewedFields,
-  editedFields: syncedEditedFields,
+  unsavedFields,
+  recalculatedFields,
   fieldOverrides = {},
   onFieldOverride,
   verifiedDocs,
@@ -117,9 +120,6 @@ export default function DetailFieldsNec({
   const [editingField, setEditingField] = useState<string | null>(null)
   const [draftValue, setDraftValue] = useState('')
   const [originalValue, setOriginalValue] = useState('')
-  const [savedField, setSavedField] = useState<string | null>(null)
-  const [localEdited, setLocalEdited] = useState<Set<string>>(new Set())
-  const isEdited = (key: string) => syncedEditedFields?.has(key) || localEdited.has(key)
 
   const scheduleCNeedsSetup =
     variant === 'review' &&
@@ -192,9 +192,6 @@ export default function DetailFieldsNec({
       if (editingField !== fieldKey) return
       if (draftValue !== originalValue) {
         onFieldOverride?.(fieldKey, draftValue)
-        setLocalEdited(prev => new Set(prev).add(fieldKey))
-        setSavedField(fieldKey)
-        setTimeout(() => setSavedField(null), 3500)
         // Saving NEC Box 1 confirms omitted income onto Form 1040 line 8
         if (fieldKey === 'nec-box1') {
           const parsed = parseAmountDraft(draftValue)
@@ -262,8 +259,12 @@ export default function DetailFieldsNec({
             {renderAnnotationBtn(fieldKey, label)}
           </div>
         )}
-        {savedField === fieldKey && <span className={styles.recalcBadge}>{fieldKey === 'nec-box1' ? '1040 updated' : 'Saved'}</span>}
-        {isEdited(fieldKey) && savedField !== fieldKey && <span className={styles.editedBadge}>Edited</span>}
+        <FieldEditStatusBadges
+          fieldKey={fieldKey}
+          unsavedFields={unsavedFields}
+          recalculatedFields={recalculatedFields}
+          flowsTo1040={fieldKey === 'nec-box1'}
+        />
       </div>
     )
     if (fieldKey === 'nec-box1' && flaggedFields['nec-box1']) {

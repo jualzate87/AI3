@@ -10,6 +10,7 @@ import DetailSectionHeader from './DetailSectionHeader'
 import InputFormPageHeader, { type InputDocTabItem } from '../input-return/InputFormPageHeader'
 import styles from '../../styles/data-review/DetailFields.module.css'
 import { canEditField, type DetailFieldsVariant } from './fieldEditability'
+import { FieldEditStatusBadges } from './fieldEditStatus'
 
 function CheckIcon() {
   return (
@@ -138,7 +139,8 @@ interface DetailFields1099Props {
   onMarkReviewed?: (field: string) => void
   onMarkReviewedBulk?: (fields: string[]) => void
   reviewedFields?: Map<string, { by: string; at: string }>
-  editedFields?: Set<string>
+  unsavedFields?: Set<string>
+  recalculatedFields?: Set<string>
   editedFieldsMeta?: Map<string, { by: string; at: string }>
   /** Persisted static field values (payer/recipient info, box amounts as text) */
   fieldOverrides?: Record<string, string>
@@ -172,7 +174,8 @@ export default function DetailFields1099({
   onMarkReviewed,
   onMarkReviewedBulk,
   reviewedFields,
-  editedFields: syncedEditedFields,
+  unsavedFields,
+  recalculatedFields,
   editedFieldsMeta,
   fieldOverrides = {},
   onFieldOverride,
@@ -196,9 +199,6 @@ export default function DetailFields1099({
   const [editingField, setEditingField] = useState<string | null>(null)
   const [draftValue, setDraftValue] = useState('')
   const [originalValue, setOriginalValue] = useState('')
-  const [savedField, setSavedField] = useState<string | null>(null)
-  const [localEdited, setLocalEdited] = useState<Set<string>>(new Set())
-  const isEdited = (key: string) => syncedEditedFields?.has(key) || localEdited.has(key)
   const editMetaText = (key: string) => {
     const m = editedFieldsMeta?.get(key)
     return m ? `Edited · ${m.by} · ${m.at}` : 'Edited'
@@ -229,9 +229,6 @@ export default function DetailFields1099({
       const num = parseFloat(draftValue.replace(/,/g, '')) || 0
       onFieldValueChange?.(field, num)
       onAmountChange?.({ interestUnwavering: num }, 'taxableInterest')
-      setLocalEdited(prev => new Set(prev).add(field))
-      setSavedField(field)
-      setTimeout(() => setSavedField(null), 3500)
       onMarkReviewed?.(field)
     }
     setEditingField(null)
@@ -303,9 +300,6 @@ export default function DetailFields1099({
       if (editingField !== fieldKey) return
       if (draftValue !== originalValue) {
         onFieldOverride?.(fieldKey, draftValue)
-        setLocalEdited(prev => new Set(prev).add(fieldKey))
-        setSavedField(fieldKey)
-        setTimeout(() => setSavedField(null), 3500)
         const num = parseAmountDraft(draftValue)
         if (fieldKey.startsWith('taxableInterest-')) {
           if (activePayer === 'harborlineCredit') onAmountChange?.({ interestHarborline: num }, fieldKey)
@@ -363,12 +357,13 @@ export default function DetailFields1099({
             {renderAnnotationBtn(fieldKey, label)}
           </div>
         )}
-        {savedField === fieldKey && <span className={styles.recalcBadge}>{flowsTo1040 ? '1040 updated' : 'Saved'}</span>}
-        {isEdited(fieldKey) && savedField !== fieldKey && (
-          <Tooltip text={editMetaText(fieldKey)} placement="top">
-            <span className={styles.editedBadge}>Edited</span>
-          </Tooltip>
-        )}
+        <FieldEditStatusBadges
+          fieldKey={fieldKey}
+          unsavedFields={unsavedFields}
+          recalculatedFields={recalculatedFields}
+          flowsTo1040={flowsTo1040}
+          editTooltip={editMetaText(fieldKey)}
+        />
       </div>
     )
   }
@@ -481,8 +476,12 @@ export default function DetailFields1099({
                   {renderAnnotationBtn('taxableInterest', '(1) Interest income')}
                 </div>
               )}
-              {savedField === 'taxableInterest' && <span className={styles.recalcBadge}>1040 updated</span>}
-              {isEdited('taxableInterest') && savedField !== 'taxableInterest' && <span className={styles.editedBadge}>Edited</span>}
+              <FieldEditStatusBadges
+                fieldKey="taxableInterest"
+                unsavedFields={unsavedFields}
+                recalculatedFields={recalculatedFields}
+                flowsTo1040
+              />
             </div>
             <ValidationNote fieldKey="taxableInterest" />
           </>
