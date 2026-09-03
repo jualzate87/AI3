@@ -1,0 +1,34 @@
+/* Shared main panel margins — Input return + Check return (20px shell, heading-6 title) */
+
+.pageScroll {
+  flex: 1;
+  min-width: 0;
+  min-height: 0;
+  overflow-y: auto;
+  background: var(--color-page-background-primary, #ffffff);
+}
+
+.contentBody {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-component-padding-medium, 12px);
+  padding: var(--space-container-padding-medium, 20px);
+  box-sizing: border-box;
+}
+
+.pageTitle {
+  margin: 0;
+  font-family: var(--font-family-component);
+  font-size: var(--font-size-heading-6, 20px);
+  font-weight: var(--font-weight-heading, 500);
+  line-height: 28px;
+  color: var(--color-text-primary, #21262a);
+}
+
+.bodyText {
+  margin: 0;
+  font-family: var(--font-family-component);
+  font-size: var(--font-size-component-small, 14px);
+  line-height: 20px;
+  color: var(--color-text-secondary, #5d686f);
+}

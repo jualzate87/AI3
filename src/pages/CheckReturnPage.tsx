@@ -6,6 +6,7 @@ import CheckReturnNav, { type ContentView } from './check-return/CheckReturnNav'
 import { openHashRoute, PREPARER_DATA_REVIEW_PATH } from '../lib/prototypeRoutes'
 import layout from '../styles/CoreScreenLayout.module.css'
 import styles from '../styles/CheckReturnPage.module.css'
+import panel from '../styles/shared/ReturnMainPanel.module.css'
 
 type TableRow =
   | { type: 'section'; label: string }
@@ -105,10 +106,10 @@ export default function CheckReturnPage() {
               onSelectForm={handleSelectForm}
             />
 
-            <main className={styles.mainContent}>
+            <main className={panel.pageScroll}>
               {contentView === 'federal-summary' && (
-                <div className={styles.formsListContainer}>
-                  <h1 className={styles.sectionTitle}>
+                <div className={panel.contentBody}>
+                  <h1 className={panel.pageTitle}>
                     Federal Income Tax Summary: Barry and Mary Wilson
                   </h1>
                   <div className={styles.tableScroll}>
@@ -145,16 +146,16 @@ export default function CheckReturnPage() {
               )}
 
               {contentView === 'california-summary' && (
-                <div className={styles.formsListContainer}>
-                  <h1 className={styles.sectionTitle}>California Tax Summary: Barry and Mary Wilson</h1>
-                  <p className={styles.placeholderText}>California summary details are not available in this prototype.</p>
+                <div className={panel.contentBody}>
+                  <h1 className={panel.pageTitle}>California Tax Summary: Barry and Mary Wilson</h1>
+                  <p className={panel.bodyText}>California summary details are not available in this prototype.</p>
                 </div>
               )}
 
               {contentView === 'form-1040' && (
-                <div className={styles.formsListContainer}>
-                  <h1 className={styles.sectionTitle}>1040: 2024 U.S. Individual Income Tax Return</h1>
-                  <p className={styles.formHelpText}>
+                <div className={panel.contentBody}>
+                  <h1 className={panel.pageTitle}>1040: 2024 U.S. Individual Income Tax Return</h1>
+                  <p className={panel.bodyText}>
                     Double-click a field to jump to the input screen. Right-click for more options.
                   </p>
                   <div className={styles.formPreviewPlaceholder} aria-label="Form 1040 preview placeholder">

@@ -20,36 +20,8 @@
   flex-shrink: 0;
 }
 
-.mainContent {
-  flex: 1;
-  min-width: 0;
-  overflow-y: auto;
-  background: var(--color-page-background-primary);
-}
-
-.formsListContainer {
-  display: flex;
-  flex-direction: column;
-  gap: var(--space-column-gap-large);
-  padding: var(--space-component-stack-padding-x-large) var(--space-container-padding-medium) var(--space-container-padding-medium);
-}
-
-.sectionTitle {
-  font-family: var(--font-family-component) !important;
-  font-size: var(--font-size-component-x-large);
-  font-weight: var(--font-weight-heading);
-  line-height: 25.6px;
-  color: var(--color-text-primary);
-  margin: 0;
-}
-
-.placeholderText,
-.formHelpText {
-  margin: 0;
-  font-family: var(--font-family-component);
-  font-size: var(--font-size-component-small);
-  line-height: 20px;
-  color: var(--color-text-secondary);
+.tableScroll {
+  overflow-x: auto;
 }
 
 .formPreviewPlaceholder {
@@ -63,11 +35,6 @@
   color: var(--color-text-secondary);
   font-family: var(--font-family-component);
   font-size: var(--font-size-component-medium);
-}
-
-.tableScroll {
-  overflow-x: auto;
-  padding-bottom: var(--space-container-padding-medium);
 }
 
 .summaryTable {

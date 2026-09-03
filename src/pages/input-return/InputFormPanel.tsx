@@ -15,6 +15,7 @@ import {
   readActiveDocKey,
 } from '../../data/inputDocTabs'
 import { inputNavItemById, type InputNavItemId } from '../../data/inputMenuNav'
+import panelStyles from '../../styles/shared/ReturnMainPanel.module.css'
 import styles from '../../styles/InputReturnPage.module.css'
 
 interface InputFormPanelProps {
@@ -93,7 +94,7 @@ export default function InputFormPanel({
   }
 
   return (
-    <div className={styles.formPanel}>
+    <div className={`${panelStyles.pageScroll} ${styles.formPanel}`}>
       {showMissingEinDiagnostic && activeItemId === 'w2' && (
         <div className={styles.diagnosticBanner}>
           <PageMessage
