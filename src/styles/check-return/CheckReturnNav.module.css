@@ -75,7 +75,7 @@
 .formsControls {
   display: flex;
   flex-direction: column;
-  gap: 4px;
+  gap: 8px;
   width: 100%;
   padding: 12px;
   box-sizing: border-box;
@@ -83,20 +83,26 @@
 
 .formsSegmented {
   width: 100%;
+  margin: 0 !important;
 }
 
-.formsSegmented :global(section) {
+.formsSegmented :global(br) {
+  display: none;
+}
+
+.formsSegmented :global([class*='segPosition']) {
+  position: relative;
   width: 100%;
-  display: block;
+  height: 28px;
 }
 
 .formsSegmented :global([class*='miniRenderContainer']) {
-  width: 100%;
-  margin-top: 0 !important;
+  display: none;
 }
 
 .formsSegmented :global([class*='miniWrapper']) {
-  position: relative !important;
+  position: absolute !important;
+  inset: 0;
   width: 100%;
 }
 
@@ -129,6 +135,7 @@
 .formsSearchField {
   width: 100%;
   display: block;
+  margin: 0;
 }
 
 .formsSearchField :global(input) {
