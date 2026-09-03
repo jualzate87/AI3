@@ -2,7 +2,7 @@ import { useNavigate } from 'react-router-dom'
 import {
   Question, Notification, Settings, Lock, PersonThree,
   ChevronDown, List, Edit, Checklist,
-  Send, CloudUpload, AlarmClock, Rocket, PopOut,
+  Send, CloudUpload, Rocket, PopOut,
 } from '@design-systems/icons'
 import { Button } from '@ids-ts/button'
 import '@ids-ts/button/dist/main.css'
@@ -131,9 +131,6 @@ export default function SmartReturnHeader({
         <div className={styles.tabsRight}>
           <span className={styles.tabMeta}>
             <CloudUpload size="small" /> Saved at 11:34 AM
-          </span>
-          <span className={styles.tabMeta}>
-            <AlarmClock size="small" /> Prep time: 0 mins
           </span>
           {showReviewReturn && (
             <Button

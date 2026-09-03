@@ -4,7 +4,7 @@ import {
   CloudUpload, Upload,
   OverflowWeb, ChevronDown, ChevronUp, Download, Copy,
   Notification, Settings, Lock, List, Edit,
-  Checklist, Send, CircleClock, Rocket,
+  Checklist, Send, Rocket,
   CommentDots, Flag,
 } from '@design-systems/icons'
 import { Button } from '@ids-ts/button'
@@ -285,10 +285,6 @@ export default function OpenReturnPage() {
               <div className={styles.tabsMetaItem}>
                 <CloudUpload size="small" />
                 Saved at 11:34 AM
-              </div>
-              <div className={styles.tabsMetaItem}>
-                <CircleClock size="small" />
-                Prep time: 0 mins
               </div>
             </div>
             <button className={styles.refreshFormsBtn}>Refresh forms</button>
