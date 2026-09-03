@@ -10,9 +10,14 @@
   flex: 1;
   min-height: 0;
   overflow: hidden;
-  padding: 20px;
+  padding: 20px 0 20px 20px;
   gap: 20px;
   background: var(--page\/background\/secondary, #f0f4f6);
+}
+
+.contextRail {
+  align-self: stretch;
+  flex-shrink: 0;
 }
 
 /* Left check navigation — same as CheckReturnPage */
