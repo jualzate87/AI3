@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom'
 import { CircleCheckFill, Document, Flag, Comment, InboxActivity } from '@design-systems/icons'
 import LeftNavPTO from './data-review/LeftNavPTO'
 import SmartReturnHeader from './SmartReturnHeader'
+import layout from '../styles/CoreScreenLayout.module.css'
 import styles from '../styles/ReadyToImportPage.module.css'
 
 const DOCUMENTS = [
@@ -23,13 +24,13 @@ export default function ReadyToImportPage() {
   }, [loading, navigate])
 
   return (
-    <div className={styles.page} data-theme="intuit">
-      <SmartReturnHeader activeTab="smartreturn" />
-
-      <div className={styles.body}>
+    <div className={`${layout.page} ${styles.page}`} data-theme="intuit">
+      <div className={layout.body}>
         <LeftNavPTO />
-
-        <div className={styles.main}>
+        <div className={layout.rightSide}>
+          <SmartReturnHeader activeTab="smartreturn" />
+          <div className={styles.mainRow}>
+            <div className={styles.main}>
           <div className={styles.card}>
 
             {!loading ? (
@@ -82,10 +83,10 @@ export default function ReadyToImportPage() {
             )}
 
           </div>
-        </div>
+            </div>
 
-        {/* Right sidebar */}
-        <div className={styles.sidebar}>
+            {/* Right sidebar */}
+            <div className={styles.sidebar}>
           <button className={styles.sidebarItem}>
             <svg width="20" height="20" viewBox="0 0 24 24" fill="none"><rect x="3" y="3" width="18" height="18" rx="2" stroke="#6b6c72" strokeWidth="1.5"/><path d="M8 7h8M8 11h8M8 15h5" stroke="#6b6c72" strokeWidth="1.5" strokeLinecap="round"/></svg>
             <span>Tax<br />Organizer</span>
@@ -111,6 +112,8 @@ export default function ReadyToImportPage() {
             <Comment size="small" />
             <span>Comments</span>
           </button>
+            </div>
+          </div>
         </div>
       </div>
     </div>

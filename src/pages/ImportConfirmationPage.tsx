@@ -11,6 +11,7 @@ import { H5, B2, B3 } from '@ids-ts/typography'
 import '@ids-ts/typography/dist/main.css'
 import SmartReturnHeader from './SmartReturnHeader'
 import LeftNavPTO from './data-review/LeftNavPTO'
+import layout from '../styles/CoreScreenLayout.module.css'
 import styles from '../styles/ImportConfirmationPage.module.css'
 import { completeDocumentImport } from '../hooks/useSyncedReviewState'
 import { openHashRoute, PREPARER_DATA_REVIEW_PATH } from '../lib/prototypeRoutes'
@@ -46,12 +47,12 @@ export default function ImportConfirmationPage() {
   }
 
   return (
-    <div className={styles.page} data-theme="intuit">
-      <SmartReturnHeader activeTab="smartreturn" />
-
-      <div className={styles.body}>
+    <div className={`${layout.page} ${styles.page}`} data-theme="intuit">
+      <div className={layout.body}>
         <LeftNavPTO />
-        <div className={styles.main}>
+        <div className={layout.rightSide}>
+          <SmartReturnHeader activeTab="smartreturn" />
+          <div className={styles.main}>
         <nav className={styles.breadcrumb} aria-label="Breadcrumb">
           <Button
             priority="borderless"
@@ -104,6 +105,7 @@ export default function ImportConfirmationPage() {
             Back
           </Button>
         </div>
+          </div>
         </div>
       </div>
     </div>

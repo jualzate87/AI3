@@ -20,6 +20,7 @@ import {
   writeInputReturnParams,
 } from '../data/inputDocTabs'
 import { useSyncedReviewState } from '../hooks/useSyncedReviewState'
+import layout from '../styles/CoreScreenLayout.module.css'
 import styles from '../styles/InputReturnPage.module.css'
 
 export default function InputReturnPage() {
@@ -117,39 +118,41 @@ export default function InputReturnPage() {
   })
 
   return (
-    <div className={styles.page} data-theme="intuit">
-      <SmartReturnHeader
-        activeTab="inputreturn"
-        showReviewReturn
-        onReviewReturn={() => openHashRoute(PREPARER_DATA_REVIEW_PATH)}
-      />
-
-      <div className={styles.body}>
+    <div className={`${layout.page} ${styles.page}`} data-theme="intuit">
+      <div className={layout.body}>
         <LeftNavPTO />
-        <div className={styles.contentArea}>
-          <InputMenuNav
-            activeItemId={activeItemId}
-            activeDocKey={activeDocKey}
-            onSelect={handleSelectItem}
-            onDocSelect={handleDocChange}
-            searchQuery={searchQuery}
-            onSearchChange={setSearchQuery}
-            collapsed={navCollapsed}
-            onCollapsedChange={setNavCollapsed}
+        <div className={layout.rightSide}>
+          <SmartReturnHeader
+            activeTab="inputreturn"
+            showReviewReturn
+            onReviewReturn={() => openHashRoute(PREPARER_DATA_REVIEW_PATH)}
           />
-          <InputFormPanel
-            activeItemId={activeItemId}
-            showMissingEinDiagnostic={diagnostic === 'missing-ein'}
-            onDocChange={handleDocChange}
-          />
-          <ReturnContextRail />
-        </div>
-      </div>
 
-      <div className={styles.footerBar}>
-        <button type="button" className={styles.footerLink} onClick={() => navigate('/import-confirmation')}>
-          Back to import confirmation
-        </button>
+          <div className={styles.contentArea}>
+            <InputMenuNav
+              activeItemId={activeItemId}
+              activeDocKey={activeDocKey}
+              onSelect={handleSelectItem}
+              onDocSelect={handleDocChange}
+              searchQuery={searchQuery}
+              onSearchChange={setSearchQuery}
+              collapsed={navCollapsed}
+              onCollapsedChange={setNavCollapsed}
+            />
+            <InputFormPanel
+              activeItemId={activeItemId}
+              showMissingEinDiagnostic={diagnostic === 'missing-ein'}
+              onDocChange={handleDocChange}
+            />
+            <ReturnContextRail />
+          </div>
+
+          <div className={styles.footerBar}>
+            <button type="button" className={styles.footerLink} onClick={() => navigate('/import-confirmation')}>
+              Back to import confirmation
+            </button>
+          </div>
+        </div>
       </div>
     </div>
   )

@@ -1,17 +1,14 @@
 /* ReadyToImportPage — documents ready to import starting state */
 
 .page {
-  display: flex;
-  flex-direction: column;
-  height: 100vh;
   background: #ffffff;
   font-family: var(--font-family-component) !important;
-  overflow: hidden;
 }
 
-.body {
+.mainRow {
   display: flex;
   flex: 1;
+  min-height: 0;
   overflow: hidden;
 }
 
@@ -21,6 +18,7 @@
   flex-direction: column;
   overflow-y: auto;
   background: #f4f5f8;
+  min-height: 0;
 }
 
 /* ── Center card ── */

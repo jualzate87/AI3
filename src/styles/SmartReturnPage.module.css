@@ -1,30 +1,11 @@
 /* SmartReturn Page */
 
 .page {
-  display: flex;
-  flex-direction: column;
-  height: 100vh;
   background: #ffffff;
   font-family: var(--font-family-component) !important;
-  overflow: hidden;
   --color-action-standard: #205ea3;
   --color-action-standard-hover: #174d87;
   --color-action-standard-active: #174d87;
-}
-
-.body {
-  display: flex;
-  flex: 1;
-  min-height: 0;
-  overflow: hidden;
-}
-
-.rightSide {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  overflow: hidden;
-  min-width: 0;
 }
 
 /* ── Top product bar ── */
@@ -93,13 +74,6 @@
   justify-content: center;
   margin-left: 4px;
   flex-shrink: 0;
-}
-
-/* ── Body — main + right sidebar ── */
-.body {
-  display: flex;
-  flex: 1;
-  overflow: hidden;
 }
 
 /* Main content area */

@@ -1,23 +1,5 @@
 .page {
-  display: flex;
-  flex-direction: column;
-  height: 100vh;
   background: var(--color-page-background-secondary, #f4f5f8);
-  font-family: var(--font-family-component);
-  overflow: hidden;
-}
-
-.body {
-  flex: 1;
-  min-height: 0;
-  overflow: hidden;
-}
-
-.body {
-  display: flex;
-  flex: 1;
-  min-height: 0;
-  overflow: hidden;
 }
 
 .contentArea {

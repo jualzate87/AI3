@@ -1,10 +1,5 @@
 .page {
-  display: flex;
-  flex-direction: column;
-  height: 100vh;
   background: var(--color-page-background-primary, #ffffff);
-  font-family: var(--font-family-component);
-  overflow: hidden;
   --color-action-standard: #205ea3;
   --color-action-standard-hover: #174d87;
   --color-action-standard-active: #174d87;
@@ -17,13 +12,6 @@
   overflow-y: auto;
   min-height: 0;
   min-width: 0;
-}
-
-.body {
-  display: flex;
-  flex: 1;
-  min-height: 0;
-  overflow: hidden;
 }
 
 .breadcrumb {

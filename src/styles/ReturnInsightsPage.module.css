@@ -1,24 +1,14 @@
 /* Return Insights Page — Screen 34 */
 
 .page {
-  display: flex;
-  flex-direction: column;
-  height: 100vh;
   background: var(--page\/background\/secondary, #f0f4f6);
   font-family: var(--font-family-component) !important;
-  overflow: hidden;
-}
-
-.body {
-  display: flex;
-  flex: 1;
-  overflow: hidden;
-  background: var(--page\/background\/secondary, #f0f4f6);
 }
 
 .contentArea {
   display: flex;
   flex: 1;
+  min-height: 0;
   overflow: hidden;
   padding: 20px;
   gap: 20px;

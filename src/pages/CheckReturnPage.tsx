@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom'
 import { ChevronDown } from '@design-systems/icons'
 import LeftNavPTO from './data-review/LeftNavPTO'
 import SmartReturnHeader from './SmartReturnHeader'
+import layout from '../styles/CoreScreenLayout.module.css'
 import styles from '../styles/CheckReturnPage.module.css'
 
 // Table data exactly from Figma node 29298:137106
@@ -36,13 +37,12 @@ export default function CheckReturnPage() {
   }, [])
 
   return (
-    <div className={styles.page} data-theme="intuit">
-      <SmartReturnHeader activeTab="checkreturns" />
-
-      <div className={styles.body}>
+    <div className={`${layout.page} ${styles.page}`} data-theme="intuit">
+      <div className={layout.body}>
         <LeftNavPTO />
-
-        <div className={styles.contentArea}>
+        <div className={layout.rightSide}>
+          <SmartReturnHeader activeTab="checkreturns" />
+          <div className={styles.contentArea}>
 
           {/* Left check navigation — exact Figma spec */}
           <div className={styles.leftNav}>
@@ -123,6 +123,7 @@ export default function CheckReturnPage() {
             </div>
           </div>
 
+          </div>
         </div>
       </div>
     </div>

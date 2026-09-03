@@ -2,6 +2,7 @@ import { useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import LeftNavPTO from './data-review/LeftNavPTO'
 import SmartReturnHeader from './SmartReturnHeader'
+import layout from '../styles/CoreScreenLayout.module.css'
 import styles from '../styles/ReturnInsightsPage.module.css'
 
 // Figma asset — Return Insights visualization image (valid 7 days)
@@ -36,13 +37,12 @@ export default function ReturnInsightsPage() {
   }, [])
 
   return (
-    <div className={styles.page} data-theme="intuit">
-      <SmartReturnHeader activeTab="checkreturns" />
-
-      <div className={styles.body}>
+    <div className={`${layout.page} ${styles.page}`} data-theme="intuit">
+      <div className={layout.body}>
         <LeftNavPTO />
-
-        <div className={styles.contentArea}>
+        <div className={layout.rightSide}>
+          <SmartReturnHeader activeTab="checkreturns" />
+          <div className={styles.contentArea}>
           {/* Left check navigation */}
           <div className={styles.leftNav}>
             {CHECK_NAV_ITEMS.map(item => (
@@ -63,6 +63,7 @@ export default function ReturnInsightsPage() {
               alt="Return Insights — Jessica Drake 2025 Tax Report"
               className={styles.insightsImage}
             />
+          </div>
           </div>
         </div>
       </div>
