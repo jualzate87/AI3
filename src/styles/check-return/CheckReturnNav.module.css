@@ -81,57 +81,6 @@
   box-sizing: border-box;
 }
 
-.formsSegmented {
-  width: 100%;
-  margin: 0 !important;
-}
-
-.formsSegmented :global(br) {
-  display: none;
-}
-
-.formsSegmented :global([class*='segPosition']) {
-  position: relative;
-  width: 100%;
-  height: 28px;
-}
-
-.formsSegmented :global([class*='miniRenderContainer']) {
-  display: none;
-}
-
-.formsSegmented :global([class*='miniWrapper']) {
-  position: absolute !important;
-  inset: 0;
-  width: 100%;
-}
-
-.formsSegmented :global([class*='miniWrapper']) button {
-  flex: 1;
-  min-height: 28px;
-  margin-top: 0 !important;
-  margin-bottom: 0 !important;
-  font-family: var(--font-family-component);
-  font-size: var(--font-size-component-small, 14px);
-  font-weight: var(--font-weight-component-bold, 600);
-  line-height: 20px;
-  border-color: var(--color-container-border-primary, #c3ced5) !important;
-}
-
-.formsSegmented :global([class*='miniWrapper']) button:first-child {
-  margin-left: 0 !important;
-}
-
-.formsSegmented :global([class*='miniWrapper']) button:last-child {
-  margin-right: 0 !important;
-}
-
-.formsSegmented :global(button[aria-pressed='true']) {
-  background: var(--color-container-background-inverse, #393a3d) !important;
-  color: var(--color-text-inverse, #ffffff) !important;
-  border-color: var(--color-container-background-inverse, #393a3d) !important;
-}
-
 .formsSearchField {
   width: 100%;
   display: block;

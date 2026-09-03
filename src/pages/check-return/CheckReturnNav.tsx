@@ -3,8 +3,7 @@ import { useNavigate } from 'react-router-dom'
 import { ChevronDown, ChevronRight, ChevronUp, Search } from '@design-systems/icons'
 import { NumericBadge } from '@ids-ts/badge'
 import '@ids-ts/badge/dist/main.css'
-import SegmentedButton from '@ids-ts/segmented-button'
-import '@ids-ts/segmented-button/dist/main.css'
+import ModeSegmentedControl from '../../components/ModeSegmentedControl'
 import { TextField } from '@ids-ts/text-field'
 import '@ids-ts/text-field/dist/main.css'
 import styles from '../../styles/check-return/CheckReturnNav.module.css'
@@ -215,19 +214,18 @@ export default function CheckReturnNav({
           {expandedCategory === 'forms' && (
             <div className={styles.formsPanel}>
               <div className={styles.formsControls}>
-                <SegmentedButton
+                <ModeSegmentedControl
                   ariaLabel="Form filter"
-                  buttonType="mini"
-                  className={styles.formsSegmented}
-                  buttonInfos={[
+                  activeId={formsMode}
+                  options={[
                     {
+                      id: 'applicable',
                       label: 'Applicable',
-                      selected: formsMode === 'applicable',
                       onClick: () => setFormsMode('applicable'),
                     },
                     {
+                      id: 'all',
                       label: 'All',
-                      selected: formsMode === 'all',
                       onClick: () => setFormsMode('all'),
                     },
                   ]}

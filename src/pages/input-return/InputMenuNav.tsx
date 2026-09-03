@@ -1,5 +1,6 @@
 import { ChevronLeft, ChevronRight, Search } from '@design-systems/icons'
 import { useNavigate } from 'react-router-dom'
+import ModeSegmentedControl from '../../components/ModeSegmentedControl'
 import {
   INPUT_NAV_CATEGORIES,
   type InputNavItemId,
@@ -60,20 +61,14 @@ export default function InputMenuNav({
         </button>
       </div>
 
-      <div className={styles.modeSwitch} role="tablist" aria-label="Input or review">
-        <span className={`${styles.modeSegment} ${styles.modeSegmentActive}`} role="tab" aria-selected>
-          Input
-        </span>
-        <button
-          type="button"
-          className={styles.modeSegment}
-          role="tab"
-          aria-selected={false}
-          onClick={() => navigate('/data-review')}
-        >
-          Review
-        </button>
-      </div>
+      <ModeSegmentedControl
+        ariaLabel="Input or review"
+        activeId="input"
+        options={[
+          { id: 'input', label: 'Input' },
+          { id: 'review', label: 'Review', onClick: () => navigate('/data-review') },
+        ]}
+      />
 
       <label className={styles.searchWrap}>
         <span className={styles.visuallyHidden}>Search input menu</span>
