@@ -51,7 +51,7 @@ const TAX_SUMMARY_ITEMS = [
 
 const DIAGNOSTIC_NAV_ITEMS: { label: string; badge?: number }[] = [
   { label: 'Fatal Diagnostics', badge: 1 },
-  { label: 'EF Critical diagnostics', badge: 3 },
+  { label: 'EF Critical diagnostics', badge: 1 },
   { label: 'Critical Diagnostics', badge: 1 },
 ]
 
@@ -63,7 +63,37 @@ interface CheckReturnNavProps {
   onSelectForm: (form: string) => void
 }
 
-function NavListItem({
+function NavCategoryHeader({
+  label,
+  expanded,
+  onToggle,
+  isLast = false,
+}: {
+  label: string
+  expanded: boolean
+  onToggle: () => void
+  isLast?: boolean
+}) {
+  return (
+    <button
+      type="button"
+      className={[styles.navCategoryHeader, isLast ? styles.navCategoryHeaderLast : '']
+        .filter(Boolean)
+        .join(' ')}
+      aria-expanded={expanded}
+      onClick={onToggle}
+    >
+      <span className={styles.navCategoryLabel}>{label}</span>
+      {expanded ? (
+        <ChevronUp size="small" className={styles.navCategoryChevron} aria-hidden />
+      ) : (
+        <ChevronRight size="small" className={styles.navCategoryChevron} aria-hidden />
+      )}
+    </button>
+  )
+}
+
+function NavSecondaryItem({
   label,
   active,
   onClick,
@@ -75,12 +105,54 @@ function NavListItem({
   return (
     <button
       type="button"
-      className={`${styles.navListItem} ${active ? styles.navListItemActive : ''}`}
+      className={[styles.navSecondaryItem, active ? styles.navSecondaryItemActive : '']
+        .filter(Boolean)
+        .join(' ')}
       aria-current={active ? 'page' : undefined}
       onClick={onClick}
     >
       {label}
     </button>
+  )
+}
+
+function NavFlatRow({
+  label,
+  badge,
+  onClick,
+  isLast = false,
+}: {
+  label: string
+  badge?: number
+  onClick?: () => void
+  isLast?: boolean
+}) {
+  const className = [styles.navFlatRow, isLast ? styles.navFlatRowLast : '']
+    .filter(Boolean)
+    .join(' ')
+
+  if (onClick) {
+    return (
+      <button type="button" className={className} onClick={onClick}>
+        <span className={styles.navFlatLabel}>{label}</span>
+        {badge != null && (
+          <span className={styles.navBadge}>
+            <NumericBadge quantity={String(badge)} maxLimit={99} />
+          </span>
+        )}
+      </button>
+    )
+  }
+
+  return (
+    <div className={className}>
+      <span className={styles.navFlatLabel}>{label}</span>
+      {badge != null && (
+        <span className={styles.navBadge}>
+          <NumericBadge quantity={String(badge)} maxLimit={99} />
+        </span>
+      )}
+    </div>
   )
 }
 
@@ -129,26 +201,18 @@ export default function CheckReturnNav({
       <div className={styles.leftNav}>
         {/* Level 1: Forms */}
         <div className={styles.navSection}>
-          <button
-            type="button"
-            className={styles.navSectionHeader}
-            aria-expanded={formsExpanded}
-            onClick={() => setFormsExpanded(prev => !prev)}
-          >
-            <span className={styles.navSectionLabel}>Forms</span>
-            {formsExpanded ? (
-              <ChevronUp size="small" className={styles.navSectionChevron} aria-hidden />
-            ) : (
-              <ChevronRight size="small" className={styles.navSectionChevron} aria-hidden />
-            )}
-          </button>
+          <NavCategoryHeader
+            label="Forms"
+            expanded={formsExpanded}
+            onToggle={() => setFormsExpanded(prev => !prev)}
+          />
 
           {formsExpanded && (
-            <div className={styles.navSectionPanel}>
+            <div className={styles.formsPanel}>
               <div className={styles.formsControls}>
                 <SegmentedButton
                   ariaLabel="Form filter"
-                  buttonType="standard"
+                  buttonType="mini"
                   className={styles.formsSegmented}
                   buttonInfos={[
                     {
@@ -193,18 +257,15 @@ export default function CheckReturnNav({
                       )}
                     </button>
 
-                    {jurisdictionExpanded && (
-                      <div className={styles.navGroupPanel}>
-                        {group.forms.map(form => (
-                          <NavListItem
-                            key={form}
-                            label={form}
-                            active={selectedForm === form && contentView === 'form-1040'}
-                            onClick={() => onSelectForm(form)}
-                          />
-                        ))}
-                      </div>
-                    )}
+                    {jurisdictionExpanded &&
+                      group.forms.map(form => (
+                        <NavSecondaryItem
+                          key={form}
+                          label={form}
+                          active={selectedForm === form && contentView === 'form-1040'}
+                          onClick={() => onSelectForm(form)}
+                        />
+                      ))}
                   </div>
                 )
               })}
@@ -214,60 +275,34 @@ export default function CheckReturnNav({
 
         {/* Level 1: Tax Summary */}
         <div className={styles.navSection}>
-          <button
-            type="button"
-            className={styles.navSectionHeader}
-            aria-expanded={taxSummaryExpanded}
-            onClick={() => setTaxSummaryExpanded(prev => !prev)}
-          >
-            <span className={styles.navSectionLabel}>Tax Summary</span>
-            {taxSummaryExpanded ? (
-              <ChevronUp size="small" className={styles.navSectionChevron} aria-hidden />
-            ) : (
-              <ChevronRight size="small" className={styles.navSectionChevron} aria-hidden />
-            )}
-          </button>
+          <NavCategoryHeader
+            label="Tax Summary"
+            expanded={taxSummaryExpanded}
+            onToggle={() => setTaxSummaryExpanded(prev => !prev)}
+          />
 
-          {taxSummaryExpanded && (
-            <div className={`${styles.navSectionPanel} ${styles.navSectionPanelLast}`}>
-              {TAX_SUMMARY_ITEMS.map(item => (
-                <NavListItem
-                  key={item.id}
-                  label={item.label}
-                  active={contentView === item.id}
-                  onClick={item.id === 'federal-summary' ? onSelectFederal : onSelectCalifornia}
-                />
-              ))}
-            </div>
-          )}
+          {taxSummaryExpanded &&
+            TAX_SUMMARY_ITEMS.map(item => (
+              <NavSecondaryItem
+                key={item.id}
+                label={item.label}
+                active={contentView === item.id}
+                onClick={item.id === 'federal-summary' ? onSelectFederal : onSelectCalifornia}
+              />
+            ))}
         </div>
 
-        {/* Flat nav items below Tax Summary */}
-        <button
-          type="button"
-          className={styles.navFlatItem}
+        <NavFlatRow
+          label="Return Insights"
           onClick={() => navigate('/check-return/insights')}
-        >
-          <span className={styles.navFlatLabel}>Return Insights</span>
-        </button>
+        />
 
         {DIAGNOSTIC_NAV_ITEMS.map(item => (
-          <div key={item.label} className={styles.navFlatItem}>
-            <span className={styles.navFlatLabel}>{item.label}</span>
-            {item.badge != null && (
-              <span className={styles.navBadge}>
-                <NumericBadge quantity={String(item.badge)} maxLimit={99} />
-              </span>
-            )}
-          </div>
+          <NavFlatRow key={item.label} label={item.label} badge={item.badge} />
         ))}
 
-        <div className={styles.navFlatItem}>
-          <span className={styles.navFlatLabel}>Overrides</span>
-        </div>
-        <div className={`${styles.navFlatItem} ${styles.navFlatItemLast}`}>
-          <span className={styles.navFlatLabel}>Suggestions</span>
-        </div>
+        <NavFlatRow label="Overrides" />
+        <NavFlatRow label="Suggestions" isLast />
       </div>
     </nav>
   )

@@ -1,4 +1,4 @@
-/* Check Return left navigation — Figma node 33983:32489 */
+/* Check Return left navigation — Figma nodes 33983:32489, 33986:36814–36816 */
 
 .inputMenu {
   width: 315px;
@@ -18,38 +18,36 @@
   background: var(--color-page-background-primary, #ffffff);
 }
 
-/* Level 1 accordion sections */
 .navSection {
   display: flex;
   flex-direction: column;
 }
 
-.navSectionHeader {
+/* Level 1 — category row (Forms, Tax Summary) */
+.navCategoryHeader {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: var(--space-component-gap-small, 8px);
+  gap: var(--space-component-gap-x-small, 4px);
+  width: 100%;
   padding: 12px 10px;
   background: var(--color-page-background-primary, #ffffff);
-  border-top: 1px solid var(--color-container-border-primary, #c3ced5);
-  border-left: 1px solid var(--color-container-border-primary, #c3ced5);
-  border-right: 1px solid var(--color-container-border-primary, #c3ced5);
-  width: 100%;
+  border: 1px solid var(--color-container-border-primary, #c3ced5);
+  border-bottom: none;
   cursor: pointer;
   text-align: left;
-  border-bottom: none;
   font-family: inherit;
 }
 
-.navSection:first-child .navSectionHeader {
-  border-top: none;
+.navSection:first-child .navCategoryHeader {
+  border-top: 1px solid var(--color-container-border-primary, #c3ced5);
 }
 
-.navSectionHeader:hover {
+.navCategoryHeader:hover {
   background: var(--color-page-background-secondary, #f4f5f8);
 }
 
-.navSectionLabel {
+.navCategoryLabel {
   font-family: var(--font-family-component);
   font-size: var(--font-size-component-small, 14px);
   font-weight: var(--font-weight-component-bold, 600);
@@ -58,30 +56,27 @@
   white-space: nowrap;
 }
 
-.navSectionChevron {
+.navCategoryChevron {
   flex-shrink: 0;
+  width: 20px;
+  height: 20px;
   color: var(--color-icon-primary, #393a3d);
 }
 
-.navSectionPanel {
+/* Forms expanded panel — gray shell for controls + groups */
+.formsPanel {
   display: flex;
   flex-direction: column;
-  gap: var(--space-component-gap-small, 8px);
-  padding: var(--space-component-stack-padding-large, 12px) var(--space-component-inline-padding-large, 12px);
   background: var(--color-page-background-secondary, #f4f5f8);
   border-left: 1px solid var(--color-container-border-primary, #c3ced5);
   border-right: 1px solid var(--color-container-border-primary, #c3ced5);
 }
 
-.navSectionPanelLast {
-  border-bottom: 1px solid var(--color-container-border-primary, #c3ced5);
-}
-
-/* Forms controls */
 .formsControls {
   display: flex;
   flex-direction: column;
   gap: var(--space-component-gap-small, 8px);
+  padding: 12px;
 }
 
 .formsSegmented {
@@ -90,13 +85,17 @@
 
 .formsSegmented :global(section) {
   width: 100%;
+  display: flex;
 }
 
 .formsSegmented :global(button) {
   flex: 1;
+  min-height: 28px;
   font-family: var(--font-family-component);
   font-size: var(--font-size-component-small, 14px);
-  border-color: var(--color-divider-tertiary, #c3ced5) !important;
+  font-weight: var(--font-weight-component-bold, 600);
+  line-height: 20px;
+  border-color: var(--color-container-border-primary, #c3ced5) !important;
 }
 
 .formsSegmented :global(button[aria-pressed='true']) {
@@ -110,15 +109,12 @@
 }
 
 .formsSearchField :global(input) {
-  border-color: var(--color-divider-tertiary, #c3ced5) !important;
+  background: var(--color-page-background-primary, #ffffff) !important;
+  border-color: var(--color-container-border-primary, #c3ced5) !important;
   box-shadow: none !important;
 }
 
-.formsSearchField :global([class*='TextField']) {
-  border-color: var(--color-divider-tertiary, #c3ced5);
-}
-
-/* Level 2 jurisdiction groups (US, CA) */
+/* Level 2 — US / CA group headers inside forms panel */
 .navGroup {
   display: flex;
   flex-direction: column;
@@ -128,9 +124,9 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: var(--space-component-gap-small, 8px);
+  gap: var(--space-component-gap-x-small, 4px);
   width: 100%;
-  padding: var(--space-component-stack-padding-small, 8px) 0;
+  padding: 8px 12px;
   background: transparent;
   border: none;
   cursor: pointer;
@@ -142,9 +138,10 @@
   font-family: var(--font-family-component);
   font-size: var(--font-size-component-x-small, 12px);
   font-weight: var(--font-weight-component-bold, 600);
-  line-height: 17px;
+  line-height: 16px;
   color: var(--color-text-secondary, #5d686f);
   text-transform: uppercase;
+  letter-spacing: 0.02em;
 }
 
 .navGroupChevron {
@@ -152,22 +149,15 @@
   color: var(--color-icon-secondary, #6b6c72);
 }
 
-.navGroupPanel {
-  display: flex;
-  flex-direction: column;
-}
-
-/* Level 3 selectable items — shared by forms and tax summaries */
-.navListItem {
+/* Level 3 — secondary items (forms + tax summaries) */
+.navSecondaryItem {
   display: flex;
   align-items: center;
   width: 100%;
-  padding: var(--space-component-stack-padding-medium, 10px) var(--space-component-inline-padding-small, 8px);
-  padding-left: var(--space-component-inline-padding-medium, 12px);
-  background: transparent;
+  padding: 12px 10px 12px 32px;
+  background: var(--color-container-background-secondary, #f0f4f6);
   border: none;
   border-left: 4px solid transparent;
-  border-radius: var(--radius-small, 4px);
   font-family: var(--font-family-component);
   font-size: var(--font-size-component-small, 14px);
   font-weight: var(--font-weight-component, 400);
@@ -177,41 +167,42 @@
   cursor: pointer;
 }
 
-.navListItem:hover {
+.navSecondaryItem:hover {
   background: var(--color-page-background-tertiary, #e8edf0);
 }
 
-.navListItemActive {
-  background: var(--color-container-background-info, #ebf4ff);
-  border-left-color: var(--color-action-standard, #205ea3);
-  padding-left: calc(var(--space-component-inline-padding-medium, 12px) - 4px);
-  font-weight: var(--font-weight-component-semibold, 500);
-  color: var(--color-action-standard, #205ea3);
+.navSecondaryItemActive {
+  background: #e2e9ed;
+  border-left-color: var(--color-ui-primary, #205ea3);
+  font-weight: var(--font-weight-component, 400);
+  color: var(--color-text-primary, #21262a);
 }
 
-/* Flat nav items below Tax Summary */
-.navFlatItem {
+/* Flat rows — Return Insights, diagnostics, Overrides, Suggestions */
+.navFlatRow {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: var(--space-component-gap-small, 8px);
+  gap: var(--space-component-gap-x-small, 4px);
+  width: 100%;
   padding: 12px 10px;
   background: var(--color-page-background-primary, #ffffff);
-  border-top: 1px solid var(--color-container-border-primary, #c3ced5);
-  border-left: 1px solid var(--color-container-border-primary, #c3ced5);
-  border-right: 1px solid var(--color-container-border-primary, #c3ced5);
-  width: 100%;
-  cursor: pointer;
-  text-align: left;
+  border: 1px solid var(--color-container-border-primary, #c3ced5);
   border-bottom: none;
+  cursor: default;
+  text-align: left;
   font-family: inherit;
 }
 
-.navFlatItem:hover {
+button.navFlatRow {
+  cursor: pointer;
+}
+
+button.navFlatRow:hover {
   background: var(--color-page-background-secondary, #f4f5f8);
 }
 
-.navFlatItemLast {
+.navFlatRowLast {
   border-bottom: 1px solid var(--color-container-border-primary, #c3ced5);
 }
 
@@ -227,10 +218,19 @@
 .navBadge {
   display: flex;
   align-items: center;
+  justify-content: center;
   padding: 2px;
+  min-width: 20px;
 }
 
 .navBadge :global([class*='NumericBadge']) {
-  background: var(--color-container-feedback-negative, #d52b1e);
-  color: var(--color-text-on-fill, #ffffff);
+  background: var(--color-ui-negative, #db334d);
+  color: var(--color-text-inverse, #ffffff);
+  font-size: var(--font-size-component-x-small, 12px);
+  font-weight: var(--font-weight-component-bold, 600);
+  line-height: 16px;
+  text-transform: uppercase;
+  border-radius: var(--radius-full, 9999px);
+  padding: 0 4px;
+  min-width: 16px;
 }
