@@ -410,7 +410,7 @@ export default function DetailFields1099({
       <div className={styles.inputContainer}>
 
         {/* ── Payer Information ── */}
-        <DetailSectionHeader variant={variant} onViewSourceDocuments={onViewSourceDocuments}>
+        <DetailSectionHeader variant={variant}>
           Payer Information (MANDATORY for e-file)
         </DetailSectionHeader>
 
@@ -421,7 +421,7 @@ export default function DetailFields1099({
         {renderReadOnlyRow(`payerPhone-${activePayer}`, "Payer's telephone number", payer.payerPhone)}
 
         {/* ── Recipient Information ── */}
-        <DetailSectionHeader variant={variant} onViewSourceDocuments={onViewSourceDocuments}>
+        <DetailSectionHeader variant={variant}>
           Recipient Information
         </DetailSectionHeader>
 
@@ -431,7 +431,7 @@ export default function DetailFields1099({
         {renderReadOnlyRow(`recipientCityStateZip-${activePayer}`, 'City / State / ZIP code', `${RECIPIENT_DATA.city}, ${RECIPIENT_DATA.state} ${RECIPIENT_DATA.zip}`, styles.fieldInputWide)}
 
         {/* ── Interest Income ── */}
-        <DetailSectionHeader variant={variant} onViewSourceDocuments={onViewSourceDocuments}>
+        <DetailSectionHeader variant={variant}>
           Interest Income
         </DetailSectionHeader>
 
@@ -501,7 +501,7 @@ export default function DetailFields1099({
         {renderReadOnlyRow(`bondPremium-${activePayer}`, '(11) Bond premium', form.box11_bondPremium)}
 
         {/* ── State Tax Information ── */}
-        <DetailSectionHeader variant={variant} onViewSourceDocuments={onViewSourceDocuments}>
+        <DetailSectionHeader variant={variant}>
           State Tax Information
         </DetailSectionHeader>
 

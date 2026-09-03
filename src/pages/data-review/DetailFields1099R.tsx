@@ -298,7 +298,7 @@ export default function DetailFields1099R({
       >
 
         {/* ── Payer Information ── */}
-        <DetailSectionHeader variant={variant} onViewSourceDocuments={onViewSourceDocuments}>
+        <DetailSectionHeader variant={variant}>
           Payer Information (MANDATORY for e-file)
         </DetailSectionHeader>
 
@@ -308,7 +308,7 @@ export default function DetailFields1099R({
         {renderStaticRow('r-cityStateZip', 'City / State / ZIP code', `${PAYER_DATA.city}, ${PAYER_DATA.state} ${PAYER_DATA.zip}`, styles.fieldInputWide)}
 
         {/* ── Recipient Information ── */}
-        <DetailSectionHeader variant={variant} onViewSourceDocuments={onViewSourceDocuments}>
+        <DetailSectionHeader variant={variant}>
           Recipient Information
         </DetailSectionHeader>
 
@@ -318,7 +318,7 @@ export default function DetailFields1099R({
         {renderStaticRow('r-recipientCityStateZip', 'City / State / ZIP code', `${RECIPIENT_DATA.city}, ${RECIPIENT_DATA.state} ${RECIPIENT_DATA.zip}`, styles.fieldInputWide)}
 
         {/* ── Distribution Income ── */}
-        <DetailSectionHeader variant={variant} onViewSourceDocuments={onViewSourceDocuments}>
+        <DetailSectionHeader variant={variant}>
           Distribution Income
         </DetailSectionHeader>
 

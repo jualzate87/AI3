@@ -7,7 +7,6 @@ import DetailFields1099 from '../data-review/DetailFields1099'
 import DetailFieldsDiv from '../data-review/DetailFieldsDiv'
 import DetailFields1099R from '../data-review/DetailFields1099R'
 import DetailFieldsNec from '../data-review/DetailFieldsNec'
-import PeelTab from '../data-review/PeelTab'
 import { resolveActiveVerifyDocKey } from '../../data/documentImportMeta'
 import { openHashRoute, PREPARER_DATA_REVIEW_PATH } from '../../lib/prototypeRoutes'
 import {
@@ -106,16 +105,6 @@ export default function InputFormPanel({
         </div>
       )}
 
-      {docTabs.length > 1 && activeDocKey && (
-        <div className={styles.docTabBar}>
-          <PeelTab
-            tabs={docTabs}
-            activeKey={activeDocKey}
-            onChange={handleDocTabChange}
-          />
-        </div>
-      )}
-
       <div className={styles.formScroll}>
         {navItem.topTab === 'w2s' && (
           <DetailFields
@@ -178,6 +167,9 @@ export default function InputFormPanel({
             fieldOverrides={fieldOverrides}
             onFieldOverride={setFieldOverride}
             onViewSourceDocuments={handleViewSourceDocuments}
+            docTabs={docTabs}
+            activeDocKey={activeDocKey}
+            onDocTabChange={handleDocTabChange}
           />
         )}
 
@@ -198,6 +190,9 @@ export default function InputFormPanel({
             fieldOverrides={fieldOverrides}
             onFieldOverride={setFieldOverride}
             onViewSourceDocuments={handleViewSourceDocuments}
+            docTabs={docTabs}
+            activeDocKey={activeDocKey}
+            onDocTabChange={handleDocTabChange}
           />
         )}
 
@@ -218,6 +213,9 @@ export default function InputFormPanel({
             fieldOverrides={fieldOverrides}
             onFieldOverride={setFieldOverride}
             onViewSourceDocuments={handleViewSourceDocuments}
+            docTabs={docTabs}
+            activeDocKey={activeDocKey}
+            onDocTabChange={handleDocTabChange}
           />
         )}
 

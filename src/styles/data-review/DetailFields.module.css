@@ -36,8 +36,12 @@
   align-items: center;
   justify-content: space-between;
   gap: var(--space-component-gap-medium, 12px);
-  padding: var(--space-container-padding-medium, 20px) var(--space-container-padding-medium, 20px) var(--space-component-padding-small, 8px);
+  padding: var(--space-container-padding-medium, 20px) var(--space-container-padding-medium, 20px) var(--space-component-padding-medium, 12px);
   min-width: 0;
+}
+
+.pageHeaderInput:has(.subTabBar) .inputHeaderTitleRow {
+  padding-bottom: var(--space-component-padding-small, 8px);
 }
 
 .inputHeaderTitle {

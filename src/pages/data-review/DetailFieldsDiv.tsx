@@ -419,7 +419,7 @@ export default function DetailFieldsDiv({
       <div className={styles.inputContainer}>
 
         {/* ── Payer Information ── */}
-        <DetailSectionHeader variant={variant} onViewSourceDocuments={onViewSourceDocuments}>
+        <DetailSectionHeader variant={variant}>
           Payer Information (MANDATORY for e-file)
         </DetailSectionHeader>
 
@@ -430,7 +430,7 @@ export default function DetailFieldsDiv({
         {renderReadOnlyRow(`payerPhone-${activePayer}`, "Payer's telephone number", payer.payerPhone)}
 
         {/* ── Recipient Information ── */}
-        <DetailSectionHeader variant={variant} onViewSourceDocuments={onViewSourceDocuments}>
+        <DetailSectionHeader variant={variant}>
           Recipient Information
         </DetailSectionHeader>
 
@@ -440,7 +440,7 @@ export default function DetailFieldsDiv({
         {renderReadOnlyRow(`recipientCityStateZip-${activePayer}`, 'City / State / ZIP code', `${RECIPIENT_DATA.city}, ${RECIPIENT_DATA.state} ${RECIPIENT_DATA.zip}`, { inputClass: styles.fieldInputWide })}
 
         {/* ── Dividend Income ── */}
-        <DetailSectionHeader variant={variant} onViewSourceDocuments={onViewSourceDocuments}>
+        <DetailSectionHeader variant={variant}>
           Dividend Income
         </DetailSectionHeader>
 

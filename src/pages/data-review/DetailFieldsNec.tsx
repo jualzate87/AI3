@@ -327,7 +327,7 @@ export default function DetailFieldsNec({
         )}
 
         {/* ── Payer Information ── */}
-        <DetailSectionHeader variant={variant} onViewSourceDocuments={onViewSourceDocuments}>
+        <DetailSectionHeader variant={variant}>
           Payer Information (MANDATORY for e-file)
         </DetailSectionHeader>
 
@@ -338,7 +338,7 @@ export default function DetailFieldsNec({
         {renderStaticRow('nec-phone', "Payer's telephone number", PAYER_DATA.payerPhone)}
 
         {/* ── Recipient Information ── */}
-        <DetailSectionHeader variant={variant} onViewSourceDocuments={onViewSourceDocuments}>
+        <DetailSectionHeader variant={variant}>
           Recipient Information
         </DetailSectionHeader>
 
@@ -348,7 +348,7 @@ export default function DetailFieldsNec({
         {renderStaticRow('nec-recipientCityStateZip', 'City / State / ZIP code', `${RECIPIENT_DATA.city}, ${RECIPIENT_DATA.state} ${RECIPIENT_DATA.zip}`, styles.fieldInputWide)}
 
         {/* ── Nonemployee Compensation ── */}
-        <DetailSectionHeader variant={variant} onViewSourceDocuments={onViewSourceDocuments}>
+        <DetailSectionHeader variant={variant}>
           Nonemployee Compensation
         </DetailSectionHeader>
 
@@ -357,7 +357,7 @@ export default function DetailFieldsNec({
         {renderStaticRow('nec-fedTaxWithheld', '(4) Federal income tax withheld', FORM_DATA.box4_fedTaxWithheld)}
 
         {/* ── State Tax Information ── */}
-        <DetailSectionHeader variant={variant} onViewSourceDocuments={onViewSourceDocuments}>
+        <DetailSectionHeader variant={variant}>
           State Tax Information
         </DetailSectionHeader>
 

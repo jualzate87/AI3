@@ -459,7 +459,7 @@ export default function DetailFields({
           .join(' ')}
       >
         {/* Employer Information section */}
-        <DetailSectionHeader variant={variant} onViewSourceDocuments={onViewSourceDocuments}>
+        <DetailSectionHeader variant={variant}>
           Employer Information (MANDATORY for e-file)
         </DetailSectionHeader>
 
@@ -470,7 +470,7 @@ export default function DetailFields({
         {renderStaticRow('cityStateZip', 'City / State / ZIP code', `${employer.city}, ${employer.state} ${employer.zip}`, styles.fieldInputWide)}
 
         {/* Wages section — same grey header as Employer Information */}
-        <DetailSectionHeader variant={variant} onViewSourceDocuments={onViewSourceDocuments}>
+        <DetailSectionHeader variant={variant}>
           Wages
         </DetailSectionHeader>
 

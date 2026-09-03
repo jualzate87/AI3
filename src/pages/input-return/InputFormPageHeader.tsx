@@ -20,7 +20,7 @@ export default function InputFormPageHeader({
   onDocTabChange,
 }: InputFormPageHeaderProps) {
   const showDocTabs =
-    docTabs && docTabs.length > 0 && activeDocKey && onDocTabChange
+    docTabs && docTabs.length > 1 && activeDocKey && onDocTabChange
 
   return (
     <div className={styles.pageHeaderInput}>
