@@ -1,5 +1,4 @@
 import { useMemo, useState, useEffect } from 'react'
-import { useNavigate } from 'react-router-dom'
 import { ChevronDown, ChevronLeft, ChevronRight, ChevronUp, Search } from '@design-systems/icons'
 import { NumericBadge } from '@ids-ts/badge'
 import '@ids-ts/badge/dist/main.css'
@@ -241,7 +240,6 @@ export default function CheckReturnNav({
   onSelectAiDiagnostics,
   onSelectAiDiagnosticSub,
 }: CheckReturnNavProps) {
-  const navigate = useNavigate()
   const focused = variant === 'focused'
   const [expandedCategory, setExpandedCategory] = useState<ExpandedCategory | null>('forms')
 
@@ -429,11 +427,6 @@ export default function CheckReturnNav({
 
         {!focused && (
           <>
-            <NavFlatRow
-              label="Return Insights"
-              onClick={() => navigate('/check-return/insights')}
-            />
-
             <div className={styles.navSection}>
               <NavAiDiagnosticsHeader
                 expanded={expandedCategory === 'ai-diagnostics'}
