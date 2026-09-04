@@ -83,7 +83,7 @@ const CARD_ICONS = [
 
 const fmtUsd = (n: number) => `$${n.toLocaleString()}`
 
-type IssueCard = {
+export type DiagnosticIssueCard = {
   issueKey: IssueKey
   dotColor: 'red' | 'orange' | 'blue'
   title: string
@@ -113,7 +113,7 @@ type IssueCard = {
   summaryOnlyGoToInput?: boolean
 }
 
-function buildImportMismatchesIssue(amounts: LiveAmounts): IssueCard {
+function buildImportMismatchesIssue(amounts: LiveAmounts): DiagnosticIssueCard {
   const gaps = getOutstandingImportMismatches(amounts)
   const first = gaps[0]
   return {
@@ -175,12 +175,12 @@ function buildImportMismatchesIssue(amounts: LiveAmounts): IssueCard {
         href: 'https://www.irs.gov/individuals/check-your-tax-return',
       },
     ],
-    viewSourceTab: (first?.tab as IssueCard['viewSourceTab']) ?? 'w2s',
+    viewSourceTab: (first?.tab as DiagnosticIssueCard['viewSourceTab']) ?? 'w2s',
     viewSourceField: first?.field ?? 'wages',
   }
 }
 
-const NIIT_FORM8960_ISSUE: IssueCard = {
+const NIIT_FORM8960_ISSUE: DiagnosticIssueCard = {
   issueKey: 'niitForm8960',
   dotColor: 'orange',
   title: 'Review Form 8960 — Net Investment Income Tax',
@@ -232,7 +232,7 @@ const NIIT_FORM8960_ISSUE: IssueCard = {
   summaryOnlyGoToInput: false,
 }
 
-function buildUnderpaymentRiskIssue(live: LiveReturnTotals): IssueCard {
+function buildUnderpaymentRiskIssue(live: LiveReturnTotals): DiagnosticIssueCard {
   const shortfall = Math.max(0, SAFE_HARBOR_2024 - live.totalWithholding)
   return {
     issueKey: 'underpaymentRisk',
@@ -282,7 +282,7 @@ function buildUnderpaymentRiskIssue(live: LiveReturnTotals): IssueCard {
   }
 }
 
-function buildNecScheduleCIssue(): IssueCard {
+function buildNecScheduleCIssue(): DiagnosticIssueCard {
   return {
     issueKey: 'necScheduleC',
     dotColor: 'orange',
@@ -331,7 +331,7 @@ function buildNecScheduleCIssue(): IssueCard {
   }
 }
 
-const OPT_ITEMIZE_ISSUE: IssueCard = {
+const OPT_ITEMIZE_ISSUE: DiagnosticIssueCard = {
   issueKey: 'optItemize',
   dotColor: 'blue',
   title: 'Standard deduction vs itemizing: mortgage interest',
@@ -386,7 +386,7 @@ export const ISSUE_FIELD: Partial<Record<IssueKey, string>> = {
   optItemize: 'stdDeduction',
 }
 
-function buildAllIssues(live: LiveReturnTotals, amounts: LiveAmounts): IssueCard[] {
+export function buildAllDiagnosticIssues(live: LiveReturnTotals, amounts: LiveAmounts): DiagnosticIssueCard[] {
   return [
     buildImportMismatchesIssue(amounts),
     buildUnderpaymentRiskIssue(live),
@@ -412,7 +412,7 @@ export default function AgentReportPane({
   onSignOff,
 }: AgentReportPaneProps) {
   const live = liveTotals ?? computeLiveReturn(amounts)
-  const ALL_ISSUES = buildAllIssues(live, amounts)
+  const ALL_ISSUES = buildAllDiagnosticIssues(live, amounts)
   const phase2Progress = getPhase2Progress({ reviewedFields, live, amounts })
   const activeOrder = phase2Progress.activeKeys
   const reviewedCount = phase2Progress.reviewed

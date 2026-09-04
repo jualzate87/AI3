@@ -9,6 +9,15 @@ import {
   checkReturnFormToOutputId,
 } from './check-return/outputFormNav'
 import type { OutputFormId } from './data-review/outputForms'
+import { computeLiveReturn } from '../data/liveReturn'
+import { useSyncedReviewState } from '../hooks/useSyncedReviewState'
+import { getPhase2Progress } from './data-review/phase2FlagSync'
+import type { Phase2IssueKey } from './data-review/phase2FlagSync'
+import {
+  AI_DIAGNOSTIC_CATEGORIES,
+  primaryIssueKeyForCategory,
+} from './check-return/aiDiagnosticCategories'
+import type { AiDiagnosticsView } from './check-return/AiDiagnosticsPanel'
 import { openSourceDocumentReviewPopout } from '../lib/prototypeRoutes'
 import layout from '../styles/CoreScreenLayout.module.css'
 import styles from '../styles/CheckReturnPage.module.css'
@@ -33,6 +42,16 @@ export default function CheckReturnPage() {
     openFormFromUrl ? '1040' : null,
   )
   const [outputFormId, setOutputFormId] = useState<OutputFormId>(initialForm)
+  const [aiDiagnosticsView, setAiDiagnosticsView] = useState<AiDiagnosticsView>('overview')
+  const [selectedDiagnosticKey, setSelectedDiagnosticKey] = useState<Phase2IssueKey | null>(null)
+  const [selectedAiDiagnosticSubId, setSelectedAiDiagnosticSubId] = useState<string | null>(null)
+
+  const { amounts, reviewedFields } = useSyncedReviewState()
+  const live = useMemo(() => computeLiveReturn(amounts), [amounts])
+  const phase2Progress = useMemo(
+    () => getPhase2Progress({ reviewedFields, live, amounts }),
+    [reviewedFields, live, amounts],
+  )
 
   useEffect(() => {
     const el = document.documentElement
@@ -75,6 +94,40 @@ export default function CheckReturnPage() {
     }
   }
 
+  const handleSelectAiDiagnosticsOverview = () => {
+    setContentView('ai-diagnostics')
+    setAiDiagnosticsView('overview')
+    setSelectedDiagnosticKey(null)
+    setSelectedAiDiagnosticSubId(null)
+  }
+
+  const handleSelectAiDiagnosticSub = (subId: string) => {
+    const index = Number(subId.replace('diagnostic-', '')) - 1
+    const category = AI_DIAGNOSTIC_CATEGORIES[index]
+    if (!category) return
+    const issueKey = primaryIssueKeyForCategory(category.id, phase2Progress.activeKeys)
+    setContentView('ai-diagnostics')
+    setSelectedAiDiagnosticSubId(subId)
+    if (issueKey) {
+      setSelectedDiagnosticKey(issueKey)
+      setAiDiagnosticsView('detail')
+    } else {
+      setSelectedDiagnosticKey(null)
+      setAiDiagnosticsView('overview')
+    }
+  }
+
+  const handleAiDiagnosticsViewChange = (
+    view: AiDiagnosticsView,
+    issueKey?: Phase2IssueKey | null,
+  ) => {
+    setAiDiagnosticsView(view)
+    setSelectedDiagnosticKey(issueKey ?? null)
+    if (view === 'overview') {
+      setSelectedAiDiagnosticSubId(null)
+    }
+  }
+
   return (
     <div className={`${layout.page} ${styles.page}`} data-theme="intuit">
       <div className={layout.body}>
@@ -89,15 +142,22 @@ export default function CheckReturnPage() {
             <CheckReturnNav
               contentView={contentView}
               selectedForm={selectedForm}
+              aiDiagnosticCount={phase2Progress.total}
+              selectedAiDiagnosticSubId={selectedAiDiagnosticSubId}
               onSelectFederal={handleSelectFederal}
               onSelectCalifornia={handleSelectCalifornia}
               onSelectForm={handleSelectForm}
+              onSelectAiDiagnostics={handleSelectAiDiagnosticsOverview}
+              onSelectAiDiagnosticSub={handleSelectAiDiagnosticSub}
             />
 
             <CheckReturnMainContent
               contentView={contentView}
               selectedForm={selectedForm}
               outputFormId={outputFormId}
+              aiDiagnosticsView={aiDiagnosticsView}
+              selectedDiagnosticKey={selectedDiagnosticKey}
+              onAiDiagnosticsViewChange={handleAiDiagnosticsViewChange}
             />
             <ReturnContextRail className={styles.contextRail} />
           </div>

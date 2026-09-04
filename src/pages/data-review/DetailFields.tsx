@@ -26,8 +26,6 @@ export const W2_PAYER_TABS: { key: W2Employer; label: string }[] = [
   { key: 'bingEquipment', label: 'Bing Equipment' },
 ]
 
-type FieldValuesKey = 'withholding' | 'box12' | 'taxableInterest' | 'qualifiedDivs'
-
 export type Box12Sub = 'a' | 'b' | 'c' | 'd'
 export type Box12RowsState = Record<Box12Sub, { code: string; amount: number }>
 

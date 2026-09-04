@@ -1,12 +1,16 @@
-import { useMemo, useState } from 'react'
+import { useMemo, useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { ChevronDown, ChevronLeft, ChevronRight, ChevronUp, Search } from '@design-systems/icons'
 import { NumericBadge } from '@ids-ts/badge'
 import '@ids-ts/badge/dist/main.css'
+import { AI_DIAGNOSTIC_CATEGORIES } from './aiDiagnosticCategories'
+import intuitIntelligenceLogo from '../../assets/icons/intuit-intelligence-logo-small.svg'
 import ModeSegmentedControl from '../../components/ModeSegmentedControl'
 import styles from '../../styles/check-return/CheckReturnNav.module.css'
 
-export type ContentView = 'federal-summary' | 'california-summary' | 'form-output'
+type ExpandedCategory = 'forms' | 'tax-summary' | 'ai-diagnostics'
+
+export type ContentView = 'federal-summary' | 'california-summary' | 'form-output' | 'ai-diagnostics'
 
 const APPLICABLE_FORMS = [
   {
@@ -46,7 +50,13 @@ const TAX_SUMMARY_ITEMS = [
   { id: 'california-summary' as const, label: 'California Tax Summary' },
 ]
 
-const DIAGNOSTIC_NAV_ITEMS: { label: string; badge?: number }[] = [
+const AI_DIAGNOSTIC_SUB_ITEMS = AI_DIAGNOSTIC_CATEGORIES.map((category, index) => ({
+  id: `diagnostic-${index + 1}`,
+  label: category.navLabel,
+  categoryId: category.id,
+}))
+
+const DIAGNOSTIC_CATEGORY_ITEMS: { label: string; badge?: number }[] = [
   { label: 'Fatal Diagnostics', badge: 1 },
   { label: 'EF Critical diagnostics', badge: 1 },
   { label: 'Critical Diagnostics', badge: 1 },
@@ -56,9 +66,13 @@ interface CheckReturnNavProps {
   variant?: 'full' | 'focused'
   contentView: ContentView
   selectedForm: string | null
+  aiDiagnosticCount?: number
+  selectedAiDiagnosticSubId?: string | null
   onSelectFederal: () => void
   onSelectCalifornia: () => void
   onSelectForm: (form: string) => void
+  onSelectAiDiagnostics?: () => void
+  onSelectAiDiagnosticSub?: (subId: string) => void
 }
 
 function NavCategoryHeader({
@@ -87,6 +101,67 @@ function NavCategoryHeader({
       ) : (
         <ChevronRight size="small" className={styles.navCategoryChevron} aria-hidden />
       )}
+    </button>
+  )
+}
+
+function NavAiDiagnosticsHeader({
+  expanded,
+  active,
+  count,
+  onToggle,
+}: {
+  expanded: boolean
+  active: boolean
+  count: number
+  onToggle: () => void
+}) {
+  return (
+    <button
+      type="button"
+      className={[
+        styles.navAiDiagnosticsHeader,
+        expanded || active ? styles.navAiDiagnosticsHeaderExpanded : '',
+      ]
+        .filter(Boolean)
+        .join(' ')}
+      aria-expanded={expanded}
+      aria-current={active && !expanded ? 'page' : undefined}
+      onClick={onToggle}
+    >
+      <span className={styles.navAiDiagnosticsLeading}>
+        <img src={intuitIntelligenceLogo} alt="" className={styles.navAiDiagnosticsLogo} />
+        <span className={styles.navAiDiagnosticsLabel}>AI Diagnostics</span>
+      </span>
+      <span className={styles.navAiCountBadge}>
+        <NumericBadge quantity={String(count)} maxLimit={99} />
+      </span>
+    </button>
+  )
+}
+
+function NavAiDiagnosticSubItem({
+  label,
+  active,
+  onClick,
+}: {
+  label: string
+  active?: boolean
+  onClick?: () => void
+}) {
+  return (
+    <button
+      type="button"
+      className={[
+        styles.navAiDiagnosticSubItem,
+        active ? styles.navAiDiagnosticSubItemActive : '',
+      ]
+        .filter(Boolean)
+        .join(' ')}
+      aria-current={active ? 'page' : undefined}
+      onClick={onClick}
+    >
+      {label}
     </button>
   )
 }
@@ -158,20 +233,28 @@ export default function CheckReturnNav({
   variant = 'full',
   contentView,
   selectedForm,
+  aiDiagnosticCount = 4,
+  selectedAiDiagnosticSubId = null,
   onSelectFederal,
   onSelectCalifornia,
   onSelectForm,
+  onSelectAiDiagnostics,
+  onSelectAiDiagnosticSub,
 }: CheckReturnNavProps) {
   const navigate = useNavigate()
   const focused = variant === 'focused'
-  const [expandedCategory, setExpandedCategory] = useState<'forms' | 'tax-summary' | null>(
-    focused ? 'forms' : 'forms',
-  )
+  const [expandedCategory, setExpandedCategory] = useState<ExpandedCategory | null>('forms')
 
-  const toggleCategory = (category: 'forms' | 'tax-summary') => {
+  const toggleCategory = (category: ExpandedCategory) => {
     setExpandedCategory(prev => (prev === category ? null : category))
   }
   const [formsMode, setFormsMode] = useState<'applicable' | 'all'>('applicable')
+
+  useEffect(() => {
+    if (contentView === 'ai-diagnostics') {
+      setExpandedCategory('ai-diagnostics')
+    }
+  }, [contentView])
   const [formSearch, setFormSearch] = useState('')
   const [collapsed, setCollapsed] = useState(false)
   const [expandedJurisdictions, setExpandedJurisdictions] = useState<Record<string, boolean>>({
@@ -351,7 +434,31 @@ export default function CheckReturnNav({
               onClick={() => navigate('/check-return/insights')}
             />
 
-            {DIAGNOSTIC_NAV_ITEMS.map(item => (
+            <div className={styles.navSection}>
+              <NavAiDiagnosticsHeader
+                expanded={expandedCategory === 'ai-diagnostics'}
+                active={contentView === 'ai-diagnostics'}
+                count={aiDiagnosticCount}
+                onToggle={() => {
+                  toggleCategory('ai-diagnostics')
+                  onSelectAiDiagnostics?.()
+                }}
+              />
+
+              {expandedCategory === 'ai-diagnostics' &&
+                AI_DIAGNOSTIC_SUB_ITEMS.map(item => (
+                  <NavAiDiagnosticSubItem
+                    key={item.id}
+                    label={item.label}
+                    active={
+                      contentView === 'ai-diagnostics' && selectedAiDiagnosticSubId === item.id
+                    }
+                    onClick={() => onSelectAiDiagnosticSub?.(item.id)}
+                  />
+                ))}
+            </div>
+
+            {DIAGNOSTIC_CATEGORY_ITEMS.map(item => (
               <NavFlatRow key={item.label} label={item.label} badge={item.badge} />
             ))}
 

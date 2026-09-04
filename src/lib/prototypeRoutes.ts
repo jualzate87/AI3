@@ -57,6 +57,17 @@ export const SOURCE_DOC_POPOUT_NAV_CHANNEL = 'protoc3-source-doc-popout-nav'
 
 const SOURCE_DOC_POPOUT_WINDOW_NAME = 'smartreview-source-doc-review'
 
+/** Shared popout window chrome — matches source document review dimensions. */
+const PROTOTYPE_POPOUT_FEATURES = 'width=1447,height=960'
+
+function openNamedPopoutWindow(url: string, windowName: string): Window | null {
+  const opened = window.open(url, windowName, PROTOTYPE_POPOUT_FEATURES)
+  if (opened) return opened
+  // Popup blocked — fall back to a new browser tab (same as manual openHashRoute).
+  window.open(url, '_blank', 'noopener,noreferrer')
+  return null
+}
+
 let sourceDocPopoutWindow: Window | null = null
 
 export type SourceDocumentPopoutContext = {
@@ -115,11 +126,7 @@ export function openSourceDocumentReviewPopout(
     return sourceDocPopoutWindow
   }
 
-  sourceDocPopoutWindow = window.open(
-    url,
-    SOURCE_DOC_POPOUT_WINDOW_NAME,
-    'width=1447,height=960',
-  )
+  sourceDocPopoutWindow = openNamedPopoutWindow(url, SOURCE_DOC_POPOUT_WINDOW_NAME)
   return sourceDocPopoutWindow
 }
 
@@ -150,11 +157,7 @@ export function openReviewReturnPopout(form: string = '1040'): Window | null {
     return reviewReturnPopoutWindow
   }
 
-  reviewReturnPopoutWindow = window.open(
-    url,
-    REVIEW_RETURN_POPOUT_WINDOW_NAME,
-    'width=1280,height=900',
-  )
+  reviewReturnPopoutWindow = openNamedPopoutWindow(url, REVIEW_RETURN_POPOUT_WINDOW_NAME)
   return reviewReturnPopoutWindow
 }
 

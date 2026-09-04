@@ -9,9 +9,9 @@ import { resetPersistedReviewState } from '../../hooks/useSyncedReviewState'
 import {
   buildHashRouteUrl,
   getStoredDemoRole,
+  openReviewReturnPopout,
   PREPARER_DATA_REVIEW_PATH,
   PREPARER_DIAGNOSTICS_PATH,
-  REVIEWER_DATA_REVIEW_PATH,
   setStoredDemoRole,
 } from '../../lib/prototypeRoutes'
 import { LAUNCH_POINTS, type LaunchPoint } from './launchPointsData'
@@ -63,11 +63,12 @@ export default function LaunchPointsFab() {
     (nextRole: DemoRole) => {
       setStoredDemoRole(nextRole)
       if (location.pathname === '/data-review') {
-        window.location.assign(
-          buildHashRouteUrl(
-            nextRole === 'reviewer' ? REVIEWER_DATA_REVIEW_PATH : PREPARER_DATA_REVIEW_PATH,
-          ),
-        )
+        if (nextRole === 'reviewer') {
+          openReviewReturnPopout('1040')
+          navigate('/smart-return?role=reviewer', { replace: true })
+        } else {
+          window.location.assign(buildHashRouteUrl(PREPARER_DATA_REVIEW_PATH))
+        }
         return
       }
       navigate(nextRole === 'reviewer' ? '/smart-return?role=reviewer' : '/smart-return', {

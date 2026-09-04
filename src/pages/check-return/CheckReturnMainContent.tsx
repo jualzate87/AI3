@@ -1,7 +1,9 @@
 import OutputReviewPanel from './OutputReviewPanel'
+import AiDiagnosticsPanel, { type AiDiagnosticsView } from './AiDiagnosticsPanel'
 import { checkReturnFormToOutputId } from './outputFormNav'
 import type { ContentView } from './CheckReturnNav'
 import type { OutputFormId } from '../data-review/outputForms'
+import type { Phase2IssueKey } from '../data-review/phase2FlagSync'
 import { FEDERAL_SUMMARY_ROWS } from './checkReturnSummaryData'
 import styles from '../../styles/CheckReturnPage.module.css'
 import panel from '../../styles/shared/ReturnMainPanel.module.css'
@@ -10,12 +12,21 @@ interface CheckReturnMainContentProps {
   contentView: ContentView
   selectedForm: string | null
   outputFormId: OutputFormId
+  aiDiagnosticsView?: AiDiagnosticsView
+  selectedDiagnosticKey?: Phase2IssueKey | null
+  onAiDiagnosticsViewChange?: (
+    view: AiDiagnosticsView,
+    issueKey?: Phase2IssueKey | null,
+  ) => void
 }
 
 export default function CheckReturnMainContent({
   contentView,
   selectedForm,
   outputFormId,
+  aiDiagnosticsView = 'overview',
+  selectedDiagnosticKey = null,
+  onAiDiagnosticsViewChange,
 }: CheckReturnMainContentProps) {
   return (
     <main
@@ -68,6 +79,14 @@ export default function CheckReturnMainContent({
           <h1 className={panel.pageTitle}>California Tax Summary: Barry and Mary Wilson</h1>
           <p className={panel.bodyText}>California summary details are not available in this prototype.</p>
         </div>
+      )}
+
+      {contentView === 'ai-diagnostics' && onAiDiagnosticsViewChange && (
+        <AiDiagnosticsPanel
+          view={aiDiagnosticsView}
+          selectedIssueKey={selectedDiagnosticKey}
+          onViewChange={onAiDiagnosticsViewChange}
+        />
       )}
 
       {contentView === 'form-output' && (

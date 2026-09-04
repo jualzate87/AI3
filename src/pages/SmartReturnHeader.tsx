@@ -6,6 +6,7 @@ import {
 } from '@design-systems/icons'
 import { Button } from '@ids-ts/button'
 import '@ids-ts/button/dist/main.css'
+import { openReviewReturnPopout } from '../lib/prototypeRoutes'
 import styles from '../styles/SmartReturnHeader.module.css'
 
 export type ReturnHeaderTab = 'profile' | 'smartreturn' | 'inputreturn' | 'checkreturns' | 'filereturn'
@@ -31,6 +32,14 @@ export default function SmartReturnHeader({
   onViewSourceDocuments,
 }: SmartReturnHeaderProps) {
   const navigate = useNavigate()
+
+  const handleReviewReturnClick = () => {
+    if (onReviewReturn) {
+      onReviewReturn()
+      return
+    }
+    openReviewReturnPopout('1040')
+  }
 
   return (
     <div className={styles.header}>
@@ -137,9 +146,10 @@ export default function SmartReturnHeader({
             <Button
               priority="secondary"
               purpose="passive"
-              onClick={onReviewReturn}
+              onClick={handleReviewReturnClick}
               automationId="review-return-header-cta"
             >
+              <PopOut size="small" aria-hidden />
               Review return
             </Button>
           )}
