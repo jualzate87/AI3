@@ -4,13 +4,13 @@
   position: relative;
   display: flex;
   flex-direction: column;
-  gap: var(--space-component-gap-large, 16px);
-  width: 300px;
+  gap: var(--space-medium, 16px);
+  width: 328px;
   background: var(--color-container-background-primary);
   border: 1px solid var(--color-container-border-primary, var(--color-divider-tertiary));
-  border-radius: var(--radius-medium, 8px);
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
-  padding: var(--space-container-padding-x-small, 12px);
+  border-radius: var(--radius-large, 8px);
+  box-shadow: 0 2px 8px var(--color-shadow, rgba(0, 0, 0, 0.2));
+  padding: var(--space-component-inline-padding-x-large, 12px);
   box-sizing: border-box;
 }
 
@@ -61,20 +61,29 @@
   border-left: 7px solid var(--color-container-background-primary);
 }
 
+.headerBlock {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-component-inline-padding-x-small, 4px);
+  width: 100%;
+}
+
 .header {
   display: flex;
-  align-items: center;
+  align-items: flex-start;
   justify-content: space-between;
   gap: var(--space-component-gap-small, 8px);
+  width: 100%;
 }
 
 .title {
+  flex: 1;
+  min-width: 0;
   font-family: var(--font-family-component);
   font-size: var(--font-size-component-medium);
   font-weight: var(--font-weight-component-bold);
   color: var(--color-text-primary);
-  line-height: 1.25;
-  min-width: 0;
+  line-height: 1.3;
 }
 
 .closeBtn {
@@ -82,6 +91,7 @@
   border: none;
   cursor: pointer;
   padding: 2px;
+  margin: -2px -2px 0 0;
   color: var(--color-text-secondary);
   display: flex;
   align-items: center;
@@ -95,23 +105,32 @@
 .subtitle {
   font-family: var(--font-family-body);
   font-size: var(--font-size-body-4);
+  font-weight: var(--font-weight-body);
   color: var(--color-text-secondary);
-  margin: calc(-1 * var(--space-component-gap-small, 8px)) 0 0;
-  line-height: 1.33;
+  margin: 0;
+  line-height: 1.5;
+}
+
+.body {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-medium, 16px);
+  width: 100%;
 }
 
 .itemList {
   display: flex;
   flex-direction: column;
-  gap: var(--space-component-gap-small, 8px);
+  gap: var(--space-row-gap-x-small, 8px);
+  width: 100%;
 }
 
 .sourceCard {
   display: flex;
   flex-direction: column;
-  gap: var(--space-component-gap-small, 8px);
+  gap: var(--space-row-gap-x-small, 8px);
   width: 100%;
-  padding: var(--space-component-gap-small, 8px);
+  padding: var(--space-component-inline-padding-medium, 8px);
   border: 1px solid var(--color-container-border-primary, var(--color-divider-tertiary));
   border-radius: var(--radius-large, 8px);
   background: var(--color-container-background-primary);
@@ -142,27 +161,30 @@
 
 .cardMain {
   display: flex;
-  align-items: baseline;
+  align-items: flex-start;
   justify-content: space-between;
-  gap: var(--space-component-gap-small, 8px);
+  gap: var(--space-component-gap-medium, 12px);
   min-width: 0;
+  width: 100%;
 }
 
 .cardLabel {
+  flex: 1;
+  min-width: 0;
   font-size: var(--font-size-body-3);
   font-weight: var(--font-weight-body-semibold);
-  color: var(--color-text-primary);
-  line-height: 1.35;
-  min-width: 0;
+  color: var(--color-code-text, var(--color-text-primary));
+  line-height: 1.5;
   overflow-wrap: anywhere;
 }
 
 .cardAmount {
   font-size: var(--font-size-body-3);
   font-weight: var(--font-weight-body-semibold);
-  color: var(--color-text-primary);
+  color: var(--color-code-text, var(--color-text-primary));
   white-space: nowrap;
   flex-shrink: 0;
+  line-height: 1.5;
   font-variant-numeric: tabular-nums;
 }
 
@@ -172,14 +194,15 @@
   font-size: var(--font-size-component-x-small);
   font-weight: var(--font-weight-component);
   color: var(--color-text-secondary);
-  line-height: 1.4;
+  line-height: 1.5;
 }
 
 .cardActions {
   display: flex;
   align-items: center;
-  gap: var(--space-component-gap-small, 8px);
+  gap: var(--font-size-action-x-small, 12px);
   flex-wrap: wrap;
+  width: 100%;
 }
 
 .cardActionLink {
@@ -194,7 +217,7 @@
   font-size: var(--font-size-body-4);
   font-weight: var(--font-weight-component);
   color: var(--color-link-text, var(--color-action-standard));
-  line-height: 1.33;
+  line-height: 1.5;
 }
 
 .cardActionLink:hover {
@@ -208,36 +231,46 @@
 
 .cardActionSep {
   font-size: var(--font-size-body-4);
-  color: var(--color-text-tertiary);
+  color: var(--color-icon-primary, var(--color-text-tertiary));
   line-height: 1;
 }
 
 .footerRow {
   display: flex;
   justify-content: space-between;
-  align-items: center;
+  align-items: flex-start;
+  gap: var(--space-component-gap-medium, 12px);
   padding-top: var(--space-component-gap-small, 8px);
   border-top: 1px solid var(--color-divider-tertiary);
+  width: 100%;
 }
 
 .footerRowPlain {
   display: flex;
   justify-content: space-between;
-  align-items: center;
+  align-items: flex-start;
+  gap: var(--space-component-gap-medium, 12px);
+  width: 100%;
 }
 
 .footerLabel {
-  font-family: var(--font-family-component);
+  flex: 1;
+  min-width: 0;
+  font-family: var(--font-family-body);
   font-size: var(--font-size-body-3);
   font-weight: var(--font-weight-body-semibold);
-  color: var(--color-text-primary);
+  color: var(--color-code-text, var(--color-text-primary));
+  line-height: 1.5;
 }
 
 .footerValue {
-  font-family: var(--font-family-component);
+  font-family: var(--font-family-body);
   font-size: var(--font-size-body-3);
   font-weight: var(--font-weight-body-semibold);
-  color: var(--color-text-primary);
+  color: var(--color-code-text, var(--color-text-primary));
+  line-height: 1.5;
+  white-space: nowrap;
+  flex-shrink: 0;
   font-variant-numeric: tabular-nums;
 }
 
@@ -246,7 +279,7 @@
   font-family: var(--font-family-component);
   font-size: var(--font-size-component-x-small);
   color: var(--color-text-secondary);
-  line-height: 1.4;
+  line-height: 1.5;
 }
 
 /* Calc breakdown rows (shared with FieldPopover calc section) */
@@ -255,7 +288,7 @@
   font-family: var(--font-family-component);
   font-size: var(--font-size-component-x-small);
   color: var(--color-text-secondary);
-  line-height: 1.4;
+  line-height: 1.5;
 }
 
 .calcList {
@@ -284,7 +317,7 @@
 
 .calcLabel {
   color: var(--color-text-primary);
-  line-height: 1.35;
+  line-height: 1.5;
 }
 
 .calcValue {
@@ -295,7 +328,7 @@
 }
 
 .embeddedSection {
-  padding-top: var(--space-component-gap-x-small, 8px);
+  padding-top: var(--space-component-gap-small, 8px);
   border-top: 1px solid var(--color-divider-tertiary);
 }
 

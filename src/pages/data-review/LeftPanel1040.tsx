@@ -11,6 +11,7 @@ import TaxControlDocPopover, {
   type SummaryInfoItem,
   type SummaryInfoMode,
 } from './TaxControlDocPopover'
+import { getPopoverAnchorRect, OUTPUT_FORM_POPOVER_WIDTH } from './SourcePopover'
 import { getTaxControlBreakdown } from '../../data/taxControlBreakdowns'
 import { getFieldLiveCurrent, getFieldOrigin } from '../../data/fieldOrigins'
 import type { FieldOriginSource } from '../../data/fieldOrigins'
@@ -462,10 +463,7 @@ export default function LeftPanel1040({
   /** Anchor popover to the Amount cell of a form row (Form view only). */
   const openPopoverForRow = (field: string, rowEl: HTMLElement) => {
     clearSummaryFlyouts()
-    const cells = rowEl.querySelectorAll('td')
-    const valueCell = cells[cells.length - 1] as HTMLElement | undefined
-    const anchor = valueCell ?? rowEl
-    setPopoverRect(anchor.getBoundingClientRect())
+    setPopoverRect(getPopoverAnchorRect(rowEl))
     setPopoverField(field)
   }
 
@@ -491,7 +489,7 @@ export default function LeftPanel1040({
     setPopoverField(null)
     setPopoverRect(null)
 
-    const rect = el.getBoundingClientRect()
+    const rect = getPopoverAnchorRect(el)
 
     // Tax & Credits — total tax flyout includes effective rate and YoY narrative
     if (field === 'totalTax') {
@@ -796,7 +794,7 @@ export default function LeftPanel1040({
         <td className={styles.cellValue}>
           <div className={styles.cellValueInner}>
             <div className={styles.cellValueAmountGroup}>
-              <div className={valueCellCls}>
+              <div className={valueCellCls} data-popover-anchor>
                 {value !== undefined && (
                   <span className={valueNumCls}>
                     {typeof value === 'number' ? fmt(value) : value}
@@ -1064,7 +1062,7 @@ export default function LeftPanel1040({
                         return (
                           <div className={styles.summaryRowRight}>
                             <div className={styles.summaryCurrVal}>
-                              <span className={styles.summaryCurrValText}>${fmt(cat.totalCurr)}</span>
+                              <span className={styles.summaryCurrValText} data-popover-anchor>${fmt(cat.totalCurr)}</span>
                               {totalHasBreakdown && (
                                 <Tooltip
                                   text={sectionInfoTooltip}
@@ -1203,6 +1201,7 @@ export default function LeftPanel1040({
                             <div className={styles.summaryCurrVal}>
                               <span
                                 className={`${styles.summaryCurrValText} ${row.kind === 'calc' ? styles.summaryCurrValCalc : ''} ${isBlue ? styles.summaryCurrValBlue : ''} ${isOrange ? styles.summaryCurrValOrange : ''}`}
+                                data-popover-anchor
                               >
                                 ${fmt(row.curr)}
                               </span>
@@ -1367,7 +1366,7 @@ export default function LeftPanel1040({
                 </div>
                 <div className={styles.summaryRowRight}>
                   <div className={styles.summaryCurrVal}>
-                    <span className={`${styles.summaryCurrValText} ${styles.summaryOweAmt}`}>${fmt(oweAmount)}</span>
+                    <span className={`${styles.summaryCurrValText} ${styles.summaryOweAmt}`} data-popover-anchor>${fmt(oweAmount)}</span>
                     <Tooltip
                       text={SUMMARY_INFO_DISCOVERY_TOOLTIP}
                       placement="top"
@@ -1443,6 +1442,7 @@ export default function LeftPanel1040({
               : undefined
           }
           anchorRect={summaryFlyoutRect}
+          popoverWidth={embeddedInCheckReturn ? OUTPUT_FORM_POPOVER_WIDTH : undefined}
           onClose={clearSummaryFlyouts}
         />
       )}
@@ -1450,16 +1450,15 @@ export default function LeftPanel1040({
       <div className={viewerClass} style={{ display: view === 'table' ? 'none' : undefined }}>
         <div className={styles.formOutputColumn}>
         {outputFormId !== 'summary' && outputFormId !== '1040' ? (
-          <>
-            <div className={styles.outputPanelHeader}>
-              {showFormSelector && outputFormDropdown}
-            </div>
-            <OutputFormViews
+          <OutputFormViews
             formId={outputFormId}
             live={originTotals}
             amounts={liveAmounts}
             highlightField={formLineHighlight}
             issueField={scheduleLineIssue}
+            embeddedInCheckReturn={embeddedInCheckReturn}
+            onFieldClick={onFieldClick}
+            formSelector={showFormSelector ? outputFormDropdown : undefined}
             checkedFields={checkedFields}
             checkedMeta={checkedMeta}
             reviewerConfirmedFields={reviewerConfirmedFields}
@@ -1476,7 +1475,6 @@ export default function LeftPanel1040({
             onToggleFlagged={onToggleFlagged}
             onSetFlagNote={onSetFlagNote}
           />
-          </>
         ) : (
         <div className={`${styles.formDoc} ${styles.formDocDigitized}`}>
           {showFormSelector && (

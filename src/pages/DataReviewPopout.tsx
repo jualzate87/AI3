@@ -5,6 +5,8 @@ import { Button } from '@ids-ts/button'
 import '@ids-ts/button/dist/main.css'
 import { IconControl } from '@ids-ts/icon-control'
 import '@ids-ts/icon-control/dist/main.css'
+import ToastMessage from '@ids-ts/toast-message'
+import '@ids-ts/toast-message/dist/main.css'
 import ReviewTab from './data-review/ReviewTab'
 import type { TopTab } from './data-review/ReviewTab'
 import ImportSourceBadge from '../components/ImportSourceBadge/ImportSourceBadge'
@@ -130,6 +132,8 @@ export default function DataReviewPopout() {
   const [sessionDirty, setSessionDirty] = useState(false)
   const [unsavedModalOpen, setUnsavedModalOpen] = useState(false)
   const [recalculatedFields, setRecalculatedFields] = useState<Set<string>>(new Set())
+  const [saveToastOpen, setSaveToastOpen] = useState(false)
+  const [saveToastMessage, setSaveToastMessage] = useState('')
 
   const reviewRole = getStoredDemoRole() ?? 'preparer'
   const isReviewerConfirmMode = reviewRole === 'reviewer'
@@ -257,6 +261,13 @@ export default function DataReviewPopout() {
     baselineRef.current = getSyncedSnapshot()
     setSessionDirty(false)
     setUnsavedModalOpen(false)
+
+    const message =
+      committed.length > 0
+        ? `Your changes were saved and the return was recalculated.`
+        : `The return is up to date — nothing new to save.`
+    setSaveToastMessage(message)
+    setSaveToastOpen(true)
   }, [commitUnsavedEdits, flashRecalculatedFields, getSyncedSnapshot])
 
   useEffect(() => {
@@ -860,6 +871,18 @@ export default function DataReviewPopout() {
         onStay={handleStayEditing}
         onLeaveWithoutSaving={handleLeaveWithoutSaving}
       />
+
+      <ToastMessage
+        open={saveToastOpen}
+        actionLabel="Dismiss"
+        dismissible
+        duration={5000}
+        showIcon
+        onClose={() => setSaveToastOpen(false)}
+        onActionClick={() => setSaveToastOpen(false)}
+      >
+        {saveToastMessage}
+      </ToastMessage>
     </div>
   )
 }

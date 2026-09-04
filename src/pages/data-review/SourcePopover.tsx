@@ -46,13 +46,29 @@ export function sourceDocCountSubtitle(items: SourcePopoverItem[]): string {
   return `${count} document${count === 1 ? '' : 's'}`
 }
 
-export function computeSourcePopoverPosition(anchorRect: DOMRect, popWidth = 300) {
-  const GAP = 12
-  const placeRight = anchorRect.right + GAP + popWidth <= window.innerWidth - 8
+/** Horizontal gap between a field value box and its flyout. */
+export const POPOVER_FIELD_GAP = 12
+
+/** Output / check-return flyout width — matches FieldPopover. */
+export const OUTPUT_FORM_POPOVER_WIDTH = 360
+
+/** Resolve the value-field box for popover anchoring (not the (i) button or whole row). */
+export function getPopoverAnchorRect(fromEl: HTMLElement): DOMRect {
+  const row = fromEl.closest('[data-field-row]') as HTMLElement | null
+  const anchor = row?.querySelector('[data-popover-anchor]') as HTMLElement | null
+  return (anchor ?? fromEl).getBoundingClientRect()
+}
+
+export function computeSourcePopoverPosition(
+  anchorRect: DOMRect,
+  popWidth = 328,
+  gap = POPOVER_FIELD_GAP,
+) {
+  const placeRight = anchorRect.right + gap + popWidth <= window.innerWidth - 8
   const top = anchorRect.top + anchorRect.height / 2
   const left = placeRight
-    ? anchorRect.right + GAP
-    : Math.max(8, anchorRect.left - GAP - popWidth)
+    ? anchorRect.right + gap
+    : Math.max(8, anchorRect.left - gap - popWidth)
   const beakSide = placeRight ? 'left' : 'right'
   return { top, left, beakSide: beakSide as 'left' | 'right' }
 }
@@ -207,15 +223,19 @@ export function SourcePopoverShell({
       role="dialog"
       aria-label={`${title} details`}
     >
-      <div className={styles.header}>
-        <span className={styles.title}>{title}</span>
-        <button type="button" className={styles.closeBtn} onClick={onClose} aria-label="Close">
-          <Close size="small" />
-        </button>
+      <div className={styles.headerBlock}>
+        <div className={styles.header}>
+          <span className={styles.title}>{title}</span>
+          <button type="button" className={styles.closeBtn} onClick={onClose} aria-label="Close">
+            <Close size="small" />
+          </button>
+        </div>
+        {subtitle ? <p className={styles.subtitle}>{subtitle}</p> : null}
       </div>
-      {subtitle ? <p className={styles.subtitle}>{subtitle}</p> : null}
-      {children}
-      {footer}
+      <div className={styles.body}>
+        {children}
+        {footer}
+      </div>
       {footnote ? <p className={styles.footnote}>{footnote}</p> : null}
     </div>
   )
@@ -236,6 +256,8 @@ interface SourcePopoverProps {
   onNavigateToDoc?: (docId: string) => void
   anchorRect: DOMRect
   onClose: () => void
+  /** Popover width — defaults to 328; use OUTPUT_FORM_POPOVER_WIDTH on output forms. */
+  popoverWidth?: number
 }
 
 /** Fixed-position source flyout — Summary rows, schedule (i) buttons, OutputFormViews. */
@@ -253,6 +275,7 @@ export default function SourcePopover({
   onNavigateToDoc,
   anchorRect,
   onClose,
+  popoverWidth,
 }: SourcePopoverProps) {
   const ref = useRef<HTMLDivElement>(null)
 
@@ -281,7 +304,11 @@ export default function SourcePopover({
   const displayTitle = sourcePopoverTitle(rowLabel, mode)
   const displaySubtitle = subtitle
     ?? (mode === 'source' ? sourceDocCountSubtitle(items) : DEFAULT_SUBTITLE[mode])
-  const { top, left, beakSide } = computeSourcePopoverPosition(anchorRect)
+  const { top, left, beakSide } = computeSourcePopoverPosition(
+    anchorRect,
+    popoverWidth ?? 328,
+  )
+  const useWide = (popoverWidth ?? 328) >= OUTPUT_FORM_POPOVER_WIDTH
 
   return (
     <div ref={ref}>
@@ -291,7 +318,15 @@ export default function SourcePopover({
         onClose={onClose}
         footnote={footnote}
         beakSide={beakSide}
-        style={{ position: 'fixed', top, left, transform: 'translateY(-50%)', zIndex: 300 }}
+        className={useWide ? styles.popoverWide : undefined}
+        style={{
+          position: 'fixed',
+          top,
+          left,
+          transform: 'translateY(-50%)',
+          zIndex: 10000,
+          ...(useWide ? { width: OUTPUT_FORM_POPOVER_WIDTH } : undefined),
+        }}
         footer={
           showFooter ? (
             <SourcePopoverFooter label={footerLabel} value={footerValue} variant={mode} />

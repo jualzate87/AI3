@@ -8,6 +8,7 @@ import {
   SourcePopoverFooter,
   SourcePopoverItems,
   SourcePopoverShell,
+  OUTPUT_FORM_POPOVER_WIDTH,
   computeSourcePopoverPosition,
   sourceDocCountSubtitle,
   sourcePopoverTitle,
@@ -221,7 +222,7 @@ function badgeClass(pct: number): string {
 
 // ── Component ─────────────────────────────────────────────────────────────────
 
-const POPOVER_WIDTH = 360
+const POPOVER_WIDTH = OUTPUT_FORM_POPOVER_WIDTH
 const VIEWPORT_PAD = 12
 
 export default function FieldPopover({
@@ -237,27 +238,25 @@ export default function FieldPopover({
 }: FieldPopoverProps) {
   const meta = FIELD_META[fieldName]
   const ref = useRef<HTMLDivElement>(null)
+  const basePosition = computeSourcePopoverPosition(anchorRect, POPOVER_WIDTH)
   const [coords, setCoords] = useState(() => ({
-    top: anchorRect.top + anchorRect.height / 2,
-    left: Math.min(anchorRect.right + 10, window.innerWidth - POPOVER_WIDTH - VIEWPORT_PAD),
+    top: basePosition.top,
+    left: basePosition.left,
+    beakSide: basePosition.beakSide,
   }))
 
-  // Clamp popover fully on-screen after mount (width/height vary with Source/Calc/YoY)
+  // Clamp popover vertically after mount (height varies with Source/Calc/YoY)
   useLayoutEffect(() => {
     const el = ref.current
-    if (!el) return
-    const { width: w, height: h } = el.getBoundingClientRect()
-    const popW = Math.max(w, POPOVER_WIDTH)
-    let top = anchorRect.top + anchorRect.height / 2
-    // Prefer right of the cell; flip left if it would overflow the viewport
-    let left = anchorRect.right + 10
-    if (left + popW > window.innerWidth - VIEWPORT_PAD) {
-      left = anchorRect.left - popW - 10
+    const pos = computeSourcePopoverPosition(anchorRect, POPOVER_WIDTH)
+    if (!el) {
+      setCoords(pos)
+      return
     }
-    left = Math.max(VIEWPORT_PAD, Math.min(left, window.innerWidth - popW - VIEWPORT_PAD))
+    const h = el.getBoundingClientRect().height
     const half = h / 2
-    top = Math.max(VIEWPORT_PAD + half, Math.min(top, window.innerHeight - VIEWPORT_PAD - half))
-    setCoords({ top, left })
+    const top = Math.max(VIEWPORT_PAD + half, Math.min(pos.top, window.innerHeight - VIEWPORT_PAD - half))
+    setCoords({ top, left: pos.left, beakSide: pos.beakSide })
   }, [anchorRect, fieldName, origin, liveCurrent])
 
   // Close on outside click — ignore 1040/summary field rows (they manage open/close themselves)
@@ -356,7 +355,7 @@ export default function FieldPopover({
   }
 
   if (isOutputVariant) {
-    const { top, left, beakSide } = computeSourcePopoverPosition(anchorRect, POPOVER_WIDTH)
+    const { top, left, beakSide } = coords
     const shellTitle = showSourceBlock
       ? sourcePopoverTitle(label, 'source')
       : label
@@ -436,7 +435,7 @@ export default function FieldPopover({
   return createPortal(
     <div
       ref={ref}
-      className={`${sourceStyles.popover} ${sourceStyles.popoverWide} ${sourceStyles.popoverBeakLeft} ${styles.popover}`}
+      className={`${sourceStyles.popover} ${sourceStyles.popoverWide} ${coords.beakSide === 'left' ? sourceStyles.popoverBeakLeft : sourceStyles.popoverBeakRight} ${styles.popover}`}
       style={{
         position: 'fixed',
         top: coords.top,

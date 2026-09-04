@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, type ReactNode } from 'react'
 import { CircleInfo } from '@design-systems/icons'
 import type { FieldOriginSource } from '../../data/fieldOrigins'
 import type { LiveAmounts, LiveReturnTotals } from '../../data/liveReturn'
@@ -10,6 +10,7 @@ import AttestColumns from './AttestColumns'
 import OutputRowActions from './OutputRowActions'
 import { getOutputLineAttest, type OutputFormId } from './outputForms'
 import TaxControlDocPopover from './TaxControlDocPopover'
+import { getPopoverAnchorRect, OUTPUT_FORM_POPOVER_WIDTH } from './SourcePopover'
 import Tooltip from './Tooltip'
 import styles from '../../styles/data-review/LeftPanel1040.module.css'
 
@@ -105,6 +106,8 @@ type LineRowProps = AttestContext & RowActionsContext & {
   amounts: LiveAmounts
   openFieldId: string | null
   onOpenFlyout: (fieldId: string, anchor: HTMLElement) => void
+  onRowSelect?: (fieldId: string) => void
+  embeddedInCheckReturn?: boolean
   highlightField?: string | null
   issueField?: string | null
 }
@@ -122,6 +125,8 @@ function LineRow({
   amounts,
   openFieldId,
   onOpenFlyout,
+  onRowSelect,
+  embeddedInCheckReturn = false,
   checkedFields,
   checkedMeta,
   reviewerConfirmedFields,
@@ -166,7 +171,16 @@ function LineRow({
 
   const openFromRow = (rowEl: HTMLElement) => {
     if (!hasFlyout) return
+    if (embeddedInCheckReturn) {
+      onRowSelect?.(fieldId)
+      return
+    }
     onOpenFlyout(fieldId, rowEl)
+  }
+
+  const openFromInfo = (btn: HTMLElement) => {
+    if (!hasFlyout) return
+    onOpenFlyout(fieldId, btn)
   }
 
   const rowCls = [
@@ -218,7 +232,7 @@ function LineRow({
       <td className={styles.cellValue}>
         <div className={styles.cellValueInner}>
           <div className={styles.cellValueAmountGroup}>
-            <div className={valueBoxCls}>
+            <div className={valueBoxCls} data-popover-anchor>
               <span className={valueNumCls}>
                 {display}
               </span>
@@ -226,7 +240,7 @@ function LineRow({
 
             {hasFlyout && (
               <Tooltip
-                text={kind === 'calc' ? 'Click row or icon to view subtotals' : 'Click row or icon to view sources'}
+                text={kind === 'calc' ? 'View subtotals' : 'View sources'}
                 placement="top"
                 disabled={isOpen}
               >
@@ -236,7 +250,7 @@ function LineRow({
                   aria-label={kind === 'calc' ? `View subtotals for ${label}` : `View sources for ${label}`}
                   onClick={e => {
                     e.stopPropagation()
-                    onOpenFlyout(fieldId, e.currentTarget)
+                    openFromInfo(e.currentTarget)
                   }}
                 >
                   <CircleInfo size="small" />
@@ -866,6 +880,9 @@ export interface OutputFormViewsProps {
   onAddFieldNote?: (text: string, context: string) => void
   onToggleFlagged?: (fieldKey: string) => void
   onSetFlagNote?: (fieldKey: string, note: string) => void
+  embeddedInCheckReturn?: boolean
+  onFieldClick?: (fieldId: string | null) => void
+  formSelector?: ReactNode
 }
 
 /** Renders non-1040 output forms. Summary and Form 1040 stay in LeftPanel1040. */
@@ -890,30 +907,40 @@ export default function OutputFormViews({
   onAddFieldNote,
   onToggleFlagged,
   onSetFlagNote,
+  embeddedInCheckReturn = false,
+  onFieldClick,
+  formSelector,
 }: OutputFormViewsProps) {
   const ssn = live.employeeSsn || '—'
   const [flyoutField, setFlyoutField] = useState<string | null>(null)
   const [flyoutRect, setFlyoutRect] = useState<DOMRect | null>(null)
   const isReviewerRole = reviewRole === 'reviewer'
 
-  const openFlyout = (fieldId: string, el: HTMLElement) => {
-    if (flyoutField === fieldId) {
+  const handleRowSelect = (fieldId: string) => {
+    onFieldClick?.(fieldId)
+    if (flyoutField && flyoutField !== fieldId) {
       setFlyoutField(null)
       setFlyoutRect(null)
+    }
+  }
+
+  const openFlyout = (fieldId: string, el: HTMLElement) => {
+    if (flyoutField === fieldId) {
+      closeFlyout()
       return
     }
     const rowEl = el.closest('tr') ?? el
-    const cells = rowEl instanceof HTMLTableRowElement ? rowEl.querySelectorAll('td') : null
-    const valueCell = cells?.[cells.length - 1] as HTMLElement | undefined
-    const infoBtn = rowEl.querySelector?.(`.${styles.summaryInfoBtn}`) as HTMLElement | null
-    const anchor = el.tagName === 'BUTTON' ? el : (infoBtn ?? valueCell ?? el)
-    setFlyoutRect(anchor.getBoundingClientRect())
+    setFlyoutRect(getPopoverAnchorRect(rowEl instanceof HTMLElement ? rowEl : el))
     setFlyoutField(fieldId)
+    onFieldClick?.(fieldId)
   }
 
   const closeFlyout = () => {
     setFlyoutField(null)
     setFlyoutRect(null)
+    if (embeddedInCheckReturn) {
+      onFieldClick?.(null)
+    }
   }
 
   const flyout = flyoutField ? getScheduleLineFlyout(formId, flyoutField, live, amounts) : null
@@ -924,6 +951,8 @@ export default function OutputFormViews({
     amounts,
     openFieldId: flyoutField,
     onOpenFlyout: openFlyout,
+    onRowSelect: handleRowSelect,
+    embeddedInCheckReturn,
     highlightField,
     issueField,
     checkedFields,
@@ -968,6 +997,9 @@ export default function OutputFormViews({
 
   return (
     <>
+      {formSelector ? (
+        <div className={styles.summaryCardHeader}>{formSelector}</div>
+      ) : null}
       {body}
       {flyout && flyoutRect && (
         <TaxControlDocPopover
@@ -978,6 +1010,7 @@ export default function OutputFormViews({
           sumValue={flyout.sumValue}
           footnote={flyout.footnote}
           detailFieldIdByDocId={flyout.detailByDocId}
+          popoverWidth={OUTPUT_FORM_POPOVER_WIDTH}
           onViewDocument={
             flyout.mode === 'source'
               ? docId => {

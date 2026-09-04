@@ -14,7 +14,7 @@
 .popover {
   pointer-events: all;
   animation: popoverIn 180ms cubic-bezier(0.2, 0, 0.25, 1) both;
-  overflow: hidden;
+  overflow: visible;
   max-width: calc(100vw - 24px);
 }
 
@@ -142,14 +142,17 @@
 .yoyBadgeGrey    { background: #8a9ba5; }
 .yoyBadgeNeutral { background: var(--color-text-secondary); }
 
-/* ── Sources section — slim dotted rows (original FieldPopover language) ── */
+/* ── Sources section — unified card list inside default FieldPopover ── */
 .sourcesSection {
-  padding: 8px 10px 10px;
-  border-bottom: 1px solid #e8edf2;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-medium, 16px);
+  width: 100%;
 }
 
-.sourcesSection:last-child {
-  border-bottom: none;
+.sourcesSection:not(:last-child) {
+  padding-bottom: var(--space-component-gap-small, 8px);
+  border-bottom: 1px solid var(--color-divider-tertiary);
 }
 
 .sourcesSectionLabel {
