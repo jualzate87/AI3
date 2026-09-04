@@ -7,7 +7,7 @@ import {
 } from '../lib/prototypeRoutes'
 import DataReviewPage from './DataReviewPage'
 
-/** Gate legacy `/data-review` — only the Phase 2 diagnostics demo stays on the combined page. */
+/** Gate legacy `/data-review` - only the Phase 2 diagnostics demo stays on the combined page. */
 export default function DataReviewRoute() {
   const [searchParams] = useSearchParams()
   const redirect = resolveDataReviewRedirect(searchParams.toString())

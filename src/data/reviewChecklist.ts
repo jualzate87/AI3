@@ -1,7 +1,7 @@
 /**
  * Process-level review checklist for Phase 2 sign-off attestation.
  * Distinct from granular open items in handoffSnapshot.
- * Items here are reviewer actions only — preparer work lives in the activity log.
+ * Items here are reviewer actions only - preparer work lives in the activity log.
  */
 import type { ActivityEntry } from '../hooks/useSyncedReviewState'
 import { computeLiveReturn, type LiveAmounts } from './liveReturn'
@@ -163,10 +163,10 @@ export function deriveReviewChecklist(input: ReviewChecklistInputs): ReviewCheck
       id: 'law-compliance',
       label: 'Attest tax law & AI diagnostics review',
       description: lawComplianceManual
-        ? 'No AI diagnostics on this return — attest compliance review manually.'
+        ? 'No AI diagnostics on this return - attest compliance review manually.'
         : diagsOpen.length === 0
-          ? 'All active AI diagnostics reviewed — attest your compliance check.'
-          : `${diagsOpen.length} diagnostics remaining — review before attesting.`,
+          ? 'All active AI diagnostics reviewed - attest your compliance check.'
+          : `${diagsOpen.length} diagnostics remaining - review before attesting.`,
       kind: lawComplianceManual ? 'manual' : 'auto',
       required: true,
       complete: lawComplianceComplete,
@@ -208,7 +208,7 @@ export function deriveReviewChecklist(input: ReviewChecklistInputs): ReviewCheck
       description: summaryComplete
         ? 'Executive summary totals confirmed for sign-off.'
         : input.reviewerConfirmStaleFields.size > 0
-          ? `${input.reviewerConfirmStaleFields.size} line${input.reviewerConfirmStaleFields.size === 1 ? '' : 's'} edited since your last confirm — check Rev column again.`
+          ? `${input.reviewerConfirmStaleFields.size} line${input.reviewerConfirmStaleFields.size === 1 ? '' : 's'} edited since your last confirm - check Rev column again.`
           : `${needsConfirmSummary.length} summary line${needsConfirmSummary.length === 1 ? '' : 's'} awaiting your Rev confirmation.`,
       kind: 'auto',
       required: true,

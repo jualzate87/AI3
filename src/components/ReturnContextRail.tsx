@@ -52,7 +52,7 @@ type ReturnContextRailProps = {
   className?: string
 }
 
-/** Right-edge icon rail — Tax Organizer, Import hub, Documents, etc. */
+/** Right-edge icon rail - Tax Organizer, Import hub, Documents, etc. */
 export default function ReturnContextRail({ activeItem, className }: ReturnContextRailProps) {
   const navigate = useNavigate()
 

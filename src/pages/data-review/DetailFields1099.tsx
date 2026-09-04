@@ -28,11 +28,11 @@ export const INT_PAYER_TABS: { key: IntPayer; label: string }[] = [
   { key: 'cascadeFederal',      label: 'Cascade Federal Savings' },
 ]
 
-/** Verified-docs key — canonical definition in verifiedDocKeys.ts */
+/** Verified-docs key - canonical definition in verifiedDocKeys.ts */
 import { intVerifiedDocKey } from '../../data/verifiedDocKeys'
 export { intVerifiedDocKey }
 
-// 1099-INT payers — Jessica Drake TY 2025
+// 1099-INT payers - Jessica Drake TY 2025
 const PAYER_DATA: Record<IntPayer, { ein: string; name: string; street: string; city: string; state: string; zip: string; payerPhone: string }> = {
   unwaverIngFinancial: {
     ein: '47-8821034',
@@ -69,7 +69,7 @@ const RECIPIENT_DATA = {
   ...CLIENT_ADDRESS,
 }
 
-// Form 1099-INT boxes per payer — Jessica Drake values
+// Form 1099-INT boxes per payer - Jessica Drake values
 const FORM_DATA: Record<IntPayer, {
   box1_interest: string; box2_earlyPenalty: string; box3_usBonds: string;
   box4_fedTaxWithheld: string; box5_investExpenses: string; box6_foreignTax: string;
@@ -78,17 +78,17 @@ const FORM_DATA: Record<IntPayer, {
   box14_stateTax: string; box15_stateIncome: string;
 }> = {
   unwaverIngFinancial: {
-    box1_interest:        '1,986',   // Box 1 — Interest income
-    box2_earlyPenalty:    '',        // Box 2 — Early withdrawal penalty
-    box3_usBonds:         '',        // Box 3 — Dropped on return (source has $1,500)
-    box4_fedTaxWithheld:  '',        // Box 4 — Federal income tax withheld
-    box5_investExpenses:  '',        // Box 5 — Investment expenses
-    box6_foreignTax:      '',        // Box 6 — Foreign tax paid
-    box7_foreignCountry:  '',        // Box 7 — Foreign country or U.S. possession
-    box8_taxExempt:       '180',     // Box 8 — Tax-exempt interest
-    box9_specPrivActivity:'',        // Box 9 — Specified private activity bond interest
-    box10_marketDiscount: '',        // Box 10 — Market discount
-    box11_bondPremium:    '',        // Box 11 — Bond premium
+    box1_interest:        '1,986',   // Box 1 - Interest income
+    box2_earlyPenalty:    '',        // Box 2 - Early withdrawal penalty
+    box3_usBonds:         '',        // Box 3 - Dropped on return (source has $1,500)
+    box4_fedTaxWithheld:  '',        // Box 4 - Federal income tax withheld
+    box5_investExpenses:  '',        // Box 5 - Investment expenses
+    box6_foreignTax:      '',        // Box 6 - Foreign tax paid
+    box7_foreignCountry:  '',        // Box 7 - Foreign country or U.S. possession
+    box8_taxExempt:       '180',     // Box 8 - Tax-exempt interest
+    box9_specPrivActivity:'',        // Box 9 - Specified private activity bond interest
+    box10_marketDiscount: '',        // Box 10 - Market discount
+    box11_bondPremium:    '',        // Box 11 - Bond premium
     box13_stateTaxId:     '',
     box14_stateTax:       '',
     box15_stateIncome:    '',
@@ -266,7 +266,7 @@ export default function DetailFields1099({
     )
   }
 
-  // Editable row with hover-revealed Edit + Mark as correct + Comment — same pattern as
+  // Editable row with hover-revealed Edit + Mark as correct + Comment - same pattern as
   // the W-2 panel's renderStaticRow. Per-payer Box 1 interest also updates live amounts.
   const renderReadOnlyRow = (
     fieldKey: string,
@@ -274,7 +274,7 @@ export default function DetailFields1099({
     defaultValue: string,
     inputClass = styles.fieldInputSmall,
     placeholder?: string,
-    /** Phase 1 flag key — when set, drives orange attention styling until resolved */
+    /** Phase 1 flag key - when set, drives orange attention styling until resolved */
     flagKey?: string,
   ) => {
     const syncedInterest =

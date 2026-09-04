@@ -127,7 +127,7 @@
     font-display: swap;
   }
 
-  /* Variable-font token alias — same Intuit CDN cuts, matches --font-family-avenir-variable */
+  /* Variable-font token alias - same Intuit CDN cuts, matches --font-family-avenir-variable */
   @font-face {
     font-family: AvenirNextForINTUITVar;
     src:

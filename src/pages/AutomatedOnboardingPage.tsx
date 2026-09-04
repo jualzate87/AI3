@@ -41,7 +41,7 @@ export default function AutomatedOnboardingPage() {
         ]}
         onClose={() => setTrowserOpen(false)}
       >
-        {/* Body: left panel + right panel — fills Trowser content area */}
+        {/* Body: left panel + right panel - fills Trowser content area */}
         <div className={styles.body}>
           <div className={styles.leftPanel}>
             <LeftPanel />

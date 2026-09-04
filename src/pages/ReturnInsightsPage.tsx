@@ -6,7 +6,7 @@ import ReturnContextRail from '../components/ReturnContextRail'
 import layout from '../styles/CoreScreenLayout.module.css'
 import styles from '../styles/ReturnInsightsPage.module.css'
 
-// Figma asset — Return Insights visualization image (valid 7 days)
+// Figma asset - Return Insights visualization image (valid 7 days)
 const insightsImage = "https://www.figma.com/api/mcp/asset/644c8882-32db-4e16-aa4c-27d5b74b9275"
 
 const CHECK_NAV_ITEMS = [
@@ -57,11 +57,11 @@ export default function ReturnInsightsPage() {
             ))}
           </div>
 
-          {/* Main content — Return Insights visualization */}
+          {/* Main content - Return Insights visualization */}
           <div className={styles.mainContent}>
             <img
               src={insightsImage}
-              alt="Return Insights — Jessica Drake 2025 Tax Report"
+              alt="Return Insights - Jessica Drake 2025 Tax Report"
               className={styles.insightsImage}
             />
           </div>

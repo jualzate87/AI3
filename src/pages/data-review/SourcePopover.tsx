@@ -49,7 +49,7 @@ export function sourceDocCountSubtitle(items: SourcePopoverItem[]): string {
 /** Horizontal gap between a field value box and its flyout. */
 export const POPOVER_FIELD_GAP = 12
 
-/** Output / check-return flyout width — matches FieldPopover. */
+/** Output / check-return flyout width - matches FieldPopover. */
 export const OUTPUT_FORM_POPOVER_WIDTH = 360
 
 /** Resolve the value-field box for popover anchoring (not the (i) button or whole row). */
@@ -85,7 +85,7 @@ interface SourcePopoverItemsProps {
   onItemClick?: (item: SourcePopoverItem) => void
 }
 
-/** Shared source card list — used inside SourcePopover and FieldPopover. */
+/** Shared source card list - used inside SourcePopover and FieldPopover. */
 export function SourcePopoverItems({
   mode = 'source',
   items,
@@ -200,7 +200,7 @@ interface SourcePopoverShellProps {
   beakSide?: 'left' | 'right'
 }
 
-/** Header + subtitle + body shell without positioning — for embedded use (FieldPopover). */
+/** Header + subtitle + body shell without positioning - for embedded use (FieldPopover). */
 export function SourcePopoverShell({
   title,
   subtitle,
@@ -256,11 +256,11 @@ interface SourcePopoverProps {
   onNavigateToDoc?: (docId: string) => void
   anchorRect: DOMRect
   onClose: () => void
-  /** Popover width — defaults to 328; use OUTPUT_FORM_POPOVER_WIDTH on output forms. */
+  /** Popover width - defaults to 328; use OUTPUT_FORM_POPOVER_WIDTH on output forms. */
   popoverWidth?: number
 }
 
-/** Fixed-position source flyout — Summary rows, schedule (i) buttons, OutputFormViews. */
+/** Fixed-position source flyout - Summary rows, schedule (i) buttons, OutputFormViews. */
 export default function SourcePopover({
   rowLabel,
   mode = 'source',

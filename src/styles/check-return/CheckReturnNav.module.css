@@ -1,4 +1,4 @@
-/* Check Return left navigation — aligned with Input return subnav shell (316px #F4F5F8) */
+/* Check Return left navigation - aligned with Input return subnav shell (316px #F4F5F8) */
 
 .menuPanel {
   width: 316px;
@@ -80,7 +80,7 @@
   flex-direction: column;
 }
 
-/* Level 1 — category row (Forms, Tax Summary) */
+/* Level 1 - category row (Forms, Tax Summary) */
 .navCategoryHeader {
   display: flex;
   align-items: center;
@@ -122,7 +122,7 @@
   color: var(--color-icon-primary, #393a3d);
 }
 
-/* Level 1 — AI Diagnostics (Intuit Intelligence branded header) */
+/* Level 1 - AI Diagnostics (Intuit Intelligence branded header) */
 .navAiDiagnosticsHeader {
   display: flex;
   align-items: center;
@@ -234,7 +234,7 @@
   background: var(--color-container-background-primary, #ffffff);
 }
 
-/* Items inside the panel inherit the panel edge — per-row borders stack and look doubled */
+/* Items inside the panel inherit the panel edge - per-row borders stack and look doubled */
 .formsPanel .navSecondaryItem {
   border-left: none;
   border-right: none;
@@ -303,7 +303,7 @@
   border: 0;
 }
 
-/* Level 2 — US / CA group headers inside forms panel */
+/* Level 2 - US / CA group headers inside forms panel */
 .navGroup {
   display: flex;
   flex-direction: column;
@@ -323,7 +323,7 @@
   font-family: inherit;
 }
 
-/* Single divider between US / CA groups — not on every group header */
+/* Single divider between US / CA groups - not on every group header */
 .formsPanel .navGroup + .navGroup {
   border-top: 1px solid var(--color-divider-tertiary, #e8edf0);
 }
@@ -343,7 +343,7 @@
   color: var(--color-icon-secondary, #6b6c72);
 }
 
-/* Level 3 — secondary items (forms + tax summaries) */
+/* Level 3 - secondary items (forms + tax summaries) */
 .navSecondaryItem {
   display: flex;
   align-items: center;
@@ -378,7 +378,7 @@
   border-bottom: 1px solid var(--color-divider-tertiary, #c3ced5);
 }
 
-/* Flat rows — Return Insights, diagnostics, Overrides, Suggestions */
+/* Flat rows - Return Insights, diagnostics, Overrides, Suggestions */
 .navFlatRow {
   display: flex;
   align-items: center;

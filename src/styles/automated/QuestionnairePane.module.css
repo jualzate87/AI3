@@ -42,7 +42,7 @@
   width: 100%;
 }
 
-/* User speech bubble — right aligned */
+/* User speech bubble - right aligned */
 .userMessageRow {
   display: flex;
   flex-direction: column;
@@ -91,7 +91,7 @@
   width: 100%;
 }
 
-/* Card control bar — copy, download, thumbs */
+/* Card control bar - copy, download, thumbs */
 .cardControlBar {
   display: flex;
   align-items: center;
@@ -114,7 +114,7 @@
   background: #f4f5f8;
 }
 
-/* Suggestion chips row — right aligned */
+/* Suggestion chips row - right aligned */
 .suggestionChipsRow {
   display: flex;
   flex-direction: column;

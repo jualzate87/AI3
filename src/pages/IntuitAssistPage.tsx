@@ -1,4 +1,4 @@
-// IntuitAssistPage.tsx — Intuit Assist floating bubble + drawer chat interface
+// IntuitAssistPage.tsx - Intuit Assist floating bubble + drawer chat interface
 import { useState, useRef, useCallback } from 'react'
 import { Drawer, DrawerHeader, DrawerContent } from '@ids-ts/drawer'
 import '@ids-ts/drawer/dist/main.css'

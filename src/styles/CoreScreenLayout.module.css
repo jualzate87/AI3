@@ -1,4 +1,4 @@
-/* Canonical core screen shell — LeftNavPTO spans full viewport height (Smart Return pattern).
+/* Canonical core screen shell - LeftNavPTO spans full viewport height (Smart Return pattern).
    Structure: .page > .body > LeftNavPTO + .rightSide > SmartReturnHeader + content */
 
 .page {

@@ -19,7 +19,7 @@
   border: 1px solid transparent;
 }
 
-/* Smart return import — neutral (same pattern as manual entry) */
+/* Smart return import - neutral (same pattern as manual entry) */
 .import {
   background: var(--color-container-background-secondary);
   color: var(--color-text-secondary);

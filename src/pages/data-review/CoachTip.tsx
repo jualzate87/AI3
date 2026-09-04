@@ -4,7 +4,7 @@ import styles from '../../styles/data-review/CoachTip.module.css'
 
 type CoachTipProps = {
   open: boolean
-  /** Kept for call-site compatibility — popovers removed; pink pointer only */
+  /** Kept for call-site compatibility - popovers removed; pink pointer only */
   title?: string
   message?: ReactNode
   onClose: () => void

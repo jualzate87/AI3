@@ -33,7 +33,7 @@ export default function AttentionCountBadge({
       aria-hidden={ariaHidden}
       aria-label={ariaLabel}
     >
-      {/* Rectangular warning badge — IDS only applies attention background for rect/dot, not round */}
+      {/* Rectangular warning badge - IDS only applies attention background for rect/dot, not round */}
       <Badge status="warning" capitalization="sentence">
         {formatAttentionCount(count)}
       </Badge>

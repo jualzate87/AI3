@@ -29,11 +29,11 @@ export const DIV_PAYER_TABS: { key: DivPayer; label: string }[] = [
   { key: 'beaconDividend', label: 'Beacon Dividend Trust' },
 ]
 
-/** Verified-docs key — canonical definition in verifiedDocKeys.ts */
+/** Verified-docs key - canonical definition in verifiedDocKeys.ts */
 import { divVerifiedDocKey } from '../../data/verifiedDocKeys'
 export { divVerifiedDocKey }
 
-// 1099-DIV payers — Jessica Drake TY 2025
+// 1099-DIV payers - Jessica Drake TY 2025
 const PAYER_DATA: Record<DivPayer, { ein: string; name: string; street: string; city: string; state: string; zip: string; payerPhone: string }> = {
   tokenFinancial: {
     ein: '26-7488943',
@@ -69,7 +69,7 @@ const RECIPIENT_DATA = {
   ...CLIENT_ADDRESS,
 }
 
-// Form 1099-DIV boxes per payer — Jessica Drake TY 2025
+// Form 1099-DIV boxes per payer - Jessica Drake TY 2025
 const FORM_DATA: Record<DivPayer, {
   box1a_totalOrdinary: string; box1b_qualifiedDivs: string; box2a_totalCapGain: string;
   box2b_unrecap1250: string; box2c_sec1202: string; box2d_collectibles: string;
@@ -78,20 +78,20 @@ const FORM_DATA: Record<DivPayer, {
   box9_cashLiquidation: string; box10_nonCashLiquidation: string;
 }> = {
   tokenFinancial: {
-    box1a_totalOrdinary:      '331,250', // Box 1a — Total ordinary dividends
-    box1b_qualifiedDivs:      '331,250', // Box 1b — Return value (source $187,500; silent error 6)
-    box2a_totalCapGain:       '',       // Box 2a — Total capital gain distr.
-    box2b_unrecap1250:        '',       // Box 2b — Unrecap. Sec. 1250 gain
-    box2c_sec1202:            '',       // Box 2c — Section 1202 gain
-    box2d_collectibles:       '',       // Box 2d — Collectibles (28%) gain
-    box3_nonDivDistrib:       '',       // Box 3 — Nondividend distributions
-    box4_fedTaxWithheld:      '24,925', // Box 4 — Return value (source $26,363)
-    box5_sec199A:             '',       // Box 5 — Section 199A dividends
-    box6_investExpenses:      '1,200',  // Box 6 — Investment expenses
-    box7_foreignTaxPaid:      '',       // Box 7 — Foreign tax paid
-    box8_foreignCountry:      '',       // Box 8 — Foreign country or U.S. possession
-    box9_cashLiquidation:     '',       // Box 9 — Cash liquidation distributions
-    box10_nonCashLiquidation: '',       // Box 10 — Noncash liquidation distributions
+    box1a_totalOrdinary:      '331,250', // Box 1a - Total ordinary dividends
+    box1b_qualifiedDivs:      '331,250', // Box 1b - Return value (source $187,500; silent error 6)
+    box2a_totalCapGain:       '',       // Box 2a - Total capital gain distr.
+    box2b_unrecap1250:        '',       // Box 2b - Unrecap. Sec. 1250 gain
+    box2c_sec1202:            '',       // Box 2c - Section 1202 gain
+    box2d_collectibles:       '',       // Box 2d - Collectibles (28%) gain
+    box3_nonDivDistrib:       '',       // Box 3 - Nondividend distributions
+    box4_fedTaxWithheld:      '24,925', // Box 4 - Return value (source $26,363)
+    box5_sec199A:             '',       // Box 5 - Section 199A dividends
+    box6_investExpenses:      '1,200',  // Box 6 - Investment expenses
+    box7_foreignTaxPaid:      '',       // Box 7 - Foreign tax paid
+    box8_foreignCountry:      '',       // Box 8 - Foreign country or U.S. possession
+    box9_cashLiquidation:     '',       // Box 9 - Cash liquidation distributions
+    box10_nonCashLiquidation: '',       // Box 10 - Noncash liquidation distributions
   },
   northmarkIndex: {
     box1a_totalOrdinary:      '12,400',
@@ -153,7 +153,7 @@ interface DetailFieldsDivProps {
   flaggedFields?: Record<string, string>
   onAddFieldNote?: (text: string, context: string) => void
   importReadOnly?: boolean
-  /** Input return mode — plain editable fields without verify header */
+  /** Input return mode - plain editable fields without verify header */
   variant?: DetailFieldsVariant
   showEmptyWhenZero?: boolean
   onViewSourceDocuments?: () => void
@@ -253,8 +253,8 @@ export default function DetailFieldsDiv({
     )
   }
 
-  // Editable row with hover-revealed Edit + Mark as correct + Comment — same pattern as
-  // the W-2 panel's renderStaticRow. Flagged rows (e.g. collectibles, nondividend — "not
+  // Editable row with hover-revealed Edit + Mark as correct + Comment - same pattern as
+  // the W-2 panel's renderStaticRow. Flagged rows (e.g. collectibles, nondividend - "not
   // imported") also get a validation note; editing such a row lets the preparer fill in
   // the real value from the source document instead of just dismissing the flag.
   const renderReadOnlyRow = (
@@ -263,7 +263,7 @@ export default function DetailFieldsDiv({
     defaultValue: string,
     opts: { inputClass?: string; placeholder?: string; fieldKeyOverride?: string; reviewedKeyOverride?: string } = {},
   ) => {
-    const { inputClass = styles.fieldInputSmall, placeholder = '—', fieldKeyOverride, reviewedKeyOverride } = opts
+    const { inputClass = styles.fieldInputSmall, placeholder = '-', fieldKeyOverride, reviewedKeyOverride } = opts
     const flagKey = fieldKeyOverride ?? fieldKey
     const reviewedKey = reviewedKeyOverride ?? fieldKey
     const syncedAmountDisplay = (() => {

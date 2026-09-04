@@ -1,5 +1,5 @@
 /**
- * Phase 1 flag messages — plain language (no confidence %).
+ * Phase 1 flag messages - plain language (no confidence %).
  */
 export const PHASE1_FLAG_MESSAGES = {
   w2: {
@@ -19,7 +19,7 @@ export const PHASE1_FLAG_MESSAGES = {
   },
   r: {
     grossDistrib:
-      'Gross distribution (Box 1) may be misread. Confirm against the 1099-R — Box 1 is gross; taxable amount is Box 2a (1040 line 4b).',
+      'Gross distribution (Box 1) may be misread. Confirm against the 1099-R - Box 1 is gross; taxable amount is Box 2a (1040 line 4b).',
   },
   nec: {
     necBox1:
@@ -27,7 +27,7 @@ export const PHASE1_FLAG_MESSAGES = {
   },
 } as const
 
-/** Loop 2 Build Spec Part 3 — return-summary insights (Phase 2). */
+/** Loop 2 Build Spec Part 3 - return-summary insights (Phase 2). */
 export const RETURN_SUMMARY_INSIGHTS = {
   estTaxPenalty: 'Estimated tax penalty may apply. Review Form 2210.',
   niit: 'Net investment income tax may apply. Review Form 8960.',

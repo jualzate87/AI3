@@ -42,7 +42,7 @@ export type SourceDocPreviewParams = {
 export type SourceDocPreview = {
   imageSrc?: string | string[]
   alt: string
-  /** Unwavering FINAL PDF had Georgetown placeholders — use HTML form matching DetailFields. */
+  /** Unwavering FINAL PDF had Georgetown placeholders - use HTML form matching DetailFields. */
   useInt1099UnwaveringHtml?: boolean
 }
 
@@ -56,9 +56,9 @@ export function getSourceDocPreview({
 }: SourceDocPreviewParams): SourceDocPreview {
   switch (activeTopTab) {
     case 'questionnaire':
-      return { alt: 'Questionnaire — Jessica Drake' }
+      return { alt: 'Questionnaire - Jessica Drake' }
     case 'prior-1040':
-      return { imageSrc: prior1040Images, alt: 'Form 1040 (2024) — Jessica Drake' }
+      return { imageSrc: prior1040Images, alt: 'Form 1040 (2024) - Jessica Drake' }
     case '1099-ints':
       if (activeIntPayer === 'unwaverIngFinancial') {
         return {

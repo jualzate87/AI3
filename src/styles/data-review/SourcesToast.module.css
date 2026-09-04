@@ -1,4 +1,4 @@
-/* Sources toast — floating card on 1040, shown on hover */
+/* Sources toast - floating card on 1040, shown on hover */
 .toast {
   position: absolute; /* overridden to fixed via inline style when needed */
   width: 260px;

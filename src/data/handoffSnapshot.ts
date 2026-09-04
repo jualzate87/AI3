@@ -1,5 +1,5 @@
 /**
- * C2 handoff snapshot — conversational storyline for preparer sign-off and reviewer briefing.
+ * C2 handoff snapshot - conversational storyline for preparer sign-off and reviewer briefing.
  */
 import type { ActivityEntry } from '../hooks/useSyncedReviewState'
 import { coerceTimestamp } from '../lib/coerceTimestamp'
@@ -69,7 +69,7 @@ export type HandoffSection = {
   title: string
   /** Optional lead-in under the section title */
   intro?: string
-  /** Badge count — total granular items for open sections */
+  /** Badge count - total granular items for open sections */
   count: number
   /** Accessible label for the count, e.g. "3 open" */
   countLabel: string
@@ -163,15 +163,15 @@ export const FIELD_LABELS: Record<string, string> = {
   'r-taxableAmt': '1099-R taxable amount',
   'r-fedTaxWithheld': '1099-R federal withholding',
   withholding: 'W-2 federal withholding',
-  wages: '1040 line 1a — W-2 wages',
-  taxExemptInterest: '1040 line 2a — Tax-exempt interest',
-  ordinaryDivs: '1040 line 3b — Ordinary dividends',
+  wages: '1040 line 1a - W-2 wages',
+  taxExemptInterest: '1040 line 2a - Tax-exempt interest',
+  ordinaryDivs: '1040 line 3b - Ordinary dividends',
   withholding1099: '1099-R federal withholding',
-  iraDistrib: '1040 line 4b — IRA distributions',
-  otherIncome: '1040 line 8 — Other income',
+  iraDistrib: '1040 line 4b - IRA distributions',
+  otherIncome: '1040 line 8 - Other income',
   stdDeduction: 'Standard deduction',
-  totalIncome: '1040 line 9 — Total income',
-  totalTax: '1040 line 24 — Total tax',
+  totalIncome: '1040 line 9 - Total income',
+  totalTax: '1040 line 24 - Total tax',
 }
 
 const FLAG_TO_DOC = PHASE1_FLAG_TO_VERIFY_DOC
@@ -247,7 +247,7 @@ export function parseHandoffItemKey(item: HandoffItem): string | null {
   return m?.[1] ?? null
 }
 
-/** Dedupe key — box12 sub-rows share one slot; phase-1 flags stay distinct for doc mapping. */
+/** Dedupe key - box12 sub-rows share one slot; phase-1 flags stay distinct for doc mapping. */
 export function canonicalActivityKey(fieldKey: string): string {
   if (isBox12FieldKey(fieldKey)) return box12RollupKey(fieldKey)
   return fieldKey
@@ -546,9 +546,9 @@ export function buildHandoffSnapshot(
   const openNotes = input.notes.filter(n => (n.status ?? 'open') === 'open')
   const reviewerConfirmedDocs = input.reviewerConfirmedDocs ?? new Set<string>()
 
-  // Preparer-verified packet docs only — aligns with tab checkmarks (isDocShownVerified preparer slot).
+  // Preparer-verified packet docs only - aligns with tab checkmarks (isDocShownVerified preparer slot).
   const preparerVerifiedDocs = preparerVerifiedPacketDocs(input.verifiedDocs)
-  // Not preparer-verified — never overlaps with preparerVerifiedDocs or done-list doc rows.
+  // Not preparer-verified - never overlaps with preparerVerifiedDocs or done-list doc rows.
   const unverifiedDocs = KNOWN_DOCS.filter(d => !isPreparerDocVerified(input.verifiedDocs, d))
   // Reviewer briefing: preparer verified but reviewer has not confirmed yet.
   const docsAwaitingConfirmation = isBriefing
@@ -560,10 +560,10 @@ export function buildHandoffSnapshot(
   const edits = [...input.editedFields.entries()]
   const editKeys = edits.map(([k]) => k)
 
-  // ── Still open — granular items grouped by category ───────────────────
+  // ── Still open - granular items grouped by category ───────────────────
   const openGroups: HandoffItemGroup[] = []
 
-  // Soften group titles — categories in a brief, not a findings catalog
+  // Soften group titles - categories in a brief, not a findings catalog
   if (openNotes.length) {
     openGroups.push({
       id: 'notes',
@@ -680,7 +680,7 @@ export function buildHandoffSnapshot(
       items: needsConfirmation.map(([field, meta]) => ({
         id: `confirm-${field}`,
         label: fieldLabel(field),
-        detail: `${firstName(meta.by)} verified · ${formatCheckMeta(meta)} — confirm for sign-off`,
+        detail: `${firstName(meta.by)} verified · ${formatCheckMeta(meta)} - confirm for sign-off`,
         status: 'open' as const,
         jump: { type: 'field' as const, field },
         jumpLabel: 'Confirm field',
@@ -700,8 +700,8 @@ export function buildHandoffSnapshot(
           id: `doc-confirm-${docId}`,
           label: docLabel(docId),
           detail: meta
-            ? `${firstName(meta.by)} verified · ${formatCheckMeta(meta)} — confirm for sign-off`
-            : 'Preparer verified — confirm for sign-off',
+            ? `${firstName(meta.by)} verified · ${formatCheckMeta(meta)} - confirm for sign-off`
+            : 'Preparer verified - confirm for sign-off',
           status: 'open' as const,
           jump: { type: 'doc' as const, docId },
           jumpLabel: 'Confirm document',
@@ -712,7 +712,7 @@ export function buildHandoffSnapshot(
 
   const granularOpenCount = openGroups.reduce((sum, g) => sum + g.count, 0)
 
-  // ── Preparer completed work — granular rows (same pattern as open items) ─
+  // ── Preparer completed work - granular rows (same pattern as open items) ─
   const preparerDoneGroups: HandoffItemGroup[] = []
 
   if (preparerVerifiedDocs.length) {
@@ -878,12 +878,12 @@ export function buildHandoffSnapshot(
         )
       }
     } else {
-      story.push('Nothing is left open in this snapshot — spot-check Pass 1 work if you want a second pair of eyes.')
+      story.push('Nothing is left open in this snapshot - spot-check Pass 1 work if you want a second pair of eyes.')
     }
   } else {
     story.push(
       pass === 2
-        ? `${who}, here’s where this pass stands — what’s still open, then what you’ve already cleared.`
+        ? `${who}, here’s where this pass stands - what’s still open, then what you’ve already cleared.`
         : `${who}, here’s a brief on this pass: what’s outstanding, then what you’ve already handled.`,
     )
     if (clearedFlags.length || preparerVerifiedDocs.length || diagsReviewed.length || edits.length) {
@@ -901,7 +901,7 @@ export function buildHandoffSnapshot(
           : `${granularOpenCount} items still need attention before you finish or pass this on.`,
       )
     } else {
-      story.push('Everything tracked in this snapshot looks clear — you can finish & file or pass to the next reviewer when you’re ready.')
+      story.push('Everything tracked in this snapshot looks clear - you can finish & file or pass to the next reviewer when you’re ready.')
     }
   }
 
@@ -953,7 +953,7 @@ export function buildHandoffSnapshot(
         ? `${preparerDoneCount} item${preparerDoneCount === 1 ? '' : 's'} ${who} handled in Pass 1. Expand a group for jump links.`
         : `${who} hasn’t recorded edits, checks, or verified docs yet.`
       : hasPreparerDone
-        ? 'Work you already cleared on this pass — expand a group for jump links.'
+        ? 'Work you already cleared on this pass - expand a group for jump links.'
         : 'No completed actions recorded yet.',
     bucket: 'done',
     defaultOpen: false,
@@ -999,7 +999,7 @@ export function buildHandoffSnapshot(
         ],
   }
 
-  // Open items first, then preparer completed work — same order for self and reviewer briefing.
+  // Open items first, then preparer completed work - same order for self and reviewer briefing.
   const sections: HandoffSection[] = [openSection, preparerDoneSection]
 
   const openNav: HandoffOpenNavItem[] = []

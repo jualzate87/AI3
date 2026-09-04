@@ -1,5 +1,5 @@
 /**
- * Phase 2 diagnostic dismiss rules — Filing stoppers / Compliance / Opportunities.
+ * Phase 2 diagnostic dismiss rules - Filing stoppers / Compliance / Opportunities.
  *
  * Outstanding input↔source mismatches from Phase 1 surface here when values
  * were marked correct without fixing (or silent import gaps remain).
@@ -17,7 +17,7 @@ import type { OutputFormId } from './outputForms'
 
 const PHASE1_FLAG_KEY_SET = new Set<string>(PHASE1_FLAG_KEYS)
 
-/** Phase 2 issue keys — must match AgentReportPane GUIDED_ORDER. */
+/** Phase 2 issue keys - must match AgentReportPane GUIDED_ORDER. */
 export type Phase2IssueKey =
   | 'importMismatches'
   | 'niitForm8960'
@@ -25,7 +25,7 @@ export type Phase2IssueKey =
   | 'necScheduleC'
   | 'optItemize'
 
-/** Canonical Phase 2 order — Filing stoppers → Compliance → Opportunities. */
+/** Canonical Phase 2 order - Filing stoppers → Compliance → Opportunities. */
 export const PHASE2_DIAGNOSTIC_ORDER: readonly Phase2IssueKey[] = [
   'importMismatches',
   'underpaymentRisk',
@@ -34,10 +34,10 @@ export const PHASE2_DIAGNOSTIC_ORDER: readonly Phase2IssueKey[] = [
   'optItemize',
 ] as const
 
-/** 110% of 2024 total tax ($102,754) — Form 2210 safe harbor used in card copy. */
+/** 110% of 2024 total tax ($102,754) - Form 2210 safe harbor used in card copy. */
 export const SAFE_HARBOR_2024 = 113_029
 
-/** Prior-year amount owed (line 37) — supporting math only. */
+/** Prior-year amount owed (line 37) - supporting math only. */
 export const PRIOR_YEAR_OWE = 26_654
 
 /** Source-document amounts that invalidate import-related diagnostics when restored. */

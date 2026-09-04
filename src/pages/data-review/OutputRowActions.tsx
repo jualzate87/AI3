@@ -1,7 +1,7 @@
 import FieldAnnotationButton from './FieldAnnotationButton'
 import styles from '../../styles/data-review/LeftPanel1040.module.css'
 
-/** Single annotate control — note or flag with type selector (replaces separate comment + flag buttons). */
+/** Single annotate control - note or flag with type selector (replaces separate comment + flag buttons). */
 export default function OutputRowActions({
   label,
   fieldKey,

@@ -14,7 +14,7 @@ export type IssueActionMenuItem = {
   label: string
   tab?: string
   field?: string
-  /** Highlight Summary / output only — do not switch Sources tabs */
+  /** Highlight Summary / output only - do not switch Sources tabs */
   summaryOnly?: boolean
 }
 
@@ -27,7 +27,7 @@ export type IssueAction = {
   tab?: string
   field?: string
   questionnaireResponseId?: string
-  /** Highlight Summary / output only — do not switch Sources tabs */
+  /** Highlight Summary / output only - do not switch Sources tabs */
   summaryOnly?: boolean
   /** When set, render as a dropdown of destinations instead of a single button */
   menuItems?: IssueActionMenuItem[]
@@ -44,7 +44,7 @@ export type IssueSourceCard = {
   description?: string
   /** Footer meta (e.g. "IRS.gov", "Tax Topic 501") */
   meta?: string
-  /** Official IRS URL — opens in a new tab when set */
+  /** Official IRS URL - opens in a new tab when set */
   href?: string
   /** When true: non-navigating placeholder */
   placeholder?: boolean

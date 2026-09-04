@@ -9,7 +9,7 @@ interface DocumentPreviewProps {
   alt: string
   /** When set, renders custom content instead of image(s) */
   customContent?: React.ReactNode
-  /** Verify doc key — drives attach empty state for manual/pdf-only inputs */
+  /** Verify doc key - drives attach empty state for manual/pdf-only inputs */
   importDocKey?: string | null
   /** Show attach empty state when no PDF is linked (manual review) */
   showAttachEmpty?: boolean
@@ -52,7 +52,7 @@ export default function DocumentPreview({
   onUploadDocument,
   onChooseAvailable,
 }: DocumentPreviewProps) {
-  const [zoomIndex, setZoomIndex] = useState(6) // default 100% — fit to viewer width
+  const [zoomIndex, setZoomIndex] = useState(6) // default 100% - fit to viewer width
   const zoom = ZOOM_LEVELS[zoomIndex]
   const images = imageSrc ? (Array.isArray(imageSrc) ? imageSrc : [imageSrc]) : []
   const canMagnify = !customContent && images.length > 0
@@ -102,7 +102,7 @@ export default function DocumentPreview({
     }
   }, [isDragging])
 
-  // ── Trackpad pinch-to-zoom — non-passive to allow preventDefault ──
+  // ── Trackpad pinch-to-zoom - non-passive to allow preventDefault ──
   useEffect(() => {
     const el = imageAreaRef.current
     if (!el) return
@@ -231,7 +231,7 @@ export default function DocumentPreview({
                   <img
                     key={`${src}-${i}`}
                     src={src}
-                    alt={images.length > 1 ? `${alt} — page ${i + 1}` : alt}
+                    alt={images.length > 1 ? `${alt} - page ${i + 1}` : alt}
                     className={styles.documentImage}
                     draggable={false}
                   />
@@ -259,7 +259,7 @@ export default function DocumentPreview({
         />
       )}
 
-      {/* Zoom toolbar — hidden when attach empty state is showing */}
+      {/* Zoom toolbar - hidden when attach empty state is showing */}
       {!showEmptyAttach && (
       <div className={styles.toolbar}>
         <div className={styles.toolbarControls}>

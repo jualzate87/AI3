@@ -9,7 +9,7 @@ interface WelcomePaneProps {
   clientName: string
   /** Number of import-accuracy flags found (Step 1) */
   flagCount: number
-  /** Begin Phase 1 — Import Accuracy */
+  /** Begin Phase 1 - Import Accuracy */
   onBegin: () => void
 }
 
@@ -17,7 +17,7 @@ interface WelcomePaneProps {
  * ProtoC entry / orientation screen, styled after the IDS GenUX "Welcome" pattern
  * (Intuit Assist icon + heading + subheading). Introduces the two-step sequential
  * review (import accuracy → AI diagnostics) before the CPA starts. Brief by
- * design — no skip for this prototype.
+ * design - no skip for this prototype.
  */
 export default function WelcomePane({ clientName, flagCount, onBegin }: WelcomePaneProps) {
   return (

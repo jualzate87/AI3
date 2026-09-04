@@ -6,7 +6,7 @@
   background: #ffffff;
 }
 
-/* ── Document image section — height set inline via JS split ── */
+/* ── Document image section - height set inline via JS split ── */
 .docSection {
   display: flex;
   flex-direction: column;
@@ -15,7 +15,7 @@
   min-height: 0;
 }
 
-/* ── Extracted fields section — fills remaining height below drag handle ── */
+/* ── Extracted fields section - fills remaining height below drag handle ── */
 .fieldsSection {
   flex: 1;
   overflow-y: auto;
@@ -24,7 +24,7 @@
   min-height: 0;
 }
 
-/* Title row — exactly DetailFields .titleRow */
+/* Title row - exactly DetailFields .titleRow */
 .titleRow {
   display: flex;
   align-items: center;
@@ -33,7 +33,7 @@
   gap: 12px;
 }
 
-/* Title — exactly DetailFields .title */
+/* Title - exactly DetailFields .title */
 .title {
   font-family: var(--font-family-component) !important;
   font-size: 20px;
@@ -58,7 +58,7 @@
   width: 100%;
 }
 
-/* Section labels — exactly DetailFields .sectionHeader */
+/* Section labels - exactly DetailFields .sectionHeader */
 .sectionLabel {
   display: flex;
   gap: 10px;
@@ -73,7 +73,7 @@
   color: #21262a;
 }
 
-/* Field rows — exactly DetailFields .fieldRow */
+/* Field rows - exactly DetailFields .fieldRow */
 .fieldRow {
   display: flex;
   gap: 12px;
@@ -87,7 +87,7 @@
   background: transparent;
 }
 
-/* Line number — compact label left of the field name */
+/* Line number - compact label left of the field name */
 .lineNum {
   font-family: var(--font-family-component) !important;
   font-size: 12px;
@@ -98,7 +98,7 @@
   font-variant-numeric: tabular-nums;
 }
 
-/* Field label — exactly DetailFields .fieldLabel */
+/* Field label - exactly DetailFields .fieldLabel */
 .fieldLabel {
   font-family: var(--font-family-component) !important;
   font-size: 16px;
@@ -115,7 +115,7 @@
   font-weight: 500;
 }
 
-/* Amount — read-only input appearance matching DetailFields .fieldInput */
+/* Amount - read-only input appearance matching DetailFields .fieldInput */
 .fieldAmount {
   font-family: var(--font-family-component) !important;
   font-size: 16px;

@@ -11,7 +11,7 @@ type TabReviewCountBadgeProps = {
   'aria-label'?: string
 }
 
-/** Peel / review tab numeric badge — "X of Y" with success styling when complete. */
+/** Peel / review tab numeric badge - "X of Y" with success styling when complete. */
 export default function TabReviewCountBadge({
   reviewed,
   total,

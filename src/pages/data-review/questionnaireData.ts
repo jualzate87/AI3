@@ -28,7 +28,7 @@ export type QuestionnaireFieldLink = {
   /** Override tab when fieldKey alone is ambiguous */
   tab?: TopTab
   status: QuestionnaireFieldLinkStatus
-  /** Short note on what happened (e.g. "$0 — matches client answer") */
+  /** Short note on what happened (e.g. "$0 - matches client answer") */
   statusNote?: string
   /** Navigate to 1040 Summary row instead of a source doc tab */
   summaryOnly?: boolean
@@ -90,7 +90,7 @@ export const QUESTIONNAIRE_RESPONSES: QuestionnaireResponse[] = [
         fieldKey: 'stdDeduction',
         label: 'Schedule A · Mortgage interest (planning)',
         status: 'planning',
-        statusNote: 'Form 1098 not in packet — itemize review pending',
+        statusNote: 'Form 1098 not in packet - itemize review pending',
         summaryOnly: true,
       },
     ],
@@ -112,7 +112,7 @@ export const QUESTIONNAIRE_RESPONSES: QuestionnaireResponse[] = [
         fieldKey: 'estimatedPayments',
         label: '1040 · Line 26 · Estimated tax payments',
         status: 'applied',
-        statusNote: '$0 — matches client answer',
+        statusNote: '$0 - matches client answer',
         summaryOnly: true,
       },
       {
@@ -120,7 +120,7 @@ export const QUESTIONNAIRE_RESPONSES: QuestionnaireResponse[] = [
         label: '1099-DIV · Federal withholding',
         tab: '1099-divs',
         status: 'flagged',
-        statusNote: 'Low withholding vs total tax — review Form 2210',
+        statusNote: 'Low withholding vs total tax - review Form 2210',
       },
     ],
   },
@@ -135,7 +135,7 @@ export const QUESTIONNAIRE_RESPONSES: QuestionnaireResponse[] = [
     clientName: 'Jessica Drake',
     sourceChannel: 'client-portal',
     appliedSummary:
-      'NEC income is on the return; Schedule C expenses are not applied yet — waiting on receipt detail from the client.',
+      'NEC income is on the return; Schedule C expenses are not applied yet - waiting on receipt detail from the client.',
     fieldLinks: [
       {
         fieldKey: 'nec-box1',
@@ -149,7 +149,7 @@ export const QUESTIONNAIRE_RESPONSES: QuestionnaireResponse[] = [
         label: 'Schedule C · Business expenses',
         tab: '1099-necs',
         status: 'pending',
-        statusNote: 'Not on return — follow up on receipts',
+        statusNote: 'Not on return - follow up on receipts',
       },
     ],
   },
@@ -193,7 +193,7 @@ export function getQuestionnaireSourceLabel(channel: QuestionnaireSourceChannel)
 /** Hub / import packet label for the questionnaire source document */
 export const QUESTIONNAIRE_HUB_LABEL = 'Tax Organizer questionnaire'
 export const QUESTIONNAIRE_HUB_SOURCE_NOTE =
-  'Answers from Intuit Link, client portal, and uploaded organizer PDF — applied to return fields during import.'
+  'Answers from Intuit Link, client portal, and uploaded organizer PDF - applied to return fields during import.'
 
 /** Compact label for the header source mix */
 export function formatQuestionnaireSourceMix(channels: QuestionnaireSourceChannel[]): string {
@@ -220,7 +220,7 @@ export function getQuestionnaireLinksForField(fieldKey: string): Array<{
 }
 
 /**
- * Questionnaire notes for detail fields — only when the answer adds context
+ * Questionnaire notes for detail fields - only when the answer adds context
  * beyond what a source document already explains (planning, pending, flagged).
  */
 export function getQuestionnaireFieldNotes(fieldKey: string): Array<{
@@ -238,7 +238,7 @@ export function getQuestionnaireFieldNotes(fieldKey: string): Array<{
 }
 
 /**
- * Supplemental questionnaire copy for 1040 popovers — shown when the answer
+ * Supplemental questionnaire copy for 1040 popovers - shown when the answer
  * adds information beyond imported source documents on that line.
  */
 export function getQuestionnairePopoverSupplement(

@@ -1,5 +1,5 @@
 /**
- * Smart Review Brief — phase checklist and activity log payloads for HandoffSummary.
+ * Smart Review Brief - phase checklist and activity log payloads for HandoffSummary.
  * Derives from handoffSnapshot, reviewChecklist, and live review state.
  */
 import { milestoneActorLabel, PREPARER_NAME, REVIEWER_NAME } from '../hooks/useSyncedReviewState'
@@ -39,7 +39,7 @@ export type StrategicChecklistItem = {
   jumpLabel?: string
   required: boolean
   completionType?: MilestoneCompletionType
-  /** Who completed — e.g. "Jordan · Jul 29" */
+  /** Who completed - e.g. "Jordan · Jul 29" */
   attribution?: string
   /** Full name + time for hover tooltip */
   attributionTooltip?: string
@@ -67,7 +67,7 @@ export type ActivityLogCategory = {
   entries: ActivityLogEntry[]
 }
 
-/** Tabbed Review log + Checklist — shared by preparer and reviewer */
+/** Tabbed Review log + Checklist - shared by preparer and reviewer */
 export type BriefViewMode = 'unified' | 'reviewer-briefing'
 
 export type BriefTextPart = { text: string; bold?: boolean }
@@ -472,7 +472,7 @@ function buildExecutiveBrief(
         items: [
           briefItem('open-items', [
             { text: String(n), bold: true },
-            { text: ` item${n === 1 ? '' : 's'} need${n === 1 ? 's' : ''} your attention — use the Checklist tab to track progress.` },
+            { text: ` item${n === 1 ? '' : 's'} need${n === 1 ? 's' : ''} your attention - use the Checklist tab to track progress.` },
           ]),
         ],
       }
@@ -705,7 +705,7 @@ function buildExecutiveBrief(
     completedItems.push(
       briefItem('baseline', [
         { text: preparerFirst, bold: true },
-        { text: ' completed baseline import accuracy work — start with the phased checklist below.' },
+        { text: ' completed baseline import accuracy work - start with the phased checklist below.' },
       ]),
     )
   }
@@ -723,7 +723,7 @@ function buildExecutiveBrief(
         briefItem('open-items', [
           { text: String(n), bold: true },
           {
-            text: ` item${n === 1 ? '' : 's'} still need${n === 1 ? 's' : ''} your review — work through the checklist below.`,
+            text: ` item${n === 1 ? '' : 's'} still need${n === 1 ? 's' : ''} your review - work through the checklist below.`,
           },
         ]),
       ],

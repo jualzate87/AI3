@@ -1,11 +1,11 @@
 /**
- * ProtoC3 prototype toggles — flip these to restore hidden UI without deleting logic.
+ * ProtoC3 prototype toggles - flip these to restore hidden UI without deleting logic.
  */
 
 /** When false, Phase 1 import/OCR flags remain in reviewedFields but are hidden in the UI. */
 export const SHOW_IMPORT_FLAGS = false
 
-/** When false, SSN/EIN identity gates are skipped — preparers can mark verified without identity fields. */
+/** When false, SSN/EIN identity gates are skipped - preparers can mark verified without identity fields. */
 export const SHOW_VERIFY_IDENTITY_GATES = false
 
 /** When false, pink coach pointer dots on (i) info icons and other CoachTip anchors are hidden. */

@@ -1,6 +1,6 @@
 /**
  * Flyout content for Schedule / Form 8960 / 2210 output lines.
- * Same TaxControlDocPopover chrome as Summary — sources open docs from the flyout.
+ * Same TaxControlDocPopover chrome as Summary - sources open docs from the flyout.
  */
 import type { LiveAmounts, LiveReturnTotals } from './liveReturn'
 import { NIIT_AGI_THRESHOLD, SAFE_HARBOR_2210, SEED_AMOUNTS } from './liveReturn'
@@ -160,12 +160,12 @@ function sch1Flyout(fieldId: string, live: LiveReturnTotals, _amounts: LiveAmoun
       return calc(
         'Business income (Schedule C)',
         [
-          { label: 'Schedule C · Line 31 — Net profit', amount: live.schCNetProfit },
+          { label: 'Schedule C · Line 31 - Net profit', amount: live.schCNetProfit },
         ],
         live.schedule1BusinessIncome,
         live.necOnReturn
           ? 'Flows to Form 1040 line 8 via Schedule 1 line 10.'
-          : 'No Schedule C income on the return yet — confirm 1099-NEC first.',
+          : 'No Schedule C income on the return yet - confirm 1099-NEC first.',
       )
     case 'sch1-8':
       return info(
@@ -176,7 +176,7 @@ function sch1Flyout(fieldId: string, live: LiveReturnTotals, _amounts: LiveAmoun
     case 'sch1-10':
       return calc(
         'Total additional income',
-        [{ label: 'Line 3 — Business income', amount: live.schedule1BusinessIncome }],
+        [{ label: 'Line 3 - Business income', amount: live.schedule1BusinessIncome }],
         live.schedule1BusinessIncome,
         'To Form 1040, line 8.',
       )
@@ -218,8 +218,8 @@ function schCFlyout(fieldId: string, live: LiveReturnTotals, amounts: LiveAmount
       return calc(
         fieldId === 'schC-5' ? 'Gross profit' : 'Gross receipts after returns',
         [
-          { label: 'Line 1 — Gross receipts', amount: live.schCGross },
-          { label: 'Line 2 — Returns and allowances', amount: 0 },
+          { label: 'Line 1 - Gross receipts', amount: live.schCGross },
+          { label: 'Line 2 - Returns and allowances', amount: 0 },
         ],
         live.schCGross,
       )
@@ -245,9 +245,9 @@ function schCFlyout(fieldId: string, live: LiveReturnTotals, amounts: LiveAmount
       return calc(
         'Total expenses',
         [
-          { label: 'Line 18 — Office expense', amount: office },
-          { label: 'Line 22 — Supplies', amount: supplies },
-          { label: 'Line 24a — Travel', amount: travel },
+          { label: 'Line 18 - Office expense', amount: office },
+          { label: 'Line 22 - Supplies', amount: supplies },
+          { label: 'Line 24a - Travel', amount: travel },
         ],
         live.schCExpenses,
         'Edit the expense total from 1099-NEC review / questionnaire follow-up.',
@@ -256,8 +256,8 @@ function schCFlyout(fieldId: string, live: LiveReturnTotals, amounts: LiveAmount
       return calc(
         'Net profit (or loss)',
         [
-          { label: 'Line 5 — Gross profit', amount: live.schCGross },
-          { label: 'Line 28 — Total expenses', amount: live.schCExpenses },
+          { label: 'Line 5 - Gross profit', amount: live.schCGross },
+          { label: 'Line 28 - Total expenses', amount: live.schCExpenses },
         ],
         live.schCNetProfit,
         'To Schedule 1, line 3 → Form 1040, line 8.',
@@ -300,8 +300,8 @@ function schAFlyout(fieldId: string, live: LiveReturnTotals, amounts: LiveAmount
       return calc(
         'SALT deduction (capped)',
         [
-          { label: 'Line 5a — Income / sales taxes', amount: saltIncome },
-          { label: 'Line 5b — Real estate taxes', amount: saltRe },
+          { label: 'Line 5a - Income / sales taxes', amount: saltIncome },
+          { label: 'Line 5b - Real estate taxes', amount: saltRe },
         ],
         saltCapped,
         'Federal SALT cap is $10,000.',
@@ -315,7 +315,7 @@ function schAFlyout(fieldId: string, live: LiveReturnTotals, amounts: LiveAmount
           )
         : info(
             'Home mortgage interest',
-            'Form 1098 is not in this packet — client confirmed mortgage interest was paid.',
+            'Form 1098 is not in this packet - client confirmed mortgage interest was paid.',
             amounts.mortgageInterest,
           )
     case 'schA-11':
@@ -328,9 +328,9 @@ function schAFlyout(fieldId: string, live: LiveReturnTotals, amounts: LiveAmount
       return calc(
         'Total itemized deductions',
         [
-          { label: 'Line 5e — SALT (capped)', amount: saltCapped },
-          { label: 'Line 8a — Mortgage interest', amount: amounts.mortgageInterest },
-          { label: 'Line 11 — Charitable gifts', amount: amounts.charitableContributions },
+          { label: 'Line 5e - SALT (capped)', amount: saltCapped },
+          { label: 'Line 8a - Mortgage interest', amount: amounts.mortgageInterest },
+          { label: 'Line 11 - Charitable gifts', amount: amounts.charitableContributions },
         ],
         live.itemizedDeduction,
       )
@@ -360,7 +360,7 @@ function schDFlyout(fieldId: string, live: LiveReturnTotals): ScheduleFlyout | n
         ?? info(
           'Combined net capital gain (or loss)',
           live.capitalGain === 0
-            ? 'No 1099-B / Form 8949 in packet — prior year had $126,750 capital gain. Flows to Form 1040, line 7 when present.'
+            ? 'No 1099-B / Form 8949 in packet - prior year had $126,750 capital gain. Flows to Form 1040, line 7 when present.'
             : 'To Form 1040, line 7.',
           live.capitalGain,
         )
@@ -392,9 +392,9 @@ function f8960Flyout(fieldId: string, live: LiveReturnTotals, amounts: LiveAmoun
       return calc(
         'Total investment income',
         [
-          { label: 'Line 1 — Taxable interest', amount: live.taxableInterest },
-          { label: 'Line 2 — Ordinary dividends', amount: live.ordinaryDivs },
-          { label: 'Line 5a — Capital gain', amount: live.capitalGain },
+          { label: 'Line 1 - Taxable interest', amount: live.taxableInterest },
+          { label: 'Line 2 - Ordinary dividends', amount: live.ordinaryDivs },
+          { label: 'Line 5a - Capital gain', amount: live.capitalGain },
         ],
         live.netInvestmentIncome,
       )
@@ -411,8 +411,8 @@ function f8960Flyout(fieldId: string, live: LiveReturnTotals, amounts: LiveAmoun
       return calc(
         'MAGI over threshold',
         [
-          { label: 'Line 13 — Modified AGI', amount: live.totalIncome },
-          { label: 'Line 14 — Threshold', amount: NIIT_AGI_THRESHOLD },
+          { label: 'Line 13 - Modified AGI', amount: live.totalIncome },
+          { label: 'Line 14 - Threshold', amount: NIIT_AGI_THRESHOLD },
         ],
         excess,
       )
@@ -420,11 +420,11 @@ function f8960Flyout(fieldId: string, live: LiveReturnTotals, amounts: LiveAmoun
       return calc(
         'Net investment income subject to tax',
         [
-          { label: 'Line 8 — Investment income', amount: live.netInvestmentIncome },
-          { label: 'Line 15 — MAGI over threshold', amount: excess },
+          { label: 'Line 8 - Investment income', amount: live.netInvestmentIncome },
+          { label: 'Line 15 - MAGI over threshold', amount: excess },
         ],
         over ? live.netInvestmentIncome : 0,
-        over ? 'Smaller of line 8 or 15.' : 'AGI is below the threshold — NIIT is $0.',
+        over ? 'Smaller of line 8 or 15.' : 'AGI is below the threshold - NIIT is $0.',
       )
     case 'f8960-17':
       return calc(
@@ -433,7 +433,7 @@ function f8960Flyout(fieldId: string, live: LiveReturnTotals, amounts: LiveAmoun
         live.niitTax,
         over
           ? 'Flows to Form 1040 Schedule 2 / total tax.'
-          : 'AGI below threshold — no NIIT on this return.',
+          : 'AGI below threshold - no NIIT on this return.',
       )
     default:
       return info('Form 8960', 'See NIIT worksheet lines above.', 0)
@@ -464,8 +464,8 @@ function f2210Flyout(fieldId: string, live: LiveReturnTotals): ScheduleFlyout | 
       return calc(
         'Total payments',
         [
-          { label: 'Line 9 — Withholding', amount: live.totalWithholding },
-          { label: 'Line 10 — Estimated payments', amount: 0 },
+          { label: 'Line 9 - Withholding', amount: live.totalWithholding },
+          { label: 'Line 10 - Estimated payments', amount: 0 },
         ],
         live.totalWithholding,
       )
@@ -473,12 +473,12 @@ function f2210Flyout(fieldId: string, live: LiveReturnTotals): ScheduleFlyout | 
       return calc(
         'Underpayment',
         [
-          { label: 'Line 6 — Required annual payment', amount: SAFE_HARBOR_2210 },
-          { label: 'Line 11 — Total payments', amount: live.totalWithholding },
+          { label: 'Line 6 - Required annual payment', amount: SAFE_HARBOR_2210 },
+          { label: 'Line 11 - Total payments', amount: live.totalWithholding },
         ],
         live.underpaymentAmount,
         live.underpaymentAmount > 0
-          ? 'Payments are below the safe harbor — an underpayment penalty may apply.'
+          ? 'Payments are below the safe harbor - an underpayment penalty may apply.'
           : 'Payments meet or exceed the safe harbor.',
       )
     default:

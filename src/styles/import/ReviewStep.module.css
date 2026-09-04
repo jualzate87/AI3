@@ -114,7 +114,7 @@
   margin: 0 0 20px;
 }
 
-/* Override CGDS Tabs centering — force left alignment */
+/* Override CGDS Tabs centering - force left alignment */
 .tabsLeftAligned :global(.Tabs-tabs-6f63915) {
   margin: 0 !important;
   max-width: none !important;
@@ -124,7 +124,7 @@
   justify-content: flex-start !important;
 }
 
-/* Toggle: All fields / Matched fields — CGDS Tab Intrapage style */
+/* Toggle: All fields / Matched fields - CGDS Tab Intrapage style */
 .toggleGroup {
   display: flex;
   gap: 12px;
@@ -224,7 +224,7 @@
   width: 289px;
 }
 
-/* Address row — multiple inline fields */
+/* Address row - multiple inline fields */
 .addressRow {
   display: flex;
   gap: 16px;

@@ -1,6 +1,6 @@
-/* ── Field Popover — appears to the right of a 1040 value cell ── */
+/* ── Field Popover - appears to the right of a 1040 value cell ── */
 
-/* Positioning wrapper — sits absolute inside LeftPanel1040 overflow:visible context */
+/* Positioning wrapper - sits absolute inside LeftPanel1040 overflow:visible context */
 .popoverAnchor {
   position: absolute;
   right: 0;
@@ -142,7 +142,7 @@
 .yoyBadgeGrey    { background: #8a9ba5; }
 .yoyBadgeNeutral { background: var(--color-text-secondary); }
 
-/* ── Sources section — unified card list inside default FieldPopover ── */
+/* ── Sources section - unified card list inside default FieldPopover ── */
 .sourcesSection {
   display: flex;
   flex-direction: column;

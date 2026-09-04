@@ -23,7 +23,7 @@ export default function QuestionnaireSection({
 
   return (
     <div className={styles.wrapper}>
-      {/* Header — clickable, toggles expand */}
+      {/* Header - clickable, toggles expand */}
       <button
         className={`${styles.header} ${expanded ? styles.headerExpanded : ''}`}
         onClick={() => setExpanded(e => !e)}

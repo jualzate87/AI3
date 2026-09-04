@@ -1,4 +1,4 @@
-/** Unified annotation kinds — notes and flags at increasing severity. */
+/** Unified annotation kinds - notes and flags at increasing severity. */
 export type AnnotationType = 'note' | 'flag' | 'efile-critical'
 
 export const ANNOTATION_TYPE_OPTIONS: { value: AnnotationType; label: string }[] = [

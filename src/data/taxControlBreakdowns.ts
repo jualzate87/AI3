@@ -31,7 +31,7 @@ function rowConfig(id: string): TaxControlRowConfig {
   return TAX_CONTROL_ROWS.find(r => r.id === id)!
 }
 
-/** Source-document breakdown — lists each contributing doc and the return total. */
+/** Source-document breakdown - lists each contributing doc and the return total. */
 function sourceBreakdown(
   rowId: string,
   systemVals: ControlSystemValues,

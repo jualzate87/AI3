@@ -1,15 +1,15 @@
-/** Hash-route helpers — keep GitHub Pages base path (/AI3/) in sync. */
+/** Hash-route helpers - keep GitHub Pages base path (/AI3/) in sync. */
 
-/** Output review — interactive 1040 + schedules on Check return (no source-doc rail). */
+/** Output review - interactive 1040 + schedules on Check return (no source-doc rail). */
 export const OUTPUT_REVIEW_PATH = '/check-return?form=1040'
 
-/** @deprecated Prefer `/input-return` — kept for legacy links. */
+/** @deprecated Prefer `/input-return` - kept for legacy links. */
 export const PREPARER_DATA_REVIEW_PATH = '/input-return'
 
-/** @deprecated Prefer OUTPUT_REVIEW_PATH — kept for legacy links. */
+/** @deprecated Prefer OUTPUT_REVIEW_PATH - kept for legacy links. */
 export const REVIEWER_DATA_REVIEW_PATH = OUTPUT_REVIEW_PATH
 
-/** Launch point — preparer lands in Phase 2 with AI diagnostics panel open (demo bypass). */
+/** Launch point - preparer lands in Phase 2 with AI diagnostics panel open (demo bypass). */
 export const PREPARER_DIAGNOSTICS_PATH =
   '/data-review?entry=input-return&role=preparer&phase=diagnostics'
 
@@ -45,7 +45,7 @@ export function buildHashRouteUrl(route: string): string {
   return `${getPrototypeBaseUrl()}#${normalized}`
 }
 
-/** Open a hash route in a new tab — preserves repo subpath on GitHub Pages. */
+/** Open a hash route in a new tab - preserves repo subpath on GitHub Pages. */
 export function openHashRoute(route: string, target = '_blank'): void {
   window.open(buildHashRouteUrl(route), target, 'noopener,noreferrer')
 }
@@ -57,13 +57,13 @@ export const SOURCE_DOC_POPOUT_NAV_CHANNEL = 'protoc3-source-doc-popout-nav'
 
 const SOURCE_DOC_POPOUT_WINDOW_NAME = 'smartreview-source-doc-review'
 
-/** Shared popout window chrome — matches source document review dimensions. */
+/** Shared popout window chrome - matches source document review dimensions. */
 const PROTOTYPE_POPOUT_FEATURES = 'width=1447,height=960'
 
 function openNamedPopoutWindow(url: string, windowName: string): Window | null {
   const opened = window.open(url, windowName, PROTOTYPE_POPOUT_FEATURES)
   if (opened) return opened
-  // Popup blocked — fall back to a new browser tab (same as manual openHashRoute).
+  // Popup blocked - fall back to a new browser tab (same as manual openHashRoute).
   window.open(url, '_blank', 'noopener,noreferrer')
   return null
 }
@@ -97,7 +97,7 @@ function postPopoutNavigation(context?: SourceDocumentPopoutContext): void {
     channel.postMessage(context ?? {})
     channel.close()
   } catch {
-    // ignore — hash update still applies on reload
+    // ignore - hash update still applies on reload
   }
   if (sourceDocPopoutWindow && !sourceDocPopoutWindow.closed) {
     sourceDocPopoutWindow.postMessage(
@@ -107,7 +107,7 @@ function postPopoutNavigation(context?: SourceDocumentPopoutContext): void {
   }
 }
 
-/** Open source document review — reuses one popout window when already open. */
+/** Open source document review - reuses one popout window when already open. */
 export function openSourceDocumentReviewPopout(
   context?: SourceDocumentPopoutContext,
 ): Window | null {
@@ -130,7 +130,7 @@ export function openSourceDocumentReviewPopout(
   return sourceDocPopoutWindow
 }
 
-/** Focused review-return popout — tax summary + output forms only. */
+/** Focused review-return popout - tax summary + output forms only. */
 export const CHECK_RETURN_POPOUT_PATH = '/check-return-popout'
 
 const REVIEW_RETURN_POPOUT_WINDOW_NAME = 'smartreview-review-return'
@@ -142,7 +142,7 @@ export function buildReviewReturnPopoutRoute(form: string = '1040'): string {
   return `${CHECK_RETURN_POPOUT_PATH}?form=${form}`
 }
 
-/** Open focused review-return window — reuses existing window when already open. */
+/** Open focused review-return window - reuses existing window when already open. */
 export function openReviewReturnPopout(form: string = '1040'): Window | null {
   const url = buildHashRouteUrl(buildReviewReturnPopoutRoute(form))
 

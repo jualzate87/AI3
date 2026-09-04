@@ -13,7 +13,7 @@ const LABELS: Record<ImportSourceBadgeVariant, string> = {
 const TOOLTIPS: Record<ImportSourceBadgeVariant, string> = {
   'api-filed': 'PDF and input values imported via Filed API',
   import: 'PDF and values imported via Smart return native import',
-  manual: 'No structured import — values were entered manually',
+  manual: 'No structured import - values were entered manually',
 }
 
 const STYLE_CLASS: Record<ImportSourceBadgeVariant, string> = {
@@ -30,14 +30,14 @@ export function importModeToBadgeVariant(mode: ImportMode): ImportSourceBadgeVar
 }
 
 type Props = {
-  /** Explicit variant — overrides docKey lookup */
+  /** Explicit variant - overrides docKey lookup */
   variant?: ImportSourceBadgeVariant
   /** Look up variant from document import metadata */
   docKey?: string | null
   className?: string
 }
 
-/** Audit-log style import badge — API purple, neutral Smart return, or neutral manual. */
+/** Audit-log style import badge - API purple, neutral Smart return, or neutral manual. */
 export default function ImportSourceBadge({ variant, docKey, className }: Props) {
   const meta = docKey ? getDocumentImportMeta(docKey) : null
 

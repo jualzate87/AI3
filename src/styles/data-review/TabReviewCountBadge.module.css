@@ -5,13 +5,13 @@
   line-height: 0;
 }
 
-/* Pending — neutral/warn numeric badge treatment */
+/* Pending - neutral/warn numeric badge treatment */
 .pending :global([class*='NumericBadge']) {
   background: var(--color-container-background-tertiary, #6b6c72);
   color: var(--color-text-inverse, #ffffff);
 }
 
-/* Complete — green success per Figma intent */
+/* Complete - green success per Figma intent */
 .complete :global([class*='NumericBadge']) {
   background: var(--color-container-feedback-success, #00856d);
   color: var(--color-text-inverse, #ffffff);

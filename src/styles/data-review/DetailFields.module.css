@@ -1,4 +1,4 @@
-/* Detail fields — editable input section */
+/* Detail fields - editable input section */
 .container {
   display: flex;
   flex-direction: column;
@@ -12,7 +12,7 @@
   height: 100%;
 }
 
-/* Page header — title + actions row */
+/* Page header - title + actions row */
 .pageHeader {
   display: flex;
   flex-direction: column;
@@ -21,7 +21,7 @@
   flex-shrink: 0;
 }
 
-/* Input return page header — title row + doc tabs (Figma 33983:34996) */
+/* Input return page header - title row + doc tabs (Figma 33983:34996) */
 .pageHeaderInput {
   display: flex;
   flex-direction: column;
@@ -152,7 +152,7 @@
 }
 .addNoteBtn:hover { text-decoration: underline; }
 
-/* Input container — scrollable */
+/* Input container - scrollable */
 .inputContainer {
   display: flex;
   flex-direction: column;
@@ -163,7 +163,7 @@
   min-height: 0;
 }
 
-/* Input-return variant — all-white field rows; section headers stay gray */
+/* Input-return variant - all-white field rows; section headers stay gray */
 .inputContainerInput {
   background: var(--color-container-background-primary, #ffffff);
 }
@@ -225,7 +225,7 @@
   background: var(--color-container-background-positive, #E5F4D9);
 }
 
-/* Sub-tab bar — directly below page title (Figma 33983:34996) */
+/* Sub-tab bar - directly below page title (Figma 33983:34996) */
 .subTabBar {
   display: flex;
   align-items: flex-end;
@@ -355,9 +355,9 @@
   background: #f4f5f8;
 }
 
-/* (removed duplicate inputContainer — defined above) */
+/* (removed duplicate inputContainer - defined above) */
 
-/* Section header — grey bg, full width */
+/* Section header - grey bg, full width */
 .sectionHeader {
   display: flex;
   gap: var(--space-component-gap-small, 8px);
@@ -413,7 +413,7 @@
   transition: background 160ms ease, box-shadow 160ms ease;
 }
 
-/* Field label — prefers ~268px, can shrink when Sources is narrow */
+/* Field label - prefers ~268px, can shrink when Sources is narrow */
 .fieldLabel {
   font-family: var(--font-family-component) !important;
   font-size: 14px;
@@ -429,7 +429,7 @@
   text-overflow: ellipsis;
 }
 
-/* Flagged label — shown when the AI has an issue for this field */
+/* Flagged label - shown when the AI has an issue for this field */
 .fieldLabelFlagged {
   display: inline-flex;
   align-items: center;
@@ -447,12 +447,12 @@
   flex-shrink: 0;
 }
 
-/* Field row that has a validation note beneath it — suppress its own divider */
+/* Field row that has a validation note beneath it - suppress its own divider */
 .fieldRowHasNote {
   border-bottom: none;
 }
 
-/* Validation note — inline under flagged field, matches Figma */
+/* Validation note - inline under flagged field, matches Figma */
 .validationNote {
   display: flex;
   align-items: center;
@@ -476,7 +476,7 @@
   color: #c9500f;
 }
 
-/* Input field — 300px, 32px height, border #859299 */
+/* Input field - 300px, 32px height, border #859299 */
 .fieldInput {
   font-family: var(--font-family-component) !important;
   font-size: 14px;
@@ -505,7 +505,7 @@
   cursor: text;
 }
 
-/* Read-only form / summary display — bordered box, non-interactive (not greyed-out disabled) */
+/* Read-only form / summary display - bordered box, non-interactive (not greyed-out disabled) */
 .fieldInputDisplay {
   cursor: default;
   pointer-events: none;
@@ -528,7 +528,7 @@
   border-color: #205ea3;
 }
 
-/* White field rows everywhere — gray background reserved for section subheaders only */
+/* White field rows everywhere - gray background reserved for section subheaders only */
 .inputContainer .fieldRow,
 .inputContainer .multiFieldRow {
   background: var(--color-container-background-primary, #ffffff);
@@ -550,7 +550,7 @@
   background: var(--color-container-background-primary, #ffffff);
 }
 
-/* Highlighted input — blue (generic popover / source navigation) */
+/* Highlighted input - blue (generic popover / source navigation) */
 .fieldInputHighlighted {
   background: rgba(32, 94, 163, 0.1);
   border-color: #205ea3;
@@ -558,7 +558,7 @@
   box-shadow: 0 0 0 1px rgba(32, 94, 163, 0.15);
 }
 
-/* Highlighted input — warning state (flagged fields) */
+/* Highlighted input - warning state (flagged fields) */
 .fieldInputHighlightedOrange {
   background: rgba(255, 187, 0, 0.28);
   border-color: #ff6a00;
@@ -566,7 +566,7 @@
   box-shadow: 0 0 0 1px rgba(201, 80, 15, 0.12);
 }
 
-/* Comment popover open — blue tint, keep actions visible */
+/* Comment popover open - blue tint, keep actions visible */
 .fieldRowCommentOpen {
   background: rgba(32, 94, 163, 0.04);
   border-radius: 4px;
@@ -581,21 +581,21 @@
   border-width: 2px;
 }
 
-/* Highlighted row — blue tint */
+/* Highlighted row - blue tint */
 .fieldRowHighlighted {
   background: rgba(32, 94, 163, 0.08);
   border-radius: 4px;
   box-shadow: inset 0 0 0 2px rgba(32, 94, 163, 0.35);
 }
 
-/* Highlighted row — warning state (flagged fields) */
+/* Highlighted row - warning state (flagged fields) */
 .fieldRowHighlightedOrange {
   background: rgba(255, 187, 0, 0.12);
   border-radius: 4px;
   box-shadow: inset 0 0 0 2px rgba(201, 80, 15, 0.45);
 }
 
-/* Edit hint — subtle pencil icon shown on highlighted (non-editing) rows */
+/* Edit hint - subtle pencil icon shown on highlighted (non-editing) rows */
 .editHint {
   display: flex;
   align-items: center;
@@ -615,7 +615,7 @@
   opacity: 0.6;
 }
 
-/* Edit button — appears next to highlighted input */
+/* Edit button - appears next to highlighted input */
 .editBtn {
   font-family: var(--font-family-component) !important;
   font-size: 13px;
@@ -645,7 +645,7 @@
   background: #fff !important;
 }
 
-/* Edit action row — Save + Undo shown while editing */
+/* Edit action row - Save + Undo shown while editing */
 .editActions {
   display: flex;
   align-items: center;
@@ -694,7 +694,7 @@
   border-color: #859299;
 }
 
-/* Recalculated badge — flashes briefly after saving */
+/* Recalculated badge - flashes briefly after saving */
 .recalcBadge {
   font-family: var(--font-family-component) !important;
   font-size: 12px;
@@ -713,7 +713,7 @@
   to   { opacity: 0; }
 }
 
-/* Mark as correct button — icon-only CircleCheck, matches 1040 checkBtn style */
+/* Mark as correct button - icon-only CircleCheck, matches 1040 checkBtn style */
 .markCorrectBtn {
   display: inline-flex;
   align-items: center;
@@ -739,7 +739,7 @@
   border-color: #0f766e;
 }
 
-/* Reviewed icon — circular green CircleCheck, same style as left 1040 panel */
+/* Reviewed icon - circular green CircleCheck, same style as left 1040 panel */
 .reviewedBadge {
   display: inline-flex;
   align-items: center;
@@ -749,7 +749,7 @@
   line-height: 1;
 }
 
-/* Persistent "Edited" badge — stays visible after a value has been changed */
+/* Persistent "Edited" badge - stays visible after a value has been changed */
 .editedBadge {
   font-family: var(--font-family-component) !important;
   font-size: 12px;
@@ -829,7 +829,7 @@
 .addressState { width: 56px;  }
 .addressZip   { width: 88px;  }
 
-/* Field actions group — Edit + Mark as correct, shown on row hover */
+/* Field actions group - Edit + Mark as correct, shown on row hover */
 .fieldActions {
   display: none;
   align-items: center;

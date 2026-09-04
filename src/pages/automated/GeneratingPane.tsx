@@ -21,7 +21,7 @@ export default function GeneratingPane({
 
   return (
     <div className={styles.container}>
-      {/* Action button — top right */}
+      {/* Action button - top right */}
       <div className={styles.actionButtonRow}>
         <button className={styles.actionButton} onClick={onActionClick}>
           {actionButtonLabel}

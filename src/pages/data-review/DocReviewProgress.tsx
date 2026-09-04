@@ -10,7 +10,7 @@ type DocReviewProgressProps = {
   className?: string
 }
 
-/** Shared X of Y verified progress — Phase 1 banner, issue banner, panel header. */
+/** Shared X of Y verified progress - Phase 1 banner, issue banner, panel header. */
 export default function DocReviewProgress({
   verified,
   total,

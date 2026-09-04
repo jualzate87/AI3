@@ -10,7 +10,7 @@
   animation: coachNudge var(--duration-appear-emphasize-moderate, 700ms) var(--ease-transform-emphasize, cubic-bezier(0.35, 1.4, 0.25, 1)) 4;
 }
 
-/* Pink attention pulse — default: top-right of the control */
+/* Pink attention pulse - default: top-right of the control */
 .dot {
   position: absolute;
   top: -4px;
@@ -38,7 +38,7 @@
   animation: coachPulse var(--duration-progress-moderate, 1000ms) var(--ease-appear-emphasize, cubic-bezier(0.15, 1.4, 0.25, 1)) infinite;
 }
 
-/* Position variants — dot sits outside the control on the named side */
+/* Position variants - dot sits outside the control on the named side */
 .dotPosTopRight {
   top: -4px;
   right: -4px;

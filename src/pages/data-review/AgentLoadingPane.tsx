@@ -5,7 +5,7 @@ import styles from '../../styles/data-review/AgentLoadingPane.module.css'
 
 interface AgentLoadingPaneProps {
   onClose: () => void
-  /** True only while agentView === 'loading' — timers start here, not on mount */
+  /** True only while agentView === 'loading' - timers start here, not on mount */
   isLoading?: boolean
   /** When true the body crossfades from loading content → report content */
   showReport?: boolean
@@ -15,10 +15,10 @@ interface AgentLoadingPaneProps {
   reportContent?: ReactNode
 }
 
-// Loading phases (timers only run while isLoading — not while idle/mounted):
-//   'spinning'  0–700ms    — centered rotating Intuit Assist icon
-//   'greeting'  700–2400ms — icon + "Assessing the return…" + subtext
-//   'exiting'   2400ms+    — message fades out
+// Loading phases (timers only run while isLoading - not while idle/mounted):
+//   'spinning'  0–700ms    - centered rotating Intuit Assist icon
+//   'greeting'  700–2400ms - icon + "Assessing the return…" + subtext
+//   'exiting'   2400ms+    - message fades out
 // Parent keeps isLoading ~3200ms then sets showReport=true
 export default function AgentLoadingPane({
   onClose,
@@ -45,7 +45,7 @@ export default function AgentLoadingPane({
   return (
     <div className={`${styles.panel} ${closing ? styles.panelClosing : ''}`}>
 
-      {/* ── Header — always static, never re-animates ── */}
+      {/* ── Header - always static, never re-animates ── */}
       <div className={styles.header}>
         <div className={styles.headerLeft} />
         <div className={styles.headerTitle}>
@@ -59,10 +59,10 @@ export default function AgentLoadingPane({
         </div>
       </div>
 
-      {/* ── Body — loading content crossfades to report content ── */}
+      {/* ── Body - loading content crossfades to report content ── */}
       <div className={styles.body}>
 
-        {/* Loading — only while first-open loading (never when idle/closed) */}
+        {/* Loading - only while first-open loading (never when idle/closed) */}
         {showLoader && (
           <div className={styles.pane} aria-live="polite" aria-busy="true">
             {phase === 'spinning' && (
@@ -93,7 +93,7 @@ export default function AgentLoadingPane({
           </div>
         )}
 
-        {/* Report content — fades in when showReport becomes true */}
+        {/* Report content - fades in when showReport becomes true */}
         {showReport && (
           <div className={styles.reportFadeIn}>
             {reportContent}

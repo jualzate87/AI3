@@ -19,11 +19,11 @@ function isImportReady(docKey: string): boolean {
   return mode === 'api-filed' || mode === 'extracted'
 }
 
-/** All return inputs available in Input return — used in Add source flow. */
+/** All return inputs available in Input return - used in Add source flow. */
 export const REVIEW_INPUT_SCREENS: ReviewInputScreen[] = [
   ...W2_PAYER_TABS.map(t => ({
     id: `w2-${t.key}`,
-    label: `W-2 — ${t.label}`,
+    label: `W-2 - ${t.label}`,
     topTab: 'w2s' as const,
     docKey: t.key,
     formType: 'W-2' as const,
@@ -31,7 +31,7 @@ export const REVIEW_INPUT_SCREENS: ReviewInputScreen[] = [
   })),
   ...DIV_PAYER_TABS.map(t => ({
     id: `div-${t.key}`,
-    label: `1099-DIV — ${t.label}`,
+    label: `1099-DIV - ${t.label}`,
     topTab: '1099-divs' as const,
     docKey: t.key,
     formType: '1099-DIV' as const,
@@ -39,7 +39,7 @@ export const REVIEW_INPUT_SCREENS: ReviewInputScreen[] = [
   })),
   ...INT_PAYER_TABS.map(t => ({
     id: `int-${t.key}`,
-    label: `1099-INT — ${t.label}`,
+    label: `1099-INT - ${t.label}`,
     topTab: '1099-ints' as const,
     docKey: t.key,
     formType: '1099-INT' as const,
@@ -47,7 +47,7 @@ export const REVIEW_INPUT_SCREENS: ReviewInputScreen[] = [
   })),
   {
     id: '1099-r-meridian',
-    label: '1099-R — Meridian Retirement Trust',
+    label: '1099-R - Meridian Retirement Trust',
     topTab: '1099-rs',
     docKey: '1099-r',
     formType: '1099-R',
@@ -55,7 +55,7 @@ export const REVIEW_INPUT_SCREENS: ReviewInputScreen[] = [
   },
   {
     id: '1099-nec-summit',
-    label: '1099-NEC — Summit Advisory Partners',
+    label: '1099-NEC - Summit Advisory Partners',
     topTab: '1099-necs',
     docKey: '1099-nec',
     formType: '1099-NEC',

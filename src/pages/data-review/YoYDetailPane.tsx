@@ -14,7 +14,7 @@ interface YoYDetailPaneProps {
   reviewedCount?: number
   totalItems?: number
   closing?: boolean
-  /** Set of reviewed field names — used to persist reviewed state across remounts */
+  /** Set of reviewed field names - used to persist reviewed state across remounts */
   reviewedFields?: Map<string, { by: string; at: string }>
   issueNumber?: number
   category?: string

@@ -31,7 +31,7 @@ export type Phase1VerifyItem = {
   intPayer?: IntPayer
 }
 
-/** Ordered Verify queue — W-2 flags first, then DIV, INT, 1099-R. */
+/** Ordered Verify queue - W-2 flags first, then DIV, INT, 1099-R. */
 export const PHASE1_VERIFY_QUEUE: Phase1VerifyItem[] = [
   { flagKey: 'ssn-techCircle',           field: 'ssn',             tab: 'w2s' },
   { flagKey: 'wages-techCircle',         field: 'wages',           tab: 'w2s' },
@@ -53,7 +53,7 @@ const DETAIL_TO_1040: Record<string, string> = {
   ordinaryDivs: 'ordinaryDivs',
   qualifiedDivs: 'qualifiedDivs',
   fedTaxWithheld: 'withholding',
-  /** 1099-R Box 4 — highlights 1040 line 25b (combined 1099 withholding) */
+  /** 1099-R Box 4 - highlights 1040 line 25b (combined 1099 withholding) */
   withholding1099: 'withholding',
   'r-fedTaxWithheld': 'withholding',
   iraDistrib: 'iraDistrib',
@@ -63,7 +63,7 @@ const DETAIL_TO_1040: Record<string, string> = {
   necIncome: 'otherIncome',
   'nec-box1': 'otherIncome',
   otherIncome: 'otherIncome',
-  /** 1099-INT Box 8 — tax-exempt interest → line 2a */
+  /** 1099-INT Box 8 - tax-exempt interest → line 2a */
   'taxExempt-unwaverIngFinancial': 'taxExemptInterest',
   withholding: 'w2Withholding',
 }
@@ -119,7 +119,7 @@ export function getBox12SubRowKeys(employer: W2Employer): string[] {
   return []
 }
 
-/** True when the single Phase 1 `box12` flag is cleared — directly or via all sub-rows. */
+/** True when the single Phase 1 `box12` flag is cleared - directly or via all sub-rows. */
 export function isBox12FlagResolved(
   reviewedFields: Map<string, unknown>,
   employer: W2Employer = 'techCircle',
@@ -187,7 +187,7 @@ export function navigationForDetailField(field: string): Pick<Phase1VerifyItem, 
   return null
 }
 
-/** Phase 1 import flags per W-2 employer — keys match DetailFields reviewed-field ids. */
+/** Phase 1 import flags per W-2 employer - keys match DetailFields reviewed-field ids. */
 const W2_PAYER_FLAG_KEYS: Record<W2Employer, readonly string[]> = {
   techCircle: ['ssn-techCircle', 'wages-techCircle', 'box12', 'ein-techCircle'],
   bingEquipment: ['ssn-bingEquipment', 'wages-bingEquipment', 'box12', 'ein-bingEquipment'],
@@ -202,26 +202,26 @@ function isW2PayerFlagResolved(
   return reviewedFields.has(flagKey)
 }
 
-/** Phase 1 import flags per 1099-DIV payer — primary + Northmark carry flags. */
+/** Phase 1 import flags per 1099-DIV payer - primary + Northmark carry flags. */
 const DIV_PAYER_FLAG_KEYS: Record<DivPayer, Phase1FlagKey[]> = {
   tokenFinancial: ['divCollectibles', 'divNonDiv', 'fedTaxWithheld'],
   northmarkIndex: ['ordinaryDivs-northmark'],
   beaconDividend: [],
 }
 
-/** Phase 1 import flags per 1099-R payer — Meridian gross distribution flagged. */
+/** Phase 1 import flags per 1099-R payer - Meridian gross distribution flagged. */
 const R_PAYER_FLAG_KEYS: Record<'meridian', Phase1FlagKey[]> = {
   meridian: ['grossDistrib-meridian'],
 }
 
-/** Phase 1 import flags per 1099-INT payer — only primary payer carries flags. */
+/** Phase 1 import flags per 1099-INT payer - only primary payer carries flags. */
 const INT_PAYER_FLAG_KEYS: Record<IntPayer, Phase1FlagKey[]> = {
   unwaverIngFinancial: ['taxableInterest'],
   harborlineCredit: [],
   cascadeFederal: [],
 }
 
-/** Phase 1 import flags per 1099-NEC payer — Summit Box 1 silent omit. */
+/** Phase 1 import flags per 1099-NEC payer - Summit Box 1 silent omit. */
 const NEC_PAYER_FLAG_KEYS: Record<NecPayer, Phase1FlagKey[]> = {
   summit: ['nec-box1'],
 }
@@ -235,7 +235,7 @@ export function countPhase1FlagsForW2Payer(
   ).length
 }
 
-/** Unresolved W-2 Phase 1 flags across all payers — used for the W-2s top tab badge. */
+/** Unresolved W-2 Phase 1 flags across all payers - used for the W-2s top tab badge. */
 export function countPhase1FlagsForW2Tab(reviewedFields: Map<string, unknown>): number {
   const seen = new Set<string>()
   let count = 0
@@ -273,7 +273,7 @@ export function getTabFlagCounts(reviewedFields: Map<string, unknown>): Record<s
   }
 }
 
-/** Initial unresolved counts (empty reviewed map) — distinguishes “never had flags” from “cleared”. */
+/** Initial unresolved counts (empty reviewed map) - distinguishes “never had flags” from “cleared”. */
 export function getTabInitialFlagCounts(): Record<string, number> {
   return getTabFlagCounts(new Map())
 }

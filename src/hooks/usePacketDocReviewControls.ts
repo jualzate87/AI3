@@ -24,9 +24,9 @@ type UsePacketDocReviewControlsArgs = {
   setActiveIntPayer: (payer: IntPayer) => void
   setSelectedField: (field: string | null) => void
   toggleVerifiedDoc: (docKey: string) => void
-  /** Optional — popout dirty-session tracking */
+  /** Optional - popout dirty-session tracking */
   onAfterMutation?: () => void
-  /** Optional — e.g. open source panel before navigating on DataReviewPage */
+  /** Optional - e.g. open source panel before navigating on DataReviewPage */
   onBeforeNavigate?: () => void
 }
 

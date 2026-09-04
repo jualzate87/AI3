@@ -1,4 +1,4 @@
-/* Return Insights Page — Screen 34 */
+/* Return Insights Page - Screen 34 */
 
 .page {
   background: var(--page\/background\/secondary, #f0f4f6);
@@ -20,7 +20,7 @@
   flex-shrink: 0;
 }
 
-/* Left check navigation — same as CheckReturnPage */
+/* Left check navigation - same as CheckReturnPage */
 .leftNav {
   width: 283px;
   min-width: 283px;
@@ -62,7 +62,7 @@
   background: #f0f4f6;
 }
 
-/* Main content — scrollable insights image */
+/* Main content - scrollable insights image */
 .mainContent {
   flex: 1;
   overflow-y: auto;

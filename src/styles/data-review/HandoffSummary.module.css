@@ -1,4 +1,4 @@
-/* Smart Review Brief — phase checklist + activity log */
+/* Smart Review Brief - phase checklist + activity log */
 
 .brief {
   padding: 0;
@@ -58,7 +58,7 @@
   padding-top: var(--space-component-gap-large, 12px);
 }
 
-/* Conversational assist brief — typography only, flush with panel */
+/* Conversational assist brief - typography only, flush with panel */
 .conversationalBrief {
   display: flex;
   flex-direction: column;

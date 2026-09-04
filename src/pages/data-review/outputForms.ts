@@ -44,17 +44,17 @@ export function outputFormSignoffLabel(formId: OutputFormId): string {
   return opt?.shortLabel ?? formId
 }
 
-/** Reviewer sign-off button label — e.g. "Sign off Form 1040", "Sign off Schedule C". */
+/** Reviewer sign-off button label - e.g. "Sign off Form 1040", "Sign off Schedule C". */
 export function outputFormSignOffButtonLabel(formId: OutputFormId): string {
   if (formId === 'summary') return 'Sign off Return Summary'
   const opt = OUTPUT_FORM_OPTIONS.find(o => o.id === formId)
   if (!opt) return `Sign off ${formId}`
   if (formId === '1040' || formId === 'f8960' || formId === 'f2210') {
-    return `Sign off ${opt.label.split(' — ')[0]}`
+    return `Sign off ${opt.label.split(' - ')[0]}`
   }
   const scheduleMatch = opt.label.match(/^(Schedule \w+)/)
   if (scheduleMatch) return `Sign off ${scheduleMatch[1]}`
-  return `Sign off ${opt.label.split(' — ')[0]}`
+  return `Sign off ${opt.label.split(' - ')[0]}`
 }
 
 export function allRequiredFormsSignedOff(signedOff: Set<string>): boolean {
@@ -64,12 +64,12 @@ export function allRequiredFormsSignedOff(signedOff: Set<string>): boolean {
 export const OUTPUT_FORM_OPTIONS: { id: OutputFormId; label: string; shortLabel: string }[] = [
   { id: 'summary', label: 'Return Summary', shortLabel: 'Summary' },
   { id: '1040', label: 'Form 1040', shortLabel: '1040' },
-  { id: 'sch1', label: 'Schedule 1 — Additional Income', shortLabel: 'Sch 1' },
-  { id: 'schC', label: 'Schedule C — Business', shortLabel: 'Sch C' },
-  { id: 'schA', label: 'Schedule A — Itemized Deductions', shortLabel: 'Sch A' },
-  { id: 'schD', label: 'Schedule D — Capital Gains', shortLabel: 'Sch D' },
-  { id: 'f8960', label: 'Form 8960 — NIIT', shortLabel: '8960' },
-  { id: 'f2210', label: 'Form 2210 — Underpayment', shortLabel: '2210' },
+  { id: 'sch1', label: 'Schedule 1 - Additional Income', shortLabel: 'Sch 1' },
+  { id: 'schC', label: 'Schedule C - Business', shortLabel: 'Sch C' },
+  { id: 'schA', label: 'Schedule A - Itemized Deductions', shortLabel: 'Sch A' },
+  { id: 'schD', label: 'Schedule D - Capital Gains', shortLabel: 'Sch D' },
+  { id: 'f8960', label: 'Form 8960 - NIIT', shortLabel: '8960' },
+  { id: 'f2210', label: 'Form 2210 - Underpayment', shortLabel: '2210' },
 ]
 
 /** Map Phase 2 openForm actions → left-panel form id. */
@@ -178,7 +178,7 @@ const OUTPUT_LINE_ATTEST: Record<string, OutputLineAttest | null> = {
   'f2210-17': { fieldKey: 'amountOwed', toggleable: true },
 }
 
-/** Lines with no mapping entry — attestable only when kind is source. */
+/** Lines with no mapping entry - attestable only when kind is source. */
 export function getOutputLineAttest(
   fieldId: string,
   kind: 'source' | 'calc' = 'calc',

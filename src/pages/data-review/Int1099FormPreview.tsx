@@ -1,7 +1,7 @@
 import styles from '../../styles/data-review/Int1099FormPreview.module.css'
 import { CLIENT_ADDRESS } from '../../data/clientAddress'
 
-/** Unwavering 1099-INT panel preview — FINAL PDF had Georgetown placeholders. */
+/** Unwavering 1099-INT panel preview - FINAL PDF had Georgetown placeholders. */
 const PAYER = {
   name: 'Unwavering Financial LLC',
   street: '800 Capital Way, Suite 1100',
@@ -20,7 +20,7 @@ const FORM = {
 
 export default function Int1099FormPreview() {
   return (
-    <div className={styles.form} role="img" aria-label="Form 1099-INT — Unwavering Financial LLC">
+    <div className={styles.form} role="img" aria-label="Form 1099-INT - Unwavering Financial LLC">
       <div className={styles.topMeta}>
         <span>FDEA1302 10/18/25</span>
         <span className={styles.corrected}>☐ CORRECTED</span>
@@ -105,7 +105,7 @@ export default function Int1099FormPreview() {
       </div>
 
       <div className={styles.footer}>
-        Form 1099-INT (Rev. January 2025) — Unwavering Financial LLC · EIN {PAYER.ein}
+        Form 1099-INT (Rev. January 2025) - Unwavering Financial LLC · EIN {PAYER.ein}
       </div>
     </div>
   )

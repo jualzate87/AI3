@@ -1,5 +1,5 @@
 /**
- * @deprecated Import from `./SourcePopover` — kept for existing call sites.
+ * @deprecated Import from `./SourcePopover` - kept for existing call sites.
  */
 export {
   default,

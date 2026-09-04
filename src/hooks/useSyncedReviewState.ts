@@ -18,7 +18,7 @@ import {
 // tab A is visible when the reviewer opens tab B (same origin). BroadcastChannel
 // + storage events keep open tabs in sync.
 
-/** @deprecated Prefer LiveAmounts — kept for DetailFields prop shims. */
+/** @deprecated Prefer LiveAmounts - kept for DetailFields prop shims. */
 export interface FieldValues {
   withholding: { techCircle: number }
   box12: number
@@ -27,27 +27,27 @@ export interface FieldValues {
 }
 
 export interface ReviewedEntry { by: string; at: string }
-/** Who/when for last check, flag, edit, or doc verify — same shape as reviewed. */
+/** Who/when for last check, flag, edit, or doc verify - same shape as reviewed. */
 export type ActivityEntry = ReviewedEntry
 
 interface SyncedState {
   activeTopTab: TopTab
   activeSubTab: W2Employer
   selectedField: string | null
-  /** All editable return amounts — single source of truth for 1040 recalculation */
+  /** All editable return amounts - single source of truth for 1040 recalculation */
   amounts: LiveAmounts
   reviewedFieldsList: [string, ReviewedEntry][]
   /** Field keys the preparer has edited+saved this session (with who/when) */
   editedFieldsList: [string, ActivityEntry][]
   /** Field keys changed but not yet saved via Save and recalculate */
   unsavedFieldsList: string[]
-  /** Docs marked verified — with who/when */
+  /** Docs marked verified - with who/when */
   verifiedDocsList: [string, ActivityEntry][]
-  /** Phase 1 flag keys auto-cleared when each doc was verified — restored on un-verify */
+  /** Phase 1 flag keys auto-cleared when each doc was verified - restored on un-verify */
   verifiedDocAutoFlagsList: [string, string[]][]
-  /** Summary-row checks (preparer verified against source) — mutually exclusive with flags */
+  /** Summary-row checks (preparer verified against source) - mutually exclusive with flags */
   summaryCheckedFieldsList: [string, ActivityEntry][]
-  /** Summary-row reviewer sign-off confirmations — independent of preparer checks */
+  /** Summary-row reviewer sign-off confirmations - independent of preparer checks */
   reviewerConfirmedFieldsList: [string, ActivityEntry][]
   /** Docs marked verified by preparer */
   reviewerConfirmedDocsList: [string, ActivityEntry][]
@@ -57,17 +57,17 @@ interface SyncedState {
   reviewerConfirmStaleFieldsList: string[]
   /** Manual attestation checkboxes for review checklist (Phase 2 sign-off) */
   manualChecklistItems: Record<string, boolean>
-  /** Declaration milestone completions — who/when for flexible checklist */
+  /** Declaration milestone completions - who/when for flexible checklist */
   completedMilestones: Record<string, MilestoneCompletion>
   /**
    * Summary-row user flags (preparer attention markers).
    * Mutually exclusive with checks. Notes may remain when flag is off.
    */
   summaryFlaggedFieldsList: [string, ActivityEntry][]
-  /** Optional short notes keyed by Summary field id — kept when flag is turned off */
+  /** Optional short notes keyed by Summary field id - kept when flag is turned off */
   summaryFlagNotes: Record<string, string>
   /**
-   * Last flag activity (set/note Done) even after flag is cleared —
+   * Last flag activity (set/note Done) even after flag is cleared -
    * used for lightweight meta display.
    */
   summaryFlagActivity: Record<string, ActivityEntry>
@@ -85,7 +85,7 @@ const CHANNEL_NAME = 'protoc3-data-review-sync'
 // Bump whenever DEFAULT_STATE shape or seed values change so stale sessions reset.
 const STATE_VERSION = 32
 const STORAGE_KEY = 'protoc3-data-review-state-v' + STATE_VERSION
-/** Prior keys — sessionStorage (tab-scoped) and older localStorage versions */
+/** Prior keys - sessionStorage (tab-scoped) and older localStorage versions */
 const LEGACY_STORAGE_KEYS = [
   STORAGE_KEY,
   'protoc3-data-review-state-v29',
@@ -199,10 +199,10 @@ export function sanitizeSyncedState(state: SyncedState): SyncedState {
 }
 export const PREPARER_NAME = 'Sara Chen'
 export const REVIEWER_NAME = 'Jordan Lee'
-/** Storage key for review state — exported for tests and diagnostics */
+/** Storage key for review state - exported for tests and diagnostics */
 export { STORAGE_KEY }
 
-/** C2: who stamps checks/flags/edits — switched when “Open as reviewer” */
+/** C2: who stamps checks/flags/edits - switched when “Open as reviewer” */
 let currentActorName = PREPARER_NAME
 
 export function setReviewActor(name: string) {
@@ -214,7 +214,7 @@ export function getReviewActor(): string {
 }
 
 export { formatActivityTimestamp }
-/** @deprecated Use coerceTimestamp from lib/coerceTimestamp — kept for existing imports */
+/** @deprecated Use coerceTimestamp from lib/coerceTimestamp - kept for existing imports */
 export const coerceActivityAt = coerceTimestamp
 
 function migrateCompletedMilestones(raw: unknown): Record<string, MilestoneCompletion> {
@@ -249,7 +249,7 @@ export function actorInitials(name: string): string {
     .slice(0, 2)
 }
 
-/** Short milestone / checklist attribution — Sara Chen → SC, Jordan Lee → Jordan */
+/** Short milestone / checklist attribution - Sara Chen → SC, Jordan Lee → Jordan */
 export function milestoneActorLabel(name: string): string {
   if (name === PREPARER_NAME) return 'SC'
   if (name === REVIEWER_NAME) return 'Jordan'
@@ -258,7 +258,7 @@ export function milestoneActorLabel(name: string): string {
   return name.split(/\s+/)[0] || name
 }
 
-/** Inline dual-slot trail — preparer muted, reviewer emphasized */
+/** Inline dual-slot trail - preparer muted, reviewer emphasized */
 export function formatDualCheckTrail(
   preparer?: ActivityEntry | null,
   reviewer?: ActivityEntry | null,
@@ -452,7 +452,7 @@ function enforceMutualExclusion(state: SyncedState): SyncedState {
 }
 
 function reconcileVerifiedDocFlags(state: SyncedState): SyncedState {
-  // Mark-as-verified no longer auto-clears Phase 1 flags — keep reviewedFields as persisted.
+  // Mark-as-verified no longer auto-clears Phase 1 flags - keep reviewedFields as persisted.
   return state
 }
 
@@ -471,7 +471,7 @@ function loadInitialState(): SyncedState {
     const raw = readPersistedRaw()
     if (raw) return hydrateSyncedState(raw)
   } catch {
-    // ignore malformed storage — fall through to defaults
+    // ignore malformed storage - fall through to defaults
   }
   return DEFAULT_STATE
 }
@@ -487,7 +487,7 @@ export function applyImportedAmounts(state: SyncedState): SyncedState {
   })
 }
 
-/** Called when import progress reaches 100% — persists imported values for input + review. */
+/** Called when import progress reaches 100% - persists imported values for input + review. */
 export function completeDocumentImport(): SyncedState {
   const raw = readPersistedRaw()
   const current = raw ? hydrateSyncedState(raw) : createDefaultReviewState()
@@ -498,12 +498,12 @@ export function completeDocumentImport(): SyncedState {
     channel.postMessage(next)
     channel.close()
   } catch {
-    // ignore — other tabs will pick up via storage event
+    // ignore - other tabs will pick up via storage event
   }
   return next
 }
 
-/** Fresh review state — used when preparer starts a new Pass 1 session. */
+/** Fresh review state - used when preparer starts a new Pass 1 session. */
 export function createDefaultReviewState(): SyncedState {
   return sanitizeSyncedState({ ...DEFAULT_STATE })
 }
@@ -663,7 +663,7 @@ export function useSyncedReviewState() {
     })
   }
 
-  /** Persist a static/detail field value — marks unsaved until Save and recalculate. */
+  /** Persist a static/detail field value - marks unsaved until Save and recalculate. */
   const setFieldOverride = (fieldKey: string, value: string) => {
     update({
       fieldOverrides: { ...stateRef.current.fieldOverrides, [fieldKey]: value },
@@ -763,7 +763,7 @@ export function useSyncedReviewState() {
     })
   }
 
-  /** Toggle Summary check/confirm — preparer vs reviewer slot based on current actor */
+  /** Toggle Summary check/confirm - preparer vs reviewer slot based on current actor */
   const toggleSummaryChecked = (fieldName: string) => {
     if (isReviewerActor()) {
       toggleSummaryReviewerConfirm(fieldName)
@@ -805,7 +805,7 @@ export function useSyncedReviewState() {
   }
 
   /**
-   * Toggle Summary user flag — clearing check if turning flag on.
+   * Toggle Summary user flag - clearing check if turning flag on.
    * Notes are kept when flagging off so re-flagging can restore them.
    */
   const toggleSummaryFlagged = (fieldName: string) => {
@@ -862,7 +862,7 @@ export function useSyncedReviewState() {
     update({ amounts: nextAmounts })
   }
 
-  /** Convenience — update W-2 wages object shape used by DetailFields. */
+  /** Convenience - update W-2 wages object shape used by DetailFields. */
   const setWages = (wages: { techCircle: number }) => {
     updateAmounts({ wages: wages.techCircle })
   }
@@ -882,7 +882,7 @@ export function useSyncedReviewState() {
     }
     if (typeof value !== 'number') return
     if (key === 'box12') {
-      // Legacy single-amount shim — write into row a; aggregate recomputed in updateAmounts
+      // Legacy single-amount shim - write into row a; aggregate recomputed in updateAmounts
       updateAmounts({
         box12Rows: {
           ...a.box12Rows,
@@ -892,7 +892,7 @@ export function useSyncedReviewState() {
     } else if (key === 'taxableInterest') updateAmounts({ interestUnwavering: value })
     else if (key === 'qualifiedDivs') updateAmounts({ qualifiedDivsToken: value })
     else if (key === 'withholding') {
-      // flat number — treat as W-2 Box 2
+      // flat number - treat as W-2 Box 2
       updateAmounts({ w2Withholding: value })
     }
   }
@@ -1002,7 +1002,7 @@ export function useSyncedReviewState() {
     setActiveIntPayer: (payer: IntPayer) => update({ activeIntPayer: payer }),
     markReviewed,
     markReviewedBulk,
-    /** Set of verified doc keys (presence) — matches prior API */
+    /** Set of verified doc keys (presence) - matches prior API */
     verifiedDocs: verifiedDocKeys,
     verifiedDocsMeta: verifiedDocs,
     toggleVerifiedDoc,

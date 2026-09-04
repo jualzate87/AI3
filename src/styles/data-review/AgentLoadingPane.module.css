@@ -1,4 +1,4 @@
-/* Agent Loading Pane — interim screen while AI processes */
+/* Agent Loading Pane - interim screen while AI processes */
 
 @keyframes panelSlideIn {
   from { opacity: 0; transform: translateX(100%); }
@@ -51,7 +51,7 @@
   animation: panelSlideOut 350ms cubic-bezier(0.4, 0, 0.2, 1) forwards;
 }
 
-/* Header — 60px, identical to AgentReportPane */
+/* Header - 60px, identical to AgentReportPane */
 .header {
   display: flex;
   align-items: center;
@@ -114,7 +114,7 @@
 }
 .iconBtn:hover { background: rgba(57, 58, 61, 0.06); }
 
-/* Pane — centered, fills remaining height, single child at a time */
+/* Pane - centered, fills remaining height, single child at a time */
 .pane {
   flex: 1;
   display: flex;
@@ -171,7 +171,7 @@
   display: block;
 }
 
-/* Text block — fades in as part of the whole group */
+/* Text block - fades in as part of the whole group */
 .greetingText {
   display: flex;
   flex-direction: column;
@@ -198,7 +198,7 @@
   max-width: 260px;
 }
 
-/* ── Body — flex container between header and bottom of panel ── */
+/* ── Body - flex container between header and bottom of panel ── */
 .body {
   flex: 1;
   min-height: 0;

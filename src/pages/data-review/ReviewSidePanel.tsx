@@ -21,7 +21,7 @@ type Props = {
 
 /**
  * In-rail chassis for Comments and Review summary.
- * Fills the unified DataReview right panel — never a fixed overlay.
+ * Fills the unified DataReview right panel - never a fixed overlay.
  */
 export default function ReviewSidePanel({
   title,

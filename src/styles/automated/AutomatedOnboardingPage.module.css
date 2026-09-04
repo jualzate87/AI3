@@ -28,7 +28,7 @@
   background: var(--color-container-background-primary, #ffffff);
 }
 
-/* Scrollable chat content — fills space above input */
+/* Scrollable chat content - fills space above input */
 .chatScrollArea {
   flex: 1;
   overflow-y: auto;

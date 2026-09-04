@@ -30,7 +30,7 @@ export const NEC_PAYER_TABS: { key: NecPayer; label: string }[] = [
   { key: 'summit', label: 'Summit Advisory Partners' },
 ]
 
-// 1099-NEC — Summit Advisory Partners (Jessica Drake TY 2025)
+// 1099-NEC - Summit Advisory Partners (Jessica Drake TY 2025)
 const PAYER_DATA = {
   ein: '47-2201893',
   name: 'Summit Advisory Partners LLC',
@@ -47,7 +47,7 @@ const RECIPIENT_DATA = {
 }
 
 const FORM_DATA = {
-  // Box 1 — silent omit (error #10): source doc shows $24,000; return starts at $0
+  // Box 1 - silent omit (error #10): source doc shows $24,000; return starts at $0
   box1_nonemployeeComp: '0',
   box4_fedTaxWithheld:  '',
   box5_stateTaxId:      '',
@@ -79,9 +79,9 @@ interface DetailFieldsNecProps {
   onVerifyDoc?: (docKey: string) => void
   onAddFieldNote?: (text: string, context?: string) => void
   importReadOnly?: boolean
-  /** Phase 1 import flags — field key → validation message */
+  /** Phase 1 import flags - field key → validation message */
   flaggedFields?: Record<string, string>
-  /** Input return mode — plain editable fields without verify header */
+  /** Input return mode - plain editable fields without verify header */
   variant?: DetailFieldsVariant
   showEmptyWhenZero?: boolean
   /** Navigate to Schedule C gross receipts when NEC flows to the return */

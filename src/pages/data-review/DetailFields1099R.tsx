@@ -25,7 +25,7 @@ export const R_PAYER_TABS: { key: RPayer; label: string }[] = [
   { key: 'meridian', label: 'Meridian Retirement Trust' },
 ]
 
-// 1099-R — Meridian Retirement Trust (Jessica Drake TY 2025)
+// 1099-R - Meridian Retirement Trust (Jessica Drake TY 2025)
 const PAYER_DATA = {
   ein: '22-3334444',
   name: 'Meridian Retirement Trust',
@@ -41,12 +41,12 @@ const RECIPIENT_DATA = {
 }
 
 const FORM_DATA = {
-  box1_grossDistrib:    '150,000', // Box 1 — Gross distribution (source; flagged)
-  box2a_taxableAmt:     '100,000', // Box 2a — Taxable amount on return (source $150,000)
-  box3_capitalGain:     '',        // Box 3 — Capital gain (in box 2a)
-  box4_fedTaxWithheld:  '',        // Box 4 — Dropped on return (source $30,000)
-  box5_employeeContrib: '',        // Box 5 — Employee contributions
-  box7_distCode:        '7',       // Box 7 — Distribution code(s)
+  box1_grossDistrib:    '150,000', // Box 1 - Gross distribution (source; flagged)
+  box2a_taxableAmt:     '100,000', // Box 2a - Taxable amount on return (source $150,000)
+  box3_capitalGain:     '',        // Box 3 - Capital gain (in box 2a)
+  box4_fedTaxWithheld:  '',        // Box 4 - Dropped on return (source $30,000)
+  box5_employeeContrib: '',        // Box 5 - Employee contributions
+  box7_distCode:        '7',       // Box 7 - Distribution code(s)
 }
 
 interface DetailFields1099RProps {
@@ -72,7 +72,7 @@ interface DetailFields1099RProps {
   onAddFieldNote?: (text: string, context?: string) => void
   importReadOnly?: boolean
   flaggedFields?: Record<string, string>
-  /** Input return mode — plain editable fields without verify header */
+  /** Input return mode - plain editable fields without verify header */
   variant?: DetailFieldsVariant
   showEmptyWhenZero?: boolean
   onViewSourceDocuments?: () => void

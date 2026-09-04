@@ -11,7 +11,7 @@ import '@ids-ts/button/dist/main.css'
 import detailStyles from '../../styles/data-review/DetailFields.module.css'
 
 type Props = {
-  /** Full button label — e.g. "Sign off Form 1040" */
+  /** Full button label - e.g. "Sign off Form 1040" */
   signOffLabel: string
   signoffKey: string
   signedOff: boolean
@@ -50,7 +50,7 @@ export default function FormSignOffControl({
           type="button"
           className={`${detailStyles.verifiedBadgeBtn} ${className ?? ''}`}
           onClick={handleToggle}
-          aria-label={`${signOffLabel} — click to undo sign-off`}
+          aria-label={`${signOffLabel} - click to undo sign-off`}
         >
           <Badge
             shape="round"

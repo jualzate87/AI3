@@ -143,7 +143,7 @@ export default function WorkspacePage() {
                 </B2>
               </div>
               <B3 as="p" className={styles.cardBody}>
-                Type <code className={styles.code}>/token-lookup</code> followed by what you need —
+                Type <code className={styles.code}>/token-lookup</code> followed by what you need -
                 a color, spacing value, or typography style.
               </B3>
             </div>

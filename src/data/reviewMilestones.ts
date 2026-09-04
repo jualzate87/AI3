@@ -1,5 +1,5 @@
 /**
- * Milestone-based review checklist — flexible single- or dual-person completion.
+ * Milestone-based review checklist - flexible single- or dual-person completion.
  * Milestones map to CPA review phases from Phase 1–5 source doc (client setup → final check).
  */
 import type { ActivityEntry } from '../hooks/useSyncedReviewState'
@@ -50,7 +50,7 @@ export interface ReviewMilestone {
 export interface ResolvedMilestone extends ReviewMilestone {
   complete: boolean
   completion?: MilestoneCompletion
-  /** Declaration items only — current actor may toggle */
+  /** Declaration items only - current actor may toggle */
   canToggle: boolean
   locked: boolean
 }
@@ -102,7 +102,7 @@ export const MILESTONE_PHASE_DESCRIPTIONS: Record<MilestonePhase, string> = {
   5: 'YoY variance, AI diagnostics, reviewer confirmations, and sign-off readiness.',
 }
 
-/** Representative subset for Jessica Drake 1040 — sourced from CPA milestone doc. */
+/** Representative subset for Jessica Drake 1040 - sourced from CPA milestone doc. */
 export const REVIEW_MILESTONES: ReviewMilestone[] = [
   // Phase 1
   {
@@ -275,7 +275,7 @@ export const REVIEW_MILESTONES: ReviewMilestone[] = [
   {
     id: 'niit-form-8960',
     phase: 4,
-    title: 'NIIT — Form 8960 reviewed',
+    title: 'NIIT - Form 8960 reviewed',
     description: 'Net investment income tax calculation confirmed.',
     completionType: 'linked',
     eligibleActor: 'reviewer',
@@ -638,7 +638,7 @@ export function signOffBlockerFromMilestones(
   return 'Complete the milestone checklist before you sign off.'
 }
 
-/** Count milestones completed by each role — for dual-person brief bullets */
+/** Count milestones completed by each role - for dual-person brief bullets */
 export function countMilestonesByRole(state: MilestoneState): {
   preparer: number
   reviewer: number

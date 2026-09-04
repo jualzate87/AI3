@@ -1,4 +1,4 @@
-/* Return Header — Figma node 29815:48823 */
+/* Return Header - Figma node 29815:48823 */
 
 .header {
   display: flex;
@@ -21,7 +21,7 @@
   flex-shrink: 0;
 }
 
-/* Product / brand name — Honey Tax Accounting (ALL CAPS via text-transform) */
+/* Product / brand name - Honey Tax Accounting (ALL CAPS via text-transform) */
 .businessName {
   font-family: var(--font-family-heading);
   font-size: var(--font-size-component-medium);
@@ -39,7 +39,7 @@
   gap: 0;
 }
 
-/* Help / Notifications / Settings — icon + label */
+/* Help / Notifications / Settings - icon + label */
 .navBtn {
   display: flex;
   align-items: center;
@@ -72,7 +72,7 @@
   flex-shrink: 0;
 }
 
-/* OIAA Avatar — 30px circle */
+/* OIAA Avatar - 30px circle */
 .oiaaAvatar {
   width: 30px;
   height: 30px;
@@ -201,7 +201,7 @@
   gap: 8px;
 }
 
-/* Avatar stack — D (#236cff), H (#7c00f6), +1 (#eceef1) */
+/* Avatar stack - D (#236cff), H (#7c00f6), +1 (#eceef1) */
 .avatarStack {
   display: flex;
   align-items: center;
@@ -232,7 +232,7 @@
   margin-left: -6px;
 }
 
-/* Ghost dropdown buttons — Select Assignee / Select Status */
+/* Ghost dropdown buttons - Select Assignee / Select Status */
 .ghostBtn {
   display: flex;
   align-items: center;
@@ -314,7 +314,7 @@
 .tab:hover { color: #21262a; }
 .tab svg { color: #5d686f; flex-shrink: 0; }
 
-/* Active tab — #21262a text, 2px #205ea3 underline */
+/* Active tab - #21262a text, 2px #205ea3 underline */
 .tabActive {
   color: #21262a;
   border-bottom-color: #205ea3;

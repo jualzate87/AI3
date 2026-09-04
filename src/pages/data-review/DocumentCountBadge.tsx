@@ -13,7 +13,7 @@ type DocumentCountBadgeProps = {
   'aria-label'?: string
 }
 
-/** Neutral numeric badge — unreviewed document counts (not import flags). */
+/** Neutral numeric badge - unreviewed document counts (not import flags). */
 export default function DocumentCountBadge({
   count,
   className,

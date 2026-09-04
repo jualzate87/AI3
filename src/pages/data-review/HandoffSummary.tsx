@@ -53,7 +53,7 @@ type Props = {
   amounts?: LiveAmounts
   /** Slide-in animation for conversational brief on reviewer welcome */
   briefEnterAnim?: boolean
-  /** Pass 1 preparer entry — imports not started yet; show Review imports CTA */
+  /** Pass 1 preparer entry - imports not started yet; show Review imports CTA */
   importsPending?: boolean
   onReviewImports?: () => void
 }
@@ -95,7 +95,7 @@ function ChecklistStatusIcon({
   const isComplete = item.checked
   const canToggle = !!onToggle && (item.canToggle ?? !item.locked)
 
-  /* Auto-verified / linked complete — filled green check, not interactive */
+  /* Auto-verified / linked complete - filled green check, not interactive */
   if (item.locked && isComplete) {
     return (
       <span className={styles.checklistIconSlot} aria-hidden>
@@ -104,7 +104,7 @@ function ChecklistStatusIcon({
     )
   }
 
-  /* Locked incomplete (open items) — muted checkmark, not interactive */
+  /* Locked incomplete (open items) - muted checkmark, not interactive */
   if (item.locked && !isComplete) {
     return (
       <span className={styles.checklistIconSlot} aria-label={`${item.title} pending`}>
@@ -113,7 +113,7 @@ function ChecklistStatusIcon({
     )
   }
 
-  /* Declaration items — same checkmark-button language as output-form attest columns */
+  /* Declaration items - same checkmark-button language as output-form attest columns */
   return (
     <span className={styles.checklistIconSlot}>
       <button
@@ -374,7 +374,7 @@ function ReviewLogTab({
     <div className={styles.tabPanel}>
       {executiveBrief && <ConversationalBriefCard brief={executiveBrief} enterAnim={briefEnterAnim} />}
       <p className={styles.activityIntro}>
-        Shared activity trail — updates sync in real time for preparer and reviewer.
+        Shared activity trail - updates sync in real time for preparer and reviewer.
       </p>
       <div className={styles.activityStack}>
         {categories.map(cat => (
@@ -397,7 +397,7 @@ function ChecklistTab({
   return (
     <div className={styles.tabPanel}>
       <p className={styles.activityIntro}>
-        Shared milestone checklist — either role can complete eligible items. Attribution shows who checked each item.
+        Shared milestone checklist - either role can complete eligible items. Attribution shows who checked each item.
       </p>
       <div className={styles.phaseStack}>
         {phases.map(phase => (

@@ -100,7 +100,7 @@ function fieldCheckState(
 
 interface LeftPanel1040Props {
   selectedField?: string | null
-  /** 1040 row highlight — may differ from selectedField when a detail key maps to a 1040 line */
+  /** 1040 row highlight - may differ from selectedField when a detail key maps to a 1040 line */
   highlightField?: string | null
   onFieldClick?: (fieldName: string | null) => void
   total1a?: number
@@ -108,11 +108,11 @@ interface LeftPanel1040Props {
   /** When true: clicking a field shows YoY badge, not blue popover */
   yoyExpanded?: boolean
   reviewedFields?: Set<string> | Map<string, unknown>
-  /** Preparer verified summary rows — mutually exclusive with user flags */
+  /** Preparer verified summary rows - mutually exclusive with user flags */
   checkedFields?: Set<string>
   /** Who/when for preparer verify on each field */
   checkedMeta?: Map<string, ActivityEntry>
-  /** Reviewer confirmed summary rows — independent of preparer checks */
+  /** Reviewer confirmed summary rows - independent of preparer checks */
   reviewerConfirmedFields?: Set<string>
   /** Who/when for reviewer confirm on each field */
   reviewerConfirmedMeta?: Map<string, ActivityEntry>
@@ -124,13 +124,13 @@ interface LeftPanel1040Props {
   onTogglePreparerCheck?: (fieldName: string) => void
   /** Toggle reviewer confirm slot (reviewer only) */
   onToggleReviewerConfirm?: (fieldName: string) => void
-  /** C2 review role — drives per-form sign-off affordance */
+  /** C2 review role - drives per-form sign-off affordance */
   reviewRole?: 'preparer' | 'reviewer'
   /** Per-form reviewer sign-off keys (e.g. schedule-c, form-1040) */
   reviewerSignedOffForms?: Set<string>
   reviewerSignedOffFormsMeta?: Map<string, ActivityEntry>
   onToggleFormSignOff?: (signoffKey: string) => void
-  /** Summary-row user flags — mutually exclusive with checks */
+  /** Summary-row user flags - mutually exclusive with checks */
   flaggedFields?: Set<string>
   /** Who/when for currently active flags */
   flaggedMeta?: Map<string, ActivityEntry>
@@ -142,9 +142,9 @@ interface LeftPanel1040Props {
   flagActivity?: Record<string, ActivityEntry>
   /** Persist / clear the short note for a flagged Summary row */
   onSetFlagNote?: (fieldName: string, note: string) => void
-  /** When true: this field is highlighted orange (active agent issue card) — takes precedence over blue */
+  /** When true: this field is highlighted orange (active agent issue card) - takes precedence over blue */
   issueField?: string | null
-  /** Active Phase 2 diagnostic — drives schedule-form line highlights */
+  /** Active Phase 2 diagnostic - drives schedule-form line highlights */
   activeDiagnosticKey?: Phase2IssueKey | null
   /** Called when user clicks a source link in the field popover */
   onViewSource?: (fieldName: string, sourceLabel?: string) => void
@@ -169,7 +169,7 @@ interface LeftPanel1040Props {
   /** One-shot coach tip on output form dropdown after Phase 2 diagnostics complete */
   outputFormsCoachOpen?: boolean
   onDismissOutputFormsCoach?: () => void
-  /** One-shot coach tip on Summary output amounts — click to see source docs */
+  /** One-shot coach tip on Summary output amounts - click to see source docs */
   outputSourcesCoachOpen?: boolean
   onDismissOutputSourcesCoach?: () => void
   /**
@@ -177,9 +177,9 @@ interface LeftPanel1040Props {
    * (open flags / note contexts). null = show all.
    */
   focusFields?: Set<string> | null
-  /** Check return embed — hide internal form dropdown; nav drives form selection */
+  /** Check return embed - hide internal form dropdown; nav drives form selection */
   showFormSelector?: boolean
-  /** Check return embed — tighter layout inside main panel */
+  /** Check return embed - tighter layout inside main panel */
   embeddedInCheckReturn?: boolean
 }
 
@@ -194,7 +194,7 @@ function meetsRowTintThreshold(field: string, yoy: Record<string, number>): bool
   return Math.abs(pct) >= 15 && taxImpact > 300
 }
 
-// Badge color based purely on absolute magnitude (no green — green = reviewed only)
+// Badge color based purely on absolute magnitude (no green - green = reviewed only)
 // Applied to ALL YoY fields (badges on every YoY field, tints only on threshold-meeting ones)
 function badgeColor(pct: number): string {
   const abs = Math.abs(pct)
@@ -203,7 +203,7 @@ function badgeColor(pct: number): string {
   return styles.badgeRed
 }
 
-// Row background tint — only for fields exceeding the significance threshold
+// Row background tint - only for fields exceeding the significance threshold
 function rowYoyClass(pct: number): string {
   const abs = Math.abs(pct)
   if (abs <= 30) return styles.rowYoyOrange
@@ -264,7 +264,7 @@ export default function LeftPanel1040({
   showFormSelector = true,
   embeddedInCheckReturn = false,
 }: LeftPanel1040Props) {
-  // Hooks first — keep order stable across renders
+  // Hooks first - keep order stable across renders
   const [internalOutputFormId, setInternalOutputFormId] = useState<OutputFormId>('summary')
   const [expanded, setExpanded] = useState<Set<string>>(new Set(['income', 'deductions', 'tax', 'payments']))
   const [summaryFlyout, setSummaryFlyout] = useState<{
@@ -293,7 +293,7 @@ export default function LeftPanel1040({
     if (controlledOutputFormId === undefined) setInternalOutputFormId(id)
   }
 
-  // Keep the first-run sources tip visible — scroll W-2 wages into view when it opens
+  // Keep the first-run sources tip visible - scroll W-2 wages into view when it opens
   useEffect(() => {
     if (!outputSourcesCoachOpen || outputFormId !== 'summary') return
     const row = document.querySelector('[data-field-row="wages"]') as HTMLElement | null
@@ -473,7 +473,7 @@ export default function LeftPanel1040({
   }
 
   /**
-   * Open Summary CY info flyout only — never navigates to / shows a source document.
+   * Open Summary CY info flyout only - never navigates to / shows a source document.
    * Document open is reserved for a source-card click inside TaxControlDocPopover.
    * All modes share Interest-style chrome (source / calc / note).
    */
@@ -491,7 +491,7 @@ export default function LeftPanel1040({
 
     const rect = getPopoverAnchorRect(el)
 
-    // Tax & Credits — total tax flyout includes effective rate and YoY narrative
+    // Tax & Credits - total tax flyout includes effective rate and YoY narrative
     if (field === 'totalTax') {
       const { items, footnote } = buildTaxCreditsPopoverContent({
         totalTax,
@@ -594,7 +594,7 @@ export default function LeftPanel1040({
       return
     }
 
-    // 3) Note-only / capital gain — Interest chrome, no FieldPopover YoY / flair
+    // 3) Note-only / capital gain - Interest chrome, no FieldPopover YoY / flair
     if (fieldHasPopover(field) || origin?.note || meta?.note) {
       const items: SummaryInfoItem[] = []
       const note = origin?.note ?? meta?.note
@@ -625,7 +625,7 @@ export default function LeftPanel1040({
     }
   }
 
-  /** Row click selects/highlights only — popovers open from the (i) button. */
+  /** Row click selects/highlights only - popovers open from the (i) button. */
   const handleRowClick = (field: string, _rowEl?: HTMLElement | null) => {
     onFieldClick?.(field)
     if (popoverField && popoverField !== field) {
@@ -653,7 +653,7 @@ export default function LeftPanel1040({
     onFieldClick?.(null)
   }
 
-  // Close popover UI only — keep field selected so highlight persists during navigation
+  // Close popover UI only - keep field selected so highlight persists during navigation
   const handleDismissPopoverKeepSelection = () => {
     setPopoverField(null)
     setPopoverRect(null)
@@ -662,11 +662,11 @@ export default function LeftPanel1040({
 
   /**
    * kind:
-   *   'source'  — value comes from imported documents (W-2, 1099, etc.)
+   *   'source'  - value comes from imported documents (W-2, 1099, etc.)
    *              → outlined box, subtle blue tint
-   *   'calc'    — computed from other lines on this form
+   *   'calc'    - computed from other lines on this form
    *              → lighter box, italic value
-   *   undefined — blank / no value
+   *   undefined - blank / no value
    */
   const Row = ({
     field,
@@ -784,8 +784,8 @@ export default function LeftPanel1040({
           <div className={styles.cellLabelInner}>
             <span className={styles.cellLabelPrimary}>{label}</span>
             {needsReconfirm && (
-              <span className={styles.reconfirmBadge} title="Preparer verified, then value was edited — confirm again for sign-off">
-                Edited since verify — confirm again
+              <span className={styles.reconfirmBadge} title="Preparer verified, then value was edited - confirm again for sign-off">
+                Edited since verify - confirm again
               </span>
             )}
           </div>
@@ -802,7 +802,7 @@ export default function LeftPanel1040({
                 )}
               </div>
 
-              {/* Info — immediately adjacent to amount, before prep/rev columns */}
+              {/* Info - immediately adjacent to amount, before prep/rev columns */}
               {!!field && fieldHasPopover(field) && value !== undefined && (
                 <Tooltip
                   text={kind === 'calc' ? 'View subtotals' : 'View sources'}
@@ -866,7 +866,7 @@ export default function LeftPanel1040({
     </tr>
   )
 
-  // Prior-year lookup — directly from document values (single source of truth)
+  // Prior-year lookup - directly from document values (single source of truth)
   const py = (_current: number, field: string): number | null => {
     return PRIOR_YEAR[field] ?? null
   }
@@ -877,7 +877,7 @@ export default function LeftPanel1040({
     return { diff, pct }
   }
 
-  // Card view data — categories with rows
+  // Card view data - categories with rows
   const tableCategories = [
     {
       key: 'income', label: 'Income', icon: '💰',
@@ -893,16 +893,16 @@ export default function LeftPanel1040({
         ...(necOnReturn
           ? [{ line: '8', label: 'Other income', sub: '1099-NEC · Box 1', field: 'otherIncome', curr: otherIncome, kind: 'source' as const }]
           : []),
-        // 'Total income' (Line 9) omitted — same value as section header total
+        // 'Total income' (Line 9) omitted - same value as section header total
       ],
     },
     {
       key: 'deductions', label: 'Deductions', icon: '📋',
       totalField: 'taxableIncome', totalCurr: taxableIncome,
       rows: [
-        // AGI (Line 11) omitted — equals Income total shown in section header above
+        // AGI (Line 11) omitted - equals Income total shown in section header above
         { line: '12', label: deductionMethod === 'itemized' ? 'Itemized deductions' : 'Standard deduction',  sub: deductionMethod === 'itemized' ? 'From Schedule A' : 'Single filer', field: 'stdDeduction', curr: deductionTaken,  kind: 'calc' as const },
-        // Taxable income (Line 15) omitted — same value as this section header total
+        // Taxable income (Line 15) omitted - same value as this section header total
       ],
     },
     {
@@ -992,7 +992,7 @@ export default function LeftPanel1040({
       </div>
       )}
 
-      {/* ── SUMMARY TABLE VIEW — Figma ProConnect style ── */}
+      {/* ── SUMMARY TABLE VIEW - Figma ProConnect style ── */}
       {view === 'table' && (
         <div className={styles.summaryWrapper}>
           <div className={styles.summaryCard}>
@@ -1004,7 +1004,7 @@ export default function LeftPanel1040({
               </div>
             </div>
 
-            {/* Column headers — fixed widths match .summaryCurrVal / Prior / Diff / Pct / EndActions */}
+            {/* Column headers - fixed widths match .summaryCurrVal / Prior / Diff / Pct / EndActions */}
             <div className={styles.summaryColHeaders}>
               <div className={styles.summaryColSpacer} />
               <div className={styles.summaryColValues}>
@@ -1026,7 +1026,7 @@ export default function LeftPanel1040({
                 const isOpen = expanded.has(cat.key)
                 return (
                   <div key={cat.key}>
-                    {/* Section header row — div (not button) so info (i) can nest without invalid HTML */}
+                    {/* Section header row - div (not button) so info (i) can nest without invalid HTML */}
                     <div
                       className={styles.summarySectionRow}
                       role="button"
@@ -1137,7 +1137,7 @@ export default function LeftPanel1040({
                       const isBlue     = isSelected && !isIssue
                       const clickable  = !!row.field
                       const hasPopover = !!row.field && fieldHasPopover(row.field)
-                      // System Phase 1 import attention — informational only; not the user flag
+                      // System Phase 1 import attention - informational only; not the user flag
                       const hasImportAttention = showSummaryImportAttention() && !!row.field && summaryFieldHasUnresolvedFlags(
                         row.field,
                         reviewedFields instanceof Map ? reviewedFields : new Map([...reviewedFields].map(k => [k, true])),
@@ -1181,7 +1181,7 @@ export default function LeftPanel1040({
                           data-field-row={row.field || undefined}
                           onMouseDown={clickable ? (e) => e.stopPropagation() : undefined}
                           onClick={clickable ? () => {
-                            // Selection only — Sources / flyouts open from (i) or source links
+                            // Selection only - Sources / flyouts open from (i) or source links
                             onFieldClick?.(row.field!)
                           } : undefined}
                         >
@@ -1192,12 +1192,12 @@ export default function LeftPanel1040({
                               </span>
                               <span className={styles.summarySubNote}>Line {row.line} · {row.sub}</span>
                               {needsReconfirm && (
-                                <span className={styles.reconfirmBadge}>Edited since verify — confirm again</span>
+                                <span className={styles.reconfirmBadge}>Edited since verify - confirm again</span>
                               )}
                             </div>
                           </div>
                           <div className={styles.summaryRowRight}>
-                            {/* Current year — value + info affordance (info stays here for drilldown) */}
+                            {/* Current year - value + info affordance (info stays here for drilldown) */}
                             <div className={styles.summaryCurrVal}>
                               <span
                                 className={`${styles.summaryCurrValText} ${row.kind === 'calc' ? styles.summaryCurrValCalc : ''} ${isBlue ? styles.summaryCurrValBlue : ''} ${isOrange ? styles.summaryCurrValOrange : ''}`}
@@ -1261,7 +1261,7 @@ export default function LeftPanel1040({
                                 ? `${pctChg < 0 ? '−' : ''}${Math.abs(pctChg)}%`
                                 : ''}
                             </span>
-                            {/* Comment + flag + check — always three equal slots on data rows */}
+                            {/* Comment + flag + check - always three equal slots on data rows */}
                             <div className={styles.summaryRowEndActions}>
                               <OutputRowActions
                                 className={styles.outputRowEndActionsCommentFlag}
@@ -1403,7 +1403,7 @@ export default function LeftPanel1040({
       )}
 
 
-      {/* Summary info flyout — Interest card style for source / calc / note */}
+      {/* Summary info flyout - Interest card style for source / calc / note */}
       {summaryFlyout && summaryFlyoutRect && (
         <TaxControlDocPopover
           rowLabel={summaryFlyout.label}
@@ -1487,14 +1487,14 @@ export default function LeftPanel1040({
           <div className={styles.irsHeader}>
             <div className={styles.irsLeft}>
               <div className={styles.irsFormCode}>Form 1040</div>
-              <div className={styles.irsDept}>Department of the Treasury — Internal Revenue Service</div>
+              <div className={styles.irsDept}>Department of the Treasury - Internal Revenue Service</div>
               <div className={styles.irsTitle}>U.S. Individual Income Tax Return</div>
               <div className={styles.irsSubtitle}>For calendar year 2025, or other tax year beginning _____________, 2025, ending _____________ , 20____</div>
             </div>
             <div className={styles.irsRight}>
               <div className={styles.irsYear}>2025</div>
               <div className={styles.irsOmb}>OMB No. 1545-0074</div>
-              <div className={styles.irsUseOnlyBox}>IRS Use Only — Do not write or staple in this space.</div>
+              <div className={styles.irsUseOnlyBox}>IRS Use Only - Do not write or staple in this space.</div>
             </div>
           </div>
 
@@ -1630,7 +1630,7 @@ export default function LeftPanel1040({
           </table>
 
           <div className={styles.formPageFooter}>
-            Page 1 of 2 — Continue to Tax and Credits
+            Page 1 of 2 - Continue to Tax and Credits
           </div>
 
         </div>
@@ -1638,7 +1638,7 @@ export default function LeftPanel1040({
         </div>
       </div>
 
-      {/* ── Field popover — fixed-positioned so it escapes overflow:hidden ── */}
+      {/* ── Field popover - fixed-positioned so it escapes overflow:hidden ── */}
       {popoverField && popoverRect && (
         <FieldPopover
           fieldName={popoverField}

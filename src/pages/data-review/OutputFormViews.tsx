@@ -31,14 +31,14 @@ function FormHeader({
     <div className={styles.irsHeader}>
       <div className={styles.irsLeft}>
         <div className={styles.irsFormCode}>Form {formCode}</div>
-        <div className={styles.irsDept}>Department of the Treasury — Internal Revenue Service</div>
+        <div className={styles.irsDept}>Department of the Treasury - Internal Revenue Service</div>
         <div className={styles.irsTitle}>{title}</div>
         <div className={styles.irsSubtitle}>For calendar year {taxYear}, or other tax year beginning _____________, {taxYear}, ending _____________ , 20____</div>
       </div>
       <div className={styles.irsRight}>
         <div className={styles.irsYear}>{taxYear}</div>
         <div className={styles.irsOmb}>OMB No. 1545-0074</div>
-        <div className={styles.irsUseOnlyBox}>IRS Use Only — Do not write or staple in this space.</div>
+        <div className={styles.irsUseOnlyBox}>IRS Use Only - Do not write or staple in this space.</div>
       </div>
     </div>
   )
@@ -56,7 +56,7 @@ function TaxpayerStrip({ ssn }: { ssn: string }) {
           </div>
           <div className={styles.infoField}>
             <span className={styles.infoLabel}>Social security number</span>
-            <span className={styles.infoValue}>{ssn || '—'}</span>
+            <span className={styles.infoValue}>{ssn || '-'}</span>
           </div>
           <div className={`${styles.infoField} ${styles.taxpayerGridWide}`}>
             <span className={styles.infoLabel}>Home address</span>
@@ -222,8 +222,8 @@ function LineRow({
             <span className={styles.lineNote}>{note}</span>
           ) : null}
           {needsReconfirm && (
-            <span className={styles.reconfirmBadge} title="Preparer verified, then value was edited — confirm again for sign-off">
-              Edited since verify — confirm again
+            <span className={styles.reconfirmBadge} title="Preparer verified, then value was edited - confirm again for sign-off">
+              Edited since verify - confirm again
             </span>
           )}
         </div>
@@ -356,7 +356,7 @@ function Schedule1View({ live, ssn, ...row }: { live: LiveReturnTotals; ssn: str
           {...row}
           live={live}
           line="3"
-          label="Business income or (loss) — Schedule C"
+          label="Business income or (loss) - Schedule C"
           value={live.schedule1BusinessIncome}
           kind="calc"
           note={live.necOnReturn ? 'From Schedule C net profit' : 'No Schedule C income on return yet'}
@@ -364,7 +364,7 @@ function Schedule1View({ live, ssn, ...row }: { live: LiveReturnTotals; ssn: str
         />
         {blank('4', 'Other gains or (losses)', 'sch1-4')}
         {blank('5', 'Rental real estate, royalties, partnerships (Sch E)', 'sch1-5')}
-        {blank('6', 'Farm income or (loss) — Schedule F', 'sch1-6')}
+        {blank('6', 'Farm income or (loss) - Schedule F', 'sch1-6')}
         {blank('7', 'Unemployment compensation', 'sch1-7')}
         <LineRow
           {...row}
@@ -379,7 +379,7 @@ function Schedule1View({ live, ssn, ...row }: { live: LiveReturnTotals; ssn: str
           {...row}
           live={live}
           line="10"
-          label="Total additional income — to Form 1040, line 8"
+          label="Total additional income - to Form 1040, line 8"
           value={live.schedule1BusinessIncome}
           bold
           kind="calc"
@@ -414,7 +414,7 @@ function ScheduleCView({
         <div className={styles.infoRow}>
           <div className={styles.infoField} style={{ flex: 2 }}>
             <span className={styles.infoLabel}>Principal business / profession</span>
-            <span className={styles.infoValue}>Consulting — Summit Advisory Partners</span>
+            <span className={styles.infoValue}>Consulting - Summit Advisory Partners</span>
           </div>
           <div className={styles.infoField}>
             <span className={styles.infoLabel}>Business code</span>
@@ -510,7 +510,7 @@ function ScheduleCView({
           live={live}
           amounts={amounts}
           line="31"
-          label="Net profit (or loss) — to Schedule 1, line 3"
+          label="Net profit (or loss) - to Schedule 1, line 3"
           value={live.schCNetProfit}
           kind="calc"
           bold
@@ -585,7 +585,7 @@ function ScheduleAView({
           note={
             amounts.mortgageInterest > 0
               ? 'From Form 1098'
-              : 'Form 1098 not in packet — client confirmed mortgage interest paid'
+              : 'Form 1098 not in packet - client confirmed mortgage interest paid'
           }
           fieldId="schA-8a"
         />
@@ -614,7 +614,7 @@ function ScheduleAView({
           {...row}
           live={live}
           amounts={amounts}
-          line="—"
+          line="-"
           label={`Standard deduction (single)`}
           value={live.stdDeduction}
           kind="calc"
@@ -627,8 +627,8 @@ function ScheduleAView({
           line="1040-12"
           label={
             live.deductionMethod === 'itemized'
-              ? 'Using itemized — larger than standard'
-              : 'Using standard — larger than itemized'
+              ? 'Using itemized - larger than standard'
+              : 'Using standard - larger than itemized'
           }
           value={live.deductionTaken}
           kind="calc"
@@ -671,13 +671,13 @@ function ScheduleDView({ live, ssn, ...row }: { live: LiveReturnTotals; ssn: str
           {...row}
           live={live}
           line="16"
-          label="Combined net capital gain (or loss) — to Form 1040, line 7"
+          label="Combined net capital gain (or loss) - to Form 1040, line 7"
           value={live.capitalGain}
           kind="calc"
           bold
           note={
             live.capitalGain === 0
-              ? 'No 1099-B / Form 8949 in packet — prior year had $126,750 capital gain'
+              ? 'No 1099-B / Form 8949 in packet - prior year had $126,750 capital gain'
               : undefined
           }
           fieldId="schD-16"
@@ -691,7 +691,7 @@ function Form8960View({ live, ssn, ...row }: { live: LiveReturnTotals; ssn: stri
   const overThreshold = live.totalIncome > NIIT_AGI_THRESHOLD
   return (
     <div className={`${styles.formDoc} ${styles.formDocDigitized}`}>
-      <FormHeader formCode="8960" title="Net Investment Income Tax — Individuals" />
+      <FormHeader formCode="8960" title="Net Investment Income Tax - Individuals" />
       <TaxpayerStrip ssn={ssn} />
       <FormTable>
         <LineRow
@@ -778,7 +778,7 @@ function Form8960View({ live, ssn, ...row }: { live: LiveReturnTotals; ssn: stri
           value={live.niitTax}
           kind="calc"
           bold
-          note={overThreshold ? 'Flows to Form 1040 Schedule 2 / total tax' : 'AGI below threshold — no NIIT'}
+          note={overThreshold ? 'Flows to Form 1040 Schedule 2 / total tax' : 'AGI below threshold - no NIIT'}
           fieldId="f8960-17"
         />
       </FormTable>
@@ -849,7 +849,7 @@ function Form2210View({ live, ssn, ...row }: { live: LiveReturnTotals; ssn: stri
           bold
           note={
             live.underpaymentAmount > 0
-              ? 'Payments below safe harbor — penalty may apply'
+              ? 'Payments below safe harbor - penalty may apply'
               : 'Payments meet or exceed safe harbor'
           }
           fieldId="f2210-17"
@@ -911,7 +911,7 @@ export default function OutputFormViews({
   onFieldClick,
   formSelector,
 }: OutputFormViewsProps) {
-  const ssn = live.employeeSsn || '—'
+  const ssn = live.employeeSsn || '-'
   const [flyoutField, setFlyoutField] = useState<string | null>(null)
   const [flyoutRect, setFlyoutRect] = useState<DOMRect | null>(null)
   const isReviewerRole = reviewRole === 'reviewer'

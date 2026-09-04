@@ -1,5 +1,5 @@
 /* ─────────────────────────────────────────────
-   YoY Detail Pane — slides in from right (page-navigate feel)
+   YoY Detail Pane - slides in from right (page-navigate feel)
    Figma node: 29985:91127
 ───────────────────────────────────────────── */
 
@@ -30,7 +30,7 @@
   animation: slideOutToRight 200ms cubic-bezier(0.35, 0, 0.25, 1) forwards;
 }
 
-/* ── Header — same as AgentReportPane ── */
+/* ── Header - same as AgentReportPane ── */
 .header {
   display: flex;
   align-items: center;
@@ -84,7 +84,7 @@
 }
 .iconBtn:hover { background: rgba(57, 58, 61, 0.06); }
 
-/* ── Sticky nav strip (back + progress + prev/next) — lives outside scroll area ── */
+/* ── Sticky nav strip (back + progress + prev/next) - lives outside scroll area ── */
 .stickyNav {
   flex-shrink: 0;
   display: flex;
@@ -94,7 +94,7 @@
   background: var(--color-container-background-primary, #ffffff);
 }
 
-/* ── Scrollable pane — min-height:0 required for flex overflow scroll ── */
+/* ── Scrollable pane - min-height:0 required for flex overflow scroll ── */
 .pane {
   flex: 1 1 0%;
   min-height: 0;
@@ -154,7 +154,7 @@
   color: #21262a;
 }
 
-/* Inline progress bar + label — sits on the right of the nav row */
+/* Inline progress bar + label - sits on the right of the nav row */
 .navProgress {
   display: flex;
   align-items: center;
@@ -165,7 +165,7 @@
   max-width: 220px;
 }
 
-/* ── Issue navigation bar — labeled prev/next buttons ── */
+/* ── Issue navigation bar - labeled prev/next buttons ── */
 .issueNavBar {
   display: flex;
   align-items: center;
@@ -353,7 +353,7 @@
   margin: 0;
 }
 
-/* ── Issue subheader — title + summary, clean separator treatment ── */
+/* ── Issue subheader - title + summary, clean separator treatment ── */
 .issueHero {
   display: flex;
   flex-direction: column;
@@ -420,7 +420,7 @@
   padding-left: 16px;
 }
 
-/* ── Uniform section block — every section uses this ── */
+/* ── Uniform section block - every section uses this ── */
 .section {
   display: flex;
   flex-direction: column;
@@ -483,7 +483,7 @@
   column-gap: var(--space-component-gap-medium, 8px);
 }
 
-/* Field | value cols | Fix button — action column stays content-sized */
+/* Field | value cols | Fix button - action column stays content-sized */
 .tableRowFix {
   grid-template-columns: minmax(0, 1.15fr) minmax(0, 0.95fr) minmax(0, 0.95fr) auto;
 }
@@ -565,7 +565,7 @@
   font-weight: 700;
 }
 
-/* Delta % badge — pill, matches 1040 YoY badge style */
+/* Delta % badge - pill, matches 1040 YoY badge style */
 .deltaBadge {
   display: inline-flex;
   align-items: center;
@@ -600,7 +600,7 @@
   gap: 8px;
 }
 
-/* ── Sources — Figma Source card (32554:101249) ── */
+/* ── Sources - Figma Source card (32554:101249) ── */
 .sourcesGrid {
   display: flex;
   flex-wrap: wrap;
@@ -779,7 +779,7 @@
   flex-wrap: wrap;
 }
 
-/* ── Prev / Next navigation — right-aligned within the action button row ── */
+/* ── Prev / Next navigation - right-aligned within the action button row ── */
 .navArrowRow {
   display: flex;
   align-items: center;
@@ -797,7 +797,7 @@
   padding-bottom: 8px;
 }
 
-/* Reviewed state button — IDS positive, small button sizing */
+/* Reviewed state button - IDS positive, small button sizing */
 .reviewedBtn {
   display: inline-flex;
   align-items: center;
@@ -816,10 +816,10 @@
   flex-shrink: 0;
 }
 
-/* Next issue row — right-aligned, matches IssueDetailPane */
-/* nextRow removed — prev/next navigation moved to the nav row header */
+/* Next issue row - right-aligned, matches IssueDetailPane */
+/* nextRow removed - prev/next navigation moved to the nav row header */
 
-/* ── Input area — identical to AgentReportPane ── */
+/* ── Input area - identical to AgentReportPane ── */
 .inputArea {
   flex-shrink: 0;
   display: flex;

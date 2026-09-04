@@ -87,7 +87,7 @@
   flex-shrink: 0;
 }
 
-/* IDS Checkbox — blue color + vertical alignment fix */
+/* IDS Checkbox - blue color + vertical alignment fix */
 .page :global(.Checkbox-labelWrapper-c421220) {
   margin-bottom: 0;
   align-items: center;
@@ -96,7 +96,7 @@
   padding-top: 0 !important;
   align-items: center;
 }
-/* Checkbox — override IDS RcCheckbox teal with #21262A */
+/* Checkbox - override IDS RcCheckbox teal with #21262A */
 .page :global(input[type="checkbox"]) {
   accent-color: #21262a !important;
   width: 16px !important;
@@ -550,7 +550,7 @@
   text-align: center;
 }
 
-/* ── Upload zone — normal ── */
+/* ── Upload zone - normal ── */
 .uploadZone {
   display: flex;
   flex-direction: column;
@@ -563,7 +563,7 @@
   box-sizing: border-box;
 }
 
-/* Drag-over state — mirrors the Figma drag-active blue */
+/* Drag-over state - mirrors the Figma drag-active blue */
 .uploadZoneDragging {
   border-color: #205ea3 !important;
   background: #eff6ff !important;
@@ -615,7 +615,7 @@
   color: #393a3d;
 }
 
-/* ── Upload zone — drag active (step 3) ── */
+/* ── Upload zone - drag active (step 3) ── */
 .uploadZoneActive {
   display: flex;
   flex-direction: column;
@@ -804,7 +804,7 @@
   flex-shrink: 0;
 }
 
-/* "Show less / Show more" — plain regular-weight text matching Figma */
+/* "Show less / Show more" - plain regular-weight text matching Figma */
 .showToggle {
   font-family: var(--font-family-component) !important;
   font-size: 14px;

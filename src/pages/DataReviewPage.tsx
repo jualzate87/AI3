@@ -136,10 +136,10 @@ import img1040PriorPage2 from '../assets/jessica-1040-2024-variant-2.png'
 import styles from '../styles/data-review/DataReviewPage.module.css'
 import dragStyles from '../styles/data-review/DragHandle.module.css'
 
-/** Source-doc panel slide timing — matches --duration-appear/disappear-emphasize-fast */
+/** Source-doc panel slide timing - matches --duration-appear/disappear-emphasize-fast */
 const SOURCE_PANEL_ENTER_MS = 500
 const SOURCE_PANEL_EXIT_MS = 500
-/** Summary show/hide — matches --duration-transform-emphasize-fast */
+/** Summary show/hide - matches --duration-transform-emphasize-fast */
 const SUMMARY_TOGGLE_MS = 500
 /** Collapsed "Show Summary" edge tab width */
 const SHOW_SUMMARY_HANDLE_WIDTH = 44
@@ -153,7 +153,7 @@ const RIGHT_PANEL_MIN_WIDTH = 360
 /** Matches DragHandle.module.css .handleVertical width */
 const PANEL_DRAG_HANDLE_WIDTH = 16
 
-/** Right-rail content mode — `ai+sources` shows source docs and AI diagnostics side-by-side. */
+/** Right-rail content mode - `ai+sources` shows source docs and AI diagnostics side-by-side. */
 type RightPanelMode = 'closed' | 'sources' | 'ai' | 'ai+sources' | 'comments' | 'summary'
 
 function verifyDocKeyForInput(input: ReviewInputScreen): string {
@@ -195,8 +195,8 @@ export default function DataReviewPage() {
     navigate('/smart-return', { replace: true })
   }, [entry, entryValid, searchParams, navigate])
 
-  // Source-doc review state — flags, reviewed fields, active tab, editable field
-  // values — persisted in localStorage via useSyncedReviewState (cross-tab handoff).
+  // Source-doc review state - flags, reviewed fields, active tab, editable field
+  // values - persisted in localStorage via useSyncedReviewState (cross-tab handoff).
   const {
     activeTopTab, setActiveTopTab,
     activeSubTab, setActiveSubTab,
@@ -279,7 +279,7 @@ export default function DataReviewPage() {
   const [previewHeight, setPreviewHeight] = useState(40)
   /** Source panel detached to popout window */
   const [poppedOut, setPoppedOut] = useState(false)
-  // Unified right rail — one shell, one active mode (sources | ai | comments | summary)
+  // Unified right rail - one shell, one active mode (sources | ai | comments | summary)
   const isPreparerEntry = entry === 'input-return' && roleParam !== 'reviewer'
   const [rightPanelMode, setRightPanelMode] = useState<RightPanelMode>('closed')
   // Whether the right panel is animating out (slide-out before mode → closed)
@@ -290,14 +290,14 @@ export default function DataReviewPage() {
   const [rightPanelAnimating, setRightPanelAnimating] = useState(false)
   // Fade-out for comments / summary close
   const [panelClosing, setPanelClosing] = useState(false)
-  // Whether YoY analysis is expanded (screen 4) — drives -15% badge on 1040
+  // Whether YoY analysis is expanded (screen 4) - drives -15% badge on 1040
   const [yoyExpanded, setYoyExpanded] = useState(false)
-  // Whether user navigated to source docs from the agent panel — shows back link
+  // Whether user navigated to source docs from the agent panel - shows back link
   const [fromAgent, setFromAgent] = useState(false)
   // Which agent subview to restore when going back to agent insights
   // 'overview' = report overview, 'yoyDetail' = YoY detail pane open
   const [agentSubView, setAgentSubView] = useState<'overview' | 'yoyDetail'>('overview')
-  // Notes / comments — persisted for C2 handoff (localStorage for cross-tab reviewer)
+  // Notes / comments - persisted for C2 handoff (localStorage for cross-tab reviewer)
   const NOTES_KEY = 'protoc3-notes'
   const SESSION_STARTED_KEY = 'protoc3-session-started'
   const SESSION_IMPORTS_KEY = 'protoc3-imports-started'
@@ -326,7 +326,7 @@ export default function DataReviewPage() {
     return []
   }
   const [notes, setNotes] = useState<Note[]>(loadNotes)
-  // C2: multi-pass handoff — summary content when rightPanelMode === 'summary'
+  // C2: multi-pass handoff - summary content when rightPanelMode === 'summary'
   const [reviewPass, setReviewPass] = useState<1 | 2>(() =>
     entry === 'review-return' && startReviewParam ? 2 : 1,
   )
@@ -398,14 +398,14 @@ export default function DataReviewPage() {
 
   // The import/OCR flags owned by Phase 1. Each key matches the reviewed-field key
   // emitted by the DetailFields "Edit+Save" / "Mark as correct" controls.
-  // Counter of unresolved import flags — never below 0
+  // Counter of unresolved import flags - never below 0
   const phase1Remaining = countPhase1Remaining(reviewedFields)
   const phase1Complete = phase1Remaining === 0
   const phase1FlagsTotal = PHASE1_FLAG_KEYS.length
   const phase1FlagsResolved = phase1FlagsTotal - phase1Remaining
   // Per-document unresolved counts for PeelTab badges (toolbar uses unreviewed doc count)
   const tabFlagCounts = getTabFlagCounts(reviewedFields)
-  // PeelTab per-payer badges — unresolved Phase 1 import flags only (mirrors tabFlagCounts)
+  // PeelTab per-payer badges - unresolved Phase 1 import flags only (mirrors tabFlagCounts)
   const divPayerFieldCounts: Record<DivPayer, number> = Object.fromEntries(
     DIV_PAYER_TABS.map(({ key: p }) => [p, countPhase1FlagsForDivPayer(p, reviewedFields)])
   ) as Record<DivPayer, number>
@@ -466,7 +466,7 @@ export default function DataReviewPage() {
   const flagsCleared = phase1Complete
   const docsReviewComplete = unreviewedDocCount === 0
   const phase1FullyComplete = docsReviewComplete
-  // Phase 2 diagnostics progress — same dismiss rules AgentReportPane uses, so
+  // Phase 2 diagnostics progress - same dismiss rules AgentReportPane uses, so
   // resolving Phase 1 flags / editing amounts that fix an insight keeps the banner in sync.
   const phase2Progress = getPhase2Progress({
     reviewedFields,
@@ -488,7 +488,7 @@ export default function DataReviewPage() {
   const summaryToggleTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
   /** Tracks prior right-rail open state for empty-canvas auto-restore. */
   const prevRightPanelOpenRef = useRef(false)
-  /** Populated below — lets closeRightPanel restore outputs without reordering callbacks. */
+  /** Populated below - lets closeRightPanel restore outputs without reordering callbacks. */
   const handleShowSummaryRef = useRef<() => void>(() => {})
   const show1040Ref = useRef(show1040)
   show1040Ref.current = show1040
@@ -497,7 +497,7 @@ export default function DataReviewPage() {
     if (summaryToggleTimerRef.current) clearTimeout(summaryToggleTimerRef.current)
   }, [])
 
-  // Derived — single source of truth for which rail content is active
+  // Derived - single source of truth for which rail content is active
   const diagnosticsSourceSplit = rightPanelMode === 'ai+sources'
   const rightPanelOpen = rightPanelMode !== 'closed' || rightPanelExiting || panelClosing
   const rightPanelVisible = rightPanelMode === 'sources' || diagnosticsSourceSplit
@@ -569,7 +569,7 @@ export default function DataReviewPage() {
     }
   }, [rightPanelMode, setSelectedField])
 
-  /** Ref populated below — lets early handlers open diagnostics+sources split. */
+  /** Ref populated below - lets early handlers open diagnostics+sources split. */
   const openDiagnosticsSourceSplitRef = useRef<() => void>(() => {})
 
   const ensureSourcePanelVisible = useCallback(() => {
@@ -633,7 +633,7 @@ export default function DataReviewPage() {
     setOutputSourcesCoach(false)
   }, [])
 
-  // First tip as soon as review starts: pink pointer on Summary (i) — no panel open
+  // First tip as soon as review starts: pink pointer on Summary (i) - no panel open
   useEffect(() => {
     if (phase !== 'import' || !show1040) return
     if (readCoachTipShown('outputSourcesFirst')) return
@@ -641,7 +641,7 @@ export default function DataReviewPage() {
     setOutputSourcesCoach(true)
   }, [phase, show1040])
 
-  // Second tip: Hide output panel — after first tip is dismissed, when Return Summary + Sources are both open
+  // Second tip: Hide output panel - after first tip is dismissed, when Return Summary + Sources are both open
   useEffect(() => {
     if (phase !== 'import' || !bothPanelsOpen) return
     if (readCoachTipShown('hideSummary')) return
@@ -672,10 +672,10 @@ export default function DataReviewPage() {
     }
   }, [show1040, coachTip, dismissCoachTip])
 
-  // Field that the agent flagged as an issue — drives orange highlight mode
+  // Field that the agent flagged as an issue - drives orange highlight mode
   // Set when navigating to source docs from any issue detail pane
   const [activeIssueField, setActiveIssueField] = useState<string | null>(null)
-  /** Phase 2 diagnostic with an open detail pane — output highlight follows this when set. */
+  /** Phase 2 diagnostic with an open detail pane - output highlight follows this when set. */
   const [activeDiagnosticKey, setActiveDiagnosticKey] = useState<Phase2IssueKey | null>(null)
   const activeDiagnosticKeyRef = useRef<Phase2IssueKey | null>(null)
   activeDiagnosticKeyRef.current = activeDiagnosticKey
@@ -703,7 +703,7 @@ export default function DataReviewPage() {
   const agentOutputHighlightActive =
     agentView === 'report' || agentView === 'closing' || fromAgent
 
-  // issueField: Summary / 1040 row for the active diagnostic (orange) — takes precedence over blue selection
+  // issueField: Summary / 1040 row for the active diagnostic (orange) - takes precedence over blue selection
   const issueField = (() => {
     if (!agentOutputHighlightActive) return null
     if (agentSubView === 'yoyDetail') return 'wages'
@@ -894,12 +894,12 @@ export default function DataReviewPage() {
     openSourceDocumentById(docId, selectedField, setSelectedField, 'document')
   }, [selectedField, setSelectedField])
 
-  /** From FieldPopover source row — open detached source-document review. */
+  /** From FieldPopover source row - open detached source-document review. */
   const handleNavigateSource = useCallback((source: FieldOriginSource) => {
     openSourceDocumentFromFieldOrigin(source, setSelectedField, 'input')
   }, [setSelectedField])
 
-  /** ProtoC: 1040 row click selects/highlights only — does not open Sources until user follows a source link or banner CTA. */
+  /** ProtoC: 1040 row click selects/highlights only - does not open Sources until user follows a source link or banner CTA. */
   const handle1040FieldClick = useCallback((field1040: string | null) => {
     if (!field1040) {
       setSelectedField(null)
@@ -1134,7 +1134,7 @@ export default function DataReviewPage() {
     openSummaryPanel('awaiting-reviewer', summaryOpts)
   }
 
-  /** Jump from summary — peer panels replace Summary when they would overlap */
+  /** Jump from summary - peer panels replace Summary when they would overlap */
   const handleHandoffJump = useCallback((jump: HandoffJump) => {
     if (jump.type === 'notesPane' || jump.type === 'note') {
       if (jump.type === 'note') setFocusNoteId(jump.noteId)
@@ -1194,7 +1194,7 @@ export default function DataReviewPage() {
     openRightPanel,
   ])
 
-  /** Canonical chrome entry — Review log (pass-aware content, unified two-tab drawer) */
+  /** Canonical chrome entry - Review log (pass-aware content, unified two-tab drawer) */
   const handleOpenSummaryReport = () => {
     if (reviewRole === 'reviewer') {
       if (reviewPass === 1) {
@@ -1231,12 +1231,12 @@ export default function DataReviewPage() {
     })
   }
 
-  /** Switch demo chrome to reviewer — returns to SmartReturn landing */
+  /** Switch demo chrome to reviewer - returns to SmartReturn landing */
   const handleSwitchToReviewerRole = () => {
     navigate('/smart-return?role=reviewer')
   }
 
-  /** Header CTA — reviewer lands directly on Pass 2 strategic checklist */
+  /** Header CTA - reviewer lands directly on Pass 2 strategic checklist */
   const handleReviewReturn = () => {
     setReviewerReviewStarted(true)
     setReviewRole('reviewer')
@@ -1267,7 +1267,7 @@ export default function DataReviewPage() {
   }
 
   // Preparer entry (Import confirmation / Input return tab): Return Summary full width, panels closed.
-  // Only wipe synced state on first-time session or explicit Reset demo — not on Input ↔ Data review hops.
+  // Only wipe synced state on first-time session or explicit Reset demo - not on Input ↔ Data review hops.
   useEffect(() => {
     if (!isPreparerEntry) return
 
@@ -1537,7 +1537,7 @@ export default function DataReviewPage() {
     singlePersonMode,
   })
 
-  /** Source Documents toolbar badge — unreviewed packet docs (preparer Phase 1). */
+  /** Source Documents toolbar badge - unreviewed packet docs (preparer Phase 1). */
   const sourceDocsBadgeCount = (() => {
     if (reviewRole === 'preparer' && inImportPhase) {
       return unreviewedDocCount
@@ -1548,7 +1548,7 @@ export default function DataReviewPage() {
     return 0
   })()
 
-  /** Checklist pending badge — reviewer only (Review log toolbar). */
+  /** Checklist pending badge - reviewer only (Review log toolbar). */
   const isReviewerBriefing = (summaryOpts.voice ?? 'self') === 'reviewer-briefing'
   const showChecklist = !isReviewerBriefing
 
@@ -1594,7 +1594,7 @@ export default function DataReviewPage() {
 
   // Resize drag between the document preview and detail fields. Axis is frozen
   // for the gesture (matches flexDirection at pointer-down). previewHeight
-  // only controls the split ratio — never orientation.
+  // only controls the split ratio - never orientation.
   const handlePreviewDrag = useCallback((e: React.PointerEvent) => {
     const split = splitPaneRef.current ?? rightRef.current
     if (!split) return
@@ -1638,7 +1638,7 @@ export default function DataReviewPage() {
     if (previewSideBySide) setFreezePreviewSideBySide(true)
 
     // Frame 1: lock left at its current pixel width (right switches to flex-fill
-    // via leftAnimWidth !== null) — visually identical, no reflow jump.
+    // via leftAnimWidth !== null) - visually identical, no reflow jump.
     setLeftAnimWidth(leftW)
     if (summaryToggleTimerRef.current) clearTimeout(summaryToggleTimerRef.current)
 
@@ -1713,7 +1713,7 @@ export default function DataReviewPage() {
     if (rightPanelMode === 'sources') closeRightPanel()
   }, [rightPanelMode, closeRightPanel, handleShowSummary])
 
-  /** Phase 2: keep AI diagnostics open while showing source docs — hide Summary/outputs. */
+  /** Phase 2: keep AI diagnostics open while showing source docs - hide Summary/outputs. */
   const openDiagnosticsSourceSplit = useCallback(() => {
     setFromAgent(true)
     setAgentView('report')
@@ -1740,7 +1740,7 @@ export default function DataReviewPage() {
   /**
    * Lighter empty-canvas fix: when the user closes the last right-rail panel while
    * outputs are hidden, restore Return Summary. Only fires on panel close (open→closed),
-   * not when hiding outputs with the panel already closed — preserves full-width Sources
+   * not when hiding outputs with the panel already closed - preserves full-width Sources
    * and coach-tip hide/show flows.
    */
   useEffect(() => {
@@ -1774,25 +1774,25 @@ export default function DataReviewPage() {
     handleShowSummary,
   ])
 
-  // ProtoC: preparer skips welcome — lands in import phase, Return Summary full width, panels closed
+  // ProtoC: preparer skips welcome - lands in import phase, Return Summary full width, panels closed
   if (!entryValid) return null
 
   const summaryPanelLabel = 'Review log'
   const isReviewerConfirmMode = reviewRole === 'reviewer'
-  /** ProtoC Phase 1 banner — visible for entire preparer import phase (CTA before sources open). */
+  /** ProtoC Phase 1 banner - visible for entire preparer import phase (CTA before sources open). */
   const showPreparerImportPhase = inImportPhase && reviewRole === 'preparer'
   /** Preparer Phase 1: hide Source documents until review starts (banner CTA is the entry). */
   const showSourceDocsToolbar =
     (reviewRole !== 'reviewer' || reviewerReviewStarted) &&
     !(showPreparerImportPhase && !importsStarted)
-  /** Badge on toolbar after imports start — flag count lives on Phase1Banner. */
+  /** Badge on toolbar after imports start - flag count lives on Phase1Banner. */
   const showSourceDocsToolbarBadge =
     showSourceDocsToolbar && importsStarted && sourceDocsBadgeCount > 0
-  /** Left outputs share row with Smart review brief — allow flex shrink (avoid 795px + 755px overflow). */
+  /** Left outputs share row with Smart review brief - allow flex shrink (avoid 795px + 755px overflow). */
   const outputsShareWithBrief = summaryPanelOpen && show1040
   return (
     <div className={styles.page}>
-      {/* Header — title + peer icon controls (Sign-off lives on Step 2 banner) */}
+      {/* Header - title + peer icon controls (Sign-off lives on Step 2 banner) */}
       <div className={styles.headerBlock}>
         <div className={styles.header}>
           <div className={styles.headerLeft}>
@@ -1874,7 +1874,7 @@ export default function DataReviewPage() {
               )}
             </button>
             )}
-            {/* ProtoC: AI Review is Phase 2 only — hidden during Phase 1 (import accuracy) */}
+            {/* ProtoC: AI Review is Phase 2 only - hidden during Phase 1 (import accuracy) */}
             {!inImportPhase && (
               <button
                 className={`${styles.intuitIntelBtn} ${agentPanelActive ? styles.intuitIntelBtnActive : ''}`}
@@ -1897,7 +1897,7 @@ export default function DataReviewPage() {
         </div>
       </div>
 
-      {/* ProtoC Phase 1 — Import Accuracy banner (preparer only) */}
+      {/* ProtoC Phase 1 - Import Accuracy banner (preparer only) */}
       {showPreparerImportPhase && (
         <Phase1Banner
           flagsResolved={phase1FlagsResolved}
@@ -1915,7 +1915,7 @@ export default function DataReviewPage() {
         />
       )}
 
-      {/* ProtoC Phase 2 — AI Diagnostics banner. Shares Phase1Banner's visual language
+      {/* ProtoC Phase 2 - AI Diagnostics banner. Shares Phase1Banner's visual language
           (Intuit Assist icon, title/subtitle, progress) so both phases feel like one
           continuous guided experience rather than two disconnected screens. */}
       {!inImportPhase && (
@@ -1946,14 +1946,14 @@ export default function DataReviewPage() {
         />
       )}
 
-      {/* Body — left panel + drag handle + right panel + agent panel */}
+      {/* Body - left panel + drag handle + right panel + agent panel */}
       <div className={styles.body} ref={bodyRef}>
-        {/* ProtoC Phase 1: 1040 is minimized by default — collapsed to a compact button
+        {/* ProtoC Phase 1: 1040 is minimized by default - collapsed to a compact button
             pinned near the top of the column. Expanding grows the panel horizontally, so
             the chevron points right (expand) / left (collapse) rather than up/down. Left
             panel stays mounted and animates width/opacity (same pattern as .rightPanel)
             so the transition is smooth. */}
-        {/* Collapsed "Show outputs" edge tab — available in import and AI phases */}
+        {/* Collapsed "Show outputs" edge tab - available in import and AI phases */}
         <div
           className={`${styles.form1040HandleWrap} ${coachTip === 'showOutputs' && !show1040 ? styles.form1040HandleWrapCoach : ''}`}
           style={{
@@ -2088,7 +2088,7 @@ export default function DataReviewPage() {
             }}
           />
           </div>
-          {/* Hide outputs — symmetric edge tab when Summary + Sources share the row */}
+          {/* Hide outputs - symmetric edge tab when Summary + Sources share the row */}
           <div
             className={`${styles.form1040HideHandleWrap} ${coachTip === 'hideSummary' && bothPanelsOpen ? styles.form1040HideHandleWrapCoach : ''}`}
             style={{
@@ -2122,7 +2122,7 @@ export default function DataReviewPage() {
           </div>
         </div>
 
-        {/* Left/right drag handle — stays mounted and collapses width with Summary
+        {/* Left/right drag handle - stays mounted and collapses width with Summary
             so the gutter doesn't pop out of the row mid-animation. */}
         {rightPanelOpen && !rightPanelExiting && show1040 && !hideRightRailForPopout && (
               <div
@@ -2143,7 +2143,7 @@ export default function DataReviewPage() {
               </div>
             )}
 
-            {/* Unified right rail — one shell; inner content switches by rightPanelMode */}
+            {/* Unified right rail - one shell; inner content switches by rightPanelMode */}
             {!hideRightRailForPopout && (
             <div
               className={`${styles.rightPanel} ${diagnosticsSourceSplit ? styles.splitRail : ''} ${rightPanelAnimating ? styles.rightPanelEntering : ''} ${rightPanelExiting ? styles.rightPanelExiting : ''} ${rightPanelFills ? styles.rightPanelFills : ''}`}
@@ -2170,9 +2170,9 @@ export default function DataReviewPage() {
                 }
               >
               <>
-              {/* Source panel header — title left; Close on right */}
+              {/* Source panel header - title left; Close on right */}
               <div className={styles.sourcePanelHeader}>
-                {/* "Back to agent insights" — hidden when AI panel is already visible beside sources */}
+                {/* "Back to agent insights" - hidden when AI panel is already visible beside sources */}
                 {!inImportPhase && fromAgent && !diagnosticsSourceSplit ? (
                   <button
                     className={styles.agentBackBtn}
@@ -2250,7 +2250,7 @@ export default function DataReviewPage() {
                 />
               ) : (
               <>
-              {/* Peel tabs — payer switcher for multi-payer doc types */}
+              {/* Peel tabs - payer switcher for multi-payer doc types */}
               {activeTopTab === '1099-divs' && (
                 <PeelTab
                   tabs={DIV_PAYER_TABS.map(t => ({
@@ -2370,7 +2370,7 @@ export default function DataReviewPage() {
                 />
               </div>
 
-              {/* Drag handle — vertical (col-resize) side by side, horizontal (row-resize) stacked */}
+              {/* Drag handle - vertical (col-resize) side by side, horizontal (row-resize) stacked */}
               <div
                 className={previewSideBySide ? dragStyles.handleVertical : dragStyles.handleHorizontal}
                 onPointerDown={handlePreviewDrag}
@@ -2383,7 +2383,7 @@ export default function DataReviewPage() {
               </>
               )}
 
-              {/* Detail fields — switches based on active tab */}
+              {/* Detail fields - switches based on active tab */}
               <div className={styles.detailsPane}>
               {activeTopTab === 'w2s' && (
                 <DetailFields
@@ -2667,8 +2667,8 @@ export default function DataReviewPage() {
                         openDiagnosticsSourceSplit()
                       }}
                       onNavigateToTab={(tab, subTab, field, questionnaireResponseId, focus) => {
-                        // Summary-only CTAs (e.g. NIIT “Summary — investment lines”):
-                        // switch to Summary, highlight the CY line, scroll it into view —
+                        // Summary-only CTAs (e.g. NIIT “Summary - investment lines”):
+                        // switch to Summary, highlight the CY line, scroll it into view -
                         // do not open Sources on a stale tab.
                         if (!tab && field) {
                           setSelectedField(field)

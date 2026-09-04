@@ -1,4 +1,4 @@
-// App.tsx — Router shell. Skills manage the imports and PAGES array. Do not edit manually.
+// App.tsx - Router shell. Skills manage the imports and PAGES array. Do not edit manually.
 import { HashRouter, Routes, Route, Navigate, useLocation } from 'react-router-dom'
 import ErrorBoundary from './ErrorBoundary'
 import HomePage from './pages/HomePage'

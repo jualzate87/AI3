@@ -4,9 +4,9 @@ import { Button } from '@ids-ts/button'
 import '@ids-ts/button/dist/main.css'
 import styles from '../../styles/data-review/LeftPanel1040.module.css'
 
-/** Session-scoped — survives refresh within a tab but resets when Phase 1 flags reopen. */
+/** Session-scoped - survives refresh within a tab but resets when Phase 1 flags reopen. */
 export const TAX_CONTROL_MODAL_KEY = 'smartReviewProtoC:taxControlModalDismissed'
-/** Legacy ProtoA/ProtoC key — clear so prior deploys don't block the modal forever. */
+/** Legacy ProtoA/ProtoC key - clear so prior deploys don't block the modal forever. */
 const LEGACY_TAX_CONTROL_MODAL_KEY = 'taxControlModalDismissed'
 
 export function readTaxControlModalDismissed(): boolean {

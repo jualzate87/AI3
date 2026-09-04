@@ -1,4 +1,4 @@
-/* Shared right-rail chassis — Comments + Review summary.
+/* Shared right-rail chassis - Comments + Review summary.
    Fills the unified DataReview right rail (not a fixed overlay). */
 
 @keyframes sidePanelFadeIn {
@@ -28,7 +28,7 @@
   pointer-events: none;
 }
 
-/* Header chrome — matches AI Review 60px bar */
+/* Header chrome - matches AI Review 60px bar */
 .header {
   display: flex;
   align-items: center;

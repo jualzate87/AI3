@@ -104,7 +104,7 @@
 }
 .breadcrumbBtn:hover { color: #205ea3; }
 
-/* Center card — green checkmark + content, vertically centered */
+/* Center card - green checkmark + content, vertically centered */
 .card {
   flex: 1;
   display: flex;

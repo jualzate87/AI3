@@ -79,7 +79,7 @@ export default function PriorYear1040Panel() {
     }
   }, [isDragging])
 
-  // ── Trackpad pinch-to-zoom — non-passive to allow preventDefault ──
+  // ── Trackpad pinch-to-zoom - non-passive to allow preventDefault ──
   useEffect(() => {
     const el = imageAreaRef.current
     if (!el) return
@@ -98,7 +98,7 @@ export default function PriorYear1040Panel() {
 
   return (
     <div ref={containerRef} className={styles.container}>
-      {/* Document image — height controlled by split */}
+      {/* Document image - height controlled by split */}
       <div className={styles.docSection} style={{ height: `${docHeightPct}%` }}>
         <div
           ref={imageAreaRef}
@@ -107,8 +107,8 @@ export default function PriorYear1040Panel() {
           onMouseDown={onMouseDown}
         >
           <div style={{ position: 'relative', width: `${zoom}%`, lineHeight: 0, flexShrink: 0 }}>
-            <img src={img1040PriorPage1} alt="Form 1040 (2024) page 1 — Jessica Drake" className={docStyles.documentImage} draggable={false} />
-            <img src={img1040PriorPage2} alt="Form 1040 (2024) page 2 — Jessica Drake" className={docStyles.documentImage} draggable={false} />
+            <img src={img1040PriorPage1} alt="Form 1040 (2024) page 1 - Jessica Drake" className={docStyles.documentImage} draggable={false} />
+            <img src={img1040PriorPage2} alt="Form 1040 (2024) page 2 - Jessica Drake" className={docStyles.documentImage} draggable={false} />
           </div>
         </div>
         <div className={docStyles.toolbar}>
@@ -128,7 +128,7 @@ export default function PriorYear1040Panel() {
         </div>
       </div>
 
-      {/* Extracted fields — remaining height */}
+      {/* Extracted fields - remaining height */}
       <div className={styles.fieldsSection}>
         <div className={styles.titleRow}>
           <h2 className={styles.title}>Prior Year 1040 (2024)</h2>

@@ -11,7 +11,7 @@ export function reviewerCheckTooltip(entry?: ActivityEntry | null): string {
   return entry ? `Confirmed by ${entry.by} · ${entry.at}` : 'Confirm for sign-off'
 }
 
-/** Prep / Rev attest slots — shared by Return Summary, Form 1040, and schedule output forms */
+/** Prep / Rev attest slots - shared by Return Summary, Form 1040, and schedule output forms */
 export default function AttestColumns({
   field,
   preparerEntry,

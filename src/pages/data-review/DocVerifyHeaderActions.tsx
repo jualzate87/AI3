@@ -24,7 +24,7 @@ type Props = {
   reviewerConfirmedDocs?: Set<string>
   reviewerConfirmedDocsMeta?: Map<string, ActivityEntry>
   reviewedFields?: Map<string, unknown>
-  /** Live return amounts — used for Tech Circle SSN/EIN verify gate */
+  /** Live return amounts - used for Tech Circle SSN/EIN verify gate */
   amounts?: Pick<LiveAmounts, 'employeeSsn' | 'employerEin'>
   onVerifyDoc?: (docKey: string) => void
 }

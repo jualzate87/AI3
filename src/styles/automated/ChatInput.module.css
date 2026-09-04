@@ -1,4 +1,4 @@
-/* Chat input container — bg white, pb-[8px] px-[24px] */
+/* Chat input container - bg white, pb-[8px] px-[24px] */
 .container {
   display: flex;
   flex-direction: column;
@@ -22,7 +22,7 @@
   pointer-events: none;
 }
 
-/* Semantic input box — rounded-[32px], border #d4d7dc, shadow, max-w 768px */
+/* Semantic input box - rounded-[32px], border #d4d7dc, shadow, max-w 768px */
 .inputBox {
   display: flex;
   flex-direction: column;
@@ -39,7 +39,7 @@
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
 }
 
-/* Text area — grows with content */
+/* Text area - grows with content */
 .textArea {
   display: flex;
   gap: 12px;

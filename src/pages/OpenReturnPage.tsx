@@ -37,7 +37,7 @@ const CHECKLIST_ITEMS = SOURCE_DOCUMENTS.map(doc => ({
   label: doc.label,
 }))
 
-/** Received tab rows — derived from canonical source document list. */
+/** Received tab rows - derived from canonical source document list. */
 const RECEIVED_DOCS = SOURCE_DOCUMENTS.map(doc => ({
   id: doc.id,
   name: doc.label,
@@ -328,7 +328,7 @@ export default function OpenReturnPage() {
                 <p className={styles.pageSubtitle}>Gather your client's documents from the checklist, and import them all at once.</p>
               </div>
 
-              {/* Upload zone — normal state, drag-and-drop enabled */}
+              {/* Upload zone - normal state, drag-and-drop enabled */}
               <div
                 className={`${styles.uploadZone} ${isDragging ? styles.uploadZoneDragging : ''}`}
                 onDragEnter={handleDragEnter}
@@ -407,7 +407,7 @@ export default function OpenReturnPage() {
                 <p className={styles.pageSubtitle}>Gather your client's documents from the checklist, and import them all at once.</p>
               </div>
 
-              {/* Upload zone — drag active (blue border, actual filenames as chips) */}
+              {/* Upload zone - drag active (blue border, actual filenames as chips) */}
               <div className={styles.uploadZoneActive}>
                 {uploadedFiles.length > 0 && (
                   <div className={styles.uploadZoneActivePdfs}>
@@ -434,7 +434,7 @@ export default function OpenReturnPage() {
                 </div>
               </div>
 
-              {/* Checklist — still showing Needed tab with 5 badge */}
+              {/* Checklist - still showing Needed tab with 5 badge */}
               <div className={styles.checklist}>
                 <button className={styles.checklistHeader} onClick={() => setChecklistOpen(o => !o)}>
                   <div className={styles.checklistHeaderLeft}>
@@ -492,7 +492,7 @@ export default function OpenReturnPage() {
                 <p className={styles.pageSubtitle}>When you're ready, select documents to import. We'll import them and take you to review your return.</p>
               </div>
 
-              {/* Upload zone — normal */}
+              {/* Upload zone - normal */}
               <div className={styles.uploadZone}>
                 <p className={styles.uploadZoneLabel}>Drop files here or click to upload</p>
                 <div className={styles.uploadCards}>
@@ -507,7 +507,7 @@ export default function OpenReturnPage() {
                 </div>
               </div>
 
-              {/* Checklist — SENT badge + Received/Needed tabs + table */}
+              {/* Checklist - SENT badge + Received/Needed tabs + table */}
               <div className={styles.checklist}>
                 <button className={styles.checklistHeader} onClick={() => setChecklistOpen(o => !o)}>
                   <div className={styles.checklistHeaderLeft}>

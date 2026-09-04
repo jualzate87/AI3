@@ -31,13 +31,13 @@ interface ReviewTabProps {
   activeTopTab?: string
   onTopTabChange?: (tab: TopTab) => void
   onTabChange?: (tab: string) => void
-  /** Per-tab count of unreviewed documents — drives dynamic tab badges (preparer Phase 1) */
+  /** Per-tab count of unreviewed documents - drives dynamic tab badges (preparer Phase 1) */
   unreviewedCounts?: Record<string, number>
-  /** Per-tab reviewed/total — "X of Y" badges when provided (preferred in Phase 1) */
+  /** Per-tab reviewed/total - "X of Y" badges when provided (preferred in Phase 1) */
   tabReviewCounts?: Record<string, { reviewed: number; total: number }>
-  /** @deprecated Use unreviewedCounts — kept for legacy flag-only flows */
+  /** @deprecated Use unreviewedCounts - kept for legacy flag-only flows */
   flagCounts?: Record<string, number>
-  /** Initial flag totals — used when combining with verified semantics */
+  /** Initial flag totals - used when combining with verified semantics */
   initialFlagCounts?: Record<string, number>
   /** Docs the preparer marked verified */
   verifiedDocs?: Set<string>

@@ -65,7 +65,7 @@ interface AgentReportPaneProps {
   amounts?: LiveAmounts
   /** Open an output form / schedule in the left panel (Sch C, 8960, …) */
   onOpenForm?: (formLabel: string) => void
-  /** Primary CTA when all diagnostics reviewed — opens sign-off summary */
+  /** Primary CTA when all diagnostics reviewed - opens sign-off summary */
   onSignOff?: () => void
 }
 
@@ -127,7 +127,7 @@ function buildImportMismatchesIssue(amounts: LiveAmounts): DiagnosticIssueCard {
     summary:
       gaps.length === 0
         ? 'Source-document amounts and input fields match. No outstanding import accuracy gaps.'
-        : 'These fields still disagree with the source documents — including items that may have been marked correct in Phase 1 without fixing the amount, plus silent import gaps.',
+        : 'These fields still disagree with the source documents - including items that may have been marked correct in Phase 1 without fixing the amount, plus silent import gaps.',
     taxImpact:
       'Filing with uncorrected import mismatches can understate income, withholding, or identity data and trigger notices or amended returns.',
     rootCause:
@@ -145,7 +145,7 @@ function buildImportMismatchesIssue(amounts: LiveAmounts): DiagnosticIssueCard {
       'Correct amounts that disagree with the source, or enter missing identity fields.',
       ...(gaps.some(g => g.id === 'taxablePension' || g.id === 'rWithholding')
         ? [
-            'IRA / 1099-R tip: Box 1 is the gross distribution; Box 2a is the taxable amount that flows to Form 1040 line 4b — they often differ when basis or rollovers apply.',
+            'IRA / 1099-R tip: Box 1 is the gross distribution; Box 2a is the taxable amount that flows to Form 1040 line 4b - they often differ when basis or rollovers apply.',
             'IRA / 1099-R tip: Confirm Box 4 federal withholding is on the return; missing withholding is a common underpayment trigger.',
             'IRA / 1099-R tip: Check Box 7 distribution code (e.g. 7 = normal distribution). Early-withdrawal codes may need Form 5329.',
           ]
@@ -183,12 +183,12 @@ function buildImportMismatchesIssue(amounts: LiveAmounts): DiagnosticIssueCard {
 const NIIT_FORM8960_ISSUE: DiagnosticIssueCard = {
   issueKey: 'niitForm8960',
   dotColor: 'orange',
-  title: 'Review Form 8960 — Net Investment Income Tax',
+  title: 'Review Form 8960 - Net Investment Income Tax',
   category: 'Compliance',
   summary: RETURN_SUMMARY_INSIGHTS.niit,
   taxImpact:
     'At AGI above $200,000 for single filers, net investment income may be subject to the 3.8% NIIT on Form 8960. Confirm the form amounts match interest and dividends on the return.',
-  rootCause: `Investment income is substantial: ${fmtUsd(FROZEN_RETURN.taxableInterest)} taxable interest, ${fmtUsd(FROZEN_RETURN.ordinaryDivs)} ordinary dividends, and ${fmtUsd(FROZEN_RETURN.qualifiedDivs)} qualified dividends. Form 8960 is already on the return — verify the NIIT computation.`,
+  rootCause: `Investment income is substantial: ${fmtUsd(FROZEN_RETURN.taxableInterest)} taxable interest, ${fmtUsd(FROZEN_RETURN.ordinaryDivs)} ordinary dividends, and ${fmtUsd(FROZEN_RETURN.qualifiedDivs)} qualified dividends. Form 8960 is already on the return - verify the NIIT computation.`,
   tableRows: [
     { label: 'AGI (line 11)', cols: [fmtUsd(FROZEN_RETURN.totalIncome), 'Above $200k', ''], badge: 'orange', total: false },
     { label: 'Form 8960', cols: ['On return', 'Review NIIT lines', '✓'], badge: 'blue', total: true },
@@ -212,7 +212,7 @@ const NIIT_FORM8960_ISSUE: DiagnosticIssueCard = {
         { label: 'Taxable interest (1099-INT)', tab: '1099-ints', field: 'taxableInterest' },
         { label: 'Ordinary dividends (1099-DIV)', tab: '1099-divs', field: 'ordinaryDivs' },
         { label: 'Qualified dividends (1099-DIV)', tab: '1099-divs', field: 'qualifiedDivs' },
-        { label: 'Summary — investment lines', field: 'ordinaryDivs', summaryOnly: true },
+        { label: 'Summary - investment lines', field: 'ordinaryDivs', summaryOnly: true },
       ],
     },
   ],
@@ -227,7 +227,7 @@ const NIIT_FORM8960_ISSUE: DiagnosticIssueCard = {
       href: 'https://www.irs.gov/forms-pubs/about-form-8960',
     },
   ],
-  // Summary CY investment lines only — never prior-1040
+  // Summary CY investment lines only - never prior-1040
   viewSourceField: 'ordinaryDivs',
   summaryOnlyGoToInput: false,
 }
@@ -253,7 +253,7 @@ function buildUnderpaymentRiskIssue(live: LiveReturnTotals): DiagnosticIssueCard
     tableHeaders: ['Item', 'Amount', 'Status', ''],
     suggestedActions: [
       'Restore or confirm DIV / 1099-R withholding on the return.',
-      'IRA tip: Meridian 1099-R Box 4 should show $30,000 federal withholding — confirm it posted to the return.',
+      'IRA tip: Meridian 1099-R Box 4 should show $30,000 federal withholding - confirm it posted to the return.',
       'Review Form 2210 for underpayment penalty exposure.',
       'Confirm the Tax Organizer "no ES payments" answer matches her records.',
     ],
@@ -528,7 +528,7 @@ export default function AgentReportPane({
     const field = action?.field ?? fallback?.field
     const qId = (action?.questionnaireResponseId as QuestionnaireResponseId | undefined)
       ?? fallback?.questionnaireResponseId
-    // Per-action summaryOnly (e.g. "Summary — investment lines") wins over issue default
+    // Per-action summaryOnly (e.g. "Summary - investment lines") wins over issue default
     const summaryOnly = Boolean(action?.summaryOnly || (fallback?.summaryOnly && !tab))
     // reviewSource → document preview; goToInput → Details field focus
     const focus: 'preview' | 'details' =
@@ -536,7 +536,7 @@ export default function AgentReportPane({
       ?? (action?.type === 'reviewSource' ? 'preview' : 'details')
 
     if (summaryOnly && field) {
-      // Highlight Summary only — never switch source tabs (avoids sticky prior-1040)
+      // Highlight Summary only - never switch source tabs (avoids sticky prior-1040)
       onHighlightField?.(field)
       onNavigateToTab?.(undefined, undefined, field, undefined, 'details')
       return

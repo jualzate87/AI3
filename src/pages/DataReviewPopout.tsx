@@ -67,7 +67,7 @@ import dragStyles from '../styles/data-review/DragHandle.module.css'
 import styles from '../styles/data-review/DataReviewPopout.module.css'
 
 // ProtoC: the pop-out is the same view as the main window's right panel, not a
-// separate copy — same flags, same reviewed state, same edits, same document
+// separate copy - same flags, same reviewed state, same edits, same document
 // preview zoom/pan, all live-synced via useSyncedReviewState (BroadcastChannel).
 // See DataReviewPage.tsx's right panel for the layout this mirrors.
 
@@ -265,7 +265,7 @@ export default function DataReviewPopout() {
     const message =
       committed.length > 0
         ? `Your changes were saved and the return was recalculated.`
-        : `The return is up to date — nothing new to save.`
+        : `The return is up to date - nothing new to save.`
     setSaveToastMessage(message)
     setSaveToastOpen(true)
   }, [commitUnsavedEdits, flashRecalculatedFields, getSyncedSnapshot])
@@ -285,7 +285,7 @@ export default function DataReviewPopout() {
   const updateField = (key: keyof typeof fieldValues, value: number | { techCircle: number }) =>
     updateFieldValue(key, value)
 
-  // Pop-out always shows the plain (blue) selection highlight — the orange
+  // Pop-out always shows the plain (blue) selection highlight - the orange
   // "agent issue" highlight only applies to the Phase 2 AI panel, which never
   // pops out.
   const highlightMode: 'orange' | 'blue' = 'blue'
@@ -395,7 +395,7 @@ export default function DataReviewPopout() {
   const rightRef = useRef<HTMLDivElement>(null)
   const [previewWidth, setPreviewWidth] = useState(40)
 
-  // Lock document scroll chain so 100vh/dvh fits the popout window — #root defaults
+  // Lock document scroll chain so 100vh/dvh fits the popout window - #root defaults
   // to min-height:100vh and can grow with content, which scrolls the page and clips the top.
   useEffect(() => {
     const html = document.documentElement
@@ -532,7 +532,7 @@ export default function DataReviewPopout() {
           />
         )}
 
-        {/* Peel tabs — payer switcher for multi-payer doc types */}
+        {/* Peel tabs - payer switcher for multi-payer doc types */}
         {activeTopTab === '1099-divs' && (
         <PeelTab
           tabs={DIV_PAYER_TABS.map(t => ({

@@ -43,7 +43,7 @@ interface DetailFieldsProps {
   /** Synced Box 12 a–d codes + amounts (persists across Save / refresh) */
   box12Rows?: Box12RowsState
   onBox12RowChange?: (sub: Box12Sub, patch: { code?: string; amount?: number }) => void
-  /** Synced SSN / EIN (blank at session start — planted import errors) */
+  /** Synced SSN / EIN (blank at session start - planted import errors) */
   identityValues?: { ssn: string; ein: string }
   onIdentityChange?: (kind: 'ssn' | 'ein', value: string) => void
   /** W-2 Box 13 checkboxes */
@@ -60,13 +60,13 @@ interface DetailFieldsProps {
   onMarkReviewed?: (field: string) => void
   onMarkReviewedBulk?: (fields: string[]) => void
   reviewedFields?: Map<string, { by: string; at: string }>
-  /** Field keys with unsaved edits — show "Edited" until Save and recalculate */
+  /** Field keys with unsaved edits - show "Edited" until Save and recalculate */
   unsavedFields?: Set<string>
-  /** Brief flash after save — show "1040 recalculated" */
+  /** Brief flash after save - show "1040 recalculated" */
   recalculatedFields?: Set<string>
-  /** @deprecated Audit trail only — not used for Edited badge */
+  /** @deprecated Audit trail only - not used for Edited badge */
   editedFields?: Set<string>
-  /** Who/when for last edit — optional; shown on Edited badge tooltip */
+  /** Who/when for last edit - optional; shown on Edited badge tooltip */
   editedFieldsMeta?: Map<string, { by: string; at: string }>
   /** Persisted static field values (employer name, addresses, …) */
   fieldOverrides?: Record<string, string>
@@ -77,21 +77,21 @@ interface DetailFieldsProps {
   verifiedDocs?: Set<string>
   /** Who/when for preparer Mark as verified */
   verifiedDocsMeta?: Map<string, { by: string; at: string }>
-  /** Reviewer doc confirmations — separate slot */
+  /** Reviewer doc confirmations - separate slot */
   reviewerConfirmedDocs?: Set<string>
   reviewerConfirmedDocsMeta?: Map<string, { by: string; at: string }>
   onVerifyDoc?: (docKey: string) => void
   /** Called when user posts a note from a field popover: (text, contextLabel) */
   onAddFieldNote?: (text: string, context: string) => void
-  /** Reviewer confirm mode — preparer attestations read-only; no import/OCR edit actions */
+  /** Reviewer confirm mode - preparer attestations read-only; no import/OCR edit actions */
   importReadOnly?: boolean
-  /** Input return mode — plain editable fields without verify header or review flags */
+  /** Input return mode - plain editable fields without verify header or review flags */
   variant?: DetailFieldsVariant
   /** When true (pre-import manual entry), zero amounts render blank */
   showEmptyWhenZero?: boolean
-  /** Input return — open source document preview for current doc */
+  /** Input return - open source document preview for current doc */
   onViewSourceDocuments?: () => void
-  /** Input return — L2 document tabs below page title */
+  /** Input return - L2 document tabs below page title */
   docTabs?: InputDocTabItem[]
   activeDocKey?: string
   onDocTabChange?: (key: string) => void
@@ -268,7 +268,7 @@ export default function DetailFields({
   const ValidationNote = ({ fieldKey }: { fieldKey: string }) => {
     const issue = flaggedFields[fieldKey]
     if (!issue) return null
-    // Use the correct reviewed key — wages uses `wages-${activeSubTab}`, box12 aggregates sub-rows
+    // Use the correct reviewed key - wages uses `wages-${activeSubTab}`, box12 aggregates sub-rows
     const reviewedKey = fieldKey === 'wages' ? `wages-${activeSubTab}` : fieldKey
     const isReviewed = fieldKey === 'box12'
       ? box12Resolved
@@ -300,7 +300,7 @@ export default function DetailFields({
     />
   )
 
-  // Generic editable row — auto-saves on blur / Enter (no Save button)
+  // Generic editable row - auto-saves on blur / Enter (no Save button)
   const renderStaticRow = (fieldKey: string, label: string, defaultValue: string, inputClass = styles.fieldInputSmall) => {
     const key = `${fieldKey}-${activeSubTab}`
     const identitySynced =
@@ -463,12 +463,12 @@ export default function DetailFields({
         {renderStaticRow('street', 'Street address', employer.street, styles.fieldInputWide)}
         {renderStaticRow('cityStateZip', 'City / State / ZIP code', `${employer.city}, ${employer.state} ${employer.zip}`, styles.fieldInputWide)}
 
-        {/* Wages section — same grey header as Employer Information */}
+        {/* Wages section - same grey header as Employer Information */}
         <DetailSectionHeader variant={variant}>
           Wages
         </DetailSectionHeader>
 
-        {/* (1) Wages — editable, drives 1040 line 1a */}
+        {/* (1) Wages - editable, drives 1040 line 1a */}
         <div
           ref={selectedField === 'wages' ? highlightedRef : undefined}
           className={`${styles.fieldRow} ${flaggedFields['wages'] ? styles.fieldRowHasNote : ''} ${selectedField === 'wages' ? (highlightMode === 'orange' ? styles.fieldRowHighlightedOrange : styles.fieldRowHighlighted) : ''}`}
@@ -577,7 +577,7 @@ export default function DetailFields({
               <span style={{ display: 'flex', alignItems: 'center', gap: 4, width: 32, flexShrink: 0 }}>
                 {flaggedFields['box12'] && !box12Resolved && <span className={styles.issueIndicator} />}
               </span>
-              <span style={{ fontFamily: 'var(--font-family-component)', fontSize: 13, fontWeight: 500, color: '#21262a', flex: '0 0 auto' }}>(12) Box 12 — Codes</span>
+              <span style={{ fontFamily: 'var(--font-family-component)', fontSize: 13, fontWeight: 500, color: '#21262a', flex: '0 0 auto' }}>(12) Box 12 - Codes</span>
               <span style={{ flex: 1 }} />
               <span style={{ fontFamily: 'var(--font-family-component)', fontSize: 11, fontWeight: 500, color: '#859299', width: 64, flexShrink: 0, textAlign: 'center' }}>Code</span>
               <span style={{ fontFamily: 'var(--font-family-component)', fontSize: 11, fontWeight: 500, color: '#859299', width: 120, flexShrink: 0 }}>Amount</span>
@@ -593,7 +593,7 @@ export default function DetailFields({
               const isRowReviewed = reviewedFields?.has(rowKey)
               const syncedRow = box12Rows?.[sub]
               const codeVal = syncedRow?.code ?? fieldOverrides[codeKey] ?? entry.code
-              // Seed amount 0 must stay blank (codes shown, amounts missing) — only show once > 0
+              // Seed amount 0 must stay blank (codes shown, amounts missing) - only show once > 0
               const syncedAmt = syncedRow?.amount ?? 0
               const amtVal = syncedAmt > 0
                 ? syncedAmt.toLocaleString()
@@ -636,13 +636,13 @@ export default function DetailFields({
                       }}
                       style={{ width: 64, fontSize: 13, height: 32, padding: '0 4px', boxSizing: 'border-box', border: `1px solid ${isFlagged ? '#ff6a00' : '#c3ced5'}`, borderRadius: 4, background: isFlagged ? 'rgba(255,187,0,0.25)' : '#fff', color: codeVal ? '#21262a' : '#859299', fontFamily: 'var(--font-family-component)', outline: 'none', flexShrink: 0, cursor: 'pointer', appearance: 'auto' }}
                     >
-                      {BOX12_CODES.map(c => <option key={c} value={c}>{c || '—'}</option>)}
+                      {BOX12_CODES.map(c => <option key={c} value={c}>{c || '-'}</option>)}
                     </select>
                     {/* Amount input */}
                     <input
                       readOnly={!isEditingAmt}
                       value={isEditingAmt ? draftValue : amtVal}
-                      placeholder="—"
+                      placeholder="-"
                       onChange={e => setDraftValue(e.target.value)}
                       autoFocus={isEditingAmt}
                       onBlur={commitAmt}
@@ -693,11 +693,11 @@ export default function DetailFields({
               onClick={() => onFieldSelect?.('box12')}
               style={{ cursor: 'pointer' }}
             >
-              <FlaggedLabel fieldKey="box12">(12) Code {employer.box12Code || '—'} — 401(k) deferral</FlaggedLabel>
+              <FlaggedLabel fieldKey="box12">(12) Code {employer.box12Code || '-'} - 401(k) deferral</FlaggedLabel>
               <input
                 className={`${styles.fieldInput} ${styles.fieldInputSmall} ${editingField === 'box12' ? styles.fieldInputEditing : selectedField === 'box12' ? (highlightMode === 'orange' ? styles.fieldInputHighlightedOrange : styles.fieldInputHighlighted) : ''}`}
                 readOnly={editingField !== 'box12'}
-                value={editingField === 'box12' ? draftValue : (fieldValues?.box12 !== undefined && employer.box12Amount ? fieldValues.box12.toLocaleString() : (employer.box12Amount || '—'))}
+                value={editingField === 'box12' ? draftValue : (fieldValues?.box12 !== undefined && employer.box12Amount ? fieldValues.box12.toLocaleString() : (employer.box12Amount || '-'))}
                 onChange={e => setDraftValue(e.target.value)}
                 autoFocus={editingField === 'box12'}
                 onClick={e => { e.stopPropagation(); if (canEditField('box12', variant, importReadOnly) && editingField !== 'box12') startEdit('box12', fieldValues?.box12?.toString() ?? employer.box12Amount ?? '') }}
@@ -720,7 +720,7 @@ export default function DetailFields({
               ) : (
                 <div className={styles.fieldActions}>
                   <Tooltip text="Mark as correct" placement="top"><button className={styles.markCorrectBtn} onClick={e => { e.stopPropagation(); onMarkReviewed?.('box12') }}><CircleCheck size="small" /></button></Tooltip>
-                  {renderAnnotationBtn(`box12-${activeSubTab}`, `(12) Code ${employer.box12Code || '—'} — 401(k) deferral`, employer.name)}
+                  {renderAnnotationBtn(`box12-${activeSubTab}`, `(12) Code ${employer.box12Code || '-'} - 401(k) deferral`, employer.name)}
                 </div>
               )}
               <FieldEditStatusBadges
@@ -733,7 +733,7 @@ export default function DetailFields({
           </>
         )}
 
-        {/* Box 13 — Statutory employee / Retirement plan / Third-party sick pay */}
+        {/* Box 13 - Statutory employee / Retirement plan / Third-party sick pay */}
         <div
           className={`${styles.fieldRow} ${selectedField === 'box13' ? (highlightMode === 'orange' ? styles.fieldRowHighlightedOrange : styles.fieldRowHighlighted) : ''}`}
           onClick={() => onFieldSelect?.('box13')}

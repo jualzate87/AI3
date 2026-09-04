@@ -25,7 +25,7 @@ export default function WrapUpDecision({
       <div className={styles.decisionPanel}>
         <h2 id="wrapup-title" className={styles.title}>Wrap up this pass</h2>
         <p className={styles.subtitle}>
-          Pass {pass} · {actorLabel}. Choose how this return moves next — you can preview the handoff before sending.
+          Pass {pass} · {actorLabel}. Choose how this return moves next - you can preview the handoff before sending.
         </p>
         <div className={styles.decisionChoices}>
           <button type="button" className={styles.choiceCard} onClick={onFinishAndFile}>

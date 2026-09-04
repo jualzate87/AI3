@@ -24,7 +24,7 @@ const FORM_PARAM_LABELS: Record<string, string> = {
   schA: 'Sch A',
 }
 
-/** Focused review-return window — tax summary + output forms only (Figma 34240:165563). */
+/** Focused review-return window - tax summary + output forms only (Figma 34240:165563). */
 export default function CheckReturnPopoutPage() {
   const [searchParams] = useSearchParams()
   const initialForm = useMemo(() => resolveInitialOutputForm(searchParams), [searchParams])

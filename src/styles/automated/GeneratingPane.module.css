@@ -1,4 +1,4 @@
-/* Generating pane — scrollable chat area */
+/* Generating pane - scrollable chat area */
 .container {
   display: flex;
   flex-direction: column;
@@ -8,7 +8,7 @@
   width: 100%;
 }
 
-/* Action button top-right — e.g. "Create client questionnaire and checklist" */
+/* Action button top-right - e.g. "Create client questionnaire and checklist" */
 .actionButtonRow {
   display: flex;
   justify-content: flex-end;
@@ -34,7 +34,7 @@
   background: #006bb3;
 }
 
-/* Chat content — max 685px centered */
+/* Chat content - max 685px centered */
 .chatContent {
   display: flex;
   flex-direction: column;
@@ -42,7 +42,7 @@
   width: 100%;
 }
 
-/* User message bubble — right aligned */
+/* User message bubble - right aligned */
 .userMessageRow {
   display: flex;
   flex-direction: column;
@@ -88,7 +88,7 @@
   height: 20px;
 }
 
-/* Icon wrapper — 16px wide × 32px tall */
+/* Icon wrapper - 16px wide × 32px tall */
 .assistIconWrapper {
   display: flex;
   align-items: center;
@@ -98,7 +98,7 @@
   flex-shrink: 0;
 }
 
-/* Intuit Assist icon — 20px circle */
+/* Intuit Assist icon - 20px circle */
 .assistIcon {
   width: 20px;
   height: 20px;

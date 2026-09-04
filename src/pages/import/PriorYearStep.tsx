@@ -23,7 +23,7 @@ export default function PriorYearStep() {
 
   return (
     <div className={styles.splitContainer}>
-      {/* LEFT COLUMN — same as Screen 6 */}
+      {/* LEFT COLUMN - same as Screen 6 */}
       <div className={styles.leftColumn}>
         <div className={styles.fileHeader}>
           <div className={styles.fileHeaderInfo}>
@@ -53,7 +53,7 @@ export default function PriorYearStep() {
         </div>
       </div>
 
-      {/* RIGHT COLUMN — Prior year data */}
+      {/* RIGHT COLUMN - Prior year data */}
       <div className={styles.rightColumn}>
         <h2 className={styles.rightHeading}>Prior year information</h2>
 

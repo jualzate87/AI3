@@ -10,11 +10,11 @@ interface Phase2BannerProps {
   reviewed: number
   total: number
   complete: boolean
-  /** When agent is closed with work left — open AI Review from the counter link */
+  /** When agent is closed with work left - open AI Review from the counter link */
   onOpenDiagnostics?: () => void
   /** True while Review AI panel is open (counter stays plain text) */
   diagnosticsOpen?: boolean
-  /** Sign-off CTA — sits on the same row as Step 2 title / progress */
+  /** Sign-off CTA - sits on the same row as Step 2 title / progress */
   signOffSlot?: ReactNode
   /** e.g. { complete: 4, total: 6 } for "Review · 4/6 steps" */
   checklistProgress?: { complete: number; total: number }
@@ -61,7 +61,7 @@ export default function Phase2Banner({
               size="medium"
               className={styles.counterLink}
               onClick={onOpenDiagnostics}
-              aria-label={`Open AI diagnostics — ${reviewed} of ${total} diagnostics reviewed, ${remaining} diagnostics remaining`}
+              aria-label={`Open AI diagnostics - ${reviewed} of ${total} diagnostics reviewed, ${remaining} diagnostics remaining`}
             >
               <strong className={styles.counterNum}>{reviewed}</strong> of {total} diagnostics reviewed
             </Button>

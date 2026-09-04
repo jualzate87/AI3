@@ -7,11 +7,11 @@ import styles from '../../styles/data-review/Phase1IssueBanner.module.css'
 export type Phase1IssueBannerMode = 'flags' | 'documents'
 
 interface Phase1IssueBannerProps {
-  /** Which attention strip to show — flags (warn) or remaining docs (info) */
+  /** Which attention strip to show - flags (warn) or remaining docs (info) */
   mode?: Phase1IssueBannerMode
-  /** Unresolved Phase 1 flags — used when mode is `flags` */
+  /** Unresolved Phase 1 flags - used when mode is `flags` */
   unresolvedCount?: number
-  /** Packet source docs still needing mark-reviewed — used when mode is `documents` */
+  /** Packet source docs still needing mark-reviewed - used when mode is `documents` */
   unreviewedDocCount?: number
   verifiedDocCount?: number
   totalDocCount?: number
@@ -57,7 +57,7 @@ export default function Phase1IssueBanner({
               <>
                 {' '}
                 {unresolvedFlagCount} import{' '}
-                {unresolvedFlagCount === 1 ? 'flag also needs' : 'flags also need'} attention —
+                {unresolvedFlagCount === 1 ? 'flag also needs' : 'flags also need'} attention -
                 document review comes first.
               </>
             )}

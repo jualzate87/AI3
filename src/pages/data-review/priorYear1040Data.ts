@@ -1,4 +1,4 @@
-/** Prior-year 1040 (2024) line amounts — sourced from sample_2024_variant_austin_std15750_no_ssn.pdf */
+/** Prior-year 1040 (2024) line amounts - sourced from sample_2024_variant_austin_std15750_no_ssn.pdf */
 export const PRIOR_YEAR_1040_FIELDS: {
   key?: string
   line?: string

@@ -1,4 +1,4 @@
-/* Document preview — fills parent container, scrollable with zoom */
+/* Document preview - fills parent container, scrollable with zoom */
 .container {
   background: var(--color-container-background-primary, #ffffff);
   display: flex;
@@ -17,7 +17,7 @@
   margin: 0;
 }
 
-/* Scrollable image area — plain block layout, not flex. A flex row with
+/* Scrollable image area - plain block layout, not flex. A flex row with
    justify-content:center clips a child wider than the container instead of
    making it scrollable (centering wins over overflow), which broke panning
    at higher zoom levels. The zoomed content's width:N% is computed against
@@ -59,13 +59,13 @@
 .documentImage {
   border: 1px solid var(--color-container-border-primary);
   display: block;
-  /* intrinsic size — zoom is controlled by wrapper width, image fills wrapper */
+  /* intrinsic size - zoom is controlled by wrapper width, image fills wrapper */
   width: 100%;
   height: auto;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.12);
 }
 
-/* Zoom toolbar — same pattern as LeftPanel1040 */
+/* Zoom toolbar - same pattern as LeftPanel1040 */
 .toolbar {
   display: flex;
   align-items: center;
@@ -141,7 +141,7 @@
   opacity: 1;
 }
 
-/* Loupe — fixed so it tracks the pointer over the scrollable preview */
+/* Loupe - fixed so it tracks the pointer over the scrollable preview */
 .loupe {
   position: fixed;
   z-index: 40;

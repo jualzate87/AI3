@@ -7,7 +7,7 @@ import { PRIOR_YEAR_1040_FIELDS } from './priorYear1040Data'
 import type { ActivityEntry } from '../../hooks/useSyncedReviewState'
 import styles from '../../styles/data-review/DetailFields.module.css'
 
-// Real 2024 figures — matches PRIOR_YEAR_1040_VALUES in priorYear1040Data.ts (the single
+// Real 2024 figures - matches PRIOR_YEAR_1040_VALUES in priorYear1040Data.ts (the single
 // source of truth for YoY comparisons and the prior-year document preview.
 const FIELDS = PRIOR_YEAR_1040_FIELDS
 
@@ -160,7 +160,7 @@ export default function PriorYear1040Fields({
     <div className={styles.container}>
       <div className={styles.pageHeader}>
         <div className={styles.headerActions}>
-          <h2 className={`${styles.title} ${styles.headerTitle}`}>Prior Year 1040 (2024) — Jessica Drake</h2>
+          <h2 className={`${styles.title} ${styles.headerTitle}`}>Prior Year 1040 (2024) - Jessica Drake</h2>
           <DocVerifyHeaderActions
             docKey={DOC_KEY}
             verifiedDocs={verifiedDocs}

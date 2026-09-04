@@ -1,4 +1,4 @@
-/** Field panel mode — controls whether values can be edited in place. */
+/** Field panel mode - controls whether values can be edited in place. */
 export type DetailFieldsVariant = 'review' | 'input' | 'display'
 
 /**

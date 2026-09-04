@@ -13,7 +13,7 @@ type ModeSegmentedControlProps = {
   className?: string
 }
 
-/** Two-option segmented control — light blue active state with bottom indicator bar. */
+/** Two-option segmented control - light blue active state with bottom indicator bar. */
 export default function ModeSegmentedControl({
   ariaLabel,
   options,

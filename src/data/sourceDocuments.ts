@@ -13,30 +13,30 @@ export type SourceDocument = {
   subTab?: W2Employer | DivPayer | IntPayer | 'meridian' | 'summit'
 }
 
-/** All source documents — single source of truth for document lists and tax control. */
+/** All source documents - single source of truth for document lists and tax control. */
 export const SOURCE_DOCUMENTS: SourceDocument[] = [
-  { id: 'w2-techCircle',       formType: 'W-2',      label: 'W-2 — Tech Circle Inc',              payer: 'Tech Circle Inc',              tab: 'w2s',       subTab: 'techCircle' },
-  { id: '1099-div-token',      formType: '1099-DIV', label: '1099-DIV — Token Financial',         payer: 'Token Financial',              tab: '1099-divs', subTab: 'tokenFinancial' },
-  { id: '1099-div-northmark',  formType: '1099-DIV', label: '1099-DIV — Northmark Index Funds',   payer: 'Northmark Index Funds',        tab: '1099-divs', subTab: 'northmarkIndex' },
-  { id: '1099-div-beacon',     formType: '1099-DIV', label: '1099-DIV — Beacon Dividend Trust',   payer: 'Beacon Dividend Trust',        tab: '1099-divs', subTab: 'beaconDividend' },
-  { id: '1099-int-unwavering', formType: '1099-INT', label: '1099-INT — Unwavering Financial',    payer: 'Unwavering Financial LLC',     tab: '1099-ints', subTab: 'unwaverIngFinancial' },
-  { id: '1099-int-harborline', formType: '1099-INT', label: '1099-INT — Harborline Credit Union', payer: 'Harborline Credit Union',      tab: '1099-ints', subTab: 'harborlineCredit' },
-  { id: '1099-int-cascade',    formType: '1099-INT', label: '1099-INT — Cascade Federal Savings', payer: 'Cascade Federal Savings',      tab: '1099-ints', subTab: 'cascadeFederal' },
-  { id: '1099-r-meridian',     formType: '1099-R',   label: '1099-R — Meridian Retirement Trust', payer: 'Meridian Retirement Trust',    tab: '1099-rs',   subTab: 'meridian' },
-  { id: '1099-nec-summit',     formType: '1099-NEC', label: '1099-NEC — Summit Advisory Partners', payer: 'Summit Advisory Partners LLC', tab: '1099-necs', subTab: 'summit' },
+  { id: 'w2-techCircle',       formType: 'W-2',      label: 'W-2 - Tech Circle Inc',              payer: 'Tech Circle Inc',              tab: 'w2s',       subTab: 'techCircle' },
+  { id: '1099-div-token',      formType: '1099-DIV', label: '1099-DIV - Token Financial',         payer: 'Token Financial',              tab: '1099-divs', subTab: 'tokenFinancial' },
+  { id: '1099-div-northmark',  formType: '1099-DIV', label: '1099-DIV - Northmark Index Funds',   payer: 'Northmark Index Funds',        tab: '1099-divs', subTab: 'northmarkIndex' },
+  { id: '1099-div-beacon',     formType: '1099-DIV', label: '1099-DIV - Beacon Dividend Trust',   payer: 'Beacon Dividend Trust',        tab: '1099-divs', subTab: 'beaconDividend' },
+  { id: '1099-int-unwavering', formType: '1099-INT', label: '1099-INT - Unwavering Financial',    payer: 'Unwavering Financial LLC',     tab: '1099-ints', subTab: 'unwaverIngFinancial' },
+  { id: '1099-int-harborline', formType: '1099-INT', label: '1099-INT - Harborline Credit Union', payer: 'Harborline Credit Union',      tab: '1099-ints', subTab: 'harborlineCredit' },
+  { id: '1099-int-cascade',    formType: '1099-INT', label: '1099-INT - Cascade Federal Savings', payer: 'Cascade Federal Savings',      tab: '1099-ints', subTab: 'cascadeFederal' },
+  { id: '1099-r-meridian',     formType: '1099-R',   label: '1099-R - Meridian Retirement Trust', payer: 'Meridian Retirement Trust',    tab: '1099-rs',   subTab: 'meridian' },
+  { id: '1099-nec-summit',     formType: '1099-NEC', label: '1099-NEC - Summit Advisory Partners', payer: 'Summit Advisory Partners LLC', tab: '1099-necs', subTab: 'summit' },
 ]
 
 /** Per-document default values for tax control reconciliation (source doc box values). */
 export type TaxControlDocEntry = {
   docId: string
   label: string
-  /** Hint value shown as placeholder — actual source doc amount */
+  /** Hint value shown as placeholder - actual source doc amount */
   hint?: number
 }
 
 export type TaxControlRowConfig = {
   id: string
-  /** Box number shown in the Line column — matches detail input panel labels */
+  /** Box number shown in the Line column - matches detail input panel labels */
   box: string
   label: string
   desc: string
@@ -134,7 +134,7 @@ export const TAX_CONTROL_ROWS: TaxControlRowConfig[] = [
     id: 'totalIncome',
     box: '9',
     label: 'Total income',
-    desc: 'Form 1040 line 9 — sum of all income lines',
+    desc: 'Form 1040 line 9 - sum of all income lines',
     docs: [],
     form1040Line: '9',
     isTotalRow: true,
@@ -143,7 +143,7 @@ export const TAX_CONTROL_ROWS: TaxControlRowConfig[] = [
     id: 'stdDeduction',
     box: '12',
     label: 'Standard deduction',
-    desc: 'Form 1040 line 12 — deduction for filing status Single: $15,750 for 2025',
+    desc: 'Form 1040 line 12 - deduction for filing status Single: $15,750 for 2025',
     docs: [],
     form1040Line: '12',
   },
@@ -151,7 +151,7 @@ export const TAX_CONTROL_ROWS: TaxControlRowConfig[] = [
     id: 'taxableIncome',
     box: '15',
     label: 'Taxable income',
-    desc: 'Form 1040 line 15 — total income minus deductions',
+    desc: 'Form 1040 line 15 - total income minus deductions',
     docs: [],
     form1040Line: '15',
     isTotalRow: true,
@@ -160,7 +160,7 @@ export const TAX_CONTROL_ROWS: TaxControlRowConfig[] = [
     id: 'totalTax',
     box: '24',
     label: 'Total tax',
-    desc: 'Form 1040 line 24 — tax on taxable income per IRS tables',
+    desc: 'Form 1040 line 24 - tax on taxable income per IRS tables',
     docs: [],
     form1040Line: '24',
     isTotalRow: true,
@@ -189,7 +189,7 @@ export const TAX_CONTROL_ROWS: TaxControlRowConfig[] = [
     id: 'totalPayments',
     box: '33',
     label: 'Total payments',
-    desc: 'Form 1040 line 33 — sum of all federal tax withheld',
+    desc: 'Form 1040 line 33 - sum of all federal tax withheld',
     docs: [],
     form1040Line: '33',
     isTotalRow: true,
@@ -198,7 +198,7 @@ export const TAX_CONTROL_ROWS: TaxControlRowConfig[] = [
     id: 'amountOwed',
     box: '37',
     label: 'Amount owed',
-    desc: 'Form 1040 line 37 — total tax minus total payments',
+    desc: 'Form 1040 line 37 - total tax minus total payments',
     docs: [],
     form1040Line: '37',
     isTotalRow: true,

@@ -8,9 +8,9 @@ import { FROZEN_RETURN, TOKEN_QUALIFIED_DIVS_RETURN } from './frozenReturn'
 
 /** Editable amounts persisted in useSyncedReviewState. */
 export type LiveAmounts = {
-  /** W-2 Box 1 — frozen seed 118,940 (source 148,940) */
+  /** W-2 Box 1 - frozen seed 118,940 (source 148,940) */
   wages: number
-  /** W-2 Box 2 — matches source (not in error map) */
+  /** W-2 Box 2 - matches source (not in error map) */
   w2Withholding: number
   /** 1099-INT Box 1 per payer */
   interestUnwavering: number
@@ -20,15 +20,15 @@ export type LiveAmounts = {
   ordinaryDivsToken: number
   ordinaryDivsNorthmark: number
   ordinaryDivsBeacon: number
-  /** 1099-DIV Box 1b per payer — Token starts at silent-error seed */
+  /** 1099-DIV Box 1b per payer - Token starts at silent-error seed */
   qualifiedDivsToken: number
   qualifiedDivsNorthmark: number
   qualifiedDivsBeacon: number
-  /** Token 1099-DIV Box 4 — frozen seed 24,925 (source 26,363) */
+  /** Token 1099-DIV Box 4 - frozen seed 24,925 (source 26,363) */
   divWithholding: number
-  /** Meridian 1099-R Box 4 — frozen seed 0 (silent drop; source 30,000) */
+  /** Meridian 1099-R Box 4 - frozen seed 0 (silent drop; source 30,000) */
   rWithholding: number
-  /** Meridian 1099-R Box 2a — frozen seed 100,000 (source 150,000) */
+  /** Meridian 1099-R Box 2a - frozen seed 100,000 (source 150,000) */
   taxablePension: number
   /**
    * Summit 1099-NEC Box 1 on the return.
@@ -37,28 +37,28 @@ export type LiveAmounts = {
    */
   necIncome: number
   necOnReturn: boolean
-  /** W-2 Box a — blank at session start (planted error 1) */
+  /** W-2 Box a - blank at session start (planted error 1) */
   employeeSsn: string
-  /** W-2 Box b — blank at session start (planted error 2) */
+  /** W-2 Box b - blank at session start (planted error 2) */
   employerEin: string
-  /** Aggregate Box 12 amounts placeholder (0 until entered) — sum of box12Rows amounts */
+  /** Aggregate Box 12 amounts placeholder (0 until entered) - sum of box12Rows amounts */
   box12: number
-  /** W-2 Box 12 a–d codes + amounts — persists across Save / refresh */
+  /** W-2 Box 12 a–d codes + amounts - persists across Save / refresh */
   box12Rows: {
     a: { code: string; amount: number }
     b: { code: string; amount: number }
     c: { code: string; amount: number }
     d: { code: string; amount: number }
   }
-  /** W-2 Box 13 — Retirement plan checkbox (Tech Circle 401(k)) */
+  /** W-2 Box 13 - Retirement plan checkbox (Tech Circle 401(k)) */
   box13RetirementPlan: boolean
-  /** W-2 Box 13 — Statutory employee */
+  /** W-2 Box 13 - Statutory employee */
   box13StatutoryEmployee: boolean
-  /** W-2 Box 13 — Third-party sick pay */
+  /** W-2 Box 13 - Third-party sick pay */
   box13ThirdPartySickPay: boolean
   /**
    * Schedule C ordinary expenses (software, supplies, travel).
-   * Starts at 0; client confirmed she had costs — preparer enters after review.
+   * Starts at 0; client confirmed she had costs - preparer enters after review.
    */
   schCExpenses: number
   /**
@@ -66,13 +66,13 @@ export type LiveAmounts = {
    * Starts at 0 (1098 not in packet); client confirmed she paid mortgage interest.
    */
   mortgageInterest: number
-  /** Schedule A state/local taxes (SALT) — seeded Austin TX property+income estimate */
+  /** Schedule A state/local taxes (SALT) - seeded Austin TX property+income estimate */
   saltTaxes: number
   /** Schedule A charitable cash contributions */
   charitableContributions: number
 }
 
-/** Build Spec INITIAL seeds — verification anchors at session start. */
+/** Build Spec INITIAL seeds - verification anchors at session start. */
 export const SEED_AMOUNTS: LiveAmounts = {
   wages: FROZEN_RETURN.wages,
   w2Withholding: FROZEN_RETURN.w2Withholding,
@@ -110,7 +110,7 @@ export const SEED_AMOUNTS: LiveAmounts = {
   charitableContributions: 1_200,
 }
 
-/** Blank return before SmartReturn import — manual entry starts empty. */
+/** Blank return before SmartReturn import - manual entry starts empty. */
 export const PRE_IMPORT_AMOUNTS: LiveAmounts = {
   wages: 0,
   w2Withholding: 0,
@@ -146,7 +146,7 @@ export const PRE_IMPORT_AMOUNTS: LiveAmounts = {
   charitableContributions: 0,
 }
 
-/** Format synced amount for editable fields — blank when zero before import. */
+/** Format synced amount for editable fields - blank when zero before import. */
 export function displayEditableAmount(value: number, emptyWhenZero = false): string {
   if (emptyWhenZero && value === 0) return ''
   return value.toLocaleString()
@@ -154,7 +154,7 @@ export function displayEditableAmount(value: number, emptyWhenZero = false): str
 
 export const NEC_SOURCE_AMOUNT = 24_000
 
-/** 110% of 2024 total tax — Form 2210 safe harbor. */
+/** 110% of 2024 total tax - Form 2210 safe harbor. */
 export const SAFE_HARBOR_2210 = 113_029
 /** Single-filer NIIT AGI threshold. */
 export const NIIT_AGI_THRESHOLD = 200_000
@@ -167,14 +167,14 @@ export type LiveReturnTotals = {
   ordinaryDivs: number
   qualifiedDivs: number
   taxablePension: number
-  /** Line 8 — other income (NEC / Sch C) when confirmed onto the return */
+  /** Line 8 - other income (NEC / Sch C) when confirmed onto the return */
   otherIncome: number
   capitalGain: number
   totalIncome: number
   stdDeduction: number
   /** Schedule A total itemized (before comparing to standard) */
   itemizedDeduction: number
-  /** Larger of standard vs itemized — drives 1040 line 12 in live mode */
+  /** Larger of standard vs itemized - drives 1040 line 12 in live mode */
   deductionTaken: number
   deductionMethod: 'standard' | 'itemized'
   taxableIncome: number
@@ -186,21 +186,21 @@ export type LiveReturnTotals = {
   w2Withholding: number
   divWithholding: number
   rWithholding: number
-  /** Line 25b — DIV + 1099-R (+ any NEC withholding) */
+  /** Line 25b - DIV + 1099-R (+ any NEC withholding) */
   withholding1099: number
   totalWithholding: number
   totalPayments: number
   oweAmount: number
   necOnReturn: boolean
-  /** Schedule C — gross receipts (NEC Box 1 when on return) */
+  /** Schedule C - gross receipts (NEC Box 1 when on return) */
   schCGross: number
   schCExpenses: number
   schCNetProfit: number
   /** Schedule 1 line 3 / SE base */
   schedule1BusinessIncome: number
-  /** Form 8960 — net investment income subject to 3.8% */
+  /** Form 8960 - net investment income subject to 3.8% */
   netInvestmentIncome: number
-  /** Form 2210 — required annual payment vs payments made */
+  /** Form 2210 - required annual payment vs payments made */
   requiredAnnualPayment: number
   underpaymentAmount: number
   employeeSsn: string
@@ -304,7 +304,7 @@ export function computeLiveReturn(amounts: LiveAmounts): LiveReturnTotals {
 }
 
 /**
- * Effective tax rate — total tax ÷ taxable income (Line 24 ÷ Line 15).
+ * Effective tax rate - total tax ÷ taxable income (Line 24 ÷ Line 15).
  * Standard CPA summary metric; returns 0–100 scale or null when income is zero.
  */
 export function computeEffectiveTaxRate(
@@ -317,7 +317,7 @@ export function computeEffectiveTaxRate(
 
 /** One decimal place, e.g. "26.8%". */
 export function formatEffectiveTaxRate(rate: number | null): string {
-  if (rate === null) return '—'
+  if (rate === null) return '-'
   return `${rate.toFixed(1)}%`
 }
 
@@ -385,7 +385,7 @@ export function buildEffectiveTaxRateExplanation(ctx: EffectiveTaxRateContext): 
   const taxDelta = ctx.totalTax - ctx.priorTotalTax
   const incomeTaxDelta = (ctx.incomeTax ?? 0) - (ctx.priorIncomeTax ?? 0)
   if (Math.abs(taxDelta) >= 1000 && Math.abs(incomeTaxDelta) >= 500 && Math.abs(tiDelta) < 500) {
-    parts.push('Tax on the same taxable-income base shifted — check bracket mix and credits.')
+    parts.push('Tax on the same taxable-income base shifted - check bracket mix and credits.')
   }
 
   return parts.join(' ')
@@ -403,7 +403,7 @@ export type TaxCreditsPopoverContext = EffectiveTaxRateContext & {
   credits?: number
 }
 
-/** Summary flyout lines for Tax & Credits — total tax, rate math, YoY narrative. */
+/** Summary flyout lines for Tax & Credits - total tax, rate math, YoY narrative. */
 export function buildTaxCreditsPopoverContent(ctx: TaxCreditsPopoverContext): {
   items: TaxCreditsPopoverItem[]
   footnote: string
@@ -426,7 +426,7 @@ export function buildTaxCreditsPopoverContent(ctx: TaxCreditsPopoverContext): {
     {
       id: 'prior-rate',
       label: 'Prior year effective rate',
-      note: priorRate !== null ? formatEffectiveTaxRate(priorRate) : '—',
+      note: priorRate !== null ? formatEffectiveTaxRate(priorRate) : '-',
     },
   ]
 

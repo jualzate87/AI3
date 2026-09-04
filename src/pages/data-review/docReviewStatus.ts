@@ -60,7 +60,7 @@ export function canVerifyDoc(args: {
 
   const key = normalizeVerifiedDocKey(args.docKey)
 
-  /** PDF-only / manual docs — preparer attests manual match; skip OCR flag + identity gates. */
+  /** PDF-only / manual docs - preparer attests manual match; skip OCR flag + identity gates. */
   if (isManualImportDoc(key)) {
     return { allowed: true }
   }

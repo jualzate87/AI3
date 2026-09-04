@@ -1,4 +1,4 @@
-/* Drag handle — shared styles for both vertical and horizontal */
+/* Drag handle - shared styles for both vertical and horizontal */
 .handleHorizontal,
 .handleVertical {
   display: flex;
@@ -6,7 +6,7 @@
   justify-content: center;
   flex-shrink: 0;
   position: relative;
-  /* Below portaled overlays (menus, tooltips, field popovers) — divider is layout chrome only */
+  /* Below portaled overlays (menus, tooltips, field popovers) - divider is layout chrome only */
   z-index: 1;
   background: var(--color-container-background-primary, #ffffff);
   user-select: none;

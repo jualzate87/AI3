@@ -14,17 +14,17 @@ interface Phase1BannerProps {
   /** Packet docs mark-reviewed (soft progress after imports start) */
   verifiedDocCount: number
   totalDocCount: number
-  /** All import flags resolved — hard gate for AI diagnostics */
+  /** All import flags resolved - hard gate for AI diagnostics */
   flagsCleared: boolean
   /** Count of packet source docs (incl. Questionnaire) not yet mark-reviewed */
   unreviewedDocCount?: number
   /** Soft complete: all packet docs mark-reviewed (primary Phase 1 progress signal) */
   complete: boolean
-  /** Continue to Phase 2 — AI Diagnostics (enabled when flags cleared) */
+  /** Continue to Phase 2 - AI Diagnostics (enabled when flags cleared) */
   onContinue?: () => void
   /** Whether the CPA has started opening source docs for import review */
   importsStarted?: boolean
-  /** Begin import review — reveals source documents on the right */
+  /** Begin import review - reveals source documents on the right */
   onStartImports?: () => void
   /** One-shot coach tip on Continue when Phase 1 is fully complete */
   continueCoachOpen?: boolean
@@ -32,7 +32,7 @@ interface Phase1BannerProps {
 }
 
 /**
- * ProtoC Phase 1 step header — message, step indicator, progress, and continue CTA.
+ * ProtoC Phase 1 step header - message, step indicator, progress, and continue CTA.
  * Document review is the primary gate for Continue; unresolved flags are secondary.
  */
 export default function Phase1Banner({
@@ -72,7 +72,7 @@ export default function Phase1Banner({
               <span className={styles.subtitle}>
                 {flagsCleared
                   ? 'All source documents and import flags are resolved. Ready to move to Step 2?'
-                  : `${flagsRemaining} import ${flagsRemaining === 1 ? 'flag remains' : 'flags remain'} — you can continue to AI diagnostics or resolve them first.`}
+                  : `${flagsRemaining} import ${flagsRemaining === 1 ? 'flag remains' : 'flags remain'} - you can continue to AI diagnostics or resolve them first.`}
               </span>
             </>
           ) : (

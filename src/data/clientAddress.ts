@@ -1,4 +1,4 @@
-/** Jessica Drake — client/recipient address (Loop 2 Build Spec). */
+/** Jessica Drake - client/recipient address (Loop 2 Build Spec). */
 export const CLIENT_ADDRESS = {
   name: 'Jessica Drake',
   street: '333 Easy Street',

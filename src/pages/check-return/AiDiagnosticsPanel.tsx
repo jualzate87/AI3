@@ -12,7 +12,7 @@ import intuitIntelligenceLogo from '../../assets/icons/intuit-intelligence-logo-
 import { computeLiveReturn } from '../../data/liveReturn'
 import { useSyncedReviewState } from '../../hooks/useSyncedReviewState'
 import { openSourceDocumentReviewPopout } from '../../lib/prototypeRoutes'
-import { buildAllDiagnosticIssues, ISSUE_FIELD } from '../data-review/AgentReportPane'
+import { buildAllDiagnosticIssues } from '../data-review/AgentReportPane'
 import {
   getOutstandingImportMismatches,
   getPhase2Progress,
@@ -81,7 +81,7 @@ export default function AiDiagnosticsPanel({
   selectedIssueKey,
   onViewChange,
 }: AiDiagnosticsPanelProps) {
-  const { amounts, reviewedFields, markReviewed } = useSyncedReviewState()
+  const { amounts, reviewedFields } = useSyncedReviewState()
   const live = useMemo(() => computeLiveReturn(amounts), [amounts])
   const allIssues = useMemo(() => buildAllDiagnosticIssues(live, amounts), [live, amounts])
   const progress = useMemo(
@@ -180,13 +180,14 @@ export default function AiDiagnosticsPanel({
                 <LinkActionButton
                   className={styles.fieldLink}
                   size="small"
+                  alignment="left"
                   onClick={() => handleViewSourceForField(row.field, row.tab)}
                 >
                   {row.label}
                 </LinkActionButton>
-                <span>{row.returnValue}</span>
-                <strong>{row.sourceValue}</strong>
-                <span className={styles.tableHeaderAction}>
+                <span className={styles.tableCellReturn}>{row.returnValue}</span>
+                <strong className={styles.tableCellSource}>{row.sourceValue}</strong>
+                <span className={styles.tableCellAction}>
                   <Button
                     priority="primary"
                     size="small"
@@ -236,40 +237,10 @@ export default function AiDiagnosticsPanel({
               {selectedIssue.sources[0].title}
             </a>
             <span className={styles.sourceNote}>
-              — {selectedIssue.sources[0].description}
+              {selectedIssue.sources[0].description}
             </span>
           </div>
         )}
-
-        <div className={styles.actionBar}>
-          <Button
-            priority="primary"
-            size="medium"
-            onClick={() => {
-              const first = mismatchRows[0]
-              if (first) {
-                handleViewSourceForField(first.field, first.tab)
-              } else {
-                handleViewSourceForField(
-                  selectedIssue.viewSourceField ?? ISSUE_FIELD[selectedIssue.issueKey],
-                  selectedIssue.viewSourceTab,
-                )
-              }
-            }}
-          >
-            Go to first mismatch
-          </Button>
-          <Button
-            priority="secondary"
-            size="medium"
-            onClick={() => markReviewed(selectedIssue.issueKey)}
-            disabled={reviewedFields.has(selectedIssue.issueKey)}
-          >
-            {reviewedFields.has(selectedIssue.issueKey) ? 'Reviewed' : 'Mark as reviewed'}
-          </Button>
-        </div>
-
-        <AiChatInput placeholder="Ask about this diagnostic..." />
       </div>
     )
   }

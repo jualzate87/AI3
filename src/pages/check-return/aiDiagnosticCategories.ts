@@ -30,7 +30,7 @@ export const AI_DIAGNOSTIC_CATEGORIES: readonly AiDiagnosticCategory[] = [
     badgeLabel: 'COMPLIANCE CHECK',
     badgeStatus: 'warning',
     description:
-      'Compliance checks surfaced during review — confirm withholding, filing requirements, and related forms before filing.',
+      'Compliance checks surfaced during review - confirm withholding, filing requirements, and related forms before filing.',
     issueKeys: ['underpaymentRisk', 'necScheduleC', 'niitForm8960'],
   },
   {
@@ -40,7 +40,7 @@ export const AI_DIAGNOSTIC_CATEGORIES: readonly AiDiagnosticCategory[] = [
     badgeLabel: 'OPTIMIZATION',
     badgeStatus: 'success',
     description:
-      'Planning opportunity identified — review deduction strategy and client-provided details before finalizing the return.',
+      'Planning opportunity identified - review deduction strategy and client-provided details before finalizing the return.',
     issueKeys: ['optItemize'],
   },
 ] as const

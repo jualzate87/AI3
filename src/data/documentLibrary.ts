@@ -16,7 +16,7 @@ export const DOCUMENT_LIBRARY: LibraryDocument[] = [
   {
     id: 'lib-w2-bing',
     formType: 'W-2',
-    label: 'W-2 — Bing Equipment Co.',
+    label: 'W-2 - Bing Equipment Co.',
     payer: 'Bing Equipment Co.',
     imageSrc: imgW2BingEquipment,
     uploadedAt: 'Mar 12, 2025',
@@ -24,7 +24,7 @@ export const DOCUMENT_LIBRARY: LibraryDocument[] = [
   {
     id: 'lib-1099-int-extra',
     formType: '1099-INT',
-    label: '1099-INT — Community Bank (uploaded)',
+    label: '1099-INT - Community Bank (uploaded)',
     payer: 'Community Bank',
     imageSrc: img1099IntHarborline,
     uploadedAt: 'Mar 10, 2025',
@@ -32,7 +32,7 @@ export const DOCUMENT_LIBRARY: LibraryDocument[] = [
   {
     id: 'lib-1099-div-extra',
     formType: '1099-DIV',
-    label: '1099-DIV — Oak Street Fund (uploaded)',
+    label: '1099-DIV - Oak Street Fund (uploaded)',
     payer: 'Oak Street Fund',
     imageSrc: img1099DivBeacon,
     uploadedAt: 'Mar 8, 2025',
@@ -57,7 +57,7 @@ export const REVIEW_FORM_OPTIONS: ReviewFormOption[] = [
   {
     id: 'w2-techCircle',
     formType: 'W-2',
-    label: 'W-2 — Tech Circle Inc (in return)',
+    label: 'W-2 - Tech Circle Inc (in return)',
     topTab: 'w2s',
     verifyDocKey: 'techCircle',
     subTabKey: 'techCircle',
@@ -66,7 +66,7 @@ export const REVIEW_FORM_OPTIONS: ReviewFormOption[] = [
   {
     id: 'w2-bingEquipment',
     formType: 'W-2',
-    label: 'W-2 — Bing Equipment (manual input)',
+    label: 'W-2 - Bing Equipment (manual input)',
     topTab: 'w2s',
     verifyDocKey: 'bingEquipment',
     subTabKey: 'bingEquipment',
@@ -75,7 +75,7 @@ export const REVIEW_FORM_OPTIONS: ReviewFormOption[] = [
   {
     id: '1099-int-new',
     formType: '1099-INT',
-    label: '1099-INT — new payer (import ready)',
+    label: '1099-INT - new payer (import ready)',
     topTab: '1099-ints',
     verifyDocKey: '1099-int',
     subTabKey: 'unwaverIngFinancial',
@@ -84,7 +84,7 @@ export const REVIEW_FORM_OPTIONS: ReviewFormOption[] = [
   {
     id: '1099-r-meridian',
     formType: '1099-R',
-    label: '1099-R — Meridian (PDF only)',
+    label: '1099-R - Meridian (PDF only)',
     topTab: '1099-rs',
     verifyDocKey: '1099-r',
     subTabKey: 'meridian',
@@ -93,7 +93,7 @@ export const REVIEW_FORM_OPTIONS: ReviewFormOption[] = [
   {
     id: '1099-nec-summit',
     formType: '1099-NEC',
-    label: '1099-NEC — Summit Advisory',
+    label: '1099-NEC - Summit Advisory',
     topTab: '1099-necs',
     verifyDocKey: '1099-nec',
     subTabKey: 'summit',

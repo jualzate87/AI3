@@ -7,7 +7,7 @@ export type LaunchPoint = {
   title: string
   status: LaunchPointStatus
   description: string
-  /** Hash route without # — navigates when set and status is live */
+  /** Hash route without # - navigates when set and status is live */
   route?: string
 }
 
@@ -59,7 +59,7 @@ export const LAUNCH_POINTS: LaunchPoint[] = [
   },
   {
     id: 8,
-    title: 'Phase 2 — AI Diagnostics',
+    title: 'Phase 2 - AI Diagnostics',
     status: 'live',
     description: 'Skip to Step 2 with the AI diagnostics panel open',
     route: PREPARER_DIAGNOSTICS_PATH,

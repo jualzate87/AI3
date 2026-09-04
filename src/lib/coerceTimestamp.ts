@@ -1,5 +1,5 @@
 /**
- * Normalize persisted activity timestamps — legacy sessions may store numbers,
+ * Normalize persisted activity timestamps - legacy sessions may store numbers,
  * nested objects, Date-like values, or full ActivityEntry shapes in `at` fields.
  */
 
@@ -50,7 +50,7 @@ export function sanitizeActivityEntry(
   return { by, at: coerceTimestamp(e.at, fallbackAt) }
 }
 
-/** Extract date-only portion from a coerced timestamp — safe for milestone attribution. */
+/** Extract date-only portion from a coerced timestamp - safe for milestone attribution. */
 export function timestampDatePart(at: unknown, fallback = 'earlier'): string {
   const normalized = coerceTimestamp(at, fallback)
   const byDot = normalized.split(' · ')[0]

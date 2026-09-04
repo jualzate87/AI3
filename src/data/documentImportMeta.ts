@@ -4,14 +4,14 @@ import type { DivPayer } from '../pages/data-review/DetailFieldsDiv'
 import type { IntPayer } from '../pages/data-review/DetailFields1099'
 import { divVerifiedDocKey, intVerifiedDocKey, normalizeVerifiedDocKey } from './verifiedDocKeys'
 
-/** How a source document entered the return — drives badge + verify rules. */
+/** How a source document entered the return - drives badge + verify rules. */
 export type ImportMode = 'api-filed' | 'extracted' | 'pdf-only' | 'manual'
 
 export type DocumentImportMeta = {
   importMode: ImportMode
   /** PDF/stub attached in the source preview */
   hasPdf: boolean
-  /** Field values imported (API or OCR) — not hand-keyed */
+  /** Field values imported (API or OCR) - not hand-keyed */
   hasStructuredInput: boolean
 }
 

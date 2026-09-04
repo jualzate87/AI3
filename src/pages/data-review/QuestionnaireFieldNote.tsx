@@ -15,7 +15,7 @@ export default function QuestionnaireFieldNote({ fieldKey }: QuestionnaireFieldN
       {notes.map(note => (
         <p key={`${note.topic}-${note.note}`} className={styles.text}>
           <span className={styles.label}>From questionnaire · {note.topic}</span>
-          {' — '}
+          {' - '}
           {note.note}
           <span className={styles.source}> ({note.sourceLabel})</span>
         </p>

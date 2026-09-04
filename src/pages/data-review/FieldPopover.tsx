@@ -28,7 +28,7 @@ export interface FieldMeta {
   // Year labels
   priorYear?: string
   currentYear?: string
-  // Source document links (legacy — prefer FieldOrigin.sources)
+  // Source document links (legacy - prefer FieldOrigin.sources)
   sources?: { label: string; value: number }[]
   // Optional explanatory note (e.g. why a deduction or figure was chosen)
   note?: string
@@ -179,7 +179,7 @@ export const FIELD_META: Record<string, FieldMeta> = {
     current: FROZEN_RETURN.totalTax - FROZEN_RETURN.totalWithholding,
   },
   box12: {
-    label: 'Box 12 — Codes',
+    label: 'Box 12 - Codes',
     prior: 0,
     current: 0,
     sources: [
@@ -192,10 +192,10 @@ export const FIELD_META: Record<string, FieldMeta> = {
 
 interface FieldPopoverProps {
   fieldName: string
-  /** Viewport rect of the value cell — used for fixed positioning */
+  /** Viewport rect of the value cell - used for fixed positioning */
   anchorRect: DOMRect
   onClose: () => void
-  /** Output screens (Check return) use the unified Figma source popover — no YoY / assist header. */
+  /** Output screens (Check return) use the unified Figma source popover - no YoY / assist header. */
   variant?: 'default' | 'output'
   /** Legacy source-link handler (label match) */
   onViewSource?: (fieldName: string, sourceLabel?: string) => void
@@ -259,7 +259,7 @@ export default function FieldPopover({
     setCoords({ top, left: pos.left, beakSide: pos.beakSide })
   }, [anchorRect, fieldName, origin, liveCurrent])
 
-  // Close on outside click — ignore 1040/summary field rows (they manage open/close themselves)
+  // Close on outside click - ignore 1040/summary field rows (they manage open/close themselves)
   useEffect(() => {
     const handler = (e: MouseEvent) => {
       const target = e.target as Element | null
@@ -419,7 +419,7 @@ export default function FieldPopover({
               {questionnaireSupplement.map(item => (
                 <p key={`${item.topic}-${item.note}`} className={styles.noteText}>
                   <strong>{item.topic}</strong>
-                  {' — '}
+                  {' - '}
                   {item.note}
                   <span className={styles.questionnaireSource}> ({item.sourceLabel})</span>
                 </p>
@@ -447,7 +447,7 @@ export default function FieldPopover({
       role="dialog"
       aria-label={`${label} details`}
     >
-      {/* Header — sparkle + field label + close */}
+      {/* Header - sparkle + field label + close */}
       <div className={sourceStyles.header}>
         <img src={intuitAssistIcon} alt="" className={styles.assistIcon} />
         <span className={sourceStyles.title}>{label}</span>
@@ -456,7 +456,7 @@ export default function FieldPopover({
         </button>
       </div>
 
-      {/* YoY section — original structure */}
+      {/* YoY section - original structure */}
       {hasYoy && (
         <div className={styles.yoySection}>
           <div className={styles.yoySectionLabel}>Year over year</div>
@@ -474,7 +474,7 @@ export default function FieldPopover({
               <div className={styles.yoyDivider} />
               <div className={styles.yoyCol}>
                 <span className={styles.yoyColLabel}>Diff</span>
-                <span className={styles.yoyColValue}>{diff > 0 ? `+$${fmt(diff)}` : diff < 0 ? `−$${fmt(Math.abs(diff))}` : '—'}</span>
+                <span className={styles.yoyColValue}>{diff > 0 ? `+$${fmt(diff)}` : diff < 0 ? `−$${fmt(Math.abs(diff))}` : '-'}</span>
               </div>
             </div>
             <div style={{ display: 'flex', justifyContent: 'center', marginTop: 4 }}>
@@ -504,7 +504,7 @@ export default function FieldPopover({
         </div>
       )}
 
-      {/* Sources — unified card style (matches Summary / schedule flyouts) */}
+      {/* Sources - unified card style (matches Summary / schedule flyouts) */}
       {showSourceBlock && (
         <div className={styles.sourcesSection}>
           <p className={sourceStyles.subtitle}>
@@ -531,7 +531,7 @@ export default function FieldPopover({
           {questionnaireSupplement.map(item => (
             <p key={`${item.topic}-${item.note}`} className={styles.noteText}>
               <strong>{item.topic}</strong>
-              {' — '}
+              {' - '}
               {item.note}
               <span className={styles.questionnaireSource}> ({item.sourceLabel})</span>
             </p>
@@ -539,7 +539,7 @@ export default function FieldPopover({
         </div>
       )}
 
-      {/* Calculated from — quiet formula list (matches TaxControlBreakdownPopover language) */}
+      {/* Calculated from - quiet formula list (matches TaxControlBreakdownPopover language) */}
       {calc && calc.components.length > 0 && (
         <div className={styles.calcSection}>
           <div className={styles.sourcesSectionLabel}>Calculated from</div>

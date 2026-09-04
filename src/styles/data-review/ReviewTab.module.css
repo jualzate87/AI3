@@ -1,4 +1,4 @@
-/* Review tab bar — CGDS tab pattern */
+/* Review tab bar - CGDS tab pattern */
 .container {
   display: flex;
   align-items: flex-start;
@@ -112,7 +112,7 @@
   width: 100%;
 }
 
-/* Pop-out / drag handle button — positioned top-right */
+/* Pop-out / drag handle button - positioned top-right */
 .popOutBtn {
   position: absolute;
   top: 11px;
@@ -133,7 +133,7 @@
   opacity: 0.7;
 }
 
-/* Dock-back button — inline in tabActions (popout window) so it never overlaps Next document */
+/* Dock-back button - inline in tabActions (popout window) so it never overlaps Next document */
 .dockBackBtn {
   display: flex;
   align-items: center;
@@ -158,7 +158,7 @@
 }
 
 
-/* ProtoC — green check when a tab’s import flags are cleared */
+/* ProtoC - green check when a tab’s import flags are cleared */
 .tabClearedCheck {
   display: inline-flex;
   align-items: center;

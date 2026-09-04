@@ -1,6 +1,6 @@
 /**
  * Canonical keys for verifiedDocsList / reviewerConfirmedDocsList.
- * Single source of truth — summary, tabs, detail pane, and handoff must all use these.
+ * Single source of truth - summary, tabs, detail pane, and handoff must all use these.
  */
 import type { W2Employer } from '../pages/data-review/DetailFields'
 import { W2_PAYER_TABS } from '../pages/data-review/DetailFields'
@@ -134,7 +134,7 @@ export function navigationForVerifiedDocKey(docKey: string): {
   return null
 }
 
-/** True when preparer verified or reviewer confirmed — matches DocVerifyHeaderActions badge. */
+/** True when preparer verified or reviewer confirmed - matches DocVerifyHeaderActions badge. */
 export function isDocShownVerified(
   verifiedDocs: Set<string>,
   docKey: string,

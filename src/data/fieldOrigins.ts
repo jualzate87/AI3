@@ -74,9 +74,9 @@ export function getFieldOrigin(
         label: 'Total wages (1a–1h)',
         kind: 'calc',
         calc: {
-          formula: 'Line 1z — Add lines 1a through 1h',
+          formula: 'Line 1z - Add lines 1a through 1h',
           components: [
-            { lineFieldId: 'wages', label: 'Line 1a — W-2 wages', amount: totals.wages, operator: '=' },
+            { lineFieldId: 'wages', label: 'Line 1a - W-2 wages', amount: totals.wages, operator: '=' },
           ],
           total: totals.wages,
           totalLabel: 'Line 1z',
@@ -218,7 +218,7 @@ export function getFieldOrigin(
         calc:
           totals.capitalGain !== 0
             ? {
-                formula: 'Line 7 — Capital gain or (loss)',
+                formula: 'Line 7 - Capital gain or (loss)',
                 components: [
                   { label: 'Schedule D / Form 8949', amount: totals.capitalGain, operator: '=' },
                 ],
@@ -255,17 +255,17 @@ export function getFieldOrigin(
         label: 'Total income',
         kind: 'calc',
         calc: {
-          formula: 'Line 9 — Add lines 1z, 2b, 3b, 4b, 5b, 6b, 7, and 8',
+          formula: 'Line 9 - Add lines 1z, 2b, 3b, 4b, 5b, 6b, 7, and 8',
           components: [
-            { lineFieldId: 'wagesTotal', label: 'Line 1z — Wages', amount: totals.wages, operator: '=' },
-            { lineFieldId: 'taxableInterest', label: 'Line 2b — Taxable interest', amount: totals.taxableInterest, operator: '+' },
-            { lineFieldId: 'ordinaryDivs', label: 'Line 3b — Ordinary dividends', amount: totals.ordinaryDivs, operator: '+' },
-            { lineFieldId: 'iraDistrib', label: 'Line 4b — IRA distributions', amount: totals.taxablePension, operator: '+' },
+            { lineFieldId: 'wagesTotal', label: 'Line 1z - Wages', amount: totals.wages, operator: '=' },
+            { lineFieldId: 'taxableInterest', label: 'Line 2b - Taxable interest', amount: totals.taxableInterest, operator: '+' },
+            { lineFieldId: 'ordinaryDivs', label: 'Line 3b - Ordinary dividends', amount: totals.ordinaryDivs, operator: '+' },
+            { lineFieldId: 'iraDistrib', label: 'Line 4b - IRA distributions', amount: totals.taxablePension, operator: '+' },
             ...(totals.capitalGain !== 0
-              ? [{ lineFieldId: 'capitalGain', label: 'Line 7 — Capital gain (loss)', amount: totals.capitalGain, operator: '+' as const }]
+              ? [{ lineFieldId: 'capitalGain', label: 'Line 7 - Capital gain (loss)', amount: totals.capitalGain, operator: '+' as const }]
               : []),
             ...(totals.otherIncome > 0
-              ? [{ lineFieldId: 'otherIncome', label: 'Line 8 — Other income', amount: totals.otherIncome, operator: '+' as const }]
+              ? [{ lineFieldId: 'otherIncome', label: 'Line 8 - Other income', amount: totals.otherIncome, operator: '+' as const }]
               : []),
           ],
           total: totals.totalIncome,
@@ -279,9 +279,9 @@ export function getFieldOrigin(
         label: 'Adjusted gross income',
         kind: 'calc',
         calc: {
-          formula: 'Line 11 — Total income minus adjustments (none on this return)',
+          formula: 'Line 11 - Total income minus adjustments (none on this return)',
           components: [
-            { lineFieldId: 'totalIncome', label: 'Line 9 — Total income', amount: totals.totalIncome, operator: '=' },
+            { lineFieldId: 'totalIncome', label: 'Line 9 - Total income', amount: totals.totalIncome, operator: '=' },
           ],
           total: totals.totalIncome,
           totalLabel: 'Line 11',
@@ -295,7 +295,7 @@ export function getFieldOrigin(
         label: 'Standard deduction',
         kind: 'calc',
         calc: {
-          formula: 'Line 12 — Standard deduction for filing status',
+          formula: 'Line 12 - Standard deduction for filing status',
           components: [
             { label: 'Single filer (2025)', amount: totals.stdDeduction, operator: '=' },
           ],
@@ -314,9 +314,9 @@ export function getFieldOrigin(
         label: 'Deductions total',
         kind: 'calc',
         calc: {
-          formula: 'Line 14 — Add lines 12 and 13',
+          formula: 'Line 14 - Add lines 12 and 13',
           components: [
-            { lineFieldId: 'stdDeduction', label: 'Line 12 — Standard deduction', amount: totals.stdDeduction, operator: '=' },
+            { lineFieldId: 'stdDeduction', label: 'Line 12 - Standard deduction', amount: totals.stdDeduction, operator: '=' },
           ],
           total: totals.stdDeduction,
           totalLabel: 'Line 14',
@@ -330,10 +330,10 @@ export function getFieldOrigin(
         label: 'Taxable income',
         kind: 'calc',
         calc: {
-          formula: 'Line 15 — AGI minus deductions',
+          formula: 'Line 15 - AGI minus deductions',
           components: [
-            { lineFieldId: 'agi', label: 'Line 11 — Adjusted gross income', amount: totals.totalIncome, operator: '=' },
-            { lineFieldId: 'deductionSum', label: 'Line 14 — Deductions', amount: totals.stdDeduction, operator: '−' },
+            { lineFieldId: 'agi', label: 'Line 11 - Adjusted gross income', amount: totals.totalIncome, operator: '=' },
+            { lineFieldId: 'deductionSum', label: 'Line 14 - Deductions', amount: totals.stdDeduction, operator: '−' },
           ],
           total: totals.taxableIncome,
           totalLabel: 'Line 15',
@@ -346,9 +346,9 @@ export function getFieldOrigin(
         label: 'Tax (line 16)',
         kind: 'calc',
         calc: {
-          formula: 'Line 16 — Tax on taxable income per IRS rate schedules',
+          formula: 'Line 16 - Tax on taxable income per IRS rate schedules',
           components: [
-            { lineFieldId: 'taxableIncome', label: 'Line 15 — Taxable income', amount: totals.taxableIncome, operator: '=' },
+            { lineFieldId: 'taxableIncome', label: 'Line 15 - Taxable income', amount: totals.taxableIncome, operator: '=' },
             { label: 'Tax from rate schedules', amount: totals.totalTax, operator: '=' },
           ],
           total: totals.totalTax,
@@ -363,9 +363,9 @@ export function getFieldOrigin(
         label: 'Total tax',
         kind: 'calc',
         calc: {
-          formula: 'Line 24 — Total tax (equals line 16; no additional taxes)',
+          formula: 'Line 24 - Total tax (equals line 16; no additional taxes)',
           components: [
-            { lineFieldId: 'incomeTax', label: 'Line 16 — Tax', amount: totals.totalTax, operator: '=' },
+            { lineFieldId: 'incomeTax', label: 'Line 16 - Tax', amount: totals.totalTax, operator: '=' },
           ],
           total: totals.totalTax,
           totalLabel: 'Line 24',
@@ -417,10 +417,10 @@ export function getFieldOrigin(
         label: 'Total withholding (25a–25c)',
         kind: 'calc',
         calc: {
-          formula: 'Line 25d — Add lines 25a through 25c',
+          formula: 'Line 25d - Add lines 25a through 25c',
           components: [
-            { lineFieldId: 'w2Withholding', label: 'Line 25a — W-2 withholding', amount: totals.w2Withholding, operator: '=' },
-            { lineFieldId: 'withholding', label: 'Line 25b — 1099 withholding', amount: totals.withholding1099, operator: '+' },
+            { lineFieldId: 'w2Withholding', label: 'Line 25a - W-2 withholding', amount: totals.w2Withholding, operator: '=' },
+            { lineFieldId: 'withholding', label: 'Line 25b - 1099 withholding', amount: totals.withholding1099, operator: '+' },
           ],
           total: totals.totalWithholding,
           totalLabel: 'Line 25d',
@@ -433,9 +433,9 @@ export function getFieldOrigin(
         label: 'Total payments',
         kind: 'calc',
         calc: {
-          formula: 'Line 33 — Federal tax withheld and other payments',
+          formula: 'Line 33 - Federal tax withheld and other payments',
           components: [
-            { lineFieldId: 'totalWithholding', label: 'Line 25d — Total withholding', amount: totals.totalWithholding, operator: '=' },
+            { lineFieldId: 'totalWithholding', label: 'Line 25d - Total withholding', amount: totals.totalWithholding, operator: '=' },
           ],
           total: totals.totalPayments,
           totalLabel: 'Line 33',
@@ -449,10 +449,10 @@ export function getFieldOrigin(
         label: 'Amount you owe',
         kind: 'calc',
         calc: {
-          formula: 'Line 37 — Total tax minus total payments',
+          formula: 'Line 37 - Total tax minus total payments',
           components: [
-            { lineFieldId: 'totalTax', label: 'Line 24 — Total tax', amount: totals.totalTax, operator: '=' },
-            { lineFieldId: 'totalPayments', label: 'Line 33 — Total payments', amount: totals.totalPayments, operator: '−' },
+            { lineFieldId: 'totalTax', label: 'Line 24 - Total tax', amount: totals.totalTax, operator: '=' },
+            { lineFieldId: 'totalPayments', label: 'Line 33 - Total payments', amount: totals.totalPayments, operator: '−' },
           ],
           total: totals.oweAmount,
           totalLabel: 'Line 37',
