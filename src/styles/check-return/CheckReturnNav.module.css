@@ -182,8 +182,8 @@
   min-width: 20px;
 }
 
-.navAiCountBadge :global([class*='NumericBadge']) {
-  background: #236cff;
+.navAiCountBadge :global([class*='Badge-numeric']) :global([class*='Badge-value']) {
+  background-color: #236cff;
   color: var(--color-text-inverse, #ffffff);
   font-size: var(--font-size-component-x-small, 12px);
   font-weight: var(--font-weight-component-bold, 600);
@@ -424,8 +424,8 @@ button.navFlatRow:hover {
   min-width: 20px;
 }
 
-.navBadge :global([class*='NumericBadge']) {
-  background: var(--color-ui-negative, #db334d);
+.navBadge :global([class*='Badge-numeric']) :global([class*='Badge-value']) {
+  background-color: var(--color-ui-negative, #db334d);
   color: var(--color-text-inverse, #ffffff);
   font-size: var(--font-size-component-x-small, 12px);
   font-weight: var(--font-weight-component-bold, 600);
