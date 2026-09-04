@@ -183,14 +183,15 @@
 }
 
 .navAiCountBadge :global([class*='Badge-numeric']) :global([class*='Badge-value']) {
-  background-color: #236cff;
-  color: var(--color-text-inverse, #ffffff);
+  background-color: #236cff !important;
+  color: var(--color-text-inverse, #ffffff) !important;
   font-size: var(--font-size-component-x-small, 12px);
   font-weight: var(--font-weight-component-bold, 600);
   line-height: 16px;
   border-radius: var(--radius-full, 9999px);
   padding: 0 4px;
   min-width: 16px;
+  min-height: 16px;
 }
 
 /* AI Diagnostics expanded secondary rows (Diagnostic 1–3) */
@@ -425,8 +426,8 @@ button.navFlatRow:hover {
 }
 
 .navBadge :global([class*='Badge-numeric']) :global([class*='Badge-value']) {
-  background-color: var(--color-ui-negative, #db334d);
-  color: var(--color-text-inverse, #ffffff);
+  background-color: var(--color-ui-negative, #db334d) !important;
+  color: var(--color-text-inverse, #ffffff) !important;
   font-size: var(--font-size-component-x-small, 12px);
   font-weight: var(--font-weight-component-bold, 600);
   line-height: 16px;
@@ -434,4 +435,5 @@ button.navFlatRow:hover {
   border-radius: var(--radius-full, 9999px);
   padding: 0 4px;
   min-width: 16px;
+  min-height: 16px;
 }

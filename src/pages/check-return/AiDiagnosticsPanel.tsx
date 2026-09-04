@@ -137,8 +137,9 @@ export default function AiDiagnosticsPanel({
               status={categoryBadgeStatus(category.badgeStatus)}
               priority="primary"
               capitalization="caps"
-              label={category.badgeLabel}
-            />
+            >
+              {category.badgeLabel}
+            </Badge>
           )}
           <h1 className={styles.detailTitle}>{selectedIssue.title}</h1>
           <p className={styles.detailSubtitle}>
@@ -292,24 +293,15 @@ export default function AiDiagnosticsPanel({
 
       <div className={styles.summaryRow}>
         <div className={styles.summaryMetrics}>
-          <Badge
-            status="warning"
-            priority="primary"
-            capitalization="sentence"
-            label={`${importMismatchCount} import mismatch${importMismatchCount === 1 ? '' : 'es'}`}
-          />
-          <Badge
-            status="warning"
-            priority="primary"
-            capitalization="sentence"
-            label={`${complianceCount} compliance check${complianceCount === 1 ? '' : 's'}`}
-          />
-          <Badge
-            status="success"
-            priority="primary"
-            capitalization="sentence"
-            label={`${optimizationCount} optimization`}
-          />
+          <Badge status="warning" priority="primary" capitalization="sentence">
+            {`${importMismatchCount} import mismatch${importMismatchCount === 1 ? '' : 'es'}`}
+          </Badge>
+          <Badge status="warning" priority="primary" capitalization="sentence">
+            {`${complianceCount} compliance check${complianceCount === 1 ? '' : 's'}`}
+          </Badge>
+          <Badge status="success" priority="primary" capitalization="sentence">
+            {`${optimizationCount} optimization`}
+          </Badge>
         </div>
         <span className={styles.reviewStatus}>
           {progress.reviewed} of {progress.total} reviewed
@@ -346,8 +338,9 @@ export default function AiDiagnosticsPanel({
                     status={categoryBadgeStatus(category.badgeStatus)}
                     priority="primary"
                     capitalization="caps"
-                    label={category.badgeLabel}
-                  />
+                  >
+                    {category.badgeLabel}
+                  </Badge>
                   {!isExpanded && (
                     <span className={styles.itemCount}>• {itemCount} item{itemCount === 1 ? '' : 's'}</span>
                   )}

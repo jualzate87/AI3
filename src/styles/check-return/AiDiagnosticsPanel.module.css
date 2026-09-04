@@ -83,7 +83,12 @@
   display: flex;
   flex-wrap: wrap;
   align-items: center;
-  gap: var(--space-component-gap-medium, 12px);
+  gap: var(--space-container-gap-large, 24px);
+}
+
+.summaryMetrics :global([class*='Badge-badge']) {
+  display: inline-flex;
+  flex-shrink: 0;
 }
 
 .reviewStatus {
@@ -146,6 +151,17 @@
   align-items: center;
   gap: var(--space-component-gap-medium, 12px);
   min-width: 0;
+}
+
+.findingHeaderLeft :global([class*='Badge-badge']) {
+  display: inline-flex;
+  flex-shrink: 0;
+}
+
+.detailHeader :global([class*='Badge-badge']) {
+  display: inline-flex;
+  flex-shrink: 0;
+  align-self: flex-start;
 }
 
 .findingTitle {
