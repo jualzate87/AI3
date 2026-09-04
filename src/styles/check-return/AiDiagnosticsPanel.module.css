@@ -1,4 +1,10 @@
 .panel {
+  /* AI Diagnostics branded actions — Intuit super blue (#236CFF) */
+  --color-action-standard: #236cff;
+  --color-action-standard-hover: #1b56cc;
+  --color-action-standard-active: #1748aa;
+  --color-action-standard-focus: #236cff;
+
   display: flex;
   flex-direction: column;
   gap: var(--space-container-gap-large, 24px);
@@ -197,12 +203,6 @@
 .findingActions {
   display: flex;
   align-items: flex-start;
-}
-
-.findingActions :global([class*='Button'][class*='primary']) {
-  --color-action-standard: #236cff;
-  --color-action-standard-hover: #1b56cc;
-  --color-action-standard-active: #1748aa;
 }
 
 .backLink {
