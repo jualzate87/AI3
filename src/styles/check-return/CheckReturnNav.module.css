@@ -183,7 +183,7 @@
 }
 
 .navAiCountBadge :global([class*='NumericBadge']) {
-  background: var(--color-data-primary, #3492ef);
+  background: #236cff;
   color: var(--color-text-inverse, #ffffff);
   font-size: var(--font-size-component-x-small, 12px);
   font-weight: var(--font-weight-component-bold, 600);

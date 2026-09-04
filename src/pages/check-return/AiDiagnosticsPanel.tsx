@@ -1,6 +1,6 @@
 import { useMemo, useState } from 'react'
 import { ChevronDown, ChevronUp, Send } from '@design-systems/icons'
-import { Badge, InfoBadgeIcon } from '@ids-ts/badge'
+import { Badge } from '@ids-ts/badge'
 import '@ids-ts/badge/dist/main.css'
 import { Button } from '@ids-ts/button'
 import '@ids-ts/button/dist/main.css'
@@ -27,6 +27,12 @@ import {
 import styles from '../../styles/check-return/AiDiagnosticsPanel.module.css'
 
 export type AiDiagnosticsView = 'overview' | 'detail'
+
+function categoryBadgeStatus(
+  status: (typeof AI_DIAGNOSTIC_CATEGORIES)[number]['badgeStatus'],
+): 'warning' | 'success' {
+  return status
+}
 
 interface AiDiagnosticsPanelProps {
   view: AiDiagnosticsView
@@ -128,11 +134,10 @@ export default function AiDiagnosticsPanel({
         <div className={styles.detailHeader}>
           {category && (
             <Badge
-              status={category.badgeStatus === 'success' ? 'success' : 'warning'}
+              status={categoryBadgeStatus(category.badgeStatus)}
               priority="primary"
               capitalization="caps"
               label={category.badgeLabel}
-              icon={InfoBadgeIcon}
             />
           )}
           <h1 className={styles.detailTitle}>{selectedIssue.title}</h1>
@@ -287,18 +292,24 @@ export default function AiDiagnosticsPanel({
 
       <div className={styles.summaryRow}>
         <div className={styles.summaryMetrics}>
-          <span className={styles.summaryMetric}>
-            <span className={`${styles.metricDot} ${styles.metricDotWarning}`} aria-hidden />
-            {importMismatchCount} import mismatch{importMismatchCount === 1 ? '' : 'es'}
-          </span>
-          <span className={styles.summaryMetric}>
-            <span className={`${styles.metricDot} ${styles.metricDotWarning}`} aria-hidden />
-            {complianceCount} compliance check{complianceCount === 1 ? '' : 's'}
-          </span>
-          <span className={styles.summaryMetric}>
-            <span className={`${styles.metricDot} ${styles.metricDotSuccess}`} aria-hidden />
-            {optimizationCount} optimization
-          </span>
+          <Badge
+            status="warning"
+            priority="primary"
+            capitalization="sentence"
+            label={`${importMismatchCount} import mismatch${importMismatchCount === 1 ? '' : 'es'}`}
+          />
+          <Badge
+            status="warning"
+            priority="primary"
+            capitalization="sentence"
+            label={`${complianceCount} compliance check${complianceCount === 1 ? '' : 's'}`}
+          />
+          <Badge
+            status="success"
+            priority="primary"
+            capitalization="sentence"
+            label={`${optimizationCount} optimization`}
+          />
         </div>
         <span className={styles.reviewStatus}>
           {progress.reviewed} of {progress.total} reviewed
@@ -332,11 +343,10 @@ export default function AiDiagnosticsPanel({
                 <span className={styles.findingHeaderLeft}>
                   <span className={styles.findingTitle}>{category.title}</span>
                   <Badge
-                    status={category.badgeStatus === 'success' ? 'success' : 'warning'}
+                    status={categoryBadgeStatus(category.badgeStatus)}
                     priority="primary"
                     capitalization="caps"
                     label={category.badgeLabel}
-                    icon={InfoBadgeIcon}
                   />
                   {!isExpanded && (
                     <span className={styles.itemCount}>• {itemCount} item{itemCount === 1 ? '' : 's'}</span>

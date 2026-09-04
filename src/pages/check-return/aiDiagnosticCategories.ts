@@ -7,7 +7,7 @@ export type AiDiagnosticCategory = {
   navLabel: string
   title: string
   badgeLabel: string
-  badgeStatus: 'warning' | 'success' | 'info'
+  badgeStatus: 'warning' | 'success'
   description: string
   issueKeys: readonly Phase2IssueKey[]
 }
@@ -17,7 +17,7 @@ export const AI_DIAGNOSTIC_CATEGORIES: readonly AiDiagnosticCategory[] = [
     id: 'import-mismatches',
     navLabel: 'Diagnostic 1',
     title: 'Import mismatches detected',
-    badgeLabel: 'import mismatches',
+    badgeLabel: 'IMPORT MISMATCHES',
     badgeStatus: 'warning',
     description:
       '6 fields don\'t match source documents. Some were marked correct during import without fixing amounts, and I found gaps the import missed.',

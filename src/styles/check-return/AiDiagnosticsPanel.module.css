@@ -83,33 +83,7 @@
   display: flex;
   flex-wrap: wrap;
   align-items: center;
-  gap: var(--space-container-gap-large, 24px);
-}
-
-.summaryMetric {
-  display: flex;
-  align-items: center;
-  gap: var(--space-component-gap-small, 8px);
-  font-family: var(--font-family-component);
-  font-size: var(--font-size-component-medium, 16px);
-  font-weight: var(--font-weight-component-semibold, 500);
-  line-height: 1.3;
-  color: var(--color-text-primary, #393a3d);
-}
-
-.metricDot {
-  width: 8px;
-  height: 8px;
-  border-radius: var(--radius-full, 9999px);
-  flex-shrink: 0;
-}
-
-.metricDotWarning {
-  background: var(--color-ui-attention, #ff6a00);
-}
-
-.metricDotSuccess {
-  background: var(--color-ui-positive, #00892e);
+  gap: var(--space-component-gap-medium, 12px);
 }
 
 .reviewStatus {
@@ -207,6 +181,12 @@
 .findingActions {
   display: flex;
   align-items: flex-start;
+}
+
+.findingActions :global([class*='Button'][class*='primary']) {
+  --color-action-standard: #236cff;
+  --color-action-standard-hover: #1b56cc;
+  --color-action-standard-active: #1748aa;
 }
 
 .backLink {
@@ -404,6 +384,12 @@
   gap: var(--space-component-gap-medium, 12px);
   padding-top: var(--space-container-padding-large, 24px);
   border-top: 1px solid var(--color-container-border-primary, #d4d7dc);
+}
+
+.actionBar :global([class*='Button'][class*='primary']) {
+  --color-action-standard: #236cff;
+  --color-action-standard-hover: #1b56cc;
+  --color-action-standard-active: #1748aa;
 }
 
 .chatWrapper {
