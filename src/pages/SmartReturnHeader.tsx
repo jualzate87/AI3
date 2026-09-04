@@ -7,6 +7,7 @@ import {
 import { Button } from '@ids-ts/button'
 import '@ids-ts/button/dist/main.css'
 import { openReviewReturnPopout } from '../lib/prototypeRoutes'
+import CheckReturnHeaderBar from './check-return/CheckReturnHeaderBar'
 import styles from '../styles/SmartReturnHeader.module.css'
 
 export type ReturnHeaderTab = 'profile' | 'smartreturn' | 'inputreturn' | 'checkreturns' | 'filereturn'
@@ -65,46 +66,50 @@ export default function SmartReturnHeader({
       </div>
 
       {/* ── Row 2: Client sub-header 63px ── */}
-      <div className={styles.row2}>
-        <div className={styles.row2Left}>
-          <div className={styles.clientName}>Jordan<br />Wells</div>
-          <Lock size="small" className={styles.lockIcon} />
-          <button type="button" className={styles.clientProfileBtn}>
-            <PersonThree size="small" />
-            <span className={styles.clientProfileLabel}>Client profile</span>
-          </button>
-          <div className={styles.vertDivider} />
-          <div className={styles.metaItem}>
-            <span className={styles.metaLabel}>Tax year</span>
-            <div className={styles.metaValueRow}>
-              <span className={styles.metaValue}>2025</span>
+      {activeTab === 'checkreturns' ? (
+        <CheckReturnHeaderBar />
+      ) : (
+        <div className={styles.row2}>
+          <div className={styles.row2Left}>
+            <div className={styles.clientName}>Jordan<br />Wells</div>
+            <Lock size="small" className={styles.lockIcon} />
+            <button type="button" className={styles.clientProfileBtn}>
+              <PersonThree size="small" />
+              <span className={styles.clientProfileLabel}>Client profile</span>
+            </button>
+            <div className={styles.vertDivider} />
+            <div className={styles.metaItem}>
+              <span className={styles.metaLabel}>Tax year</span>
+              <div className={styles.metaValueRow}>
+                <span className={styles.metaValue}>2025</span>
+              </div>
+            </div>
+            <div className={styles.metaItem}>
+              <span className={styles.metaLabel}>Return type</span>
+              <div className={styles.metaValueRow}>
+                <span className={styles.metaValue}>1040</span>
+              </div>
             </div>
           </div>
-          <div className={styles.metaItem}>
-            <span className={styles.metaLabel}>Return type</span>
-            <div className={styles.metaValueRow}>
-              <span className={styles.metaValue}>1040</span>
-            </div>
-          </div>
-        </div>
 
-        <div className={styles.row2Right}>
-          <div className={styles.avatarStack}>
-            <div className={styles.avatarD}>D</div>
-            <div className={styles.avatarH}>H</div>
-            <div className={styles.avatarPlus}>+1</div>
+          <div className={styles.row2Right}>
+            <div className={styles.avatarStack}>
+              <div className={styles.avatarD}>D</div>
+              <div className={styles.avatarH}>H</div>
+              <div className={styles.avatarPlus}>+1</div>
+            </div>
+            <button type="button" className={styles.ghostBtn}>
+              Select Asignee <ChevronDown size="small" />
+            </button>
+            <button type="button" className={styles.ghostBtn}>
+              Select Status <ChevronDown size="small" />
+            </button>
+            <Button priority="primary">
+              Return actions <ChevronDown size="small" />
+            </Button>
           </div>
-          <button type="button" className={styles.ghostBtn}>
-            Select Asignee <ChevronDown size="small" />
-          </button>
-          <button type="button" className={styles.ghostBtn}>
-            Select Status <ChevronDown size="small" />
-          </button>
-          <Button priority="primary">
-            Return actions <ChevronDown size="small" />
-          </Button>
         </div>
-      </div>
+      )}
 
       {/* ── Row 3: Tab bar 46px ── */}
       <div className={styles.row3}>

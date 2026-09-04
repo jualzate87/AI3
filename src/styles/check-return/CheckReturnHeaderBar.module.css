@@ -1,0 +1,147 @@
+/* Check Return client sub-header — Figma 1380×63 */
+
+.bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  height: 63px;
+  min-height: 63px;
+  padding: 0 16px 0 27px;
+  background: var(--color-container-background-primary, #ffffff);
+  border-bottom: 1px solid var(--color-container-background-special-use-4);
+  flex-shrink: 0;
+  gap: 12px;
+  font-family: var(--font-family-component);
+  -webkit-font-smoothing: antialiased;
+}
+
+.left {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-width: 0;
+  flex: 1 1 auto;
+}
+
+.right {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-shrink: 0;
+}
+
+/* ProConnect Tax Online wordmark — two lines */
+.wordmark {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  flex-shrink: 0;
+  line-height: 1.1;
+}
+
+.wordmarkLine {
+  font-size: var(--font-size-component-x-small);
+  font-weight: var(--font-weight-component-semibold);
+  color: var(--color-text-primary);
+  white-space: nowrap;
+}
+
+.filingIcon {
+  flex-shrink: 0;
+  color: #5d686f;
+}
+
+.clientContext {
+  font-size: var(--font-size-component-small);
+  font-weight: var(--font-weight-component);
+  line-height: 20px;
+  color: #5d686f;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+.divider {
+  width: 1px;
+  height: 38px;
+  background: var(--color-divider-tertiary, #d4d7dc);
+  flex-shrink: 0;
+  margin: 0 4px;
+}
+
+.titleBlock {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 0;
+  min-width: 0;
+}
+
+.pageLabel {
+  font-size: var(--font-size-component-x-small);
+  font-weight: var(--font-weight-component);
+  line-height: 16px;
+  color: var(--color-text-secondary);
+}
+
+.clientTitleRow {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  min-height: 24px;
+}
+
+.clientTitle {
+  font-size: var(--font-size-component-medium);
+  font-weight: var(--font-weight-component-bold);
+  line-height: 24px;
+  color: var(--color-text-primary);
+  white-space: nowrap;
+}
+
+.infoBtn {
+  min-width: 0 !important;
+  padding: 2px !important;
+  color: var(--color-text-secondary) !important;
+}
+
+.infoBtn svg {
+  color: var(--color-text-secondary);
+}
+
+/* Presence avatar — 31×31 super blue */
+.avatar {
+  width: 31px;
+  height: 31px;
+  border-radius: 50%;
+  background: #236cff;
+  color: var(--color-text-inverse, #ffffff);
+  font-size: var(--font-size-component-small);
+  font-weight: var(--font-weight-component-bold);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.actionDropdown {
+  flex-shrink: 0;
+}
+
+.printSplitBtn {
+  flex-shrink: 0;
+}
+
+/* ProConnect primary blue (#0077C5) for Print/Save PDF */
+.bar :global(.Button-priority-primary) {
+  background-color: var(--color-action-standard, #0077c5) !important;
+  border-color: var(--color-action-standard, #0077c5) !important;
+}
+
+.bar :global(.Button-priority-primary:hover) {
+  background-color: var(--color-action-standard-hover, #0064a3) !important;
+  border-color: var(--color-action-standard-hover, #0064a3) !important;
+}
+
+.bar :global(.SplitButton-priority-primary) {
+  --color-action-standard: #0077c5;
+}
