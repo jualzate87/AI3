@@ -1,6 +1,6 @@
 import { useMemo, useState } from 'react'
 import { ChevronDown, ChevronUp, Send } from '@design-systems/icons'
-import { Badge } from '@ids-ts/badge'
+import { Badge, SuccessBadgeIcon, WarningBadgeIcon } from '@ids-ts/badge'
 import '@ids-ts/badge/dist/main.css'
 import { Button } from '@ids-ts/button'
 import '@ids-ts/button/dist/main.css'
@@ -293,14 +293,32 @@ export default function AiDiagnosticsPanel({
 
       <div className={styles.summaryRow}>
         <div className={styles.summaryMetrics}>
-          <Badge status="warning" priority="primary" capitalization="sentence">
-            {`${importMismatchCount} import mismatch${importMismatchCount === 1 ? '' : 'es'}`}
+          <Badge
+            shape="round"
+            status="warning"
+            priority="secondary"
+            capitalization="sentence"
+            label={`${importMismatchCount} import mismatch${importMismatchCount === 1 ? '' : 'es'}`}
+          >
+            <WarningBadgeIcon />
           </Badge>
-          <Badge status="warning" priority="primary" capitalization="sentence">
-            {`${complianceCount} compliance check${complianceCount === 1 ? '' : 's'}`}
+          <Badge
+            shape="round"
+            status="warning"
+            priority="secondary"
+            capitalization="sentence"
+            label={`${complianceCount} compliance check${complianceCount === 1 ? '' : 's'}`}
+          >
+            <WarningBadgeIcon />
           </Badge>
-          <Badge status="success" priority="primary" capitalization="sentence">
-            {`${optimizationCount} optimization`}
+          <Badge
+            shape="round"
+            status="success"
+            priority="secondary"
+            capitalization="sentence"
+            label={`${optimizationCount} optimization`}
+          >
+            <SuccessBadgeIcon />
           </Badge>
         </div>
         <span className={styles.reviewStatus}>
