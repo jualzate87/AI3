@@ -319,9 +319,16 @@ export function getActionableItemCountForIssue(
   ctx: DiagnosticSyncContext,
 ): number {
   const { amounts } = ctx
+  const activeKeys = getActiveDiagnosticKeys(ctx)
   switch (issueKey) {
-    case 'importMismatches':
-      return getOutstandingImportMismatches(amounts).length
+    case 'importMismatches': {
+      const rows = getOutstandingImportMismatches(amounts)
+      // Qualified-div classification is counted on its own card, not twice as a mismatch row.
+      if (activeKeys.includes('qualifiedDivClassification')) {
+        return rows.filter(r => r.id !== 'qualifiedDivs').length
+      }
+      return rows.length
+    }
     case 'qualifiedDivClassification':
       return 1
     case 'underpaymentRisk':
