@@ -1,6 +1,6 @@
 import { useNavigate } from 'react-router-dom'
 import {
-  Question, Notification, Settings, Lock, PersonThree,
+  Question, Notification, Settings, Lock, PersonThree, CircleInfo,
   ChevronDown, List, Edit, Checklist,
   Send, CloudUpload, Rocket, PopOut,
 } from '@design-systems/icons'
@@ -33,6 +33,7 @@ export default function SmartReturnHeader({
   onViewSourceDocuments,
 }: SmartReturnHeaderProps) {
   const navigate = useNavigate()
+  const isCheckReturnContext = activeTab === 'checkreturns'
 
   const handleReviewReturnClick = () => {
     if (onReviewReturn) {
@@ -42,28 +43,59 @@ export default function SmartReturnHeader({
     openReviewReturnPopout('1040')
   }
 
+  const utilityCluster = (
+    <div className={styles.utilityCluster}>
+      <button type="button" className={styles.utilityBtn}>
+        <Question size="small" aria-hidden />
+        <span className={styles.utilityBtnLabel}>Help</span>
+      </button>
+      <button type="button" className={styles.utilityBtn}>
+        <Settings size="small" aria-hidden />
+        <span className={styles.utilityBtnLabel}>Settings</span>
+      </button>
+      <button type="button" className={styles.utilityIconBtn} aria-label="Notifications">
+        <Notification size="small" />
+      </button>
+      <button type="button" className={styles.utilityIconBtn} aria-label="Help resources">
+        <CircleInfo size="small" />
+      </button>
+      <span className={styles.utilityNotificationsLabel}>Notifications</span>
+      <nav className={styles.utilityLinks} aria-label="Product links">
+        <button type="button" className={styles.utilityLink}>What&apos;s new</button>
+        <button type="button" className={styles.utilityLink}>Give feedback</button>
+        <button type="button" className={styles.utilityLink}>Privacy</button>
+        <button type="button" className={styles.utilityLink}>Terms</button>
+        <button type="button" className={styles.utilityLink}>About</button>
+      </nav>
+      <div className={styles.utilityDivider} aria-hidden />
+      <div className={styles.userAvatar} aria-label="Signed in user">Z</div>
+    </div>
+  )
+
   return (
     <div className={styles.header}>
-      {/* ── Row 1: Product header 48px ── */}
-      <div className={styles.row1}>
-        <span className={styles.businessName}>Honey Tax Accounting</span>
-        <div className={styles.row1Right}>
-          <button type="button" className={styles.navBtn}>
-            <Question size="small" />
-            <span className={styles.navBtnLabel}>Help</span>
-          </button>
-          <button type="button" className={styles.navBtn}>
-            <Notification size="small" />
-            <span className={styles.navBtnLabel}>Notifications</span>
-          </button>
-          <button type="button" className={styles.navBtn}>
-            <Settings size="small" />
-            <span className={styles.navBtnLabel}>Settings</span>
-          </button>
-          <div className={styles.row1Divider} />
-          <div className={styles.oiaaAvatar}>S</div>
+      {/* ── Row 1: Product header 48px (hidden on Check return — utilities live in tab row) ── */}
+      {!isCheckReturnContext && (
+        <div className={styles.row1}>
+          <span className={styles.businessName}>Honey Tax Accounting</span>
+          <div className={styles.row1Right}>
+            <button type="button" className={styles.navBtn}>
+              <Question size="small" />
+              <span className={styles.navBtnLabel}>Help</span>
+            </button>
+            <button type="button" className={styles.navBtn}>
+              <Settings size="small" />
+              <span className={styles.navBtnLabel}>Settings</span>
+            </button>
+            <button type="button" className={styles.navBtn}>
+              <Notification size="small" />
+              <span className={styles.navBtnLabel}>Notifications</span>
+            </button>
+            <div className={styles.row1Divider} />
+            <div className={styles.oiaaAvatar}>Z</div>
+          </div>
         </div>
-      </div>
+      )}
 
       {/* ── Row 2: Client sub-header 63px ── */}
       {activeTab === 'checkreturns' ? (
@@ -111,65 +143,111 @@ export default function SmartReturnHeader({
         </div>
       )}
 
-      {/* ── Row 3: Tab bar 46px ── */}
-      <div className={styles.row3}>
+      {/* ── Row 3: Tab / navigation bar 48px (Figma 1380×48) ── */}
+      <div className={`${styles.row3} ${isCheckReturnContext ? styles.row3CheckReturn : ''}`}>
         <div className={styles.tabsLeft}>
-          <button type="button" className={styles.tab}>
-            <List size="small" /> Profile
-          </button>
-          <button
-            type="button"
-            className={`${styles.tab} ${activeTab === 'smartreturn' ? styles.tabActive : ''}`}
-            onClick={() => navigate('/smart-return')}
-          >
-            <Rocket size="small" /> SmartReturn
-          </button>
-          <button
-            type="button"
-            className={`${styles.tab} ${activeTab === 'inputreturn' ? styles.tabActive : ''}`}
-            onClick={() => navigate('/input-return')}
-          >
-            <Edit size="small" /> Input return
-          </button>
-          <button
-            type="button"
-            className={`${styles.tab} ${activeTab === 'checkreturns' ? styles.tabActive : ''}`}
-            onClick={() => navigate('/check-return')}
-          >
-            <Checklist size="small" /> Check return
-          </button>
-          <button type="button" className={styles.tab}>
-            <Send size="small" /> File return
-          </button>
+          {isCheckReturnContext ? (
+            <>
+              <button
+                type="button"
+                className={styles.tab}
+                onClick={() => navigate('/smart-return')}
+              >
+                Overview
+              </button>
+              <button
+                type="button"
+                className={styles.tab}
+                onClick={() => navigate('/input-return')}
+              >
+                <Edit size="small" aria-hidden /> Input return
+              </button>
+              <button
+                type="button"
+                className={`${styles.tab} ${styles.tabActive}`}
+                onClick={() => navigate('/check-return')}
+              >
+                <Checklist size="small" aria-hidden /> Check return
+              </button>
+            </>
+          ) : (
+            <>
+              <button type="button" className={styles.tab}>
+                <List size="small" aria-hidden /> Profile
+              </button>
+              <button
+                type="button"
+                className={`${styles.tab} ${activeTab === 'smartreturn' ? styles.tabActive : ''}`}
+                onClick={() => navigate('/smart-return')}
+              >
+                <Rocket size="small" aria-hidden /> SmartReturn
+              </button>
+              <button
+                type="button"
+                className={`${styles.tab} ${activeTab === 'inputreturn' ? styles.tabActive : ''}`}
+                onClick={() => navigate('/input-return')}
+              >
+                <Edit size="small" aria-hidden /> Input return
+              </button>
+              <button
+                type="button"
+                className={`${styles.tab} ${activeTab === 'checkreturns' ? styles.tabActive : ''}`}
+                onClick={() => navigate('/check-return')}
+              >
+                <Checklist size="small" aria-hidden /> Check return
+              </button>
+              <button type="button" className={styles.tab}>
+                <Send size="small" aria-hidden /> File return
+              </button>
+            </>
+          )}
         </div>
         <div className={styles.tabRowSpacer} aria-hidden />
-        <div className={styles.tabsRight}>
-          <span className={styles.tabMeta}>
-            <CloudUpload size="small" /> Saved at 11:34 AM
-          </span>
-          {showReviewReturn && (
-            <Button
-              priority="secondary"
-              purpose="passive"
-              onClick={handleReviewReturnClick}
-              automationId="review-return-header-cta"
-            >
-              <PopOut size="small" aria-hidden />
-              Review return
-            </Button>
-          )}
-          {showViewSourceDocuments && (
-            <Button
-              priority="secondary"
-              purpose="passive"
-              onClick={onViewSourceDocuments}
-              automationId="view-source-documents-header-cta"
-            >
-              <PopOut size="small" aria-hidden />
-              View source documents
-            </Button>
-          )}
-        </div>
+        {isCheckReturnContext ? (
+          <div className={styles.tabsRightCheckReturn}>
+            {showViewSourceDocuments && (
+              <Button
+                priority="secondary"
+                purpose="passive"
+                onClick={onViewSourceDocuments}
+                automationId="view-source-documents-header-cta"
+                className={styles.tabRowCta}
+              >
+                <PopOut size="small" aria-hidden />
+                View source documents
+              </Button>
+            )}
+            {utilityCluster}
+          </div>
+        ) : (
+          <div className={styles.tabsRight}>
+            <span className={styles.tabMeta}>
+              <CloudUpload size="small" aria-hidden /> Saved at 11:34 AM
+            </span>
+            {showReviewReturn && (
+              <Button
+                priority="secondary"
+                purpose="passive"
+                onClick={handleReviewReturnClick}
+                automationId="review-return-header-cta"
+              >
+                <PopOut size="small" aria-hidden />
+                Review return
+              </Button>
+            )}
+            {showViewSourceDocuments && (
+              <Button
+                priority="secondary"
+                purpose="passive"
+                onClick={onViewSourceDocuments}
+                automationId="view-source-documents-header-cta"
+              >
+                <PopOut size="small" aria-hidden />
+                View source documents
+              </Button>
+            )}
+          </div>
+        )}
       </div>
 
     </div>
