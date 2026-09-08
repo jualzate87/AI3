@@ -1,6 +1,6 @@
 import { useNavigate } from 'react-router-dom'
 import {
-  Question, Notification, Settings, Lock, PersonThree,
+  Question, Notification, Settings, Lock, Person,
   ChevronDown, List, Edit, Checklist,
   Send, CloudUpload, Rocket, PopOut,
 } from '@design-systems/icons'
@@ -70,7 +70,7 @@ export default function SmartReturnHeader({
           <div className={styles.clientName}>Jordan<br />Wells</div>
           <Lock size="small" className={styles.lockIcon} />
           <button type="button" className={styles.clientProfileBtn}>
-            <PersonThree size="small" />
+            <Person size="small" />
             <span className={styles.clientProfileLabel}>Client profile</span>
           </button>
           <div className={styles.vertDivider} />
