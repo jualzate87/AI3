@@ -1,11 +1,9 @@
 import { useMemo, useState } from 'react'
-import { ChevronDown, ChevronLeft, ChevronUp, NewWindow, Send } from '@design-systems/icons'
+import { ChevronDown, ChevronLeft, ChevronUp, NewWindow } from '@design-systems/icons'
 import { Badge, SuccessBadgeIcon } from '@ids-ts/badge'
 import '@ids-ts/badge/dist/main.css'
 import { Button } from '@ids-ts/button'
 import '@ids-ts/button/dist/main.css'
-import { IconControl } from '@ids-ts/icon-control'
-import '@ids-ts/icon-control/dist/main.css'
 import { Link } from '@ids-ts/link'
 import '@ids-ts/link/dist/main.css'
 import { LinkActionButton } from '@ids-ts/link-action-button'
@@ -66,12 +64,14 @@ function ExternalReferenceLink({ href, label }: { href: string; label: string })
       href={href}
       target="_blank"
       rel="noopener noreferrer"
-      size="body-3"
+      size="B3"
+      weight="regular"
       type="standalone"
+      className={styles.checkedReferenceLink}
       aria-label={`${label} (opens in a new window)`}
     >
       {label}
-      <NewWindow size="small" aria-hidden />
+      <NewWindow aria-hidden />
     </Link>
   )
 }
@@ -81,38 +81,6 @@ function RowActionLink({ label, onClick }: { label: string; onClick: () => void 
     <LinkActionButton size="small" weight="regular" alignment="right" onClick={onClick}>
       {label}
     </LinkActionButton>
-  )
-}
-
-function AiChatInput({ placeholder }: { placeholder: string }) {
-  const [value, setValue] = useState('')
-
-  return (
-    <div className={styles.chatWrapper}>
-      <div className={styles.chatBox}>
-        <div className={styles.chatInputRow}>
-          <input
-            type="text"
-            className={styles.chatInput}
-            placeholder={placeholder}
-            value={value}
-            onChange={e => setValue(e.target.value)}
-            aria-label={placeholder}
-          />
-          <IconControl
-            className={styles.chatSend}
-            aria-label="Send message"
-            onClick={() => setValue('')}
-          >
-            <Send size="medium" />
-          </IconControl>
-        </div>
-        <ExternalReferenceLink
-          href="https://www.intuit.com/legal/"
-          label="Important information about how we use generative AI"
-        />
-      </div>
-    </div>
   )
 }
 
@@ -426,7 +394,6 @@ export default function AiDiagnosticsPanel({
               <Badge
                 shape="round"
                 status="success"
-                priority="secondary"
                 capitalization="sentence"
                 label={`${CHECKED_NO_ACTION_ITEMS.length} rules cleared`}
               >
@@ -455,8 +422,6 @@ export default function AiDiagnosticsPanel({
           )}
         </div>
       </div>
-
-      <AiChatInput placeholder="Ask about Jordan's return..." />
     </div>
   )
 }
