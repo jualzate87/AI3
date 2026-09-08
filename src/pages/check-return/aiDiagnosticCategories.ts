@@ -1,4 +1,9 @@
 import type { Phase2IssueKey } from '../data-review/phase2FlagSync'
+import {
+  getActionableItemCountForIssue,
+  getActiveDiagnosticKeys,
+  type DiagnosticSyncContext,
+} from '../data-review/phase2FlagSync'
 
 export type AiDiagnosticCategoryId = 'import-mismatches' | 'compliance' | 'optimization'
 
@@ -7,7 +12,7 @@ export type AiDiagnosticCategory = {
   navLabel: string
   title: string
   badgeLabel: string
-  badgeStatus: 'warning' | 'success'
+  badgeStatus: 'warning' | 'success' | 'info'
   description: string
   issueKeys: readonly Phase2IssueKey[]
 }
@@ -38,7 +43,7 @@ export const AI_DIAGNOSTIC_CATEGORIES: readonly AiDiagnosticCategory[] = [
     navLabel: 'Diagnostic 3',
     title: 'Deduction and planning opportunities',
     badgeLabel: 'OPTIMIZATION',
-    badgeStatus: 'success',
+    badgeStatus: 'info',
     description:
       'Deductions the client confirmed but the return never claimed, plus contribution room still open before the filing deadline. Every item is quantified so you can decide what is worth a follow-up call.',
     issueKeys: ['optItemize', 'schCExpenses', 'sepIra'],
@@ -56,4 +61,17 @@ export function primaryIssueKeyForCategory(
   const category = AI_DIAGNOSTIC_CATEGORIES.find(c => c.id === categoryId)
   if (!category) return null
   return category.issueKeys.find(k => activeKeys.includes(k)) ?? category.issueKeys[0] ?? null
+}
+
+/** Actionable preparer items in a category (field fixes, forms to complete, etc.). */
+export function getCategoryActionableItemCount(
+  categoryId: AiDiagnosticCategoryId,
+  ctx: DiagnosticSyncContext,
+): number {
+  const category = AI_DIAGNOSTIC_CATEGORIES.find(c => c.id === categoryId)
+  if (!category) return 0
+  const activeKeys = getActiveDiagnosticKeys(ctx)
+  return category.issueKeys
+    .filter(k => activeKeys.includes(k))
+    .reduce((sum, k) => sum + getActionableItemCountForIssue(k, ctx), 0)
 }

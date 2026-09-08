@@ -14,11 +14,17 @@ import { resolveOutputFieldFromIssueField } from '../data-review/phase2FlagSync'
 import { outputFormDisplayTitle } from './outputFormNav'
 import styles from '../../styles/check-return/OutputReviewPanel.module.css'
 
+import type { Phase2IssueKey } from '../data-review/phase2FlagSync'
+
 interface OutputReviewPanelProps {
   outputFormId: OutputFormId
+  activeDiagnosticKey?: Phase2IssueKey | null
 }
 
-export default function OutputReviewPanel({ outputFormId }: OutputReviewPanelProps) {
+export default function OutputReviewPanel({
+  outputFormId,
+  activeDiagnosticKey = null,
+}: OutputReviewPanelProps) {
   const {
     selectedField,
     setSelectedField,
@@ -128,6 +134,7 @@ export default function OutputReviewPanel({ outputFormId }: OutputReviewPanelPro
           liveAmounts={amounts}
           editedFields={editedFields}
           outputFormId={outputFormId}
+          activeDiagnosticKey={activeDiagnosticKey}
           onNavigateSource={handleViewSourceInput}
           onNavigateToSourceDoc={handleNavigateToSourceDoc}
         />

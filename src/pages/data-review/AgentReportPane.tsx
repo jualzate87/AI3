@@ -290,7 +290,7 @@ function buildUnderpaymentRiskIssue(live: LiveReturnTotals): DiagnosticIssueCard
     title: `Withholding falls ${fmtUsd(shortfall)} short of safe harbor`,
     category: 'Compliance',
     summary: `Most of this gap is an import artifact, not a client behavior problem: the Meridian 1099-R reports $30,000 of federal withholding in Box 4 and none of it reached the return. Fix that first, then decide what remains.`,
-    taxImpact: `Safe harbor for 2025 is ${fmtUsd(SAFE_HARBOR_2024)}, which is 110% of last year's tax. The return shows ${fmtUsd(live.totalWithholding)}. Restoring the dropped ${fmtUsd(30_000)} and correcting the dividend withholding still leaves roughly ${fmtUsd(Math.max(0, shortfall - 31_438))} uncovered, so a penalty conversation with Jessica is likely either way.`,
+    taxImpact: `Safe harbor for 2025 is ${fmtUsd(SAFE_HARBOR_2024)}, which is 110% of last year's tax. The return shows ${fmtUsd(live.totalWithholding)}. Restoring the dropped ${fmtUsd(30_000)} and correcting the dividend withholding still leaves ${fmtUsd(Math.max(0, shortfall - 31_438))} uncovered, so Form 2210 is required to calculate the underpayment penalty before filing.`,
     rootCause: `Two separate causes stack here. Import dropped the entire 1099-R Box 4 withholding, and separately Jessica made no quarterly 1040-ES payments because she assumed withholding would cover the year as usual. Her income rose sharply, so it did not.`,
     clientResponseNote:
       'Jessica Drake (Mar 2, 2025): "No. I didn\'t make any estimated payments this year. I figured my W-2 and 1099 withholding would cover everything like usual."',
@@ -335,7 +335,7 @@ function buildUnderpaymentRiskIssue(live: LiveReturnTotals): DiagnosticIssueCard
         label: 'Shortfall after both corrections',
         cols: [
           fmtUsd(Math.max(0, shortfall - 31_438)),
-          'Estimated gap that remains after restoring the dropped 1099-R withholding and fixing dividend withholding. Form 2210 may apply.',
+          'Remaining gap after restoring the dropped 1099-R withholding and fixing dividend withholding. Form 2210 is required to calculate the penalty.',
         ],
         viewForm: 'f2210',
         viewFormLabel: 'Form 2210',
@@ -345,7 +345,7 @@ function buildUnderpaymentRiskIssue(live: LiveReturnTotals): DiagnosticIssueCard
     tableHeaders: ['Item', 'Amount', 'What this means', 'Action'],
     suggestedActions: [
       'Restore the Meridian 1099-R Box 4 withholding first: it is the single largest correction and it is already on the source document.',
-      'Timing tip: withholding is treated as paid evenly across the year regardless of when it happened, which is why recovering it helps more than a late catch-up payment would.',
+      `Complete Form 2210: the ${fmtUsd(Math.max(0, shortfall - 31_438))} shortfall after corrections requires an underpayment penalty calculation before filing.`,
       'Then set up 2026 quarterly payments with Jessica so this does not repeat at the higher income level.',
     ],
     actions: [

@@ -310,6 +310,58 @@ export function getActiveDiagnosticKeys(ctx: DiagnosticSyncContext): Phase2Issue
   return PHASE2_DIAGNOSTIC_ORDER.filter(k => !isDiagnosticAutoDismissed(k, ctx))
 }
 
+/**
+ * Count of preparer actions inside one diagnostic (field fixes, forms, blank codes, etc.).
+ * Used on the AI Diagnostics overview so every total reflects items to act on, not card count.
+ */
+export function getActionableItemCountForIssue(
+  issueKey: Phase2IssueKey,
+  ctx: DiagnosticSyncContext,
+): number {
+  const { amounts } = ctx
+  switch (issueKey) {
+    case 'importMismatches':
+      return getOutstandingImportMismatches(amounts).length
+    case 'qualifiedDivClassification':
+      return 1
+    case 'underpaymentRisk':
+      return 3
+    case 'necScheduleC':
+      return 2
+    case 'niitForm8960':
+      return 1
+    case 'w2Box12Missing':
+      return getBlankBox12Rows(amounts).length
+    case 'optItemize':
+    case 'schCExpenses':
+    case 'sepIra':
+      return 1
+    default:
+      return 1
+  }
+}
+
+export function getActionableItemProgress(ctx: DiagnosticSyncContext): {
+  activeKeys: Phase2IssueKey[]
+  total: number
+  reviewed: number
+  remaining: number
+  complete: boolean
+} {
+  const activeKeys = getActiveDiagnosticKeys(ctx)
+  const total = activeKeys.reduce((sum, k) => sum + getActionableItemCountForIssue(k, ctx), 0)
+  const reviewed = activeKeys
+    .filter(k => ctx.reviewedFields.has(k))
+    .reduce((sum, k) => sum + getActionableItemCountForIssue(k, ctx), 0)
+  return {
+    activeKeys,
+    total,
+    reviewed,
+    remaining: total - reviewed,
+    complete: total > 0 && reviewed === total,
+  }
+}
+
 /** Default Summary / 1040 row for each Phase 2 diagnostic (when detail pane is open). */
 export const DIAGNOSTIC_OUTPUT_FIELDS: Record<Phase2IssueKey, string> = {
   importMismatches: 'wages',
@@ -406,9 +458,9 @@ export type CheckedNoActionItem = {
 export const CHECKED_NO_ACTION_ITEMS: readonly CheckedNoActionItem[] = [
   {
     id: 'qbi-199a',
-    title: 'Section 199A qualified business income deduction',
+    title: 'QBI deduction is $0, Form 8995 not required',
     conclusion:
-      'We looked at the Summit consulting income on Schedule C. Because it is a specified service trade or business and taxable income is well above the $247,300 single filer phase-out for 2025, the QBI deduction comes out to $0. You do not need Form 8995 on this return.',
+      'Summit consulting is a specified service trade or business above the $247,300 single filer phase-out.',
     source: {
       label: 'About Form 8995 (QBI deduction)',
       href: 'https://www.irs.gov/forms-pubs/about-form-8995',
@@ -416,9 +468,9 @@ export const CHECKED_NO_ACTION_ITEMS: readonly CheckedNoActionItem[] = [
   },
   {
     id: 'filing-status',
-    title: 'Filing status and dependents',
+    title: 'Single, no dependents confirmed',
     conclusion:
-      'Single with no dependents matches last year\'s return and what Jessica entered in the Tax Organizer. Head of household and dependent credits do not apply here.',
+      'Matches last year and the Tax Organizer. Head of household and dependent credits do not apply.',
     source: {
       label: 'Publication 501 (filing status and dependents)',
       href: 'https://www.irs.gov/publications/p501',
@@ -426,9 +478,9 @@ export const CHECKED_NO_ACTION_ITEMS: readonly CheckedNoActionItem[] = [
   },
   {
     id: 'capital-gains',
-    title: 'Capital gains and Schedule D',
+    title: 'No capital gains, Schedule D not required',
     conclusion:
-      'There are no 1099-B forms or broker proceeds in the import packet, and line 7 on the 1040 is $0, which matches last year. Schedule D is not required.',
+      'No 1099-B in the packet and line 7 is $0, consistent with last year.',
     source: {
       label: 'About Schedule D (Form 1040)',
       href: 'https://www.irs.gov/forms-pubs/about-schedule-d-form-1040',
@@ -436,9 +488,9 @@ export const CHECKED_NO_ACTION_ITEMS: readonly CheckedNoActionItem[] = [
   },
   {
     id: 'ira-basis',
-    title: 'IRA basis and Form 8606',
+    title: 'No IRA basis issue, Form 8606 not required',
     conclusion:
-      'The Meridian 1099-R shows distribution code 7 with the full distribution taxable and no after-tax basis reported. Form 8606 is not needed for this distribution.',
+      'Meridian 1099-R code 7 shows the full distribution taxable with no after-tax basis.',
     source: {
       label: 'About Form 8606 (nondeductible IRAs)',
       href: 'https://www.irs.gov/forms-pubs/about-form-8606',

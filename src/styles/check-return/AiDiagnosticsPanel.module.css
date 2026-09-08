@@ -114,8 +114,8 @@
   background: var(--color-ui-attention, #c9500f);
 }
 
-.summaryDotPositive {
-  background: var(--color-ui-positive, #108000);
+.summaryDotInfo {
+  background: var(--color-ui-info, #0077c5);
 }
 
 .reviewStatus {
@@ -264,13 +264,6 @@
 .backLink {
   align-self: flex-start;
   gap: var(--space-component-gap-x-small, 4px);
-}
-
-.accessRow {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: var(--space-component-gap-small, 8px);
 }
 
 .detailHeader {
@@ -423,18 +416,6 @@
   border-top: 1px solid var(--color-container-border-primary, #d4d7dc);
 }
 
-.fieldLink {
-  min-width: 0;
-  justify-self: start;
-  width: 100%;
-  text-align: left;
-}
-
-.fieldLink:global([class*='LinkActionButton']) {
-  padding-left: 0;
-  margin-left: 0;
-}
-
 .detailTableHeader,
 .detailTableRow {
   display: grid;
@@ -515,22 +496,16 @@
   flex-direction: column;
   gap: var(--space-component-gap-small, 8px);
   margin: 0;
-  padding: 0;
-  list-style: none;
+  padding-left: var(--space-container-padding-medium, 16px);
+  list-style: disc;
 }
 
 .tipItem {
-  display: flex;
-  gap: var(--space-component-gap-small, 8px);
   font-family: var(--font-family-body);
   font-size: var(--font-size-body-3, 14px);
+  font-weight: var(--font-weight-body, 400);
   line-height: 1.5;
   color: var(--color-text-secondary, #6b6c72);
-}
-
-.tipStrong {
-  font-weight: var(--font-weight-body-bold, 600);
-  color: var(--color-text-primary, #393a3d);
 }
 
 .chatWrapper {
@@ -582,13 +557,4 @@
   position: absolute;
   right: 5px;
   bottom: 6px;
-}
-
-.disclaimerLink {
-  font-family: var(--font-family-body);
-  font-size: var(--font-size-body-4, 12px);
-  line-height: 1.5;
-  color: var(--color-link-text, #0365ac);
-  text-align: center;
-  text-decoration: none;
 }

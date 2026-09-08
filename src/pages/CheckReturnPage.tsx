@@ -11,7 +11,7 @@ import {
 import type { OutputFormId } from './data-review/outputForms'
 import { computeLiveReturn } from '../data/liveReturn'
 import { useSyncedReviewState } from '../hooks/useSyncedReviewState'
-import { getPhase2Progress } from './data-review/phase2FlagSync'
+import { getActionableItemProgress } from './data-review/phase2FlagSync'
 import type { Phase2IssueKey } from './data-review/phase2FlagSync'
 import {
   AI_DIAGNOSTIC_CATEGORIES,
@@ -48,8 +48,8 @@ export default function CheckReturnPage() {
 
   const { amounts, reviewedFields } = useSyncedReviewState()
   const live = useMemo(() => computeLiveReturn(amounts), [amounts])
-  const phase2Progress = useMemo(
-    () => getPhase2Progress({ reviewedFields, live, amounts }),
+  const itemProgress = useMemo(
+    () => getActionableItemProgress({ reviewedFields, live, amounts }),
     [reviewedFields, live, amounts],
   )
 
@@ -105,7 +105,7 @@ export default function CheckReturnPage() {
     const index = Number(subId.replace('diagnostic-', '')) - 1
     const category = AI_DIAGNOSTIC_CATEGORIES[index]
     if (!category) return
-    const issueKey = primaryIssueKeyForCategory(category.id, phase2Progress.activeKeys)
+    const issueKey = primaryIssueKeyForCategory(category.id, itemProgress.activeKeys)
     setContentView('ai-diagnostics')
     setSelectedAiDiagnosticSubId(subId)
     if (issueKey) {
@@ -115,6 +115,13 @@ export default function CheckReturnPage() {
       setSelectedDiagnosticKey(null)
       setAiDiagnosticsView('overview')
     }
+  }
+
+  const handleOpenFormFromDiagnostics = (formId: OutputFormId, issueKey: Phase2IssueKey) => {
+    setOutputFormId(formId)
+    setSelectedForm('1040')
+    setSelectedDiagnosticKey(issueKey)
+    setContentView('form-output')
   }
 
   const handleAiDiagnosticsViewChange = (
@@ -142,7 +149,7 @@ export default function CheckReturnPage() {
             <CheckReturnNav
               contentView={contentView}
               selectedForm={selectedForm}
-              aiDiagnosticCount={phase2Progress.total}
+              aiDiagnosticCount={itemProgress.total}
               selectedAiDiagnosticSubId={selectedAiDiagnosticSubId}
               onSelectFederal={handleSelectFederal}
               onSelectCalifornia={handleSelectCalifornia}
@@ -158,6 +165,8 @@ export default function CheckReturnPage() {
               aiDiagnosticsView={aiDiagnosticsView}
               selectedDiagnosticKey={selectedDiagnosticKey}
               onAiDiagnosticsViewChange={handleAiDiagnosticsViewChange}
+              onOpenDiagnosticForm={handleOpenFormFromDiagnostics}
+              diagnosticHighlightKey={selectedDiagnosticKey}
             />
             <ReturnContextRail className={styles.contextRail} />
           </div>

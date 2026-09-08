@@ -1,5 +1,4 @@
 import { useMemo, useState } from 'react'
-import { useNavigate } from 'react-router-dom'
 import { ChevronDown, ChevronLeft, ChevronUp, Send } from '@design-systems/icons'
 import { Badge, SuccessBadgeIcon } from '@ids-ts/badge'
 import '@ids-ts/badge/dist/main.css'
@@ -14,19 +13,20 @@ import '@ids-ts/link-action-button/dist/main.css'
 import intuitIntelligenceLogo from '../../assets/icons/intuit-intelligence-logo-small.svg'
 import { computeLiveReturn } from '../../data/liveReturn'
 import { useSyncedReviewState } from '../../hooks/useSyncedReviewState'
-import { SOURCE_DOCUMENTS } from '../../data/sourceDocuments'
 import { openSourceDocumentReviewPopout } from '../../lib/prototypeRoutes'
 import { buildAllDiagnosticIssues } from '../data-review/AgentReportPane'
+import type { OutputFormId } from '../data-review/outputForms'
 import {
   CHECKED_NO_ACTION_ITEMS,
   getImportMismatchTaxImpact,
   getOutstandingImportMismatches,
-  getPhase2Progress,
+  getActionableItemProgress,
   type Phase2IssueKey,
 } from '../data-review/phase2FlagSync'
 import {
   AI_DIAGNOSTIC_CATEGORIES,
   categoryForIssueKey,
+  getCategoryActionableItemCount,
   primaryIssueKeyForCategory,
   type AiDiagnosticCategoryId,
 } from './aiDiagnosticCategories'
@@ -36,54 +36,25 @@ export type AiDiagnosticsView = 'overview' | 'detail'
 
 function categoryBadgeStatus(
   status: (typeof AI_DIAGNOSTIC_CATEGORIES)[number]['badgeStatus'],
-): 'warning' | 'success' {
+): 'warning' | 'success' | 'info' {
   return status
 }
 
 const formatUsd = (n: number) => `$${Math.round(n).toLocaleString()}`
 
-/**
- * Where a preparer goes to resolve each diagnostic.
- *
- * `docId` opens the uploaded document side by side and always takes precedence.
- * When no document backs the finding, `questionnaire` opens the client's answers instead.
- * `fix` is the single place the number is actually entered or corrected.
- */
-const DIAGNOSTIC_ACCESS: Record<
-  Phase2IssueKey,
-  {
-    docId?: string
-    questionnaire?: boolean
-    fix: { kind: 'input'; navId: string } | { kind: 'form'; formId: string; label: string }
-  }
-> = {
-  importMismatches: { docId: 'w2-techCircle', fix: { kind: 'input', navId: 'w2' } },
-  qualifiedDivClassification: {
-    docId: '1099-div-token',
-    fix: { kind: 'input', navId: '1099-div' },
-  },
-  w2Box12Missing: { docId: 'w2-techCircle', fix: { kind: 'input', navId: 'w2' } },
-  underpaymentRisk: {
-    docId: '1099-r-meridian',
-    fix: { kind: 'form', formId: 'f2210', label: 'Form 2210' },
-  },
-  necScheduleC: {
-    docId: '1099-nec-summit',
-    fix: { kind: 'form', formId: 'schC', label: 'Schedule C' },
-  },
-  niitForm8960: {
-    docId: '1099-div-token',
-    fix: { kind: 'form', formId: 'f8960', label: 'Form 8960' },
-  },
-  optItemize: { questionnaire: true, fix: { kind: 'form', formId: 'schA', label: 'Schedule A' } },
-  schCExpenses: { questionnaire: true, fix: { kind: 'form', formId: 'schC', label: 'Schedule C' } },
-  sepIra: { docId: '1099-nec-summit', fix: { kind: 'form', formId: 'sch1', label: 'Schedule 1' } },
-}
-
 interface AiDiagnosticsPanelProps {
   view: AiDiagnosticsView
   selectedIssueKey: Phase2IssueKey | null
   onViewChange: (view: AiDiagnosticsView, issueKey?: Phase2IssueKey | null) => void
+  onOpenForm?: (formId: OutputFormId, issueKey: Phase2IssueKey) => void
+}
+
+function RowActionLink({ label, onClick }: { label: string; onClick: () => void }) {
+  return (
+    <LinkActionButton size="small" alignment="right" onClick={onClick}>
+      {label}
+    </LinkActionButton>
+  )
 }
 
 function AiChatInput({ placeholder }: { placeholder: string }) {
@@ -109,14 +80,15 @@ function AiChatInput({ placeholder }: { placeholder: string }) {
             <Send size="medium" />
           </IconControl>
         </div>
-        <a
-          className={styles.disclaimerLink}
+        <Link
           href="https://www.intuit.com/legal/"
           target="_blank"
           rel="noopener noreferrer"
+          size="body-3"
+          type="secondary"
         >
           Important information about how we use generative AI
-        </a>
+        </Link>
       </div>
     </div>
   )
@@ -126,27 +98,21 @@ export default function AiDiagnosticsPanel({
   view,
   selectedIssueKey,
   onViewChange,
+  onOpenForm,
 }: AiDiagnosticsPanelProps) {
-  const navigate = useNavigate()
   const { amounts, reviewedFields } = useSyncedReviewState()
   const live = useMemo(() => computeLiveReturn(amounts), [amounts])
-  const allIssues = useMemo(() => buildAllDiagnosticIssues(live, amounts), [live, amounts])
-  const progress = useMemo(
-    () => getPhase2Progress({ reviewedFields, live, amounts }),
+  const syncCtx = useMemo(
+    () => ({ reviewedFields, live, amounts }),
     [reviewedFields, live, amounts],
   )
-  const activeKeys = progress.activeKeys
+  const allIssues = useMemo(() => buildAllDiagnosticIssues(live, amounts), [live, amounts])
+  const itemProgress = useMemo(() => getActionableItemProgress(syncCtx), [syncCtx])
+  const activeKeys = itemProgress.activeKeys
 
-  const countForCategory = (id: AiDiagnosticCategoryId) =>
-    AI_DIAGNOSTIC_CATEGORIES.find(c => c.id === id)!.issueKeys.filter(k =>
-      activeKeys.includes(k),
-    ).length
-  // Every count on this screen is a count of diagnostics, so the category pills,
-  // the card counts and `progress.total` all reconcile. Mismatched-field counts
-  // only appear inside the import diagnostic, where the unit is explained.
-  const importCount = countForCategory('import-mismatches')
-  const complianceCount = countForCategory('compliance')
-  const optimizationCount = countForCategory('optimization')
+  const importCount = getCategoryActionableItemCount('import-mismatches', syncCtx)
+  const complianceCount = getCategoryActionableItemCount('compliance', syncCtx)
+  const optimizationCount = getCategoryActionableItemCount('optimization', syncCtx)
 
   const [expandedCategory, setExpandedCategory] = useState<AiDiagnosticCategoryId | null>(
     'import-mismatches',
@@ -169,14 +135,8 @@ export default function AiDiagnosticsPanel({
     })
   }
 
-  const goToFix = (issueKey: Phase2IssueKey) => {
-    const { fix } = DIAGNOSTIC_ACCESS[issueKey]
-    if (fix.kind === 'form') {
-      navigate(`/check-return?form=${fix.formId}`)
-      return
-    }
-    const doc = SOURCE_DOCUMENTS.find(d => d.id === DIAGNOSTIC_ACCESS[issueKey].docId)
-    navigate(`/input-return?form=${fix.navId}${doc?.subTab ? `&doc=${doc.subTab}` : ''}`)
+  const handleViewForm = (formId: string, issueKey: Phase2IssueKey) => {
+    onOpenForm?.(formId as OutputFormId, issueKey)
   }
 
   if (view === 'detail' && selectedIssue) {
@@ -185,17 +145,6 @@ export default function AiDiagnosticsPanel({
       selectedIssue.issueKey === 'importMismatches'
         ? getOutstandingImportMismatches(amounts)
         : []
-
-    const accessConfig = DIAGNOSTIC_ACCESS[selectedIssue.issueKey]
-    const access = {
-      sourceDoc: accessConfig.docId
-        ? SOURCE_DOCUMENTS.find(d => d.id === accessConfig.docId)
-        : undefined,
-      fixLabel:
-        accessConfig.fix.kind === 'form'
-          ? `Open ${accessConfig.fix.label}`
-          : 'Go to input section',
-    }
 
     return (
       <div className={styles.panel}>
@@ -225,35 +174,6 @@ export default function AiDiagnosticsPanel({
               ? `${mismatchRows.length} field${mismatchRows.length === 1 ? '' : 's'} on this return disagree with the source documents.`
               : selectedIssue.summary}
           </p>
-        </div>
-
-        <div className={styles.accessRow}>
-          {access.sourceDoc ? (
-            <Button
-              priority="primary"
-              size="small"
-              onClick={() =>
-                handleViewSourceForField(
-                  selectedIssue.viewSourceField ?? undefined,
-                  access.sourceDoc?.tab,
-                  access.sourceDoc?.subTab,
-                )
-              }
-            >
-              {`Open ${access.sourceDoc.formType} side by side`}
-            </Button>
-          ) : (
-            <Button
-              priority="primary"
-              size="small"
-              onClick={() => handleViewSourceForField(undefined, 'questionnaire')}
-            >
-              Open client answers side by side
-            </Button>
-          )}
-          <Button priority="secondary" size="small" onClick={() => goToFix(selectedIssue.issueKey)}>
-            {access.fixLabel}
-          </Button>
         </div>
 
         <div className={styles.explanationCard}>
@@ -286,7 +206,6 @@ export default function AiDiagnosticsPanel({
             {mismatchRows.map(row => (
               <div key={row.id} className={styles.tableRow}>
                 <LinkActionButton
-                  className={styles.fieldLink}
                   size="small"
                   alignment="left"
                   onClick={() => handleViewSourceForField(row.field, row.tab)}
@@ -299,13 +218,10 @@ export default function AiDiagnosticsPanel({
                   {formatUsd(row.taxImpact)}
                 </span>
                 <span className={styles.tableCellAction}>
-                  <Button
-                    priority="primary"
-                    size="small"
+                  <RowActionLink
+                    label="View source"
                     onClick={() => handleViewSourceForField(row.field, row.tab)}
-                  >
-                    View source
-                  </Button>
+                  />
                 </span>
               </div>
             ))}
@@ -351,23 +267,17 @@ export default function AiDiagnosticsPanel({
                 <span className={styles.detailTableNote}>{row.cols[1]}</span>
                 <span className={styles.detailTableCellAction}>
                   {row.fixTab ? (
-                    <LinkActionButton
-                      size="small"
-                      alignment="right"
+                    <RowActionLink
+                      label="View source"
                       onClick={() =>
                         handleViewSourceForField(row.fixField, row.fixTab, undefined)
                       }
-                    >
-                      View source
-                    </LinkActionButton>
+                    />
                   ) : row.viewForm ? (
-                    <LinkActionButton
-                      size="small"
-                      alignment="right"
-                      onClick={() => navigate(`/check-return?form=${row.viewForm}`)}
-                    >
-                      {`View on ${row.viewFormLabel ?? row.viewForm}`}
-                    </LinkActionButton>
+                    <RowActionLink
+                      label={`View on ${row.viewFormLabel ?? row.viewForm}`}
+                      onClick={() => handleViewForm(row.viewForm!, selectedIssue.issueKey)}
+                    />
                   ) : null}
                 </span>
               </div>
@@ -382,24 +292,14 @@ export default function AiDiagnosticsPanel({
               <span className={styles.wordmark}>Tips from Intuit Assist</span>
             </div>
             <ul className={styles.tipsList}>
-              {selectedIssue.suggestedActions.slice(0, 3).map(tip => {
-                const colonIdx = tip.indexOf(':')
-                const lead = colonIdx > 0 ? tip.slice(0, colonIdx) : tip.split(' ').slice(0, 4).join(' ')
-                const rest = colonIdx > 0 ? tip.slice(colonIdx) : tip.slice(lead.length)
-                return (
-                  <li key={tip} className={styles.tipItem}>
-                    <span aria-hidden>•</span>
-                    <span>
-                      <span className={styles.tipStrong}>{lead}</span>
-                      {rest}
-                    </span>
-                  </li>
-                )
-              })}
+              {selectedIssue.suggestedActions.slice(0, 3).map(tip => (
+                <li key={tip} className={styles.tipItem}>
+                  {tip}
+                </li>
+              ))}
             </ul>
           </div>
         )}
-
       </div>
     )
   }
@@ -416,8 +316,8 @@ export default function AiDiagnosticsPanel({
           <h1 className={styles.pageTitle}>AI Diagnostics</h1>
         </div>
         <p className={styles.introText}>
-          I&apos;ve reviewed Jordan&apos;s 2025 return and found {progress.total} item
-          {progress.total === 1 ? '' : 's'} that need attention before filing.
+          I&apos;ve reviewed Jordan&apos;s 2025 return and found {itemProgress.total} item
+          {itemProgress.total === 1 ? '' : 's'} that need attention before filing.
         </p>
       </div>
 
@@ -425,19 +325,19 @@ export default function AiDiagnosticsPanel({
         <div className={styles.summaryMetrics}>
           <span className={styles.summaryMetric}>
             <span className={`${styles.summaryDot} ${styles.summaryDotAttention}`} aria-hidden />
-            {importCount} import issue{importCount === 1 ? '' : 's'}
+            {importCount} import item{importCount === 1 ? '' : 's'}
           </span>
           <span className={styles.summaryMetric}>
             <span className={`${styles.summaryDot} ${styles.summaryDotAttention}`} aria-hidden />
-            {complianceCount} compliance check{complianceCount === 1 ? '' : 's'}
+            {complianceCount} compliance item{complianceCount === 1 ? '' : 's'}
           </span>
           <span className={styles.summaryMetric}>
-            <span className={`${styles.summaryDot} ${styles.summaryDotPositive}`} aria-hidden />
-            {optimizationCount} planning opportunit{optimizationCount === 1 ? 'y' : 'ies'}
+            <span className={`${styles.summaryDot} ${styles.summaryDotInfo}`} aria-hidden />
+            {optimizationCount} planning item{optimizationCount === 1 ? '' : 's'}
           </span>
         </div>
         <span className={styles.reviewStatus}>
-          {progress.reviewed} of {progress.total} reviewed
+          {itemProgress.reviewed} of {itemProgress.total} reviewed
         </span>
       </div>
 
@@ -447,7 +347,7 @@ export default function AiDiagnosticsPanel({
           if (visibleKeys.length === 0) return null
 
           const isExpanded = expandedCategory === category.id
-          const itemCount = visibleKeys.length
+          const itemCount = getCategoryActionableItemCount(category.id, syncCtx)
 
           return (
             <div
@@ -543,7 +443,7 @@ export default function AiDiagnosticsPanel({
                       target="_blank"
                       rel="noopener noreferrer"
                       size="body-3"
-                      type="standalone"
+                      type="secondary"
                     >
                       {item.source.label}
                     </Link>
