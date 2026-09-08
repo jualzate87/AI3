@@ -1,6 +1,6 @@
 import { useNavigate } from 'react-router-dom'
 import {
-  Question, Notification, Settings, Lock, Person,
+  CircleQuestion, Notification, Settings, Lock, Person,
   ChevronDown, List, Edit, Checklist,
   Send, CloudUpload, Rocket, PopOut,
 } from '@design-systems/icons'
@@ -48,7 +48,7 @@ export default function SmartReturnHeader({
         <span className={styles.businessName}>Honey Tax Accounting</span>
         <div className={styles.row1Right}>
           <button type="button" className={styles.navBtn}>
-            <Question size="small" />
+            <CircleQuestion size="small" />
             <span className={styles.navBtnLabel}>Help</span>
           </button>
           <button type="button" className={styles.navBtn}>
