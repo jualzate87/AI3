@@ -1,7 +1,7 @@
 import type { Phase2IssueKey } from '../data-review/phase2FlagSync'
 import {
-  getActionableItemCountForIssue,
   getActiveDiagnosticKeys,
+  getPhase2Progress,
   type DiagnosticSyncContext,
 } from '../data-review/phase2FlagSync'
 
@@ -20,7 +20,7 @@ export type AiDiagnosticCategory = {
 export const AI_DIAGNOSTIC_CATEGORIES: readonly AiDiagnosticCategory[] = [
   {
     id: 'import-mismatches',
-    navLabel: 'Diagnostic 1',
+    navLabel: 'Import mismatches',
     title: 'Import mismatches detected',
     badgeLabel: 'IMPORT MISMATCHES',
     badgeStatus: 'warning',
@@ -30,7 +30,7 @@ export const AI_DIAGNOSTIC_CATEGORIES: readonly AiDiagnosticCategory[] = [
   },
   {
     id: 'compliance',
-    navLabel: 'Diagnostic 2',
+    navLabel: 'Compliance checks',
     title: 'Compliance and completeness',
     badgeLabel: 'COMPLIANCE CHECK',
     badgeStatus: 'warning',
@@ -40,7 +40,7 @@ export const AI_DIAGNOSTIC_CATEGORIES: readonly AiDiagnosticCategory[] = [
   },
   {
     id: 'optimization',
-    navLabel: 'Diagnostic 3',
+    navLabel: 'Planning opportunities',
     title: 'Deduction and planning opportunities',
     badgeLabel: 'OPTIMIZATION',
     badgeStatus: 'info',
@@ -63,15 +63,29 @@ export function primaryIssueKeyForCategory(
   return category.issueKeys.find(k => activeKeys.includes(k)) ?? category.issueKeys[0] ?? null
 }
 
-/** Actionable preparer items in a category (field fixes, forms to complete, etc.). */
-export function getCategoryActionableItemCount(
+/** Active diagnostics in one category (one diagnostic = one overview item). */
+export function getCategoryDiagnosticCount(
   categoryId: AiDiagnosticCategoryId,
   ctx: DiagnosticSyncContext,
 ): number {
   const category = AI_DIAGNOSTIC_CATEGORIES.find(c => c.id === categoryId)
   if (!category) return 0
   const activeKeys = getActiveDiagnosticKeys(ctx)
-  return category.issueKeys
-    .filter(k => activeKeys.includes(k))
-    .reduce((sum, k) => sum + getActionableItemCountForIssue(k, ctx), 0)
+  return category.issueKeys.filter(k => activeKeys.includes(k)).length
+}
+
+/**
+ * Single source for AI Diagnostics overview counts (intro, pills, review status,
+ * collapsed cards, nav badge). Cleared checked-no-action rules are excluded.
+ */
+export function getDiagnosticOverviewCounts(ctx: DiagnosticSyncContext) {
+  const progress = getPhase2Progress(ctx)
+  return {
+    ...progress,
+    byCategory: {
+      'import-mismatches': getCategoryDiagnosticCount('import-mismatches', ctx),
+      compliance: getCategoryDiagnosticCount('compliance', ctx),
+      optimization: getCategoryDiagnosticCount('optimization', ctx),
+    } as Record<AiDiagnosticCategoryId, number>,
+  }
 }

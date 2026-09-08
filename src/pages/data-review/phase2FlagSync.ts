@@ -310,65 +310,6 @@ export function getActiveDiagnosticKeys(ctx: DiagnosticSyncContext): Phase2Issue
   return PHASE2_DIAGNOSTIC_ORDER.filter(k => !isDiagnosticAutoDismissed(k, ctx))
 }
 
-/**
- * Count of preparer actions inside one diagnostic (field fixes, forms, blank codes, etc.).
- * Used on the AI Diagnostics overview so every total reflects items to act on, not card count.
- */
-export function getActionableItemCountForIssue(
-  issueKey: Phase2IssueKey,
-  ctx: DiagnosticSyncContext,
-): number {
-  const { amounts } = ctx
-  const activeKeys = getActiveDiagnosticKeys(ctx)
-  switch (issueKey) {
-    case 'importMismatches': {
-      const rows = getOutstandingImportMismatches(amounts)
-      // Qualified-div classification is counted on its own card, not twice as a mismatch row.
-      if (activeKeys.includes('qualifiedDivClassification')) {
-        return rows.filter(r => r.id !== 'qualifiedDivs').length
-      }
-      return rows.length
-    }
-    case 'qualifiedDivClassification':
-      return 1
-    case 'underpaymentRisk':
-      return 3
-    case 'necScheduleC':
-      return 2
-    case 'niitForm8960':
-      return 1
-    case 'w2Box12Missing':
-      return getBlankBox12Rows(amounts).length
-    case 'optItemize':
-    case 'schCExpenses':
-    case 'sepIra':
-      return 1
-    default:
-      return 1
-  }
-}
-
-export function getActionableItemProgress(ctx: DiagnosticSyncContext): {
-  activeKeys: Phase2IssueKey[]
-  total: number
-  reviewed: number
-  remaining: number
-  complete: boolean
-} {
-  const activeKeys = getActiveDiagnosticKeys(ctx)
-  const total = activeKeys.reduce((sum, k) => sum + getActionableItemCountForIssue(k, ctx), 0)
-  const reviewed = activeKeys
-    .filter(k => ctx.reviewedFields.has(k))
-    .reduce((sum, k) => sum + getActionableItemCountForIssue(k, ctx), 0)
-  return {
-    activeKeys,
-    total,
-    reviewed,
-    remaining: total - reviewed,
-    complete: total > 0 && reviewed === total,
-  }
-}
-
 /** Default Summary / 1040 row for each Phase 2 diagnostic (when detail pane is open). */
 export const DIAGNOSTIC_OUTPUT_FIELDS: Record<Phase2IssueKey, string> = {
   importMismatches: 'wages',

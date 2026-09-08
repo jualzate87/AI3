@@ -5,33 +5,59 @@ import CheckReturnMainContent from './check-return/CheckReturnMainContent'
 import ReviewReturnPopoutHeader from './check-return/ReviewReturnPopoutHeader'
 import { checkReturnFormToOutputId } from './check-return/outputFormNav'
 import type { OutputFormId } from './data-review/outputForms'
+import { OUTPUT_FORM_OPTIONS } from './data-review/outputForms'
+import {
+  PHASE2_DIAGNOSTIC_ORDER,
+  type Phase2IssueKey,
+} from './data-review/phase2FlagSync'
 import { openSourceDocumentReviewPopout } from '../lib/prototypeRoutes'
 import styles from '../styles/check-return/CheckReturnPopoutPage.module.css'
 
+const VALID_OUTPUT_FORMS = new Set<OutputFormId>([
+  '1040',
+  'sch1',
+  'schC',
+  'schD',
+  'schA',
+  'f8960',
+  'f2210',
+])
+
 function resolveInitialOutputForm(searchParams: URLSearchParams): OutputFormId {
   const formParam = searchParams.get('form')
-  if (formParam === '1040' || formParam === 'sch1' || formParam === 'schC' || formParam === 'schD' || formParam === 'schA') {
+  if (formParam && VALID_OUTPUT_FORMS.has(formParam as OutputFormId)) {
     return formParam as OutputFormId
   }
   return '1040'
 }
 
-const FORM_PARAM_LABELS: Record<string, string> = {
-  '1040': '1040',
-  sch1: 'Sch 1',
-  schC: 'Sch C',
-  schD: 'Sch D',
-  schA: 'Sch A',
+function resolveDiagnosticKey(searchParams: URLSearchParams): Phase2IssueKey | null {
+  const diagnostic = searchParams.get('diagnostic')
+  if (!diagnostic) return null
+  return PHASE2_DIAGNOSTIC_ORDER.includes(diagnostic as Phase2IssueKey)
+    ? (diagnostic as Phase2IssueKey)
+    : null
+}
+
+function navLabelForForm(formId: OutputFormId): string {
+  const opt = OUTPUT_FORM_OPTIONS.find(o => o.id === formId)
+  return opt?.shortLabel ?? '1040'
 }
 
 /** Focused review-return window - tax summary + output forms only (Figma 34240:165563). */
 export default function CheckReturnPopoutPage() {
   const [searchParams] = useSearchParams()
   const initialForm = useMemo(() => resolveInitialOutputForm(searchParams), [searchParams])
+  const initialDiagnostic = useMemo(() => resolveDiagnosticKey(searchParams), [searchParams])
 
   const [contentView, setContentView] = useState<ContentView>('form-output')
-  const [selectedForm, setSelectedForm] = useState<string | null>('1040')
+  const [selectedForm, setSelectedForm] = useState<string | null>(() =>
+    navLabelForForm(initialForm),
+  )
   const [outputFormId, setOutputFormId] = useState<OutputFormId>(initialForm)
+  const [diagnosticHighlightKey, setDiagnosticHighlightKey] = useState<Phase2IssueKey | null>(
+    initialDiagnostic,
+  )
 
   useEffect(() => {
     const el = document.documentElement
@@ -51,9 +77,11 @@ export default function CheckReturnPopoutPage() {
   useEffect(() => {
     const formParam = searchParams.get('form')
     if (!formParam) return
-    setOutputFormId(resolveInitialOutputForm(searchParams))
-    setSelectedForm(FORM_PARAM_LABELS[formParam] ?? '1040')
+    const formId = resolveInitialOutputForm(searchParams)
+    setOutputFormId(formId)
+    setSelectedForm(navLabelForForm(formId))
     setContentView('form-output')
+    setDiagnosticHighlightKey(resolveDiagnosticKey(searchParams))
   }, [searchParams])
 
   const handleSelectFederal = () => {
@@ -98,6 +126,7 @@ export default function CheckReturnPopoutPage() {
           contentView={contentView}
           selectedForm={selectedForm}
           outputFormId={outputFormId}
+          diagnosticHighlightKey={diagnosticHighlightKey}
         />
       </div>
     </div>

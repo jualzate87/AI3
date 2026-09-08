@@ -18,7 +18,6 @@ interface CheckReturnMainContentProps {
     view: AiDiagnosticsView,
     issueKey?: Phase2IssueKey | null,
   ) => void
-  onOpenDiagnosticForm?: (formId: OutputFormId, issueKey: Phase2IssueKey) => void
   diagnosticHighlightKey?: Phase2IssueKey | null
 }
 
@@ -29,7 +28,6 @@ export default function CheckReturnMainContent({
   aiDiagnosticsView = 'overview',
   selectedDiagnosticKey = null,
   onAiDiagnosticsViewChange,
-  onOpenDiagnosticForm,
   diagnosticHighlightKey = null,
 }: CheckReturnMainContentProps) {
   return (
@@ -90,7 +88,6 @@ export default function CheckReturnMainContent({
           view={aiDiagnosticsView}
           selectedIssueKey={selectedDiagnosticKey}
           onViewChange={onAiDiagnosticsViewChange}
-          onOpenForm={onOpenDiagnosticForm}
         />
       )}
 

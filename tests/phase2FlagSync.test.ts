@@ -37,13 +37,17 @@ describe('DIAGNOSTIC_DISMISS_RULES — coverage', () => {
     }
   })
 
-  it('keeps Filing stoppers / Compliance / Opportunities catalog at quality size', () => {
+  it('lists all nine Phase 2 diagnostics in catalog order', () => {
     expect(PHASE2_DIAGNOSTIC_ORDER).toEqual([
       'importMismatches',
+      'qualifiedDivClassification',
       'underpaymentRisk',
       'necScheduleC',
       'niitForm8960',
+      'w2Box12Missing',
       'optItemize',
+      'schCExpenses',
+      'sepIra',
     ])
   })
 
@@ -158,6 +162,25 @@ describe('resolveOutputFieldFromDiagnostic', () => {
     expect(resolveFormLineHighlight('schC', { issueKey: 'necScheduleC' })).toBe('schC-1')
     expect(resolveFormLineHighlight('f8960', { issueKey: 'niitForm8960' })).toBe('f8960-5a')
     expect(resolveFormLineHighlight('summary', { issueKey: 'necScheduleC' })).toBe('otherIncome')
+  })
+})
+
+describe('getDiagnosticOverviewCounts', () => {
+  it('counts one item per active diagnostic (2 / 4 / 3 = 9 at seed)', async () => {
+    const { getDiagnosticOverviewCounts } = await import(
+      '../src/pages/check-return/aiDiagnosticCategories'
+    )
+    const overview = getDiagnosticOverviewCounts(ctx())
+    expect(overview.total).toBe(9)
+    expect(overview.byCategory['import-mismatches']).toBe(2)
+    expect(overview.byCategory.compliance).toBe(4)
+    expect(overview.byCategory.optimization).toBe(3)
+  })
+
+  it('includes all six import mismatch rows at seed (no dedupe against qualified-div card)', () => {
+    const rows = getOutstandingImportMismatches(SEED_AMOUNTS)
+    expect(rows).toHaveLength(6)
+    expect(rows.some(r => r.id === 'qualifiedDivs')).toBe(true)
   })
 })
 

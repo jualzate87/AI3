@@ -137,20 +137,37 @@ const REVIEW_RETURN_POPOUT_WINDOW_NAME = 'smartreview-review-return'
 
 let reviewReturnPopoutWindow: Window | null = null
 
+export type ReviewReturnPopoutOptions = {
+  form?: string
+  /** Phase 2 issue key - drives form line highlight in the review popout. */
+  diagnostic?: string
+}
+
 /** Build hash route for the focused review-return popout window. */
-export function buildReviewReturnPopoutRoute(form: string = '1040'): string {
-  return `${CHECK_RETURN_POPOUT_PATH}?form=${form}`
+export function buildReviewReturnPopoutRoute(
+  formOrOptions: string | ReviewReturnPopoutOptions = '1040',
+): string {
+  const form =
+    typeof formOrOptions === 'string' ? formOrOptions : formOrOptions.form ?? '1040'
+  const params = new URLSearchParams({ form })
+  if (typeof formOrOptions === 'object' && formOrOptions.diagnostic) {
+    params.set('diagnostic', formOrOptions.diagnostic)
+  }
+  return `${CHECK_RETURN_POPOUT_PATH}?${params.toString()}`
 }
 
 /** Open focused review-return window - reuses existing window when already open. */
-export function openReviewReturnPopout(form: string = '1040'): Window | null {
-  const url = buildHashRouteUrl(buildReviewReturnPopoutRoute(form))
+export function openReviewReturnPopout(
+  formOrOptions: string | ReviewReturnPopoutOptions = '1040',
+): Window | null {
+  const route = buildReviewReturnPopoutRoute(formOrOptions)
+  const url = buildHashRouteUrl(route)
 
   if (reviewReturnPopoutWindow && !reviewReturnPopoutWindow.closed) {
     reviewReturnPopoutWindow.focus()
     try {
       const base = getPrototypeBaseUrl()
-      reviewReturnPopoutWindow.location.replace(`${base}#${buildReviewReturnPopoutRoute(form)}`)
+      reviewReturnPopoutWindow.location.replace(`${base}#${route}`)
     } catch {
       reviewReturnPopoutWindow.location.href = url
     }

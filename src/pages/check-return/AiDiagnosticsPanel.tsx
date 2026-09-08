@@ -1,5 +1,5 @@
 import { useMemo, useState } from 'react'
-import { ChevronDown, ChevronLeft, ChevronUp, Send } from '@design-systems/icons'
+import { ChevronDown, ChevronLeft, ChevronUp, NewWindow, Send } from '@design-systems/icons'
 import { Badge, SuccessBadgeIcon } from '@ids-ts/badge'
 import '@ids-ts/badge/dist/main.css'
 import { Button } from '@ids-ts/button'
@@ -13,21 +13,21 @@ import '@ids-ts/link-action-button/dist/main.css'
 import intuitIntelligenceLogo from '../../assets/icons/intuit-intelligence-logo-small.svg'
 import { computeLiveReturn } from '../../data/liveReturn'
 import { useSyncedReviewState } from '../../hooks/useSyncedReviewState'
-import { openSourceDocumentReviewPopout } from '../../lib/prototypeRoutes'
+import { openReviewReturnPopout, openSourceDocumentReviewPopout } from '../../lib/prototypeRoutes'
 import { buildAllDiagnosticIssues } from '../data-review/AgentReportPane'
 import type { OutputFormId } from '../data-review/outputForms'
 import {
   CHECKED_NO_ACTION_ITEMS,
   getImportMismatchTaxImpact,
   getOutstandingImportMismatches,
-  getActionableItemProgress,
   type Phase2IssueKey,
 } from '../data-review/phase2FlagSync'
 import {
   AI_DIAGNOSTIC_CATEGORIES,
   categoryForIssueKey,
-  getCategoryActionableItemCount,
+  getDiagnosticOverviewCounts,
   primaryIssueKeyForCategory,
+  type AiDiagnosticCategory,
   type AiDiagnosticCategoryId,
 } from './aiDiagnosticCategories'
 import styles from '../../styles/check-return/AiDiagnosticsPanel.module.css'
@@ -35,9 +35,21 @@ import styles from '../../styles/check-return/AiDiagnosticsPanel.module.css'
 export type AiDiagnosticsView = 'overview' | 'detail'
 
 function categoryBadgeStatus(
-  status: (typeof AI_DIAGNOSTIC_CATEGORIES)[number]['badgeStatus'],
+  status: AiDiagnosticCategory['badgeStatus'],
 ): 'warning' | 'success' | 'info' {
   return status
+}
+
+function CategoryBadge({ category }: { category: AiDiagnosticCategory }) {
+  return (
+    <Badge
+      status={categoryBadgeStatus(category.badgeStatus)}
+      priority="secondary"
+      capitalization="caps"
+    >
+      {category.badgeLabel}
+    </Badge>
+  )
 }
 
 const formatUsd = (n: number) => `$${Math.round(n).toLocaleString()}`
@@ -46,12 +58,27 @@ interface AiDiagnosticsPanelProps {
   view: AiDiagnosticsView
   selectedIssueKey: Phase2IssueKey | null
   onViewChange: (view: AiDiagnosticsView, issueKey?: Phase2IssueKey | null) => void
-  onOpenForm?: (formId: OutputFormId, issueKey: Phase2IssueKey) => void
+}
+
+function ExternalReferenceLink({ href, label }: { href: string; label: string }) {
+  return (
+    <Link
+      href={href}
+      target="_blank"
+      rel="noopener noreferrer"
+      size="body-3"
+      type="standalone"
+      aria-label={`${label} (opens in a new window)`}
+    >
+      {label}
+      <NewWindow size="small" aria-hidden />
+    </Link>
+  )
 }
 
 function RowActionLink({ label, onClick }: { label: string; onClick: () => void }) {
   return (
-    <LinkActionButton size="small" alignment="right" onClick={onClick}>
+    <LinkActionButton size="small" weight="regular" alignment="right" onClick={onClick}>
       {label}
     </LinkActionButton>
   )
@@ -80,15 +107,10 @@ function AiChatInput({ placeholder }: { placeholder: string }) {
             <Send size="medium" />
           </IconControl>
         </div>
-        <Link
+        <ExternalReferenceLink
           href="https://www.intuit.com/legal/"
-          target="_blank"
-          rel="noopener noreferrer"
-          size="body-3"
-          type="secondary"
-        >
-          Important information about how we use generative AI
-        </Link>
+          label="Important information about how we use generative AI"
+        />
       </div>
     </div>
   )
@@ -98,7 +120,6 @@ export default function AiDiagnosticsPanel({
   view,
   selectedIssueKey,
   onViewChange,
-  onOpenForm,
 }: AiDiagnosticsPanelProps) {
   const { amounts, reviewedFields } = useSyncedReviewState()
   const live = useMemo(() => computeLiveReturn(amounts), [amounts])
@@ -107,12 +128,12 @@ export default function AiDiagnosticsPanel({
     [reviewedFields, live, amounts],
   )
   const allIssues = useMemo(() => buildAllDiagnosticIssues(live, amounts), [live, amounts])
-  const itemProgress = useMemo(() => getActionableItemProgress(syncCtx), [syncCtx])
-  const activeKeys = itemProgress.activeKeys
+  const overview = useMemo(() => getDiagnosticOverviewCounts(syncCtx), [syncCtx])
+  const activeKeys = overview.activeKeys
 
-  const importCount = getCategoryActionableItemCount('import-mismatches', syncCtx)
-  const complianceCount = getCategoryActionableItemCount('compliance', syncCtx)
-  const optimizationCount = getCategoryActionableItemCount('optimization', syncCtx)
+  const importCount = overview.byCategory['import-mismatches']
+  const complianceCount = overview.byCategory.compliance
+  const optimizationCount = overview.byCategory.optimization
 
   const [expandedCategory, setExpandedCategory] = useState<AiDiagnosticCategoryId | null>(
     'import-mismatches',
@@ -135,8 +156,8 @@ export default function AiDiagnosticsPanel({
     })
   }
 
-  const handleViewForm = (formId: string, issueKey: Phase2IssueKey) => {
-    onOpenForm?.(formId as OutputFormId, issueKey)
+  const handleViewForm = (formId: OutputFormId, issueKey: Phase2IssueKey) => {
+    openReviewReturnPopout({ form: formId, diagnostic: issueKey })
   }
 
   if (view === 'detail' && selectedIssue) {
@@ -151,23 +172,16 @@ export default function AiDiagnosticsPanel({
         <LinkActionButton
           className={styles.backLink}
           size="small"
+          weight="regular"
           alignment="left"
           onClick={() => onViewChange('overview', null)}
         >
-          <ChevronLeft size="small" aria-hidden />
+          <ChevronLeft size="xsmall" aria-hidden />
           Back to AI Diagnostics
         </LinkActionButton>
 
         <div className={styles.detailHeader}>
-          {category && (
-            <Badge
-              status={categoryBadgeStatus(category.badgeStatus)}
-              priority="primary"
-              capitalization="caps"
-            >
-              {category.badgeLabel}
-            </Badge>
-          )}
+          {category && <CategoryBadge category={category} />}
           <h1 className={styles.detailTitle}>{selectedIssue.title}</h1>
           <p className={styles.detailSubtitle}>
             {selectedIssue.issueKey === 'importMismatches'
@@ -207,6 +221,7 @@ export default function AiDiagnosticsPanel({
               <div key={row.id} className={styles.tableRow}>
                 <LinkActionButton
                   size="small"
+                  weight="regular"
                   alignment="left"
                   onClick={() => handleViewSourceForField(row.field, row.tab)}
                 >
@@ -316,8 +331,8 @@ export default function AiDiagnosticsPanel({
           <h1 className={styles.pageTitle}>AI Diagnostics</h1>
         </div>
         <p className={styles.introText}>
-          I&apos;ve reviewed Jordan&apos;s 2025 return and found {itemProgress.total} item
-          {itemProgress.total === 1 ? '' : 's'} that need attention before filing.
+          I&apos;ve reviewed Jordan&apos;s 2025 return and found {overview.total} item
+          {overview.total === 1 ? '' : 's'} that need attention before filing.
         </p>
       </div>
 
@@ -332,12 +347,12 @@ export default function AiDiagnosticsPanel({
             {complianceCount} compliance item{complianceCount === 1 ? '' : 's'}
           </span>
           <span className={styles.summaryMetric}>
-            <span className={`${styles.summaryDot} ${styles.summaryDotInfo}`} aria-hidden />
+            <span className={`${styles.summaryDot} ${styles.summaryDotNeutral}`} aria-hidden />
             {optimizationCount} planning item{optimizationCount === 1 ? '' : 's'}
           </span>
         </div>
         <span className={styles.reviewStatus}>
-          {itemProgress.reviewed} of {itemProgress.total} reviewed
+          {overview.reviewed} of {overview.total} reviewed
         </span>
       </div>
 
@@ -347,7 +362,7 @@ export default function AiDiagnosticsPanel({
           if (visibleKeys.length === 0) return null
 
           const isExpanded = expandedCategory === category.id
-          const itemCount = getCategoryActionableItemCount(category.id, syncCtx)
+          const itemCount = overview.byCategory[category.id]
 
           return (
             <div
@@ -364,13 +379,7 @@ export default function AiDiagnosticsPanel({
               >
                 <span className={styles.findingHeaderLeft}>
                   <span className={styles.findingTitle}>{category.title}</span>
-                  <Badge
-                    status={categoryBadgeStatus(category.badgeStatus)}
-                    priority="primary"
-                    capitalization="caps"
-                  >
-                    {category.badgeLabel}
-                  </Badge>
+                  <CategoryBadge category={category} />
                   {!isExpanded && (
                     <span className={styles.itemCount}>• {itemCount} item{itemCount === 1 ? '' : 's'}</span>
                   )}
@@ -438,15 +447,7 @@ export default function AiDiagnosticsPanel({
                   <span className={styles.checkedTitle}>{item.title}</span>
                   <span className={styles.checkedConclusion}>{item.conclusion}</span>
                   {item.source && (
-                    <Link
-                      href={item.source.href}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      size="body-3"
-                      type="secondary"
-                    >
-                      {item.source.label}
-                    </Link>
+                    <ExternalReferenceLink href={item.source.href} label={item.source.label} />
                   )}
                 </li>
               ))}

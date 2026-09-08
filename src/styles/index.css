@@ -86,3 +86,12 @@ html, body {
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
+
+/*
+ * LinkActionButton renders a native <button>. Buttons use the browser default
+ * font (Arial on macOS) instead of inheriting the Avenir stack from body.
+ */
+.idsLinkActionButton,
+button[class*='LinkActionButton-button'] {
+  font-family: var(--font-family-component);
+}
