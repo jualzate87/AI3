@@ -14,15 +14,23 @@ import federalTaxesIcon from '../../assets/icons/federal-taxes.svg'
 import scannerIcon from '../../assets/icons/scanner.svg'
 import IssueDetailPane, { type IssueAction, type IssueSourceCard } from './IssueDetailPane'
 import Tooltip from './Tooltip'
-import { FROZEN_RETURN } from '../../data/frozenReturn'
 import type { LiveAmounts, LiveReturnTotals } from '../../data/liveReturn'
-import { computeLiveReturn, SEED_AMOUNTS } from '../../data/liveReturn'
-import { RETURN_SUMMARY_INSIGHTS } from './phase1FlagMessages'
+import {
+  NEC_SOURCE_AMOUNT,
+  SEED_AMOUNTS,
+  computeLiveReturn,
+  computeQualifiedDivOverstatement,
+  computeSepIraCeiling,
+  getBlankBox12Rows,
+  projectItemizedDeduction,
+} from '../../data/liveReturn'
 import {
   getPhase2Progress,
+  getImportMismatchTaxImpact,
   getOutstandingImportMismatches,
   PHASE2_DIAGNOSTIC_ORDER,
   SAFE_HARBOR_2024,
+  SOURCE_AMOUNTS,
   type Phase2IssueKey,
 } from './phase2FlagSync'
 import type { QuestionnaireResponseId } from './questionnaireData'
@@ -70,9 +78,9 @@ interface AgentReportPaneProps {
 }
 
 const REPORT_CARDS = [
-  { label: 'Filing stoppers', keys: ['importMismatches'], badgeColor: 'red' as const, position: 'first' },
-  { label: 'Compliance', keys: ['underpaymentRisk', 'necScheduleC', 'niitForm8960'], badgeColor: 'orange' as const, position: 'middle' },
-  { label: 'Planning opportunities', keys: ['optItemize'], badgeColor: 'blue' as const, position: 'last' },
+  { label: 'Import accuracy', keys: ['importMismatches', 'qualifiedDivClassification'], badgeColor: 'red' as const, position: 'first' },
+  { label: 'Compliance', keys: ['underpaymentRisk', 'necScheduleC', 'niitForm8960', 'w2Box12Missing'], badgeColor: 'orange' as const, position: 'middle' },
+  { label: 'Planning opportunities', keys: ['optItemize', 'schCExpenses', 'sepIra'], badgeColor: 'blue' as const, position: 'last' },
 ]
 
 const CARD_ICONS = [
@@ -116,32 +124,33 @@ export type DiagnosticIssueCard = {
 function buildImportMismatchesIssue(amounts: LiveAmounts): DiagnosticIssueCard {
   const gaps = getOutstandingImportMismatches(amounts)
   const first = gaps[0]
+  const totalImpact = getImportMismatchTaxImpact(amounts)
   return {
     issueKey: 'importMismatches',
     dotColor: 'red',
     title:
       gaps.length === 0
         ? 'Import accuracy: no remaining input↔source gaps'
-        : `${gaps.length} input↔source mismatch${gaps.length === 1 ? '' : 'es'} still on the return`,
-    category: 'Filing stoppers',
+        : `${gaps.length} import mismatch${gaps.length === 1 ? '' : 'es'} worth ${fmtUsd(totalImpact)} in tax`,
+    category: 'Import accuracy',
     summary:
       gaps.length === 0
         ? 'Source-document amounts and input fields match. No outstanding import accuracy gaps.'
-        : 'These fields still disagree with the source documents - including items that may have been marked correct in Phase 1 without fixing the amount, plus silent import gaps.',
+        : `These fields still disagree with the source documents. Each row is priced so you can start with the ones that move the return most: the largest single item is ${fmtUsd(Math.round(gaps[0]?.taxImpact ?? 0))}.`,
     taxImpact:
-      'Filing with uncorrected import mismatches can understate income, withholding, or identity data and trigger notices or amended returns.',
+      `Left uncorrected, these six rows change the balance due by about ${fmtUsd(totalImpact)}. Dropped withholding is dollar for dollar, missing income is taxed at 35%, and the misclassified dividends carry the ordinary-versus-qualified rate spread.`,
     rootCause:
-      'OCR / import mapped some values incorrectly, dropped withholding, or planted state data that is not on the PDF. Confirm each row against the source preview.',
+      'Import mapped some values incorrectly and dropped others entirely. Two of these were marked correct during the import review without changing the amount, so they carried forward into the return.',
     tableRows: gaps.slice(0, 6).map((g, i) => ({
       label: g.label,
-      cols: [g.returnValue, g.sourceValue, 'Fix'],
+      cols: [g.returnValue, g.sourceValue, fmtUsd(Math.round(g.taxImpact)), 'Fix'],
       fixField: g.field,
       fixTab: g.tab,
       total: i === gaps.length - 1 || i === 5,
     })),
-    tableHeaders: ['Field', 'On return', 'On source', ''],
+    tableHeaders: ['Field', 'On return', 'On source', 'Tax impact', ''],
     suggestedActions: [
-      'Open each listed field and compare to the source document preview.',
+      'Start at the top: rows are ordered by what they cost the return, not by form.',
       'Correct amounts that disagree with the source, or enter missing identity fields.',
       ...(gaps.some(g => g.id === 'taxablePension' || g.id === 'rWithholding')
         ? [
@@ -180,56 +189,61 @@ function buildImportMismatchesIssue(amounts: LiveAmounts): DiagnosticIssueCard {
   }
 }
 
-const NIIT_FORM8960_ISSUE: DiagnosticIssueCard = {
-  issueKey: 'niitForm8960',
-  dotColor: 'orange',
-  title: 'Review Form 8960 - Net Investment Income Tax',
-  category: 'Compliance',
-  summary: RETURN_SUMMARY_INSIGHTS.niit,
-  taxImpact:
-    'At AGI above $200,000 for single filers, net investment income may be subject to the 3.8% NIIT on Form 8960. Confirm the form amounts match interest and dividends on the return.',
-  rootCause: `Investment income is substantial: ${fmtUsd(FROZEN_RETURN.taxableInterest)} taxable interest, ${fmtUsd(FROZEN_RETURN.ordinaryDivs)} ordinary dividends, and ${fmtUsd(FROZEN_RETURN.qualifiedDivs)} qualified dividends. Form 8960 is already on the return - verify the NIIT computation.`,
-  tableRows: [
-    { label: 'AGI (line 11)', cols: [fmtUsd(FROZEN_RETURN.totalIncome), 'Above $200k', ''], badge: 'orange', total: false },
-    { label: 'Form 8960', cols: ['On return', 'Review NIIT lines', '✓'], badge: 'blue', total: true },
-  ],
-  tableHeaders: ['Item', 'Status', 'Note', ''],
-  suggestedActions: [
-    'Open Form 8960 and confirm NIIT lines match taxable interest and dividends.',
-    'Cross-check qualified vs. ordinary dividend classifications on the 1099-DIVs.',
-    'Mark this issue reviewed once the form looks correct.',
-  ],
-  actions: [
-    {
-      type: 'openForm',
-      label: 'Open Form 8960',
-    },
-    {
-      type: 'goToInput',
-      label: 'Go to investment income',
-      field: 'ordinaryDivs',
-      menuItems: [
-        { label: 'Taxable interest (1099-INT)', tab: '1099-ints', field: 'taxableInterest' },
-        { label: 'Ordinary dividends (1099-DIV)', tab: '1099-divs', field: 'ordinaryDivs' },
-        { label: 'Qualified dividends (1099-DIV)', tab: '1099-divs', field: 'qualifiedDivs' },
-        { label: 'Summary - investment lines', field: 'ordinaryDivs', summaryOnly: true },
-      ],
-    },
-  ],
-  sources: [
-    {
-      id: 'irs-form-8960',
-      sourceName: 'Form 8960',
-      title: 'Net Investment Income Tax (NIIT)',
-      description:
-        'Individuals with modified AGI above the filing-status threshold may owe an additional 3.8% tax on net investment income. Form 8960 computes that tax when interest, dividends, and other NII apply.',
-      meta: 'IRS.gov · About Form 8960',
-      href: 'https://www.irs.gov/forms-pubs/about-form-8960',
-    },
-  ],
-  // Summary CY investment lines only - never prior-1040
-  viewSourceField: 'ordinaryDivs',
-  summaryOnlyGoToInput: false,
+function buildNiitForm8960Issue(live: LiveReturnTotals): DiagnosticIssueCard {
+  const nii = live.netInvestmentIncome
+  const niit = live.niitTax
+  return {
+    issueKey: 'niitForm8960',
+    dotColor: 'orange',
+    title: `Net investment income tax adds ${fmtUsd(niit)}`,
+    category: 'Compliance',
+    summary: `${fmtUsd(nii)} of interest and dividends is subject to the 3.8% net investment income tax, which adds ${fmtUsd(niit)} on Form 8960. Worth confirming the form picks up the full base before you sign off.`,
+    taxImpact: `NIIT applies to the smaller of net investment income or the amount by which modified AGI exceeds $200,000 for a single filer. Here AGI clears the threshold by a wide margin, so the full ${fmtUsd(nii)} is in the base and the tax is ${fmtUsd(nii)} × 3.8% = ${fmtUsd(niit)}.`,
+    rootCause: `The base is ${fmtUsd(live.taxableInterest)} of taxable interest plus ${fmtUsd(live.ordinaryDivs)} of ordinary dividends. Note that Form 8960 uses the Box 1a ordinary dividend total, so the qualified dividend classification issue does not change this number.`,
+    tableRows: [
+      { label: 'Taxable interest', cols: [fmtUsd(live.taxableInterest), 'Line 2b', ''], badge: 'grey', total: false },
+      { label: 'Ordinary dividends', cols: [fmtUsd(live.ordinaryDivs), 'Line 3b', ''], badge: 'grey', total: false },
+      { label: 'Net investment income', cols: [fmtUsd(nii), 'Form 8960 line 8', ''], badge: 'grey', total: false },
+      { label: 'NIIT at 3.8%', cols: [fmtUsd(niit), 'Form 8960 line 17', ''], badge: 'orange', total: true },
+    ],
+    tableHeaders: ['Item', 'Amount', 'Line', ''],
+    suggestedActions: [
+      'Open Form 8960 and confirm line 8 equals the interest and ordinary dividend totals on the 1040.',
+      'Watch the interaction: any deductible retirement contribution lowers AGI and can reduce the NIIT base as well.',
+      'Confirm no investment interest expense or state tax allocation is available to reduce line 9.',
+    ],
+    actions: [
+      {
+        type: 'openForm',
+        label: 'Open Form 8960',
+      },
+      {
+        type: 'goToInput',
+        label: 'Go to investment income',
+        field: 'ordinaryDivs',
+        menuItems: [
+          { label: 'Taxable interest (1099-INT)', tab: '1099-ints', field: 'taxableInterest' },
+          { label: 'Ordinary dividends (1099-DIV)', tab: '1099-divs', field: 'ordinaryDivs' },
+          { label: 'Qualified dividends (1099-DIV)', tab: '1099-divs', field: 'qualifiedDivs' },
+          { label: 'Summary - investment lines', field: 'ordinaryDivs', summaryOnly: true },
+        ],
+      },
+    ],
+    sources: [
+      {
+        id: 'irs-form-8960',
+        sourceName: 'Form 8960',
+        title: 'Net Investment Income Tax (NIIT)',
+        description:
+          'Individuals with modified AGI above the filing-status threshold may owe an additional 3.8% tax on net investment income. Form 8960 computes that tax when interest, dividends, and other NII apply.',
+        meta: 'IRS.gov · About Form 8960',
+        href: 'https://www.irs.gov/forms-pubs/about-form-8960',
+      },
+    ],
+    // Summary CY investment lines only - never prior-1040
+    viewSourceField: 'ordinaryDivs',
+    summaryOnlyGoToInput: false,
+  }
 }
 
 function buildUnderpaymentRiskIssue(live: LiveReturnTotals): DiagnosticIssueCard {
@@ -237,25 +251,26 @@ function buildUnderpaymentRiskIssue(live: LiveReturnTotals): DiagnosticIssueCard
   return {
     issueKey: 'underpaymentRisk',
     dotColor: 'orange',
-    title: 'Underpayment risk: low withholding and no estimated payments',
+    title: `Withholding falls ${fmtUsd(shortfall)} short of safe harbor`,
     category: 'Compliance',
-    summary: `Combined federal withholding is ${fmtUsd(live.totalWithholding)} against ${fmtUsd(live.totalTax)} total tax. Line 26 shows $0 estimated payments. Jessica's Tax Organizer says she did not make quarterly 1040-ES payments.`,
-    taxImpact: RETURN_SUMMARY_INSIGHTS.estTaxPenalty,
-    rootCause: `Withholding covers ${Math.round((live.totalWithholding / live.totalTax) * 100)}% of tax and is below the ${fmtUsd(SAFE_HARBOR_2024)} safe harbor (110% of 2024 tax). Client confirmed no ES payments were made.`,
+    summary: `Most of this gap is an import artifact, not a client behavior problem: the Meridian 1099-R reports $30,000 of federal withholding in Box 4 and none of it reached the return. Fix that first, then decide what remains.`,
+    taxImpact: `Safe harbor for 2025 is ${fmtUsd(SAFE_HARBOR_2024)}, which is 110% of last year's tax. The return shows ${fmtUsd(live.totalWithholding)}. Restoring the dropped ${fmtUsd(30_000)} and correcting the dividend withholding still leaves roughly ${fmtUsd(Math.max(0, shortfall - 31_438))} uncovered, so a penalty conversation with Jessica is likely either way.`,
+    rootCause: `Two separate causes stack here. Import dropped the entire 1099-R Box 4 withholding, and separately Jessica made no quarterly 1040-ES payments because she assumed withholding would cover the year as usual. Her income rose sharply, so it did not.`,
     clientResponseNote:
       'Jessica Drake (Mar 2, 2025): "No. I didn\'t make any estimated payments this year. I figured my W-2 and 1099 withholding would cover everything like usual."',
     questionnaireResponseId: 'estimatedPayments',
     tableRows: [
-      { label: 'Federal withholding (25a + 25b)', cols: [fmtUsd(live.totalWithholding), 'On return', ''], badge: 'orange', total: false },
-      { label: '2025 estimated payments (line 26)', cols: ['$0', 'Client: none', '!'], badge: 'orange', total: false },
-      { label: 'Safe harbor shortfall', cols: [fmtUsd(shortfall), 'Form 2210', '!'], badge: 'red', total: true },
+      { label: 'Safe harbor required (110% of 2024 tax)', cols: [fmtUsd(SAFE_HARBOR_2024), 'Target', ''], badge: 'grey', total: false },
+      { label: 'Withholding on return today', cols: [fmtUsd(live.totalWithholding), 'Lines 25a and 25b', '!'], badge: 'orange', total: false },
+      { label: '1099-R Box 4 dropped on import', cols: [fmtUsd(30_000), 'Recoverable', '!'], badge: 'red', total: false },
+      { label: '2025 estimated payments', cols: ['$0', 'Client confirmed none', '!'], badge: 'orange', total: false },
+      { label: 'Shortfall after both corrections', cols: [fmtUsd(Math.max(0, shortfall - 31_438)), 'Penalty exposure', '!'], badge: 'red', total: true },
     ],
     tableHeaders: ['Item', 'Amount', 'Status', ''],
     suggestedActions: [
-      'Restore or confirm DIV / 1099-R withholding on the return.',
-      'IRA tip: Meridian 1099-R Box 4 should show $30,000 federal withholding - confirm it posted to the return.',
-      'Review Form 2210 for underpayment penalty exposure.',
-      'Confirm the Tax Organizer "no ES payments" answer matches her records.',
+      'Restore the Meridian 1099-R Box 4 withholding first: it is the single largest correction and it is already on the source document.',
+      'Timing tip: withholding is treated as paid evenly across the year regardless of when it happened, which is why recovering it helps more than a late catch-up payment would.',
+      'Then set up 2026 quarterly payments with Jessica so this does not repeat at the higher income level.',
     ],
     actions: [
       { type: 'goToInput', label: 'Go to DIV withholding', tab: '1099-divs', field: 'fedTaxWithheld' },
@@ -286,26 +301,25 @@ function buildNecScheduleCIssue(): DiagnosticIssueCard {
   return {
     issueKey: 'necScheduleC',
     dotColor: 'orange',
-    title: '1099-NEC income without Schedule C or expenses',
+    title: `${fmtUsd(NEC_SOURCE_AMOUNT)} of 1099-NEC income is not on the return`,
     category: 'Compliance',
-    summary:
-      'Summit Advisory Partners 1099-NEC nonemployee compensation is on the return, but no Schedule C or business expenses are applied. Jessica reported she had deductible expenses for that work.',
-    taxImpact:
-      'Reporting NEC income without Schedule C can misstate self-employment tax and miss ordinary-and-necessary expense deductions.',
-    rootCause:
-      'Packet includes a 1099-NEC, but the return has no business schedule. Client said she had software, supplies, and travel expenses and is unsure what to claim.',
+    summary: `The Summit Advisory Partners 1099-NEC is in the packet, but neither the income nor a Schedule C reached the return. The IRS already has a copy of this form, so a mismatch here is the kind that generates a CP2000 notice.`,
+    taxImpact: `Adding ${fmtUsd(NEC_SOURCE_AMOUNT)} of nonemployee compensation triggers income tax at 35% plus self-employment tax on 92.35% of net profit, roughly ${fmtUsd(Math.round(NEC_SOURCE_AMOUNT * 0.4665))} before any expenses. It also creates the Schedule C that the expense and retirement items depend on.`,
+    rootCause: `Import read the 1099-NEC but never mapped Box 1 onto a business schedule, so the income silently landed nowhere. Nothing on the return flags it because a missing form looks identical to a form that does not exist.`,
     clientResponseNote:
-      'Jessica Drake (Mar 5, 2025): "Yes. I had expenses for software, home office supplies, and some travel… Nothing for expenses is on the return yet."',
+      'Jessica Drake (Mar 5, 2025): "Yes. I had expenses for software, home office supplies, and some travel. Nothing for expenses is on the return yet."',
     questionnaireResponseId: 'necExpenses',
     tableRows: [
-      { label: '1099-NEC (Summit)', cols: ['On return', 'Box 1', '!'], badge: 'orange', total: false },
-      { label: 'Schedule C / expenses', cols: ['Missing', 'Client has costs', '!'], badge: 'red', total: true },
+      { label: '1099-NEC Box 1 on source', cols: [fmtUsd(NEC_SOURCE_AMOUNT), 'Summit Advisory', ''], badge: 'grey', total: false },
+      { label: 'Amount on the return', cols: ['$0', 'Not posted', '!'], badge: 'red', total: false },
+      { label: 'Schedule C', cols: ['Not created', 'Required for this income', '!'], badge: 'red', total: false },
+      { label: 'Income plus SE tax when added', cols: [fmtUsd(Math.round(NEC_SOURCE_AMOUNT * 0.4665)), 'Before expenses', '!'], badge: 'orange', total: true },
     ],
-    tableHeaders: ['Item', 'Status', 'Note', ''],
+    tableHeaders: ['Item', 'Amount', 'Status', ''],
     suggestedActions: [
-      'Open the 1099-NEC and confirm Box 1 income.',
-      'Ask for receipt detail, then add Schedule C expenses if deductible.',
-      'Review the Tax Organizer NEC expenses response.',
+      'Post the 1099-NEC Box 1 amount and let the return create Schedule C.',
+      'Matching tip: the IRS receives its own copy of every 1099-NEC, so omitted amounts surface through automated underreporter matching rather than audit.',
+      'Once the schedule exists, work the expense and retirement contribution items that depend on it.',
     ],
     actions: [
       { type: 'goToInput', label: 'Go to NEC income', tab: '1099-necs', field: 'nec-box1' },
@@ -331,68 +345,264 @@ function buildNecScheduleCIssue(): DiagnosticIssueCard {
   }
 }
 
-const OPT_ITEMIZE_ISSUE: DiagnosticIssueCard = {
-  issueKey: 'optItemize',
-  dotColor: 'blue',
-  title: 'Standard deduction vs itemizing: mortgage interest',
-  category: 'Planning opportunities',
-  summary:
-    'The return is on the standard deduction, but Jessica said she owns a home, pays mortgage interest, and may have an unuploaded Form 1098. Itemizing could reduce taxable income.',
-  taxImpact:
-    'If mortgage interest (plus other itemized amounts) exceeds the single standard deduction, Schedule A can lower tax. Confirm Form 1098 before deciding.',
-  rootCause:
-    'No Form 1098 is in the import packet. Tax Organizer confirms mortgage interest was paid in 2025; the exact amount still needs the 1098.',
-  clientResponseNote:
-    'Jessica Drake (Feb 28, 2025): "Yes. I own my home and paid mortgage interest in 2025… I think I got a Form 1098 from my lender but I haven\'t uploaded it yet."',
-  questionnaireResponseId: 'mortgage',
-  tableRows: [
-    { label: 'Deduction method', cols: ['Standard', 'On return', ''], badge: 'blue', total: false },
-    { label: 'Form 1098 / mortgage interest', cols: ['Not uploaded', 'Client confirmed', '?'], badge: 'orange', total: true },
-  ],
-  tableHeaders: ['Item', 'Status', 'Note', ''],
-  suggestedActions: [
-    'Request Form 1098 and compare interest + taxes to the standard deduction.',
-    'Review the Tax Organizer mortgage response with Jessica.',
-    'If itemizing wins, switch to Schedule A before filing.',
-  ],
-  actions: [
-    { type: 'viewClientResponse', label: 'View client response', questionnaireResponseId: 'mortgage' },
-    { type: 'goToInput', label: 'Go to deductions', field: 'stdDeduction' },
-    {
-      type: 'openForm',
-      label: 'Open Schedule A',
-    },
-  ],
-  sources: [
-    {
-      id: 'irs-topic-501',
-      sourceName: 'Tax Topic 501',
-      title: 'Should I itemize?',
-      description:
-        'Compare the standard deduction to itemized amounts such as mortgage interest, state and local taxes, and charitable gifts. If itemized deductions are higher, Schedule A usually produces a lower tax.',
-      meta: 'IRS.gov · Topic 501',
-      href: 'https://www.irs.gov/taxtopics/tc501',
-    },
-  ],
-  viewSourceField: 'stdDeduction',
-  summaryOnlyGoToInput: true,
+function buildOptItemizeIssue(amounts: LiveAmounts): DiagnosticIssueCard {
+  const p = projectItemizedDeduction(amounts)
+  return {
+    issueKey: 'optItemize',
+    dotColor: 'blue',
+    title: `Missing Form 1098 is likely worth ${fmtUsd(p.taxSaved)}`,
+    category: 'Planning opportunities',
+    summary: `The return takes the ${fmtUsd(p.stdDeduction)} standard deduction, but Jessica confirmed she paid mortgage interest in the mid five figures and never uploaded the 1098. At her estimate, Schedule A clears the standard deduction by a wide margin.`,
+    taxImpact: `Using ${fmtUsd(p.mortgageInterest)} of interest, Schedule A totals ${fmtUsd(p.itemizedTotal)} against a ${fmtUsd(p.stdDeduction)} standard deduction. That is ${fmtUsd(p.advantage)} of additional deduction, worth about ${fmtUsd(p.taxSaved)} at her 35% marginal rate. This is the single largest planning item on the return.`,
+    rootCause: `The 1098 is not in the import packet, so nothing populated Schedule A and the return defaulted to the standard deduction. Only ${fmtUsd(p.saltTaxes)} of state and local taxes and ${fmtUsd(p.charitableContributions)} of charitable gifts are on file, which on their own fall short of the standard deduction.`,
+    clientResponseNote:
+      'Jessica Drake (Feb 28, 2025): "Yes. I own my home and paid mortgage interest in 2025. I think I got a Form 1098 from my lender but I haven\'t uploaded it yet."',
+    questionnaireResponseId: 'mortgage',
+    tableRows: [
+      { label: 'Mortgage interest (client estimate)', cols: [fmtUsd(p.mortgageInterest), 'Needs Form 1098', '?'], badge: 'orange', total: false },
+      { label: 'State and local taxes', cols: [fmtUsd(p.saltTaxes), 'Capped at $10,000', ''], badge: 'grey', total: false },
+      { label: 'Charitable contributions', cols: [fmtUsd(p.charitableContributions), 'On file', ''], badge: 'grey', total: false },
+      { label: 'Projected Schedule A total', cols: [fmtUsd(p.itemizedTotal), `vs ${fmtUsd(p.stdDeduction)} standard`, ''], badge: 'blue', total: false },
+      { label: 'Estimated federal tax saved', cols: [fmtUsd(p.taxSaved), 'At 35% marginal', ''], badge: 'blue', total: true },
+    ],
+    tableHeaders: ['Item', 'Amount', 'Basis', ''],
+    suggestedActions: [
+      'Request the Form 1098 from her lender: this is the one document standing between the return and the deduction.',
+      'SALT tip: the state and local deduction is capped at $10,000, so the mortgage interest is what actually carries Schedule A here.',
+      'While you have her, ask about points paid and mortgage insurance premiums, which also land on Schedule A.',
+    ],
+    actions: [
+      { type: 'viewClientResponse', label: 'View client response', questionnaireResponseId: 'mortgage' },
+      { type: 'goToInput', label: 'Go to deductions', field: 'stdDeduction' },
+      {
+        type: 'openForm',
+        label: 'Open Schedule A',
+      },
+    ],
+    sources: [
+      {
+        id: 'irs-topic-501',
+        sourceName: 'Tax Topic 501',
+        title: 'Should I itemize?',
+        description:
+          'Compare the standard deduction to itemized amounts such as mortgage interest, state and local taxes, and charitable gifts. If itemized deductions are higher, Schedule A usually produces a lower tax.',
+        meta: 'IRS.gov · Topic 501',
+        href: 'https://www.irs.gov/taxtopics/tc501',
+      },
+    ],
+    viewSourceField: 'stdDeduction',
+    summaryOnlyGoToInput: true,
+  }
+}
+
+function buildQualifiedDivClassificationIssue(amounts: LiveAmounts): DiagnosticIssueCard {
+  const { overstated, taxDelta } = computeQualifiedDivOverstatement(amounts)
+  return {
+    issueKey: 'qualifiedDivClassification',
+    dotColor: 'red',
+    title: `${fmtUsd(overstated)} of dividends taxed at the wrong rate`,
+    category: 'Import accuracy',
+    summary: `The Token Financial 1099-DIV reports ${fmtUsd(SOURCE_AMOUNTS.qualifiedDivsToken)} in Box 1b, but the return carries ${fmtUsd(amounts.qualifiedDivsToken)}. The extra ${fmtUsd(overstated)} is ordinary dividend income being taxed at the qualified rate.`,
+    taxImpact: `At this income level qualified dividends are taxed at 20% and ordinary dividends at 35%. Reclassifying the ${fmtUsd(overstated)} raises tax by about ${fmtUsd(taxDelta)}. Because Box 1a is correct, total income does not change, which is why no total-income check catches this.`,
+    rootCause:
+      'Import copied the Box 1a ordinary dividend total into Box 1b instead of the smaller qualified figure printed on the 1099-DIV. Box 1b can never exceed Box 1a, and here it was set equal to it.',
+    tableRows: [
+      { label: 'Box 1a ordinary dividends (Token)', cols: [fmtUsd(amounts.ordinaryDivsToken), 'Matches source', ''], badge: 'green', total: false },
+      { label: 'Box 1b qualified dividends on return', cols: [fmtUsd(amounts.qualifiedDivsToken), 'Overstated', '!'], badge: 'red', total: false },
+      { label: 'Box 1b qualified dividends on source', cols: [fmtUsd(SOURCE_AMOUNTS.qualifiedDivsToken), 'Per 1099-DIV', ''], badge: 'grey', total: false },
+      { label: 'Additional tax when corrected', cols: [fmtUsd(taxDelta), '15 point rate spread', '!'], badge: 'red', total: true },
+    ],
+    tableHeaders: ['Item', 'Amount', 'Status', ''],
+    suggestedActions: [
+      'Open the Token 1099-DIV and read Box 1b directly off the form.',
+      'Correct Box 1b: qualified dividends are a subset of Box 1a, never equal to it here.',
+      'Re-check Form 8960 afterward, since net investment income uses the Box 1a total and does not change.',
+    ],
+    actions: [
+      { type: 'goToInput', label: 'Go to qualified dividends', tab: '1099-divs', field: 'qualifiedDivs' },
+      { type: 'reviewSource', label: 'View 1099-DIV source', tab: '1099-divs' },
+    ],
+    sources: [
+      {
+        id: 'irs-qualified-dividends',
+        sourceName: 'Publication 550',
+        title: 'Qualified dividends and the holding period test',
+        description:
+          'Qualified dividends are the portion of ordinary dividends that meet holding period and payer requirements. They appear in Box 1b of Form 1099-DIV and are always less than or equal to the Box 1a ordinary dividend total.',
+        meta: 'IRS.gov · Publication 550',
+        href: 'https://www.irs.gov/publications/p550',
+      },
+    ],
+    viewSourceTab: '1099-divs',
+    viewSourceField: 'qualifiedDivs',
+  }
+}
+
+function buildW2Box12Issue(amounts: LiveAmounts): DiagnosticIssueCard {
+  const blanks = getBlankBox12Rows(amounts)
+  const codes = blanks.map(b => b.code).join(', ')
+  return {
+    issueKey: 'w2Box12Missing',
+    dotColor: 'orange',
+    title: `W-2 Box 12 imported ${blanks.length} code${blanks.length === 1 ? '' : 's'} without amounts`,
+    category: 'Compliance',
+    summary: `The Tech Circle W-2 shows Box 12 code${blanks.length === 1 ? '' : 's'} ${codes}, but every amount came across blank. Code AA in particular tells you how much Jessica put into her Roth 401(k), which is the input for the contribution headroom question.`,
+    taxImpact:
+      'Blank Box 12 amounts do not change tax on their own, but they remove the evidence behind Box 1 and Box 13. Code C is taxable group-term life already inside Box 1 wages, so a blank amount makes the wage mismatch harder to reconcile, and a blank code AA leaves retirement contribution room unquantified.',
+    rootCause:
+      'Import read the Box 12 code letters from the W-2 but not the paired dollar amounts. This is a common OCR failure on the stacked Box 12 grid, and nothing on the return flags it because a blank amount is treated as zero.',
+    tableRows: [
+      ...blanks.map(b => ({
+        label: `Box 12${b.slot} · Code ${b.code}`,
+        cols: ['Blank', b.meaning, '!'],
+        badge: 'orange' as const,
+        total: false,
+        fixField: 'box12',
+        fixTab: 'w2s',
+      })),
+      { label: 'Box 13 retirement plan', cols: ['Checked', 'Matches client answer', '✓'], badge: 'green', total: true },
+    ],
+    tableHeaders: ['Item', 'Amount', 'Meaning', ''],
+    suggestedActions: [
+      'Open the W-2 preview and key the Box 12 amounts from the printed form.',
+      'Code AA feeds the retirement contribution review: capture it before evaluating additional contribution room.',
+      'Confirm the code C amount is already inside Box 1 wages once the wage mismatch is corrected.',
+    ],
+    actions: [
+      { type: 'goToInput', label: 'Go to Box 12', tab: 'w2s', field: 'box12' },
+      { type: 'reviewSource', label: 'View W-2 source', tab: 'w2s' },
+      { type: 'viewClientResponse', label: 'View client response', questionnaireResponseId: 'workplacePlan' },
+    ],
+    sources: [
+      {
+        id: 'irs-w2-box12',
+        sourceName: 'Form W-2 instructions',
+        title: 'Box 12 codes and what each reports',
+        description:
+          'Box 12 reports items such as elective deferrals, designated Roth contributions, and employer-sponsored health coverage. Each code carries a dollar amount that supports the wage, deferral, and coverage figures elsewhere on the return.',
+        meta: 'IRS.gov · General Instructions for Forms W-2 and W-3',
+        href: 'https://www.irs.gov/instructions/iw2w3',
+      },
+    ],
+    questionnaireResponseId: 'workplacePlan',
+    viewSourceTab: 'w2s',
+    viewSourceField: 'box12',
+  }
+}
+
+function buildSchCExpensesIssue(live: LiveReturnTotals): DiagnosticIssueCard {
+  const grossProfit = live.schCGross || NEC_SOURCE_AMOUNT
+  return {
+    issueKey: 'schCExpenses',
+    dotColor: 'blue',
+    title: 'Client-confirmed business expenses are not on Schedule C',
+    category: 'Planning opportunities',
+    summary:
+      'Jessica told us in writing that the Summit consulting work had software, home office, and travel costs. None of it is on the return. Every dollar she substantiates is worth roughly 50 cents back.',
+    taxImpact: `Schedule C expenses reduce both income tax at 35% and self-employment tax on 92.35% of profit, so the combined benefit is about 47 cents on the dollar. Against ${fmtUsd(grossProfit)} of gross receipts, even a modest $6,000 of documented expenses saves close to ${fmtUsd(Math.round(6_000 * 0.4665))}.`,
+    rootCause:
+      'The import packet has no receipts or expense schedule, so nothing populated Schedule C Part II. The client flagged the costs herself but said she does not have a clean receipt packet yet, which is why this needs a request rather than a data fix.',
+    clientResponseNote:
+      'Jessica Drake (Mar 5, 2025): "Yes. I had expenses for software, home office supplies, and some travel for that consulting work. I don\'t have a clean receipt packet yet and I\'m not sure what\'s deductible."',
+    questionnaireResponseId: 'necExpenses',
+    tableRows: [
+      { label: 'Schedule C gross receipts', cols: [fmtUsd(grossProfit), 'Line 1', ''], badge: 'grey', total: false },
+      { label: 'Expenses on return', cols: ['$0', 'Line 28', '!'], badge: 'orange', total: false },
+      { label: 'Benefit per $1,000 substantiated', cols: [fmtUsd(467), 'Income tax plus SE tax', ''], badge: 'blue', total: true },
+    ],
+    tableHeaders: ['Item', 'Amount', 'Line', ''],
+    suggestedActions: [
+      'Send a targeted request: software subscriptions, home office square footage, and mileage or travel receipts.',
+      'Home office tip: the simplified method allows $5 per square foot up to 300 square feet, which avoids a full Form 8829 workup.',
+      'Enter the substantiated total on Schedule C line 28 and confirm the self-employment tax recalculates.',
+    ],
+    actions: [
+      { type: 'viewClientResponse', label: 'View client response', questionnaireResponseId: 'necExpenses' },
+      { type: 'openForm', label: 'Open Schedule C' },
+    ],
+    sources: [
+      {
+        id: 'irs-pub-535',
+        sourceName: 'Publication 535',
+        title: 'Deducting business expenses',
+        description:
+          'A business expense must be both ordinary and necessary to be deductible. Software, supplies, and business travel for a sole proprietorship are deducted on Schedule C and reduce both income tax and self-employment tax.',
+        meta: 'IRS.gov · Business Expenses',
+        href: 'https://www.irs.gov/publications/p535',
+      },
+    ],
+    viewSourceTab: '1099-necs',
+    viewSourceField: 'nec-box1',
+  }
+}
+
+function buildSepIraIssue(live: LiveReturnTotals): DiagnosticIssueCard {
+  const netProfit = live.schCNetProfit || NEC_SOURCE_AMOUNT
+  const { netEarnings, contribution, taxSaved } = computeSepIraCeiling(netProfit)
+  return {
+    issueKey: 'sepIra',
+    dotColor: 'blue',
+    title: `SEP-IRA could absorb about ${fmtUsd(contribution)} of consulting profit`,
+    category: 'Planning opportunities',
+    summary: `The Summit consulting income creates self-employment earnings that a SEP-IRA can shelter. At current profit the ceiling is roughly ${fmtUsd(contribution)}, worth about ${fmtUsd(taxSaved)} in federal tax, and the account can be opened and funded up to the extended filing deadline.`,
+    taxImpact: `A SEP contribution is an above-the-line deduction, so it reduces AGI as well as taxable income. Lowering AGI also trims the Form 8960 base, which matters because this return is already well past the $200,000 NIIT threshold.`,
+    rootCause: `Self-employed SEP contributions are capped at 20% of net earnings from self-employment, which is ${fmtUsd(netEarnings)} here. Nothing on the return indicates an existing SEP, SIMPLE, or solo 401(k) for this business.`,
+    tableRows: [
+      { label: 'Schedule C net profit', cols: [fmtUsd(netProfit), 'Line 31', ''], badge: 'grey', total: false },
+      { label: 'Net earnings from self-employment', cols: [fmtUsd(netEarnings), '92.35% of profit', ''], badge: 'grey', total: false },
+      { label: 'Maximum SEP contribution', cols: [fmtUsd(contribution), '20% of net earnings', ''], badge: 'blue', total: false },
+      { label: 'Estimated federal tax saved', cols: [fmtUsd(taxSaved), 'At 35% marginal', ''], badge: 'blue', total: true },
+    ],
+    tableHeaders: ['Item', 'Amount', 'Basis', ''],
+    suggestedActions: [
+      'Confirm she has no existing SEP, SIMPLE, or solo 401(k) tied to the consulting work before recommending a contribution.',
+      'Ruled out: a deductible traditional IRA does not help here. Box 13 confirms workplace plan coverage and AGI is far above the deduction phase-out, and a Roth IRA is closed off by the same income.',
+      'Note that the SEP ceiling moves with Schedule C profit, so settle the expense question first and compute the contribution last.',
+    ],
+    actions: [
+      { type: 'viewClientResponse', label: 'View client response', questionnaireResponseId: 'workplacePlan' },
+      { type: 'openForm', label: 'Open Schedule C' },
+    ],
+    sources: [
+      {
+        id: 'irs-sep-plans',
+        sourceName: 'Publication 560',
+        title: 'Retirement plans for small business (SEP, SIMPLE, and qualified plans)',
+        description:
+          'A self-employed taxpayer may deduct contributions to a SEP-IRA up to 20% of net earnings from self-employment. The plan can be established and funded as late as the due date of the return, including extensions.',
+        meta: 'IRS.gov · Publication 560',
+        href: 'https://www.irs.gov/publications/p560',
+      },
+    ],
+    questionnaireResponseId: 'workplacePlan',
+    viewSourceTab: '1099-necs',
+    viewSourceField: 'nec-box1',
+  }
 }
 
 export const ISSUE_FIELD: Partial<Record<IssueKey, string>> = {
   importMismatches: 'wages',
+  qualifiedDivClassification: 'qualifiedDivs',
   niitForm8960: 'ordinaryDivs',
   underpaymentRisk: 'fedTaxWithheld',
   necScheduleC: 'nec-box1',
+  w2Box12Missing: 'box12',
   optItemize: 'stdDeduction',
+  schCExpenses: 'nec-box1',
+  sepIra: 'nec-box1',
 }
 
 export function buildAllDiagnosticIssues(live: LiveReturnTotals, amounts: LiveAmounts): DiagnosticIssueCard[] {
   return [
     buildImportMismatchesIssue(amounts),
+    buildQualifiedDivClassificationIssue(amounts),
     buildUnderpaymentRiskIssue(live),
     buildNecScheduleCIssue(),
-    NIIT_FORM8960_ISSUE,
-    OPT_ITEMIZE_ISSUE,
+    buildNiitForm8960Issue(live),
+    buildW2Box12Issue(amounts),
+    buildOptItemizeIssue(amounts),
+    buildSchCExpensesIssue(live),
+    buildSepIraIssue(live),
   ]
 }
 

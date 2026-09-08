@@ -161,6 +161,119 @@ export const NIIT_AGI_THRESHOLD = 200_000
 /** Single standard deduction (TY 2025 prototype). */
 export const STD_DEDUCTION_SINGLE = FROZEN_RETURN.stdDeduction
 
+/**
+ * Marginal federal rate at this return's taxable income (~$560k single lands in
+ * the 35% bracket). Used to size the tax impact of each diagnostic.
+ */
+export const MARGINAL_RATE = 0.35
+/** Preferential rate on qualified dividends at this income level. */
+export const QUALIFIED_DIV_RATE = 0.20
+/** Ordinary-vs-qualified spread: what misclassified dividends cost per dollar. */
+export const QUALIFIED_DIV_RATE_SPREAD = MARGINAL_RATE - QUALIFIED_DIV_RATE
+/**
+ * Combined marginal cost of Schedule C profit: 35% income tax plus SE tax on
+ * 92.35% of profit, net of the deduction for one half of SE tax.
+ */
+export const SCH_C_COMBINED_RATE = 0.4665
+/** Self-employed SEP-IRA ceiling: 20% of net earnings from self-employment. */
+export const SEP_RATE_ON_NET_EARNINGS = 0.20
+/** Net-earnings factor applied to Schedule C profit before SE and SEP limits. */
+export const SE_NET_EARNINGS_FACTOR = 0.9235
+/**
+ * Client-reported mortgage interest ("mid five figures" in the Tax Organizer).
+ * Estimate only - the exact figure needs Form 1098.
+ */
+export const ESTIMATED_MORTGAGE_INTEREST = 50_000
+
+/** Token 1099-DIV Box 1b on the source PDF (return seeds a higher, silent value). */
+export const TOKEN_QUALIFIED_DIVS_SOURCE = 187_500
+
+/**
+ * Dividends reported as qualified that the source 1099-DIV does not support,
+ * and what that misclassification costs at the ordinary-vs-qualified spread.
+ */
+export function computeQualifiedDivOverstatement(amounts: LiveAmounts): {
+  overstated: number
+  taxDelta: number
+} {
+  const overstated = Math.max(0, amounts.qualifiedDivsToken - TOKEN_QUALIFIED_DIVS_SOURCE)
+  return {
+    overstated,
+    taxDelta: Math.round(overstated * QUALIFIED_DIV_RATE_SPREAD),
+  }
+}
+
+/** Maximum deductible SEP-IRA contribution against Schedule C net profit. */
+export function computeSepIraCeiling(netProfit: number): {
+  netEarnings: number
+  contribution: number
+  taxSaved: number
+} {
+  const netEarnings = Math.round(netProfit * SE_NET_EARNINGS_FACTOR)
+  const contribution = Math.round(netEarnings * SEP_RATE_ON_NET_EARNINGS)
+  return {
+    netEarnings,
+    contribution,
+    taxSaved: Math.round(contribution * MARGINAL_RATE),
+  }
+}
+
+/**
+ * What Schedule A would look like once the missing Form 1098 is added, versus
+ * the standard deduction the return currently takes.
+ */
+export function projectItemizedDeduction(
+  amounts: LiveAmounts,
+  mortgageInterest = ESTIMATED_MORTGAGE_INTEREST,
+): {
+  mortgageInterest: number
+  saltTaxes: number
+  charitableContributions: number
+  itemizedTotal: number
+  stdDeduction: number
+  advantage: number
+  taxSaved: number
+  itemizingWins: boolean
+} {
+  const saltTaxes = amounts.saltTaxes
+  const charitableContributions = amounts.charitableContributions
+  const itemizedTotal = mortgageInterest + saltTaxes + charitableContributions
+  const advantage = Math.max(0, itemizedTotal - STD_DEDUCTION_SINGLE)
+  return {
+    mortgageInterest,
+    saltTaxes,
+    charitableContributions,
+    itemizedTotal,
+    stdDeduction: STD_DEDUCTION_SINGLE,
+    advantage,
+    taxSaved: Math.round(advantage * MARGINAL_RATE),
+    itemizingWins: itemizedTotal > STD_DEDUCTION_SINGLE,
+  }
+}
+
+/** W-2 Box 12 codes that imported without an amount. */
+export const BOX_12_CODE_MEANINGS: Record<string, string> = {
+  C: 'Taxable cost of group-term life insurance over $50,000',
+  D: 'Elective deferrals to a 401(k)',
+  AA: 'Designated Roth contributions under a 401(k)',
+  DD: 'Cost of employer-sponsored health coverage',
+}
+
+export function getBlankBox12Rows(amounts: LiveAmounts): Array<{
+  slot: string
+  code: string
+  meaning: string
+}> {
+  const rows = amounts.box12Rows ?? SEED_AMOUNTS.box12Rows
+  return (['a', 'b', 'c', 'd'] as const)
+    .filter(slot => (rows[slot]?.code ?? '') !== '' && (rows[slot]?.amount ?? 0) === 0)
+    .map(slot => ({
+      slot: slot.toUpperCase(),
+      code: rows[slot].code,
+      meaning: BOX_12_CODE_MEANINGS[rows[slot].code] ?? 'Employer-reported amount',
+    }))
+}
+
 export type LiveReturnTotals = {
   wages: number
   taxableInterest: number

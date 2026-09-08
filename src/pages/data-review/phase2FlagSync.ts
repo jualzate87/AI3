@@ -5,7 +5,16 @@
  * were marked correct without fixing (or silent import gaps remain).
  * Pure YoY curiosity cards are not in this catalog.
  */
-import { NEC_SOURCE_AMOUNT, type LiveAmounts, type LiveReturnTotals } from '../../data/liveReturn'
+import {
+  MARGINAL_RATE,
+  NEC_SOURCE_AMOUNT,
+  SCH_C_COMBINED_RATE,
+  TOKEN_QUALIFIED_DIVS_SOURCE,
+  computeQualifiedDivOverstatement,
+  getBlankBox12Rows,
+  type LiveAmounts,
+  type LiveReturnTotals,
+} from '../../data/liveReturn'
 import { TOKEN_QUALIFIED_DIVS_RETURN } from '../../data/frozenReturn'
 import {
   PHASE1_FLAG_KEYS,
@@ -20,18 +29,26 @@ const PHASE1_FLAG_KEY_SET = new Set<string>(PHASE1_FLAG_KEYS)
 /** Phase 2 issue keys - must match AgentReportPane GUIDED_ORDER. */
 export type Phase2IssueKey =
   | 'importMismatches'
+  | 'qualifiedDivClassification'
   | 'niitForm8960'
   | 'underpaymentRisk'
   | 'necScheduleC'
+  | 'w2Box12Missing'
   | 'optItemize'
+  | 'schCExpenses'
+  | 'sepIra'
 
-/** Canonical Phase 2 order - Filing stoppers → Compliance → Opportunities. */
+/** Canonical Phase 2 order - Import accuracy → Compliance → Opportunities. */
 export const PHASE2_DIAGNOSTIC_ORDER: readonly Phase2IssueKey[] = [
   'importMismatches',
+  'qualifiedDivClassification',
   'underpaymentRisk',
   'necScheduleC',
   'niitForm8960',
+  'w2Box12Missing',
   'optItemize',
+  'schCExpenses',
+  'sepIra',
 ] as const
 
 /** 110% of 2024 total tax ($102,754) - Form 2210 safe harbor used in card copy. */
@@ -47,7 +64,7 @@ export const SOURCE_AMOUNTS = {
   rWithholding: 30_000,
   taxablePension: 150_000,
   /** Token 1099-DIV Box 1b on the PDF (return seeds silent error at TOKEN_QUALIFIED_DIVS_RETURN) */
-  qualifiedDivsToken: 187_500,
+  qualifiedDivsToken: TOKEN_QUALIFIED_DIVS_SOURCE,
   priorOrdinaryDivs: 219_850,
   /** Summit 1099-NEC Box 1 on source (return seeds silent omit at $0) */
   necIncome: NEC_SOURCE_AMOUNT,
@@ -70,23 +87,24 @@ export type DiagnosticDismissRule = {
   notes?: string
 }
 
-/** Remaining input↔source gaps after Phase 1 (mark-correct without fixing, silent errors). */
-export function getOutstandingImportMismatches(amounts: LiveAmounts): Array<{
+export type ImportMismatchRow = {
   id: string
   label: string
   returnValue: string
   sourceValue: string
   field: string
   tab: string
-}> {
-  const rows: Array<{
-    id: string
-    label: string
-    returnValue: string
-    sourceValue: string
-    field: string
-    tab: string
-  }> = []
+  /** What this single row costs the return, in dollars of tax or lost credit. */
+  taxImpact: number
+  /** How that dollar figure was derived, for the tax impact tooltip / copy. */
+  taxImpactNote: string
+}
+
+const usd = (n: number) => `$${Math.round(n).toLocaleString()}`
+
+/** Remaining input↔source gaps after Phase 1 (mark-correct without fixing, silent errors). */
+export function getOutstandingImportMismatches(amounts: LiveAmounts): ImportMismatchRow[] {
+  const rows: ImportMismatchRow[] = []
 
   if (amounts.wages !== SOURCE_AMOUNTS.wages) {
     rows.push({
@@ -96,6 +114,8 @@ export function getOutstandingImportMismatches(amounts: LiveAmounts): Array<{
       sourceValue: `$${SOURCE_AMOUNTS.wages.toLocaleString()}`,
       field: 'wages',
       tab: 'w2s',
+      taxImpact: (SOURCE_AMOUNTS.wages - amounts.wages) * MARGINAL_RATE,
+      taxImpactNote: `${usd(SOURCE_AMOUNTS.wages - amounts.wages)} of wages missing from the return, taxed at 35%.`,
     })
   }
   if (amounts.qualifiedDivsToken === TOKEN_QUALIFIED_DIVS_RETURN
@@ -108,6 +128,8 @@ export function getOutstandingImportMismatches(amounts: LiveAmounts): Array<{
         sourceValue: `$${SOURCE_AMOUNTS.qualifiedDivsToken.toLocaleString()}`,
         field: 'qualifiedDivs',
         tab: '1099-divs',
+        taxImpact: computeQualifiedDivOverstatement(amounts).taxDelta,
+        taxImpactNote: `${usd(computeQualifiedDivOverstatement(amounts).overstated)} taxed at the 20% qualified rate instead of 35% ordinary.`,
       })
     }
   }
@@ -119,6 +141,8 @@ export function getOutstandingImportMismatches(amounts: LiveAmounts): Array<{
       sourceValue: `$${SOURCE_AMOUNTS.divWithholding.toLocaleString()}`,
       field: 'fedTaxWithheld',
       tab: '1099-divs',
+      taxImpact: SOURCE_AMOUNTS.divWithholding - amounts.divWithholding,
+      taxImpactNote: 'Withholding credit is dollar for dollar, so the full gap is added to the balance due.',
     })
   }
   if (amounts.taxablePension !== SOURCE_AMOUNTS.taxablePension) {
@@ -129,6 +153,8 @@ export function getOutstandingImportMismatches(amounts: LiveAmounts): Array<{
       sourceValue: `$${SOURCE_AMOUNTS.taxablePension.toLocaleString()}`,
       field: 'r-taxableAmt',
       tab: '1099-rs',
+      taxImpact: (SOURCE_AMOUNTS.taxablePension - amounts.taxablePension) * MARGINAL_RATE,
+      taxImpactNote: `${usd(SOURCE_AMOUNTS.taxablePension - amounts.taxablePension)} of taxable pension missing from line 4b, taxed at 35%.`,
     })
   }
   if (amounts.rWithholding < SOURCE_AMOUNTS.rWithholding) {
@@ -139,6 +165,8 @@ export function getOutstandingImportMismatches(amounts: LiveAmounts): Array<{
       sourceValue: `$${SOURCE_AMOUNTS.rWithholding.toLocaleString()}`,
       field: 'withholding1099',
       tab: '1099-rs',
+      taxImpact: SOURCE_AMOUNTS.rWithholding - amounts.rWithholding,
+      taxImpactNote: 'The entire Box 4 withholding was dropped on import, so the balance due is overstated by the same amount.',
     })
   }
   if (!amounts.necOnReturn || amounts.necIncome !== SOURCE_AMOUNTS.necIncome) {
@@ -149,20 +177,35 @@ export function getOutstandingImportMismatches(amounts: LiveAmounts): Array<{
       sourceValue: `$${SOURCE_AMOUNTS.necIncome.toLocaleString()}`,
       field: 'nec-box1',
       tab: '1099-necs',
+      taxImpact:
+        (SOURCE_AMOUNTS.necIncome - (amounts.necOnReturn ? amounts.necIncome : 0)) *
+        SCH_C_COMBINED_RATE,
+      taxImpactNote: 'Nonemployee compensation carries income tax plus self-employment tax, roughly 47 cents on the dollar.',
     })
   }
 
   return rows
 }
 
+/** Total tax exposure across every remaining import mismatch. */
+export function getImportMismatchTaxImpact(amounts: LiveAmounts): number {
+  return Math.round(
+    getOutstandingImportMismatches(amounts).reduce((sum, row) => sum + row.taxImpact, 0),
+  )
+}
+
 /**
- * | Diagnostic        | Active / dismiss rules                                      |
- * |-------------------|-------------------------------------------------------------|
- * | importMismatches  | Active while any input↔source gap remains                   |
- * | niitForm8960      | Dismiss when AGI < $200k                                    |
- * | underpaymentRisk  | Dismiss when WH restored or ≥ safe harbor                   |
- * | necScheduleC      | Study-static until marked reviewed                          |
- * | optItemize        | Study-static until marked reviewed                          |
+ * | Diagnostic                 | Active / dismiss rules                             |
+ * |----------------------------|----------------------------------------------------|
+ * | importMismatches           | Active while any input↔source gap remains          |
+ * | qualifiedDivClassification | Active while Box 1b exceeds the source 1099-DIV    |
+ * | niitForm8960               | Dismiss when AGI < $200k                           |
+ * | underpaymentRisk           | Dismiss when WH restored or ≥ safe harbor          |
+ * | necScheduleC               | Dismiss once NEC income is on the return           |
+ * | w2Box12Missing             | Active while a Box 12 code has no amount           |
+ * | optItemize                 | Dismiss once mortgage interest is entered          |
+ * | schCExpenses               | Dismiss once Schedule C expenses are entered       |
+ * | sepIra                     | Study-static until marked reviewed                 |
  */
 export const DIAGNOSTIC_DISMISS_RULES: Record<Phase2IssueKey, DiagnosticDismissRule> = {
   importMismatches: {
@@ -190,10 +233,34 @@ export const DIAGNOSTIC_DISMISS_RULES: Record<Phase2IssueKey, DiagnosticDismissR
     notes:
       'Study-static compliance: Schedule C / expense completeness stays until marked reviewed.',
   },
+  qualifiedDivClassification: {
+    dismissWhenReviewed: [],
+    activeWhenAmounts: ({ amounts }) =>
+      computeQualifiedDivOverstatement(amounts).overstated > 0,
+    notes:
+      'Box 1b on the return exceeds the Token 1099-DIV, so ordinary dividends are taxed at the qualified rate.',
+  },
+  w2Box12Missing: {
+    dismissWhenReviewed: [],
+    activeWhenAmounts: ({ amounts }) => getBlankBox12Rows(amounts).length > 0,
+    notes: 'Active while any W-2 Box 12 code imported without its amount.',
+  },
   optItemize: {
     dismissWhenReviewed: [],
+    dismissWhenAmounts: ({ amounts }) => amounts.mortgageInterest > 0,
     notes:
-      'Study-static opportunity: std deduction vs itemize (mortgage / 1098) stays until marked reviewed.',
+      'Opportunity: std deduction vs itemize. Dismissed once Form 1098 mortgage interest is entered.',
+  },
+  schCExpenses: {
+    dismissWhenReviewed: [],
+    dismissWhenAmounts: ({ amounts }) => amounts.schCExpenses > 0,
+    notes:
+      'Opportunity: client-confirmed Schedule C expenses are not on the return until an amount is entered.',
+  },
+  sepIra: {
+    dismissWhenReviewed: [],
+    notes:
+      'Study-static opportunity: retirement contribution headroom against Schedule C profit.',
   },
 }
 
@@ -246,10 +313,14 @@ export function getActiveDiagnosticKeys(ctx: DiagnosticSyncContext): Phase2Issue
 /** Default Summary / 1040 row for each Phase 2 diagnostic (when detail pane is open). */
 export const DIAGNOSTIC_OUTPUT_FIELDS: Record<Phase2IssueKey, string> = {
   importMismatches: 'wages',
+  qualifiedDivClassification: 'qualifiedDivs',
   underpaymentRisk: 'withholding',
   necScheduleC: 'otherIncome',
   niitForm8960: 'ordinaryDivs',
+  w2Box12Missing: 'wages',
   optItemize: 'stdDeduction',
+  schCExpenses: 'otherIncome',
+  sepIra: 'otherIncome',
 }
 
 /** Schedule / form line highlights when a diagnostic opens a non-Summary output form. */
@@ -261,6 +332,10 @@ export const DIAGNOSTIC_FORM_LINE_HIGHLIGHTS: Partial<
   underpaymentRisk: { f2210: 'f2210-17', '1040': 'withholding' },
   optItemize: { schA: 'schA-8a', '1040': 'stdDeduction' },
   importMismatches: { '1040': 'wages' },
+  qualifiedDivClassification: { f8960: 'f8960-2', '1040': 'qualifiedDivs' },
+  w2Box12Missing: { '1040': 'wages' },
+  schCExpenses: { schC: 'schC-28', sch1: 'sch1-10' },
+  sepIra: { schC: 'schC-31', sch1: 'sch1-10' },
 }
 
 /** Map a detail / issue field key → Summary / 1040 row (shared with Phase 1). */
@@ -313,6 +388,43 @@ export function resolveFormLineHighlight(
 
   return sourceHighlight ?? null
 }
+
+/**
+ * Rules the agent evaluated and closed out. These carry no action, but showing
+ * the reasoning is what makes the pass defensible in a review file.
+ */
+export type CheckedNoActionItem = {
+  id: string
+  title: string
+  conclusion: string
+}
+
+export const CHECKED_NO_ACTION_ITEMS: readonly CheckedNoActionItem[] = [
+  {
+    id: 'qbi-199a',
+    title: 'Section 199A qualified business income deduction',
+    conclusion:
+      'Consulting income on Schedule C is a specified service trade or business. Taxable income is far above the $247,300 single phase-out ceiling for 2025, so the QBI deduction computes to $0 and no Form 8995 is required.',
+  },
+  {
+    id: 'filing-status',
+    title: 'Filing status and dependents',
+    conclusion:
+      'Single with no dependents matches the prior-year return and the Tax Organizer. No head of household or dependent credits apply.',
+  },
+  {
+    id: 'capital-gains',
+    title: 'Capital gains and Schedule D',
+    conclusion:
+      'No 1099-B or broker proceeds are in the import packet and line 7 is $0, consistent with the prior year. Schedule D is not required.',
+  },
+  {
+    id: 'ira-basis',
+    title: 'IRA basis and Form 8606',
+    conclusion:
+      'The Meridian 1099-R shows distribution code 7 with the full distribution taxable and no after-tax basis reported. Form 8606 is not triggered.',
+  },
+] as const
 
 export function getPhase2Progress(ctx: DiagnosticSyncContext): {
   activeKeys: Phase2IssueKey[]

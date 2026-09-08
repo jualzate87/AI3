@@ -124,10 +124,14 @@ export type HandoffInputs = {
 
 const DIAG_LABELS: Record<Phase2IssueKey, string> = {
   importMismatches: 'Import mismatches',
+  qualifiedDivClassification: 'Qualified dividend classification',
   underpaymentRisk: 'Underpayment risk',
   necScheduleC: 'NEC → Schedule C',
   niitForm8960: 'NIIT Form 8960',
+  w2Box12Missing: 'W-2 Box 12 amounts',
   optItemize: 'Itemize opportunity',
+  schCExpenses: 'Schedule C expenses',
+  sepIra: 'SEP-IRA contribution room',
 }
 
 const W2_EMPLOYER_NAMES: Record<string, string> = {

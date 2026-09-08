@@ -14,6 +14,8 @@ import { useSyncedReviewState } from '../../hooks/useSyncedReviewState'
 import { openSourceDocumentReviewPopout } from '../../lib/prototypeRoutes'
 import { buildAllDiagnosticIssues } from '../data-review/AgentReportPane'
 import {
+  CHECKED_NO_ACTION_ITEMS,
+  getImportMismatchTaxImpact,
   getOutstandingImportMismatches,
   getPhase2Progress,
   type Phase2IssueKey,
@@ -33,6 +35,8 @@ function categoryBadgeStatus(
 ): 'warning' | 'success' {
   return status
 }
+
+const formatUsd = (n: number) => `$${Math.round(n).toLocaleString()}`
 
 interface AiDiagnosticsPanelProps {
   view: AiDiagnosticsView
@@ -91,13 +95,17 @@ export default function AiDiagnosticsPanel({
   const importMismatchCount = getOutstandingImportMismatches(amounts).length
   const activeKeys = progress.activeKeys
 
-  const complianceCount = AI_DIAGNOSTIC_CATEGORIES.find(c => c.id === 'compliance')!
-    .issueKeys.filter(k => activeKeys.includes(k)).length
-  const optimizationCount = activeKeys.includes('optItemize') ? 1 : 0
+  const countForCategory = (id: AiDiagnosticCategoryId) =>
+    AI_DIAGNOSTIC_CATEGORIES.find(c => c.id === id)!.issueKeys.filter(k =>
+      activeKeys.includes(k),
+    ).length
+  const complianceCount = countForCategory('compliance')
+  const optimizationCount = countForCategory('optimization')
 
   const [expandedCategory, setExpandedCategory] = useState<AiDiagnosticCategoryId | null>(
     'import-mismatches',
   )
+  const [checkedExpanded, setCheckedExpanded] = useState(false)
 
   const selectedIssue = selectedIssueKey
     ? allIssues.find(i => i.issueKey === selectedIssueKey) ?? null
@@ -173,6 +181,7 @@ export default function AiDiagnosticsPanel({
               <span>Field</span>
               <span>On return</span>
               <span>On source</span>
+              <span>Tax impact</span>
               <span className={styles.tableHeaderAction}>Action</span>
             </div>
             {mismatchRows.map(row => (
@@ -187,6 +196,9 @@ export default function AiDiagnosticsPanel({
                 </LinkActionButton>
                 <span className={styles.tableCellReturn}>{row.returnValue}</span>
                 <strong className={styles.tableCellSource}>{row.sourceValue}</strong>
+                <span className={styles.tableCellImpact} title={row.taxImpactNote}>
+                  {formatUsd(row.taxImpact)}
+                </span>
                 <span className={styles.tableCellAction}>
                   <Button
                     priority="primary"
@@ -195,6 +207,41 @@ export default function AiDiagnosticsPanel({
                   >
                     View source
                   </Button>
+                </span>
+              </div>
+            ))}
+            <div className={`${styles.tableRow} ${styles.tableTotalRow}`}>
+              <span className={styles.tableTotalLabel}>Total tax impact</span>
+              <span className={styles.tableCellReturn} aria-hidden />
+              <span className={styles.tableCellSource} aria-hidden />
+              <strong className={styles.tableCellImpact}>
+                {formatUsd(getImportMismatchTaxImpact(amounts))}
+              </strong>
+              <span className={styles.tableCellAction} aria-hidden />
+            </div>
+          </div>
+        )}
+
+        {mismatchRows.length === 0 && selectedIssue.tableRows.length > 0 && (
+          <div className={styles.tableCard}>
+            <div className={styles.detailTableHeader}>
+              {selectedIssue.tableHeaders.slice(0, 3).map((header, i) => (
+                <span key={header || i} className={i === 0 ? undefined : styles.detailTableCellRight}>
+                  {header}
+                </span>
+              ))}
+            </div>
+            {selectedIssue.tableRows.map(row => (
+              <div
+                key={row.label}
+                className={`${styles.detailTableRow} ${row.total ? styles.detailTableRowTotal : ''}`}
+              >
+                <span className={styles.detailTableLabel}>{row.label}</span>
+                <span className={`${styles.detailTableValue} ${styles.detailTableCellRight}`}>
+                  {row.cols[0]}
+                </span>
+                <span className={`${styles.detailTableNote} ${styles.detailTableCellRight}`}>
+                  {row.cols[1]}
                 </span>
               </div>
             ))}
@@ -287,7 +334,7 @@ export default function AiDiagnosticsPanel({
             status="success"
             priority="secondary"
             capitalization="sentence"
-            label={`${optimizationCount} optimization`}
+            label={`${optimizationCount} optimization${optimizationCount === 1 ? '' : 's'}`}
           >
             <SuccessBadgeIcon />
           </Badge>
@@ -303,9 +350,11 @@ export default function AiDiagnosticsPanel({
           if (visibleKeys.length === 0) return null
 
           const isExpanded = expandedCategory === category.id
+          // The importMismatches card stands for every mismatched field, so count
+          // rows rather than cards when sizing this category.
           const itemCount =
             category.id === 'import-mismatches'
-              ? importMismatchCount
+              ? importMismatchCount + visibleKeys.filter(k => k !== 'importMismatches').length
               : visibleKeys.length
 
           return (
@@ -361,6 +410,46 @@ export default function AiDiagnosticsPanel({
             </div>
           )
         })}
+
+        <div
+          className={`${styles.findingCard} ${styles.checkedCard} ${checkedExpanded ? '' : styles.findingCardCollapsed}`}
+        >
+          <button
+            type="button"
+            className={styles.findingHeader}
+            aria-expanded={checkedExpanded}
+            onClick={() => setCheckedExpanded(prev => !prev)}
+          >
+            <span className={styles.findingHeaderLeft}>
+              <span className={styles.findingTitle}>Checked, no action needed</span>
+              <Badge
+                shape="round"
+                status="success"
+                priority="secondary"
+                capitalization="sentence"
+                label={`${CHECKED_NO_ACTION_ITEMS.length} rules cleared`}
+              >
+                <SuccessBadgeIcon />
+              </Badge>
+            </span>
+            {checkedExpanded ? (
+              <ChevronUp size="small" className={styles.findingChevron} aria-hidden />
+            ) : (
+              <ChevronDown size="small" className={styles.findingChevron} aria-hidden />
+            )}
+          </button>
+
+          {checkedExpanded && (
+            <ul className={styles.checkedList}>
+              {CHECKED_NO_ACTION_ITEMS.map(item => (
+                <li key={item.id} className={styles.checkedItem}>
+                  <span className={styles.checkedTitle}>{item.title}</span>
+                  <span className={styles.checkedConclusion}>{item.conclusion}</span>
+                </li>
+              ))}
+            </ul>
+          )}
+        </div>
       </div>
 
       <AiChatInput placeholder="Ask about Jordan's return..." />

@@ -20,28 +20,28 @@ export const AI_DIAGNOSTIC_CATEGORIES: readonly AiDiagnosticCategory[] = [
     badgeLabel: 'IMPORT MISMATCHES',
     badgeStatus: 'warning',
     description:
-      '6 fields don\'t match source documents. Some were marked correct during import without fixing amounts, and I found gaps the import missed.',
-    issueKeys: ['importMismatches'],
+      'Fields that still disagree with the source documents, each priced by what it costs the return. Includes a dividend classification the totals check cannot catch, because Box 1a is correct while Box 1b is not.',
+    issueKeys: ['importMismatches', 'qualifiedDivClassification'],
   },
   {
     id: 'compliance',
     navLabel: 'Diagnostic 2',
-    title: 'State filing requirements',
+    title: 'Compliance and completeness',
     badgeLabel: 'COMPLIANCE CHECK',
     badgeStatus: 'warning',
     description:
-      'Compliance checks surfaced during review - confirm withholding, filing requirements, and related forms before filing.',
-    issueKeys: ['underpaymentRisk', 'necScheduleC', 'niitForm8960'],
+      'Income the IRS already has a copy of, tax the return has not computed yet, and source amounts that never made it across. Each item names its cause so you can tell an import artifact from a client behavior.',
+    issueKeys: ['underpaymentRisk', 'necScheduleC', 'niitForm8960', 'w2Box12Missing'],
   },
   {
     id: 'optimization',
     navLabel: 'Diagnostic 3',
-    title: 'Retirement contribution opportunity',
+    title: 'Deduction and planning opportunities',
     badgeLabel: 'OPTIMIZATION',
     badgeStatus: 'success',
     description:
-      'Planning opportunity identified - review deduction strategy and client-provided details before finalizing the return.',
-    issueKeys: ['optItemize'],
+      'Deductions the client confirmed but the return never claimed, plus contribution room still open before the filing deadline. Every item is quantified so you can decide what is worth a follow-up call.',
+    issueKeys: ['optItemize', 'schCExpenses', 'sepIra'],
   },
 ] as const
 
