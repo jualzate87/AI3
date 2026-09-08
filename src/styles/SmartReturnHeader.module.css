@@ -252,7 +252,7 @@
 .ghostBtn:hover { background: #f0f4f6; }
 .ghostBtn svg { color: #393a3d; }
 
-/* ── Row 3: Tab / navigation bar 48px — Figma 1380×48 ── */
+/* ── Row 3: Tab bar 48px, white bg ── */
 .row3 {
   display: flex;
   align-items: center;
@@ -265,11 +265,6 @@
   border-bottom: 1px solid #d5dee3;
   flex-shrink: 0;
   position: relative;
-}
-
-.row3CheckReturn {
-  border-top: none;
-  padding-right: 20px;
 }
 
 .tabsLeft {
@@ -317,15 +312,17 @@
 }
 .tabActive svg { color: #393a3d; }
 
+/* Inline SVG icon used as img inside tab buttons */
 .tabIconImg {
   width: 16px;
   height: 16px;
   flex-shrink: 0;
   color: inherit;
+  /* Tint the SVG using CSS filter to match tab text color */
   filter: brightness(0) saturate(100%) invert(40%) sepia(5%) saturate(500%) hue-rotate(180deg) brightness(85%);
 }
 .tabActive .tabIconImg {
-  filter: brightness(0) saturate(100%) invert(22%) sepia(6%) saturate(600%) hue-rotate(169deg) brightness(95%);
+  filter: brightness(0) saturate(100%);
 }
 
 .tabsRight {
@@ -335,121 +332,6 @@
   flex-shrink: 0;
   position: relative;
   z-index: 1;
-}
-
-.tabsRightCheckReturn {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  flex-shrink: 0;
-  margin-left: auto;
-}
-
-.tabRowCta {
-  flex-shrink: 0;
-}
-
-/* Check return utility cluster — Figma right section ~358px */
-.utilityCluster {
-  display: flex;
-  align-items: center;
-  gap: 4px;
-  flex-shrink: 0;
-}
-
-.utilityBtn {
-  display: flex;
-  align-items: center;
-  gap: 4px;
-  background: none;
-  border: none;
-  cursor: pointer;
-  padding: 6px 8px;
-  border-radius: 4px;
-  color: #5d686f;
-  font-family: var(--font-family-component);
-}
-.utilityBtn:hover { background: rgba(226, 233, 237, 0.6); }
-.utilityBtn svg { color: #5d686f; flex-shrink: 0; }
-
-.utilityBtnLabel {
-  font-size: var(--font-size-component-small);
-  font-weight: var(--font-weight-component);
-  line-height: 20px;
-  color: #5d686f;
-  white-space: nowrap;
-}
-
-.utilityIconBtn {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  background: none;
-  border: none;
-  cursor: pointer;
-  padding: 6px;
-  border-radius: 4px;
-  color: #5d686f;
-}
-.utilityIconBtn:hover { background: rgba(226, 233, 237, 0.6); }
-.utilityIconBtn svg { color: #5d686f; }
-
-.utilityNotificationsLabel {
-  font-size: var(--font-size-component-small);
-  font-weight: var(--font-weight-component);
-  line-height: 20px;
-  color: #5d686f;
-  white-space: nowrap;
-  padding: 0 4px;
-}
-
-.utilityLinks {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  margin-left: 4px;
-}
-
-.utilityLink {
-  background: none;
-  border: none;
-  cursor: pointer;
-  padding: 0;
-  font-family: var(--font-family-component);
-  font-size: var(--font-size-component-small);
-  font-weight: var(--font-weight-component);
-  line-height: 20px;
-  color: #5d686f;
-  white-space: nowrap;
-}
-.utilityLink:hover {
-  color: #393a3d;
-  text-decoration: underline;
-}
-
-.utilityDivider {
-  width: 1px;
-  height: 24px;
-  background: #d5dee3;
-  margin: 0 4px;
-  flex-shrink: 0;
-}
-
-/* User avatar — 30×30 #0097E6, white initial */
-.userAvatar {
-  width: 30px;
-  height: 30px;
-  border-radius: 50%;
-  background: #0097e6;
-  color: #ffffff;
-  font-family: var(--font-family-component);
-  font-size: var(--font-size-component-medium);
-  font-weight: var(--font-weight-component-bold);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  flex-shrink: 0;
-  margin-left: 4px;
 }
 
 /* Saved meta */
