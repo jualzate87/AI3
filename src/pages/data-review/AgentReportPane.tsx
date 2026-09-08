@@ -108,6 +108,9 @@ export type DiagnosticIssueCard = {
     badge?: 'red' | 'orange' | 'grey' | 'green' | 'blue'
     fixField?: string
     fixTab?: string
+    /** Output form holding this number, when it lives on the return rather than a source doc. */
+    viewForm?: string
+    viewFormLabel?: string
   }[]
   tableHeaders: string[]
   suggestedActions: string[]
@@ -201,12 +204,45 @@ function buildNiitForm8960Issue(live: LiveReturnTotals): DiagnosticIssueCard {
     taxImpact: `NIIT applies to the smaller of net investment income or the amount by which modified AGI exceeds $200,000 for a single filer. Here AGI clears the threshold by a wide margin, so the full ${fmtUsd(nii)} is in the base and the tax is ${fmtUsd(nii)} × 3.8% = ${fmtUsd(niit)}.`,
     rootCause: `The base is ${fmtUsd(live.taxableInterest)} of taxable interest plus ${fmtUsd(live.ordinaryDivs)} of ordinary dividends. Note that Form 8960 uses the Box 1a ordinary dividend total, so the qualified dividend classification issue does not change this number.`,
     tableRows: [
-      { label: 'Taxable interest', cols: [fmtUsd(live.taxableInterest), 'Line 2b', ''], badge: 'grey', total: false },
-      { label: 'Ordinary dividends', cols: [fmtUsd(live.ordinaryDivs), 'Line 3b', ''], badge: 'grey', total: false },
-      { label: 'Net investment income', cols: [fmtUsd(nii), 'Form 8960 line 8', ''], badge: 'grey', total: false },
-      { label: 'NIIT at 3.8%', cols: [fmtUsd(niit), 'Form 8960 line 17', ''], badge: 'orange', total: true },
+      {
+        label: 'Taxable interest',
+        cols: [
+          fmtUsd(live.taxableInterest),
+          'Interest income that feeds the net investment income base on Form 8960.',
+        ],
+        fixField: 'taxableInterest',
+        fixTab: '1099-ints',
+      },
+      {
+        label: 'Ordinary dividends',
+        cols: [
+          fmtUsd(live.ordinaryDivs),
+          'Box 1a ordinary dividends from the 1099-DIVs. Form 8960 uses this total, not the qualified portion.',
+        ],
+        fixField: 'ordinaryDivs',
+        fixTab: '1099-divs',
+      },
+      {
+        label: 'Net investment income',
+        cols: [
+          fmtUsd(nii),
+          'Sum of interest and ordinary dividends that Form 8960 line 8 should match.',
+        ],
+        viewForm: 'f8960',
+        viewFormLabel: 'Form 8960',
+      },
+      {
+        label: 'NIIT at 3.8%',
+        cols: [
+          fmtUsd(niit),
+          'Additional tax on net investment income because modified AGI exceeds the $200,000 single filer threshold.',
+        ],
+        viewForm: 'f8960',
+        viewFormLabel: 'Form 8960',
+        total: true,
+      },
     ],
-    tableHeaders: ['Item', 'Amount', 'Line', ''],
+    tableHeaders: ['Item', 'Amount', 'What this means', 'Action'],
     suggestedActions: [
       'Open Form 8960 and confirm line 8 equals the interest and ordinary dividend totals on the 1040.',
       'Watch the interaction: any deductible retirement contribution lowers AGI and can reduce the NIIT base as well.',
@@ -260,13 +296,53 @@ function buildUnderpaymentRiskIssue(live: LiveReturnTotals): DiagnosticIssueCard
       'Jessica Drake (Mar 2, 2025): "No. I didn\'t make any estimated payments this year. I figured my W-2 and 1099 withholding would cover everything like usual."',
     questionnaireResponseId: 'estimatedPayments',
     tableRows: [
-      { label: 'Safe harbor required (110% of 2024 tax)', cols: [fmtUsd(SAFE_HARBOR_2024), 'Target', ''], badge: 'grey', total: false },
-      { label: 'Withholding on return today', cols: [fmtUsd(live.totalWithholding), 'Lines 25a and 25b', '!'], badge: 'orange', total: false },
-      { label: '1099-R Box 4 dropped on import', cols: [fmtUsd(30_000), 'Recoverable', '!'], badge: 'red', total: false },
-      { label: '2025 estimated payments', cols: ['$0', 'Client confirmed none', '!'], badge: 'orange', total: false },
-      { label: 'Shortfall after both corrections', cols: [fmtUsd(Math.max(0, shortfall - 31_438)), 'Penalty exposure', '!'], badge: 'red', total: true },
+      {
+        label: 'Safe harbor required (110% of 2024 tax)',
+        cols: [
+          fmtUsd(SAFE_HARBOR_2024),
+          'Minimum total payments for 2025 to avoid an underpayment penalty when last year\'s tax was high.',
+        ],
+        viewForm: '1040',
+        viewFormLabel: 'Form 1040',
+      },
+      {
+        label: 'Withholding on return today',
+        cols: [
+          fmtUsd(live.totalWithholding),
+          'Federal income tax withheld currently on lines 25a and 25b. This is what the return credits against the year\'s tax.',
+        ],
+        viewForm: '1040',
+        viewFormLabel: 'Form 1040',
+      },
+      {
+        label: '1099-R Box 4 dropped on import',
+        cols: [
+          fmtUsd(30_000),
+          'The Meridian 1099-R reports this federal withholding in Box 4, but import never posted it to the return.',
+        ],
+        fixField: 'withholding1099',
+        fixTab: '1099-rs',
+      },
+      {
+        label: '2025 estimated payments',
+        cols: [
+          '$0',
+          'Jessica confirmed she made no quarterly estimated payments and expected withholding to cover the year.',
+        ],
+        fixTab: 'questionnaire',
+      },
+      {
+        label: 'Shortfall after both corrections',
+        cols: [
+          fmtUsd(Math.max(0, shortfall - 31_438)),
+          'Estimated gap that remains after restoring the dropped 1099-R withholding and fixing dividend withholding. Form 2210 may apply.',
+        ],
+        viewForm: 'f2210',
+        viewFormLabel: 'Form 2210',
+        total: true,
+      },
     ],
-    tableHeaders: ['Item', 'Amount', 'Status', ''],
+    tableHeaders: ['Item', 'Amount', 'What this means', 'Action'],
     suggestedActions: [
       'Restore the Meridian 1099-R Box 4 withholding first: it is the single largest correction and it is already on the source document.',
       'Timing tip: withholding is treated as paid evenly across the year regardless of when it happened, which is why recovering it helps more than a late catch-up payment would.',
@@ -310,12 +386,45 @@ function buildNecScheduleCIssue(): DiagnosticIssueCard {
       'Jessica Drake (Mar 5, 2025): "Yes. I had expenses for software, home office supplies, and some travel. Nothing for expenses is on the return yet."',
     questionnaireResponseId: 'necExpenses',
     tableRows: [
-      { label: '1099-NEC Box 1 on source', cols: [fmtUsd(NEC_SOURCE_AMOUNT), 'Summit Advisory', ''], badge: 'grey', total: false },
-      { label: 'Amount on the return', cols: ['$0', 'Not posted', '!'], badge: 'red', total: false },
-      { label: 'Schedule C', cols: ['Not created', 'Required for this income', '!'], badge: 'red', total: false },
-      { label: 'Income plus SE tax when added', cols: [fmtUsd(Math.round(NEC_SOURCE_AMOUNT * 0.4665)), 'Before expenses', '!'], badge: 'orange', total: true },
+      {
+        label: '1099-NEC Box 1 on source',
+        cols: [
+          fmtUsd(NEC_SOURCE_AMOUNT),
+          'Nonemployee compensation on the Summit Advisory 1099-NEC that the IRS already received.',
+        ],
+        fixField: 'nec-box1',
+        fixTab: '1099-necs',
+      },
+      {
+        label: 'Amount on the return',
+        cols: [
+          '$0',
+          'No NEC income is posted anywhere on the return yet, so the IRS copy will not match.',
+        ],
+        viewForm: 'schC',
+        viewFormLabel: 'Schedule C',
+      },
+      {
+        label: 'Schedule C',
+        cols: [
+          'Not created',
+          'A Schedule C is required to report this self-employment income and any related expenses.',
+        ],
+        viewForm: 'schC',
+        viewFormLabel: 'Schedule C',
+      },
+      {
+        label: 'Income plus SE tax when added',
+        cols: [
+          fmtUsd(Math.round(NEC_SOURCE_AMOUNT * 0.4665)),
+          'Rough combined cost of income tax at 35% plus self-employment tax before any expenses.',
+        ],
+        viewForm: 'sch1',
+        viewFormLabel: 'Schedule 1',
+        total: true,
+      },
     ],
-    tableHeaders: ['Item', 'Amount', 'Status', ''],
+    tableHeaders: ['Item', 'Amount', 'What this means', 'Action'],
     suggestedActions: [
       'Post the 1099-NEC Box 1 amount and let the return create Schedule C.',
       'Matching tip: the IRS receives its own copy of every 1099-NEC, so omitted amounts surface through automated underreporter matching rather than audit.',
@@ -359,13 +468,53 @@ function buildOptItemizeIssue(amounts: LiveAmounts): DiagnosticIssueCard {
       'Jessica Drake (Feb 28, 2025): "Yes. I own my home and paid mortgage interest in 2025. I think I got a Form 1098 from my lender but I haven\'t uploaded it yet."',
     questionnaireResponseId: 'mortgage',
     tableRows: [
-      { label: 'Mortgage interest (client estimate)', cols: [fmtUsd(p.mortgageInterest), 'Needs Form 1098', '?'], badge: 'orange', total: false },
-      { label: 'State and local taxes', cols: [fmtUsd(p.saltTaxes), 'Capped at $10,000', ''], badge: 'grey', total: false },
-      { label: 'Charitable contributions', cols: [fmtUsd(p.charitableContributions), 'On file', ''], badge: 'grey', total: false },
-      { label: 'Projected Schedule A total', cols: [fmtUsd(p.itemizedTotal), `vs ${fmtUsd(p.stdDeduction)} standard`, ''], badge: 'blue', total: false },
-      { label: 'Estimated federal tax saved', cols: [fmtUsd(p.taxSaved), 'At 35% marginal', ''], badge: 'blue', total: true },
+      {
+        label: 'Mortgage interest (client estimate)',
+        cols: [
+          fmtUsd(p.mortgageInterest),
+          'Jessica told us she paid mortgage interest in 2025 but has not uploaded the Form 1098 yet.',
+        ],
+        fixTab: 'questionnaire',
+      },
+      {
+        label: 'State and local taxes',
+        cols: [
+          fmtUsd(p.saltTaxes),
+          'State and local taxes already on the return, subject to the $10,000 SALT cap.',
+        ],
+        viewForm: 'schA',
+        viewFormLabel: 'Schedule A',
+      },
+      {
+        label: 'Charitable contributions',
+        cols: [
+          fmtUsd(p.charitableContributions),
+          'Charitable gifts on file. On their own these do not exceed the standard deduction.',
+        ],
+        viewForm: 'schA',
+        viewFormLabel: 'Schedule A',
+      },
+      {
+        label: 'Projected Schedule A total',
+        cols: [
+          fmtUsd(p.itemizedTotal),
+          `Projected itemized total compared with the ${fmtUsd(p.stdDeduction)} standard deduction.`,
+        ],
+        viewForm: 'schA',
+        viewFormLabel: 'Schedule A',
+      },
+      {
+        label: 'Estimated federal tax saved',
+        cols: [
+          fmtUsd(p.taxSaved),
+          'Extra deduction from itemizing, valued at Jessica\'s 35% marginal rate.',
+        ],
+        viewForm: '1040',
+        viewFormLabel: 'Form 1040',
+        total: true,
+      },
     ],
-    tableHeaders: ['Item', 'Amount', 'Basis', ''],
+    tableHeaders: ['Item', 'Amount', 'What this means', 'Action'],
     suggestedActions: [
       'Request the Form 1098 from her lender: this is the one document standing between the return and the deduction.',
       'SALT tip: the state and local deduction is capped at $10,000, so the mortgage interest is what actually carries Schedule A here.',
@@ -407,12 +556,45 @@ function buildQualifiedDivClassificationIssue(amounts: LiveAmounts): DiagnosticI
     rootCause:
       'Import copied the Box 1a ordinary dividend total into Box 1b instead of the smaller qualified figure printed on the 1099-DIV. Box 1b can never exceed Box 1a, and here it was set equal to it.',
     tableRows: [
-      { label: 'Box 1a ordinary dividends (Token)', cols: [fmtUsd(amounts.ordinaryDivsToken), 'Matches source', ''], badge: 'green', total: false },
-      { label: 'Box 1b qualified dividends on return', cols: [fmtUsd(amounts.qualifiedDivsToken), 'Overstated', '!'], badge: 'red', total: false },
-      { label: 'Box 1b qualified dividends on source', cols: [fmtUsd(SOURCE_AMOUNTS.qualifiedDivsToken), 'Per 1099-DIV', ''], badge: 'grey', total: false },
-      { label: 'Additional tax when corrected', cols: [fmtUsd(taxDelta), '15 point rate spread', '!'], badge: 'red', total: true },
+      {
+        label: 'Box 1a ordinary dividends (Token)',
+        cols: [
+          fmtUsd(amounts.ordinaryDivsToken),
+          'Total ordinary dividends on the 1099-DIV. This amount matches the source document.',
+        ],
+        fixField: 'ordinaryDivs',
+        fixTab: '1099-divs',
+      },
+      {
+        label: 'Box 1b qualified dividends on return',
+        cols: [
+          fmtUsd(amounts.qualifiedDivsToken),
+          'Qualified dividends on the return are overstated because import copied the Box 1a total into Box 1b.',
+        ],
+        fixField: 'qualifiedDivs',
+        fixTab: '1099-divs',
+      },
+      {
+        label: 'Box 1b qualified dividends on source',
+        cols: [
+          fmtUsd(SOURCE_AMOUNTS.qualifiedDivsToken),
+          'Correct qualified dividend amount printed in Box 1b on the Token 1099-DIV.',
+        ],
+        fixField: 'qualifiedDivs',
+        fixTab: '1099-divs',
+      },
+      {
+        label: 'Additional tax when corrected',
+        cols: [
+          fmtUsd(taxDelta),
+          'Extra tax from reclassifying the overstated amount at the 15 point spread between ordinary and qualified rates.',
+        ],
+        viewForm: '1040',
+        viewFormLabel: 'Form 1040',
+        total: true,
+      },
     ],
-    tableHeaders: ['Item', 'Amount', 'Status', ''],
+    tableHeaders: ['Item', 'Amount', 'What this means', 'Action'],
     suggestedActions: [
       'Open the Token 1099-DIV and read Box 1b directly off the form.',
       'Correct Box 1b: qualified dividends are a subset of Box 1a, never equal to it here.',
@@ -454,15 +636,25 @@ function buildW2Box12Issue(amounts: LiveAmounts): DiagnosticIssueCard {
     tableRows: [
       ...blanks.map(b => ({
         label: `Box 12${b.slot} · Code ${b.code}`,
-        cols: ['Blank', b.meaning, '!'],
-        badge: 'orange' as const,
-        total: false,
+        cols: [
+          'Blank',
+          `${b.meaning}. Import read the code letter but not the dollar amount from the W-2.`,
+        ],
         fixField: 'box12',
         fixTab: 'w2s',
       })),
-      { label: 'Box 13 retirement plan', cols: ['Checked', 'Matches client answer', '✓'], badge: 'green', total: true },
+      {
+        label: 'Box 13 retirement plan',
+        cols: [
+          'Checked',
+          'Retirement plan box matches Jessica\'s answer that she participates in a workplace plan.',
+        ],
+        viewForm: '1040',
+        viewFormLabel: 'Form 1040',
+        total: true,
+      },
     ],
-    tableHeaders: ['Item', 'Amount', 'Meaning', ''],
+    tableHeaders: ['Item', 'Amount', 'What this means', 'Action'],
     suggestedActions: [
       'Open the W-2 preview and key the Box 12 amounts from the printed form.',
       'Code AA feeds the retirement contribution review: capture it before evaluating additional contribution room.',
@@ -506,11 +698,36 @@ function buildSchCExpensesIssue(live: LiveReturnTotals): DiagnosticIssueCard {
       'Jessica Drake (Mar 5, 2025): "Yes. I had expenses for software, home office supplies, and some travel for that consulting work. I don\'t have a clean receipt packet yet and I\'m not sure what\'s deductible."',
     questionnaireResponseId: 'necExpenses',
     tableRows: [
-      { label: 'Schedule C gross receipts', cols: [fmtUsd(grossProfit), 'Line 1', ''], badge: 'grey', total: false },
-      { label: 'Expenses on return', cols: ['$0', 'Line 28', '!'], badge: 'orange', total: false },
-      { label: 'Benefit per $1,000 substantiated', cols: [fmtUsd(467), 'Income tax plus SE tax', ''], badge: 'blue', total: true },
+      {
+        label: 'Schedule C gross receipts',
+        cols: [
+          fmtUsd(grossProfit),
+          'Consulting income that should flow to Schedule C line 1 once the 1099-NEC is posted.',
+        ],
+        viewForm: 'schC',
+        viewFormLabel: 'Schedule C',
+      },
+      {
+        label: 'Expenses on return',
+        cols: [
+          '$0',
+          'Jessica confirmed software, home office, and travel costs, but nothing is on Schedule C line 28 yet.',
+        ],
+        viewForm: 'schC',
+        viewFormLabel: 'Schedule C',
+      },
+      {
+        label: 'Benefit per $1,000 substantiated',
+        cols: [
+          fmtUsd(467),
+          'Combined income tax and self-employment tax savings for each $1,000 of documented business expenses.',
+        ],
+        viewForm: 'schC',
+        viewFormLabel: 'Schedule C',
+        total: true,
+      },
     ],
-    tableHeaders: ['Item', 'Amount', 'Line', ''],
+    tableHeaders: ['Item', 'Amount', 'What this means', 'Action'],
     suggestedActions: [
       'Send a targeted request: software subscriptions, home office square footage, and mileage or travel receipts.',
       'Home office tip: the simplified method allows $5 per square foot up to 300 square feet, which avoids a full Form 8829 workup.',
@@ -548,12 +765,45 @@ function buildSepIraIssue(live: LiveReturnTotals): DiagnosticIssueCard {
     taxImpact: `A SEP contribution is an above-the-line deduction, so it reduces AGI as well as taxable income. Lowering AGI also trims the Form 8960 base, which matters because this return is already well past the $200,000 NIIT threshold.`,
     rootCause: `Self-employed SEP contributions are capped at 20% of net earnings from self-employment, which is ${fmtUsd(netEarnings)} here. Nothing on the return indicates an existing SEP, SIMPLE, or solo 401(k) for this business.`,
     tableRows: [
-      { label: 'Schedule C net profit', cols: [fmtUsd(netProfit), 'Line 31', ''], badge: 'grey', total: false },
-      { label: 'Net earnings from self-employment', cols: [fmtUsd(netEarnings), '92.35% of profit', ''], badge: 'grey', total: false },
-      { label: 'Maximum SEP contribution', cols: [fmtUsd(contribution), '20% of net earnings', ''], badge: 'blue', total: false },
-      { label: 'Estimated federal tax saved', cols: [fmtUsd(taxSaved), 'At 35% marginal', ''], badge: 'blue', total: true },
+      {
+        label: 'Schedule C net profit',
+        cols: [
+          fmtUsd(netProfit),
+          'Net profit from consulting that determines how much can go into a SEP-IRA.',
+        ],
+        viewForm: 'schC',
+        viewFormLabel: 'Schedule C',
+      },
+      {
+        label: 'Net earnings from self-employment',
+        cols: [
+          fmtUsd(netEarnings),
+          '92.35% of net profit. This is the base for the 20% SEP contribution limit.',
+        ],
+        viewForm: 'schC',
+        viewFormLabel: 'Schedule C',
+      },
+      {
+        label: 'Maximum SEP contribution',
+        cols: [
+          fmtUsd(contribution),
+          'Highest deductible SEP contribution at 20% of net earnings from self-employment.',
+        ],
+        viewForm: 'sch1',
+        viewFormLabel: 'Schedule 1',
+      },
+      {
+        label: 'Estimated federal tax saved',
+        cols: [
+          fmtUsd(taxSaved),
+          'Federal tax reduction from the above-the-line SEP deduction at 35%.',
+        ],
+        viewForm: 'sch1',
+        viewFormLabel: 'Schedule 1',
+        total: true,
+      },
     ],
-    tableHeaders: ['Item', 'Amount', 'Basis', ''],
+    tableHeaders: ['Item', 'Amount', 'What this means', 'Action'],
     suggestedActions: [
       'Confirm she has no existing SEP, SIMPLE, or solo 401(k) tied to the consulting work before recommending a contribution.',
       'Ruled out: a deductible traditional IRA does not help here. Box 13 confirms workplace plan coverage and AGI is far above the deduction phase-out, and a Roth IRA is closed off by the same income.',

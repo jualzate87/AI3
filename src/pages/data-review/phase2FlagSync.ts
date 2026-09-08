@@ -397,6 +397,10 @@ export type CheckedNoActionItem = {
   id: string
   title: string
   conclusion: string
+  source?: {
+    label: string
+    href: string
+  }
 }
 
 export const CHECKED_NO_ACTION_ITEMS: readonly CheckedNoActionItem[] = [
@@ -404,25 +408,41 @@ export const CHECKED_NO_ACTION_ITEMS: readonly CheckedNoActionItem[] = [
     id: 'qbi-199a',
     title: 'Section 199A qualified business income deduction',
     conclusion:
-      'Consulting income on Schedule C is a specified service trade or business. Taxable income is far above the $247,300 single phase-out ceiling for 2025, so the QBI deduction computes to $0 and no Form 8995 is required.',
+      'We looked at the Summit consulting income on Schedule C. Because it is a specified service trade or business and taxable income is well above the $247,300 single filer phase-out for 2025, the QBI deduction comes out to $0. You do not need Form 8995 on this return.',
+    source: {
+      label: 'About Form 8995 (QBI deduction)',
+      href: 'https://www.irs.gov/forms-pubs/about-form-8995',
+    },
   },
   {
     id: 'filing-status',
     title: 'Filing status and dependents',
     conclusion:
-      'Single with no dependents matches the prior-year return and the Tax Organizer. No head of household or dependent credits apply.',
+      'Single with no dependents matches last year\'s return and what Jessica entered in the Tax Organizer. Head of household and dependent credits do not apply here.',
+    source: {
+      label: 'Publication 501 (filing status and dependents)',
+      href: 'https://www.irs.gov/publications/p501',
+    },
   },
   {
     id: 'capital-gains',
     title: 'Capital gains and Schedule D',
     conclusion:
-      'No 1099-B or broker proceeds are in the import packet and line 7 is $0, consistent with the prior year. Schedule D is not required.',
+      'There are no 1099-B forms or broker proceeds in the import packet, and line 7 on the 1040 is $0, which matches last year. Schedule D is not required.',
+    source: {
+      label: 'About Schedule D (Form 1040)',
+      href: 'https://www.irs.gov/forms-pubs/about-schedule-d-form-1040',
+    },
   },
   {
     id: 'ira-basis',
     title: 'IRA basis and Form 8606',
     conclusion:
-      'The Meridian 1099-R shows distribution code 7 with the full distribution taxable and no after-tax basis reported. Form 8606 is not triggered.',
+      'The Meridian 1099-R shows distribution code 7 with the full distribution taxable and no after-tax basis reported. Form 8606 is not needed for this distribution.',
+    source: {
+      label: 'About Form 8606 (nondeductible IRAs)',
+      href: 'https://www.irs.gov/forms-pubs/about-form-8606',
+    },
   },
 ] as const
 

@@ -1,12 +1,14 @@
 import { useMemo, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { ChevronDown, ChevronLeft, ChevronUp, Send } from '@design-systems/icons'
-import { Badge, SuccessBadgeIcon, WarningBadgeIcon } from '@ids-ts/badge'
+import { Badge, SuccessBadgeIcon } from '@ids-ts/badge'
 import '@ids-ts/badge/dist/main.css'
 import { Button } from '@ids-ts/button'
 import '@ids-ts/button/dist/main.css'
 import { IconControl } from '@ids-ts/icon-control'
 import '@ids-ts/icon-control/dist/main.css'
+import { Link } from '@ids-ts/link'
+import '@ids-ts/link/dist/main.css'
 import { LinkActionButton } from '@ids-ts/link-action-button'
 import '@ids-ts/link-action-button/dist/main.css'
 import intuitIntelligenceLogo from '../../assets/icons/intuit-intelligence-logo-small.svg'
@@ -133,13 +135,16 @@ export default function AiDiagnosticsPanel({
     () => getPhase2Progress({ reviewedFields, live, amounts }),
     [reviewedFields, live, amounts],
   )
-  const importMismatchCount = getOutstandingImportMismatches(amounts).length
   const activeKeys = progress.activeKeys
 
   const countForCategory = (id: AiDiagnosticCategoryId) =>
     AI_DIAGNOSTIC_CATEGORIES.find(c => c.id === id)!.issueKeys.filter(k =>
       activeKeys.includes(k),
     ).length
+  // Every count on this screen is a count of diagnostics, so the category pills,
+  // the card counts and `progress.total` all reconcile. Mismatched-field counts
+  // only appear inside the import diagnostic, where the unit is explained.
+  const importCount = countForCategory('import-mismatches')
   const complianceCount = countForCategory('compliance')
   const optimizationCount = countForCategory('optimization')
 
@@ -319,8 +324,17 @@ export default function AiDiagnosticsPanel({
         {mismatchRows.length === 0 && selectedIssue.tableRows.length > 0 && (
           <div className={styles.tableCard}>
             <div className={styles.detailTableHeader}>
-              {selectedIssue.tableHeaders.slice(0, 3).map((header, i) => (
-                <span key={header || i} className={i === 0 ? undefined : styles.detailTableCellRight}>
+              {selectedIssue.tableHeaders.slice(0, 4).map((header, i) => (
+                <span
+                  key={header || i}
+                  className={
+                    i === 1
+                      ? styles.detailTableCellRight
+                      : i === 3
+                        ? styles.detailTableCellAction
+                        : undefined
+                  }
+                >
                   {header}
                 </span>
               ))}
@@ -334,8 +348,27 @@ export default function AiDiagnosticsPanel({
                 <span className={`${styles.detailTableValue} ${styles.detailTableCellRight}`}>
                   {row.cols[0]}
                 </span>
-                <span className={`${styles.detailTableNote} ${styles.detailTableCellRight}`}>
-                  {row.cols[1]}
+                <span className={styles.detailTableNote}>{row.cols[1]}</span>
+                <span className={styles.detailTableCellAction}>
+                  {row.fixTab ? (
+                    <LinkActionButton
+                      size="small"
+                      alignment="right"
+                      onClick={() =>
+                        handleViewSourceForField(row.fixField, row.fixTab, undefined)
+                      }
+                    >
+                      View source
+                    </LinkActionButton>
+                  ) : row.viewForm ? (
+                    <LinkActionButton
+                      size="small"
+                      alignment="right"
+                      onClick={() => navigate(`/check-return?form=${row.viewForm}`)}
+                    >
+                      {`View on ${row.viewFormLabel ?? row.viewForm}`}
+                    </LinkActionButton>
+                  ) : null}
                 </span>
               </div>
             ))}
@@ -390,33 +423,18 @@ export default function AiDiagnosticsPanel({
 
       <div className={styles.summaryRow}>
         <div className={styles.summaryMetrics}>
-          <Badge
-            shape="round"
-            status="warning"
-            priority="secondary"
-            capitalization="sentence"
-            label={`${importMismatchCount} import mismatch${importMismatchCount === 1 ? '' : 'es'}`}
-          >
-            <WarningBadgeIcon />
-          </Badge>
-          <Badge
-            shape="round"
-            status="warning"
-            priority="secondary"
-            capitalization="sentence"
-            label={`${complianceCount} compliance check${complianceCount === 1 ? '' : 's'}`}
-          >
-            <WarningBadgeIcon />
-          </Badge>
-          <Badge
-            shape="round"
-            status="success"
-            priority="secondary"
-            capitalization="sentence"
-            label={`${optimizationCount} optimization${optimizationCount === 1 ? '' : 's'}`}
-          >
-            <SuccessBadgeIcon />
-          </Badge>
+          <span className={styles.summaryMetric}>
+            <span className={`${styles.summaryDot} ${styles.summaryDotAttention}`} aria-hidden />
+            {importCount} import issue{importCount === 1 ? '' : 's'}
+          </span>
+          <span className={styles.summaryMetric}>
+            <span className={`${styles.summaryDot} ${styles.summaryDotAttention}`} aria-hidden />
+            {complianceCount} compliance check{complianceCount === 1 ? '' : 's'}
+          </span>
+          <span className={styles.summaryMetric}>
+            <span className={`${styles.summaryDot} ${styles.summaryDotPositive}`} aria-hidden />
+            {optimizationCount} planning opportunit{optimizationCount === 1 ? 'y' : 'ies'}
+          </span>
         </div>
         <span className={styles.reviewStatus}>
           {progress.reviewed} of {progress.total} reviewed
@@ -429,12 +447,7 @@ export default function AiDiagnosticsPanel({
           if (visibleKeys.length === 0) return null
 
           const isExpanded = expandedCategory === category.id
-          // The importMismatches card stands for every mismatched field, so count
-          // rows rather than cards when sizing this category.
-          const itemCount =
-            category.id === 'import-mismatches'
-              ? importMismatchCount + visibleKeys.filter(k => k !== 'importMismatches').length
-              : visibleKeys.length
+          const itemCount = visibleKeys.length
 
           return (
             <div
@@ -491,7 +504,7 @@ export default function AiDiagnosticsPanel({
         })}
 
         <div
-          className={`${styles.findingCard} ${styles.checkedCard} ${checkedExpanded ? '' : styles.findingCardCollapsed}`}
+          className={`${styles.findingCard} ${checkedExpanded ? '' : styles.findingCardCollapsed}`}
         >
           <button
             type="button"
@@ -524,6 +537,17 @@ export default function AiDiagnosticsPanel({
                 <li key={item.id} className={styles.checkedItem}>
                   <span className={styles.checkedTitle}>{item.title}</span>
                   <span className={styles.checkedConclusion}>{item.conclusion}</span>
+                  {item.source && (
+                    <Link
+                      href={item.source.href}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      size="body-3"
+                      type="standalone"
+                    >
+                      {item.source.label}
+                    </Link>
+                  )}
                 </li>
               ))}
             </ul>
