@@ -1,4 +1,4 @@
-/* Return Header - Figma node 29815:48823 */
+/* Return Header - Figma node 34229:163899 */
 
 .header {
   display: flex;
@@ -16,20 +16,20 @@
   align-items: center;
   justify-content: space-between;
   height: 48px;
-  padding: 0 16px;
-  background: #ffffff;
+  padding: 0 var(--space-container-padding-small);
+  background: var(--color-container-background-primary);
   flex-shrink: 0;
 }
 
-/* Product / brand name - Honey Tax Accounting (ALL CAPS via text-transform) */
+/* Product / brand name - ALL CAPS via text-transform */
 .businessName {
   font-family: var(--font-family-heading);
-  font-size: var(--font-size-component-medium);
+  font-size: var(--font-size-component-small);
   font-weight: var(--font-weight-heading-bold);
   line-height: 20px;
   letter-spacing: 0.5px;
   text-transform: uppercase;
-  color: #393a3d;
+  color: var(--color-text-primary);
   white-space: nowrap;
 }
 
@@ -43,42 +43,42 @@
 .navBtn {
   display: flex;
   align-items: center;
-  gap: 4px;
+  gap: var(--space-component-gap-small);
   background: none;
   border: none;
   cursor: pointer;
-  padding: 8px;
-  border-radius: 4px;
-  color: #5d686f;
+  padding: var(--space-container-padding-xx-small);
+  border-radius: var(--radius-small);
+  color: var(--color-text-quaternary);
   font-family: var(--font-family-component);
 }
-.navBtn:hover { background: rgba(226, 233, 237, 0.6); }
-.navBtn svg { color: #5d686f; }
+.navBtn:hover { background: var(--color-action-passive-subtle-hover); }
+.navBtn svg { color: var(--color-text-quaternary); }
 
 .navBtnLabel {
   font-family: var(--font-family-component);
   font-size: var(--font-size-component-small);
-  font-weight: var(--font-weight-component);
+  font-weight: var(--font-weight-component-semibold);
   line-height: 20px;
-  color: #5d686f;
+  color: var(--color-text-quaternary);
   white-space: nowrap;
 }
 
 .row1Divider {
   width: 1px;
   height: 40px;
-  background: #d5dee3;
-  margin: 0 4px;
+  background: var(--color-divider-tertiary);
+  margin: 0 var(--space-component-gap-small);
   flex-shrink: 0;
 }
 
-/* OIAA Avatar - 30px circle, Intuit user blue */
+/* OIAA Avatar - 30px circle */
 .oiaaAvatar {
   width: 30px;
   height: 30px;
   border-radius: 50%;
   background: #0097e6;
-  color: #ffffff;
+  color: var(--color-text-inverse);
   font-family: var(--font-family-component);
   font-size: var(--font-size-component-medium);
   font-weight: var(--font-weight-component-bold);
@@ -86,7 +86,7 @@
   align-items: center;
   justify-content: center;
   cursor: pointer;
-  margin-left: 4px;
+  margin-left: var(--space-component-gap-small);
   flex-shrink: 0;
 }
 
@@ -96,32 +96,33 @@
   align-items: center;
   justify-content: space-between;
   height: 63px;
-  padding: 0 16px 0 20px;
-  background: #ffffff;
-  border-top: 1px solid #d5dee3;
+  padding: 0;
+  background: var(--color-container-background-primary);
+  border-top: 1px solid var(--color-divider-tertiary);
   flex-shrink: 0;
 }
 
 .row2Left {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: var(--space-column-gap-small);
   height: 100%;
+  padding-left: var(--space-page-inline);
 }
 
 /* Client name */
 .clientName {
   font-family: var(--font-family-component);
   font-size: var(--font-size-component-medium);
-  font-weight: var(--font-weight-component-semibold);
+  font-weight: var(--font-weight-component-bold);
   line-height: 19px;
-  color: #393a3d;
+  color: var(--color-text-primary);
   white-space: nowrap;
-  padding: 12px 0;
+  padding: var(--space-small) 0;
 }
 
 .lockIcon {
-  color: #6b6c72;
+  color: var(--color-icon-secondary);
   flex-shrink: 0;
 }
 
@@ -129,24 +130,24 @@
 .clientProfileBtn {
   display: flex;
   align-items: center;
-  gap: 4px;
+  gap: var(--space-component-gap-small);
   background: none;
   border: none;
   cursor: pointer;
-  padding: 6px;
-  border-radius: 4px;
-  color: #5d686f;
+  padding: var(--space-component-inline-padding-small);
+  border-radius: var(--radius-small);
+  color: var(--color-text-quaternary);
   font-family: var(--font-family-component);
 }
-.clientProfileBtn:hover { background: rgba(226, 233, 237, 0.6); }
-.clientProfileBtn svg { color: #5d686f; }
+.clientProfileBtn:hover { background: var(--color-action-passive-subtle-hover); }
+.clientProfileBtn svg { color: var(--color-text-quaternary); }
 
 .clientProfileLabel {
   font-family: var(--font-family-component);
   font-size: var(--font-size-component-medium);
   font-weight: var(--font-weight-component-semibold);
   line-height: 24px;
-  color: #5d686f;
+  color: var(--color-text-quaternary);
   white-space: nowrap;
 }
 
@@ -154,9 +155,8 @@
 .vertDivider {
   width: 1px;
   height: 38px;
-  background: #d5dee3;
+  background: var(--color-divider-tertiary);
   flex-shrink: 0;
-  margin: 0 8px;
 }
 
 /* Tax year / Return type meta */
@@ -164,23 +164,23 @@
   display: flex;
   flex-direction: column;
   gap: 0;
-  padding: 8px;
-  border-radius: 8px;
+  padding: var(--space-container-padding-xx-small);
+  border-radius: var(--radius-large);
 }
 
 .metaLabel {
   font-family: var(--font-family-component);
-  font-size: var(--font-size-component-small);
+  font-size: var(--font-size-component-x-small);
   font-weight: var(--font-weight-component);
   line-height: 16px;
-  color: var(--color-text-secondary);
+  color: var(--color-text-quaternary);
   white-space: nowrap;
 }
 
 .metaValueRow {
   display: flex;
   align-items: center;
-  gap: 2px;
+  gap: var(--space-component-gap-x-small);
   height: 24px;
 }
 
@@ -189,7 +189,7 @@
   font-size: var(--font-size-component-medium);
   font-weight: var(--font-weight-component-bold);
   line-height: 24px;
-  color: #393a3d;
+  color: var(--color-text-primary);
   white-space: nowrap;
 }
 
@@ -198,28 +198,30 @@
 .row2Right {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: var(--space-component-gap-large);
+  padding: 0 var(--space-container-padding-small);
 }
 
 /* Avatar stack - D (#236cff), H (#7c00f6), +1 (#eceef1) */
 .avatarStack {
   display: flex;
   align-items: center;
-  margin-right: 4px;
+  padding: var(--space-container-padding-xx-small) 0;
+  margin-right: var(--space-component-gap-small);
 }
 
 .avatarD, .avatarH, .avatarPlus {
   width: 30px;
   height: 30px;
   border-radius: 50%;
-  border: 1px solid #ffffff;
+  border: 1px solid var(--color-container-background-primary);
   display: flex;
   align-items: center;
   justify-content: center;
   font-family: var(--font-family-component);
   font-size: var(--font-size-component-medium);
   font-weight: var(--font-weight-component-bold);
-  color: #ffffff;
+  color: var(--color-text-inverse);
   flex-shrink: 0;
 }
 .avatarD { background: #236cff; }
@@ -236,12 +238,12 @@
 .ghostBtn {
   display: flex;
   align-items: center;
-  gap: 4px;
+  gap: var(--space-component-gap-small);
   background: none;
   border: none;
   cursor: pointer;
-  padding: 6px 4px 6px 8px;
-  border-radius: 4px;
+  padding: var(--space-component-inline-padding-small) var(--space-component-inline-padding-medium);
+  border-radius: var(--radius-small);
   font-family: var(--font-family-component);
   font-size: var(--font-size-component-medium);
   font-weight: var(--font-weight-component-semibold);
@@ -250,26 +252,26 @@
   white-space: nowrap;
 }
 .ghostBtn:hover { background: #f0f4f6; }
-.ghostBtn svg { color: #393a3d; }
+.ghostBtn svg { color: var(--color-text-primary); }
 
-/* ── Row 3: Tab bar 48px, white bg ── */
+/* ── Row 3: Tab bar 46px, secondary page background ── */
 .row3 {
   display: flex;
   align-items: center;
   justify-content: flex-start;
-  height: 48px;
-  min-height: 48px;
-  padding: 0 20px 0 17px;
-  background: #ffffff;
-  border-top: 1px solid #d5dee3;
-  border-bottom: 1px solid #d5dee3;
+  height: 46px;
+  min-height: 46px;
+  padding: 0 var(--space-page-inline);
+  background: #f0f4f6;
+  border-top: none;
+  border-bottom: 2px solid var(--color-divider-tertiary);
   flex-shrink: 0;
   position: relative;
 }
 
 .tabsLeft {
   display: flex;
-  align-items: stretch;
+  align-items: flex-end;
   height: 100%;
   gap: 0;
   flex-shrink: 0;
@@ -278,39 +280,39 @@
 /* Min space between tabs and right cluster */
 .tabRowSpacer {
   flex: 1 1 auto;
-  min-width: 24px;
+  min-width: var(--space-medium);
 }
 
-/* Tab labels — 14px component, inactive #5D686F */
+/* Tab labels — 14px Demi, inactive quaternary, active primary */
 .tab {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: var(--space-container-padding-xx-small);
   height: 100%;
-  padding: 0 16px;
+  padding: var(--space-component-stack-padding-medium) var(--space-component-inline-padding-xx-large) 0;
   background: none;
   border: none;
   border-bottom: 2px solid transparent;
   font-family: var(--font-family-component);
   font-size: var(--font-size-component-small);
-  font-weight: var(--font-weight-component);
+  font-weight: var(--font-weight-component-semibold);
   line-height: 20px;
-  color: #5d686f;
+  color: var(--color-text-quaternary);
   cursor: pointer;
   white-space: nowrap;
   position: relative;
   box-sizing: border-box;
 }
-.tab:hover { color: #393a3d; }
-.tab svg { color: #5d686f; flex-shrink: 0; }
+.tab:hover { color: var(--color-text-primary); }
+.tab svg { color: var(--color-text-quaternary); flex-shrink: 0; }
 
-/* Active tab — #393A3D bold, 2px #205EA3 underline */
+/* Active tab — primary text, 2px action-standard underline */
 .tabActive {
-  color: #393a3d;
-  font-weight: var(--font-weight-component-bold);
+  color: #21262a;
+  font-weight: var(--font-weight-component-semibold);
   border-bottom-color: #205ea3;
 }
-.tabActive svg { color: #393a3d; }
+.tabActive svg { color: #21262a; }
 
 /* Inline SVG icon used as img inside tab buttons */
 .tabIconImg {
@@ -318,7 +320,6 @@
   height: 16px;
   flex-shrink: 0;
   color: inherit;
-  /* Tint the SVG using CSS filter to match tab text color */
   filter: brightness(0) saturate(100%) invert(40%) sepia(5%) saturate(500%) hue-rotate(180deg) brightness(85%);
 }
 .tabActive .tabIconImg {
@@ -328,22 +329,23 @@
 .tabsRight {
   display: flex;
   align-items: center;
-  gap: 16px;
+  gap: var(--space-medium);
   flex-shrink: 0;
   position: relative;
   z-index: 1;
+  padding: var(--space-component-stack-padding-medium) 0;
 }
 
 /* Saved meta */
 .tabMeta {
   display: flex;
   align-items: center;
-  gap: 4px;
+  gap: var(--space-component-gap-small);
   font-family: var(--font-family-component);
-  font-size: var(--font-size-component-small);
-  font-weight: var(--font-weight-component);
+  font-size: var(--font-size-component-x-small);
+  font-weight: var(--font-weight-component-semibold);
   line-height: 16px;
-  color: var(--color-text-secondary);
+  color: var(--color-text-primary);
   white-space: nowrap;
 }
-.tabMeta svg { color: var(--color-text-secondary); flex-shrink: 0; }
+.tabMeta svg { color: var(--color-text-primary); flex-shrink: 0; }
