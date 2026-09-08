@@ -273,21 +273,6 @@ export default function AiDiagnosticsPanel({
           </div>
         )}
 
-        {selectedIssue.sources?.[0] && (
-          <div className={styles.sourceRow}>
-            <a
-              className={styles.sourceChip}
-              href={selectedIssue.sources[0].href}
-              target="_blank"
-              rel="noopener noreferrer"
-            >
-              {selectedIssue.sources[0].title}
-            </a>
-            <span className={styles.sourceNote}>
-              {selectedIssue.sources[0].description}
-            </span>
-          </div>
-        )}
       </div>
     )
   }
