@@ -1,5 +1,6 @@
 import { useMemo, useState } from 'react'
-import { ChevronDown, ChevronUp, Send } from '@design-systems/icons'
+import { useNavigate } from 'react-router-dom'
+import { ChevronDown, ChevronLeft, ChevronUp, Send } from '@design-systems/icons'
 import { Badge, SuccessBadgeIcon, WarningBadgeIcon } from '@ids-ts/badge'
 import '@ids-ts/badge/dist/main.css'
 import { Button } from '@ids-ts/button'
@@ -11,6 +12,7 @@ import '@ids-ts/link-action-button/dist/main.css'
 import intuitIntelligenceLogo from '../../assets/icons/intuit-intelligence-logo-small.svg'
 import { computeLiveReturn } from '../../data/liveReturn'
 import { useSyncedReviewState } from '../../hooks/useSyncedReviewState'
+import { SOURCE_DOCUMENTS } from '../../data/sourceDocuments'
 import { openSourceDocumentReviewPopout } from '../../lib/prototypeRoutes'
 import { buildAllDiagnosticIssues } from '../data-review/AgentReportPane'
 import {
@@ -37,6 +39,44 @@ function categoryBadgeStatus(
 }
 
 const formatUsd = (n: number) => `$${Math.round(n).toLocaleString()}`
+
+/**
+ * Where a preparer goes to resolve each diagnostic.
+ *
+ * `docId` opens the uploaded document side by side and always takes precedence.
+ * When no document backs the finding, `questionnaire` opens the client's answers instead.
+ * `fix` is the single place the number is actually entered or corrected.
+ */
+const DIAGNOSTIC_ACCESS: Record<
+  Phase2IssueKey,
+  {
+    docId?: string
+    questionnaire?: boolean
+    fix: { kind: 'input'; navId: string } | { kind: 'form'; formId: string; label: string }
+  }
+> = {
+  importMismatches: { docId: 'w2-techCircle', fix: { kind: 'input', navId: 'w2' } },
+  qualifiedDivClassification: {
+    docId: '1099-div-token',
+    fix: { kind: 'input', navId: '1099-div' },
+  },
+  w2Box12Missing: { docId: 'w2-techCircle', fix: { kind: 'input', navId: 'w2' } },
+  underpaymentRisk: {
+    docId: '1099-r-meridian',
+    fix: { kind: 'form', formId: 'f2210', label: 'Form 2210' },
+  },
+  necScheduleC: {
+    docId: '1099-nec-summit',
+    fix: { kind: 'form', formId: 'schC', label: 'Schedule C' },
+  },
+  niitForm8960: {
+    docId: '1099-div-token',
+    fix: { kind: 'form', formId: 'f8960', label: 'Form 8960' },
+  },
+  optItemize: { questionnaire: true, fix: { kind: 'form', formId: 'schA', label: 'Schedule A' } },
+  schCExpenses: { questionnaire: true, fix: { kind: 'form', formId: 'schC', label: 'Schedule C' } },
+  sepIra: { docId: '1099-nec-summit', fix: { kind: 'form', formId: 'sch1', label: 'Schedule 1' } },
+}
 
 interface AiDiagnosticsPanelProps {
   view: AiDiagnosticsView
@@ -85,6 +125,7 @@ export default function AiDiagnosticsPanel({
   selectedIssueKey,
   onViewChange,
 }: AiDiagnosticsPanelProps) {
+  const navigate = useNavigate()
   const { amounts, reviewedFields } = useSyncedReviewState()
   const live = useMemo(() => computeLiveReturn(amounts), [amounts])
   const allIssues = useMemo(() => buildAllDiagnosticIssues(live, amounts), [live, amounts])
@@ -115,11 +156,22 @@ export default function AiDiagnosticsPanel({
     onViewChange('detail', issueKey)
   }
 
-  const handleViewSourceForField = (field?: string, tab?: string) => {
+  const handleViewSourceForField = (field?: string, tab?: string, subTab?: string) => {
     openSourceDocumentReviewPopout({
       tab,
+      subTab,
       field,
     })
+  }
+
+  const goToFix = (issueKey: Phase2IssueKey) => {
+    const { fix } = DIAGNOSTIC_ACCESS[issueKey]
+    if (fix.kind === 'form') {
+      navigate(`/check-return?form=${fix.formId}`)
+      return
+    }
+    const doc = SOURCE_DOCUMENTS.find(d => d.id === DIAGNOSTIC_ACCESS[issueKey].docId)
+    navigate(`/input-return?form=${fix.navId}${doc?.subTab ? `&doc=${doc.subTab}` : ''}`)
   }
 
   if (view === 'detail' && selectedIssue) {
@@ -129,15 +181,28 @@ export default function AiDiagnosticsPanel({
         ? getOutstandingImportMismatches(amounts)
         : []
 
+    const accessConfig = DIAGNOSTIC_ACCESS[selectedIssue.issueKey]
+    const access = {
+      sourceDoc: accessConfig.docId
+        ? SOURCE_DOCUMENTS.find(d => d.id === accessConfig.docId)
+        : undefined,
+      fixLabel:
+        accessConfig.fix.kind === 'form'
+          ? `Open ${accessConfig.fix.label}`
+          : 'Go to input section',
+    }
+
     return (
       <div className={styles.panel}>
-        <button
-          type="button"
+        <LinkActionButton
           className={styles.backLink}
+          size="small"
+          alignment="left"
           onClick={() => onViewChange('overview', null)}
         >
-          ← Back to AI Diagnostics
-        </button>
+          <ChevronLeft size="small" aria-hidden />
+          Back to AI Diagnostics
+        </LinkActionButton>
 
         <div className={styles.detailHeader}>
           {category && (
@@ -155,6 +220,35 @@ export default function AiDiagnosticsPanel({
               ? `${mismatchRows.length} field${mismatchRows.length === 1 ? '' : 's'} on this return disagree with the source documents.`
               : selectedIssue.summary}
           </p>
+        </div>
+
+        <div className={styles.accessRow}>
+          {access.sourceDoc ? (
+            <Button
+              priority="primary"
+              size="small"
+              onClick={() =>
+                handleViewSourceForField(
+                  selectedIssue.viewSourceField ?? undefined,
+                  access.sourceDoc?.tab,
+                  access.sourceDoc?.subTab,
+                )
+              }
+            >
+              {`Open ${access.sourceDoc.formType} side by side`}
+            </Button>
+          ) : (
+            <Button
+              priority="primary"
+              size="small"
+              onClick={() => handleViewSourceForField(undefined, 'questionnaire')}
+            >
+              Open client answers side by side
+            </Button>
+          )}
+          <Button priority="secondary" size="small" onClick={() => goToFix(selectedIssue.issueKey)}>
+            {access.fixLabel}
+          </Button>
         </div>
 
         <div className={styles.explanationCard}>
