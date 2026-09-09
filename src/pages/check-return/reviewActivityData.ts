@@ -199,18 +199,26 @@ export const CHECK_RETURN_ACTIVITY_CATEGORIES: ReviewActivityCategory[] = [
       }),
       entry('diag-box12', 'Blank Box 12 amounts', {
         detail: 'Three codes imported without their amounts',
+        before: 'Blank',
+        after: '$1,020, $23,000, $14,760',
         attribution: SC,
       }),
       entry('diag-nec', 'Nonemployee compensation missing from Schedule C', {
         detail: 'Summit income now on Schedule C and line 8',
+        before: 'Not on return',
+        after: '$24,000',
         attribution: SC,
       }),
       entry('diag-qual-div', 'Qualified dividend classification', {
         detail: 'Box 1a was correct; only Box 1b was overstated',
+        before: '$331,250',
+        after: '$187,500',
         attribution: SC,
       }),
       entry('diag-underpay', 'Underpayment risk', {
-        detail: 'Restored withholding closes the shortfall; Form 2210 not required',
+        detail: 'Restored Meridian Box 4 withholding closes the shortfall; Form 2210 not required',
+        before: '$0',
+        after: '$30,000',
         attribution: JL,
       }),
     ],

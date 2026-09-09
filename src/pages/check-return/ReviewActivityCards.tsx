@@ -3,6 +3,13 @@ import type { ReviewActivityCategory, ReviewActivityEntry } from './reviewActivi
 import handoffStyles from '../../styles/data-review/HandoffSummary.module.css'
 import styles from '../../styles/check-return/ActivityPanel.module.css'
 
+function hasValueChange(entry: ReviewActivityEntry): entry is ReviewActivityEntry & {
+  before: string
+  after: string
+} {
+  return entry.before != null && entry.after != null
+}
+
 function ValueChange({ before, after }: { before: string; after: string }) {
   return (
     <p className={styles.valueChange}>
@@ -11,6 +18,9 @@ function ValueChange({ before, after }: { before: string; after: string }) {
         to
       </span>
       <span className={styles.valueAfter}>{after}</span>
+      <span className={styles.valueChangeSrOnly}>
+        Changed from {before} to {after}
+      </span>
     </p>
   )
 }
@@ -23,11 +33,11 @@ function ActivityEntryRow({ entry }: { entry: ReviewActivityEntry }) {
       </span>
       <div className={handoffStyles.activityEntryText}>
         <span className={handoffStyles.activityEntryLabel}>{entry.label}</span>
-        {entry.before != null && entry.after != null ? (
+        {hasValueChange(entry) ? (
           <ValueChange before={entry.before} after={entry.after} />
         ) : null}
         {entry.detail ? (
-          <span className={handoffStyles.activityEntryDetail}>{entry.detail}</span>
+          <p className={handoffStyles.activityEntryDetail}>{entry.detail}</p>
         ) : null}
         {entry.attribution ? (
           <span className={styles.entryAttribution}>{entry.attribution}</span>
