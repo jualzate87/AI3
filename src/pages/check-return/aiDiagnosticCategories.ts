@@ -1,6 +1,7 @@
 import type { Phase2IssueKey } from '../data-review/phase2FlagSync'
 import {
   getActiveDiagnosticKeys,
+  getOutstandingImportMismatches,
   getPhase2Progress,
   type DiagnosticSyncContext,
 } from '../data-review/phase2FlagSync'
@@ -68,7 +69,10 @@ export function primaryIssueKeyForCategory(
   return category.issueKeys.find(k => activeKeys.includes(k)) ?? category.issueKeys[0] ?? null
 }
 
-/** Active diagnostics in one category (one diagnostic = one overview item). */
+/**
+ * Active items in one category. Import mismatches count individual input↔source
+ * rows (from getOutstandingImportMismatches); other categories count active diagnostics.
+ */
 export function getCategoryDiagnosticCount(
   categoryId: AiDiagnosticCategoryId,
   ctx: DiagnosticSyncContext,
@@ -76,7 +80,31 @@ export function getCategoryDiagnosticCount(
   const category = AI_DIAGNOSTIC_CATEGORIES.find(c => c.id === categoryId)
   if (!category) return 0
   const activeKeys = getActiveDiagnosticKeys(ctx)
+  const categoryActive = category.issueKeys.some(k => activeKeys.includes(k))
+  if (!categoryActive) return 0
+
+  if (categoryId === 'import-mismatches') {
+    return getOutstandingImportMismatches(ctx.amounts).length
+  }
+
   return category.issueKeys.filter(k => activeKeys.includes(k)).length
+}
+
+/** Reviewed item count aligned with getCategoryDiagnosticCount (rows for import mismatches). */
+function getOverviewReviewedItemCount(ctx: DiagnosticSyncContext): number {
+  const activeKeys = getActiveDiagnosticKeys(ctx)
+  let reviewed = 0
+  for (const key of activeKeys) {
+    if (!ctx.reviewedFields.has(key)) continue
+    if (key === 'importMismatches') {
+      reviewed += getOutstandingImportMismatches(ctx.amounts).length
+    } else if (key === 'qualifiedDivClassification') {
+      if (!ctx.reviewedFields.has('importMismatches')) reviewed += 1
+    } else {
+      reviewed += 1
+    }
+  }
+  return reviewed
 }
 
 /**
@@ -85,12 +113,20 @@ export function getCategoryDiagnosticCount(
  */
 export function getDiagnosticOverviewCounts(ctx: DiagnosticSyncContext) {
   const progress = getPhase2Progress(ctx)
+  const byCategory = {
+    'import-mismatches': getCategoryDiagnosticCount('import-mismatches', ctx),
+    compliance: getCategoryDiagnosticCount('compliance', ctx),
+    optimization: getCategoryDiagnosticCount('optimization', ctx),
+  } as Record<AiDiagnosticCategoryId, number>
+  const itemTotal =
+    byCategory['import-mismatches'] + byCategory.compliance + byCategory.optimization
+  const reviewed = getOverviewReviewedItemCount(ctx)
   return {
     ...progress,
-    byCategory: {
-      'import-mismatches': getCategoryDiagnosticCount('import-mismatches', ctx),
-      compliance: getCategoryDiagnosticCount('compliance', ctx),
-      optimization: getCategoryDiagnosticCount('optimization', ctx),
-    } as Record<AiDiagnosticCategoryId, number>,
+    total: itemTotal,
+    reviewed,
+    remaining: itemTotal - reviewed,
+    complete: itemTotal > 0 && reviewed >= itemTotal,
+    byCategory,
   }
 }

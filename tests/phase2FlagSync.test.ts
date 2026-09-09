@@ -166,13 +166,13 @@ describe('resolveOutputFieldFromDiagnostic', () => {
 })
 
 describe('getDiagnosticOverviewCounts', () => {
-  it('counts one item per active diagnostic (2 / 4 / 3 = 9 at seed)', async () => {
+  it('counts import rows individually (6 / 4 / 3 = 13 at seed)', async () => {
     const { getDiagnosticOverviewCounts } = await import(
       '../src/pages/check-return/aiDiagnosticCategories'
     )
     const overview = getDiagnosticOverviewCounts(ctx())
-    expect(overview.total).toBe(9)
-    expect(overview.byCategory['import-mismatches']).toBe(2)
+    expect(overview.total).toBe(13)
+    expect(overview.byCategory['import-mismatches']).toBe(6)
     expect(overview.byCategory.compliance).toBe(4)
     expect(overview.byCategory.optimization).toBe(3)
   })
