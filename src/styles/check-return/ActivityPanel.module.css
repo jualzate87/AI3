@@ -234,15 +234,7 @@
   min-width: 0;
 }
 
-.entryTop {
-  display: flex;
-  align-items: flex-start;
-  gap: 6px;
-}
-
 .entryTitle {
-  flex: 1;
-  min-width: 0;
   margin: 0;
   font-family: var(--font-family-component);
   font-size: var(--font-size-component-small, 13px);
@@ -254,6 +246,7 @@
 
 .typeBadge {
   flex-shrink: 0;
+  vertical-align: middle;
 }
 
 .entryDetail {

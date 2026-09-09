@@ -62,8 +62,12 @@ function ActivityEntryRow({ entry }: { entry: ActivityFeedEntry }) {
         aria-hidden
       />
       <div className={styles.entryBody}>
-        <div className={styles.entryTop}>
-          <p className={styles.entryTitle}>{entry.title}</p>
+        <p className={styles.entryTitle}>{entry.title}</p>
+        {entry.detail ? <p className={styles.entryDetail}>{entry.detail}</p> : null}
+        {entry.before != null && entry.after != null ? (
+          <ValueChange before={entry.before} after={entry.after} />
+        ) : null}
+        <p className={styles.entryMeta}>
           <Badge
             status={badge.status}
             capitalization="sentence"
@@ -72,12 +76,9 @@ function ActivityEntryRow({ entry }: { entry: ActivityFeedEntry }) {
           >
             {badge.label}
           </Badge>
-        </div>
-        {entry.detail ? <p className={styles.entryDetail}>{entry.detail}</p> : null}
-        {entry.before != null && entry.after != null ? (
-          <ValueChange before={entry.before} after={entry.after} />
-        ) : null}
-        <p className={styles.entryMeta}>
+          <span className={styles.metaSep} aria-hidden>
+            ·
+          </span>
           <span>{entry.actor}</span>
           {entry.source ? (
             <>

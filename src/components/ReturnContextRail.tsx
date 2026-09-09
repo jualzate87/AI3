@@ -1,10 +1,11 @@
 import type { ReactNode } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { CommentDots, Flag } from '@design-systems/icons'
 import sidebarTaxOrganizerIcon from '../assets/icons/sidebar-tax-organizer.svg'
 import sidebarImportHubIcon from '../assets/icons/sidebar-import-hub.svg'
 import sidebarDocumentsListIcon from '../assets/icons/sidebar-documents-list.svg'
 import sidebarClientActivityIcon from '../assets/icons/sidebar-client-activity.svg'
+import sidebarFlaggedItemsIcon from '../assets/icons/sidebar-flagged-items.svg'
+import sidebarCommentsIcon from '../assets/icons/sidebar-comments.svg'
 import styles from '../styles/ReturnContextRail.module.css'
 
 export type ReturnContextRailItemId =
@@ -15,12 +16,9 @@ export type ReturnContextRailItemId =
   | 'flagged-items'
   | 'comments'
 
-type IconComponent = typeof CommentDots
-
 type RailItem = {
   id: ReturnContextRailItemId
-  iconSrc?: string
-  Icon?: IconComponent
+  iconSrc: string
   label: ReactNode
   route?: string
   showNewBadge?: boolean
@@ -41,13 +39,13 @@ const RAIL_ITEMS: RailItem[] = [
 const RAIL_ITEMS_SECONDARY: RailItem[] = [
   {
     id: 'flagged-items',
-    Icon: Flag,
+    iconSrc: sidebarFlaggedItemsIcon,
     label: <>Flagged<br />items</>,
     route: '/data-review?entry=input-return&role=preparer',
   },
   {
     id: 'comments',
-    Icon: CommentDots,
+    iconSrc: sidebarCommentsIcon,
     label: 'Comments',
     route: '/data-review?entry=input-return&role=preparer',
   },
@@ -72,7 +70,6 @@ export default function ReturnContextRail({
     const isActive = activeItem === item.id
     const isClickable = Boolean(item.route || onItemClick)
     const Tag = isClickable ? 'button' : 'div'
-    const Icon = item.Icon
 
     const handleClick = () => {
       if (item.route) {
@@ -93,11 +90,7 @@ export default function ReturnContextRail({
         onClick={isClickable ? handleClick : undefined}
       >
         <span className={styles.iconWrap}>
-          {Icon ? (
-            <Icon size="small" className={styles.idsIcon} aria-hidden />
-          ) : (
-            <img src={item.iconSrc} alt="" className={styles.icon} />
-          )}
+          <img src={item.iconSrc} alt="" className={styles.icon} />
           {item.showNewBadge ? (
             <span className={styles.newBadge} aria-label="New">
               NEW
