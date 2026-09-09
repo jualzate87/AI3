@@ -13,6 +13,8 @@ export type AiDiagnosticCategory = {
   title: string
   badgeLabel: string
   badgeStatus: 'warning' | 'success' | 'info'
+  /** Noun used in the overview count pills, e.g. "3 planning items". */
+  metricLabel: string
   description: string
   issueKeys: readonly Phase2IssueKey[]
 }
@@ -24,6 +26,7 @@ export const AI_DIAGNOSTIC_CATEGORIES: readonly AiDiagnosticCategory[] = [
     title: 'Import mismatches detected',
     badgeLabel: 'IMPORT MISMATCHES',
     badgeStatus: 'warning',
+    metricLabel: 'import',
     description:
       'Fields that still disagree with the source documents, each priced by what it costs the return. Includes a dividend classification the totals check cannot catch, because Box 1a is correct while Box 1b is not.',
     issueKeys: ['importMismatches', 'qualifiedDivClassification'],
@@ -34,6 +37,7 @@ export const AI_DIAGNOSTIC_CATEGORIES: readonly AiDiagnosticCategory[] = [
     title: 'Compliance and completeness',
     badgeLabel: 'COMPLIANCE CHECK',
     badgeStatus: 'warning',
+    metricLabel: 'compliance',
     description:
       'Income the IRS already has a copy of, tax the return has not computed yet, and source amounts that never made it across. Each item names its cause so you can tell an import artifact from a client behavior.',
     issueKeys: ['underpaymentRisk', 'necScheduleC', 'niitForm8960', 'w2Box12Missing'],
@@ -44,6 +48,7 @@ export const AI_DIAGNOSTIC_CATEGORIES: readonly AiDiagnosticCategory[] = [
     title: 'Deduction and planning opportunities',
     badgeLabel: 'OPTIMIZATION',
     badgeStatus: 'info',
+    metricLabel: 'planning',
     description:
       'Deductions the client confirmed but the return never claimed, plus contribution room still open before the filing deadline. Every item is quantified so you can decide what is worth a follow-up call.',
     issueKeys: ['optItemize', 'schCExpenses', 'sepIra'],

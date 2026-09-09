@@ -50,24 +50,41 @@ const RAIL_ITEMS_SECONDARY: RailItem[] = [
 type ReturnContextRailProps = {
   activeItem?: ReturnContextRailItemId
   className?: string
+  /** When set, non-route items (e.g. client activity) invoke this instead of being inert. */
+  onItemClick?: (id: ReturnContextRailItemId) => void
 }
 
 /** Right-edge icon rail - Tax Organizer, Import hub, Documents, etc. */
-export default function ReturnContextRail({ activeItem, className }: ReturnContextRailProps) {
+export default function ReturnContextRail({
+  activeItem,
+  className,
+  onItemClick,
+}: ReturnContextRailProps) {
   const navigate = useNavigate()
 
   const renderItem = (item: RailItem) => {
     const isActive = activeItem === item.id
-    const Tag = item.route ? 'button' : 'div'
+    const isClickable = Boolean(item.route || onItemClick)
+    const Tag = isClickable ? 'button' : 'div'
     const Icon = item.Icon
+
+    const handleClick = () => {
+      if (item.route) {
+        navigate(item.route)
+        return
+      }
+      onItemClick?.(item.id)
+    }
+
     return (
       <Tag
         key={item.id}
-        type={item.route ? 'button' : undefined}
+        type={isClickable ? 'button' : undefined}
         className={[styles.item, isActive ? styles.itemActive : ''].filter(Boolean).join(' ')}
         aria-label={typeof item.label === 'string' ? item.label : item.id.replace('-', ' ')}
         aria-current={isActive ? 'page' : undefined}
-        onClick={item.route ? () => navigate(item.route!) : undefined}
+        aria-pressed={onItemClick && !item.route ? isActive : undefined}
+        onClick={isClickable ? handleClick : undefined}
       >
         {Icon ? (
           <Icon size="medium" className={styles.idsIcon} aria-hidden />

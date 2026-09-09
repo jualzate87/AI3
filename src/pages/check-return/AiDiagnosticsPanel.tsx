@@ -32,6 +32,13 @@ import styles from '../../styles/check-return/AiDiagnosticsPanel.module.css'
 
 export type AiDiagnosticsView = 'overview' | 'detail'
 
+/** Keeps the overview dots on the same source of truth as the category badges. */
+const DOT_CLASS_BY_STATUS: Record<AiDiagnosticCategory['badgeStatus'], string> = {
+  warning: styles.summaryDotAttention,
+  info: styles.summaryDotInfo,
+  success: styles.summaryDotPositive,
+}
+
 function categoryBadgeStatus(
   status: AiDiagnosticCategory['badgeStatus'],
 ): 'warning' | 'success' | 'info' {
@@ -98,10 +105,6 @@ export default function AiDiagnosticsPanel({
   const allIssues = useMemo(() => buildAllDiagnosticIssues(live, amounts), [live, amounts])
   const overview = useMemo(() => getDiagnosticOverviewCounts(syncCtx), [syncCtx])
   const activeKeys = overview.activeKeys
-
-  const importCount = overview.byCategory['import-mismatches']
-  const complianceCount = overview.byCategory.compliance
-  const optimizationCount = overview.byCategory.optimization
 
   const [expandedCategory, setExpandedCategory] = useState<AiDiagnosticCategoryId | null>(
     'import-mismatches',
@@ -306,18 +309,18 @@ export default function AiDiagnosticsPanel({
 
       <div className={styles.summaryRow}>
         <div className={styles.summaryMetrics}>
-          <span className={styles.summaryMetric}>
-            <span className={`${styles.summaryDot} ${styles.summaryDotAttention}`} aria-hidden />
-            {importCount} import item{importCount === 1 ? '' : 's'}
-          </span>
-          <span className={styles.summaryMetric}>
-            <span className={`${styles.summaryDot} ${styles.summaryDotAttention}`} aria-hidden />
-            {complianceCount} compliance item{complianceCount === 1 ? '' : 's'}
-          </span>
-          <span className={styles.summaryMetric}>
-            <span className={`${styles.summaryDot} ${styles.summaryDotNeutral}`} aria-hidden />
-            {optimizationCount} planning item{optimizationCount === 1 ? '' : 's'}
-          </span>
+          {AI_DIAGNOSTIC_CATEGORIES.map(category => {
+            const count = overview.byCategory[category.id]
+            return (
+              <span key={category.id} className={styles.summaryMetric}>
+                <span
+                  className={`${styles.summaryDot} ${DOT_CLASS_BY_STATUS[category.badgeStatus]}`}
+                  aria-hidden
+                />
+                {count} {category.metricLabel} item{count === 1 ? '' : 's'}
+              </span>
+            )
+          })}
         </div>
         <span className={styles.reviewStatus}>
           {overview.reviewed} of {overview.total} reviewed

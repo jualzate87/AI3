@@ -118,8 +118,8 @@
   background: var(--color-ui-info, #0077c5);
 }
 
-.summaryDotNeutral {
-  background: var(--color-ui-neutral, #6b6c72);
+.summaryDotPositive {
+  background: var(--color-ui-positive, #108000);
 }
 
 .reviewStatus {

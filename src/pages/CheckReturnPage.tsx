@@ -18,7 +18,9 @@ import {
   primaryIssueKeyForCategory,
 } from './check-return/aiDiagnosticCategories'
 import type { AiDiagnosticsView } from './check-return/AiDiagnosticsPanel'
+import ReviewLogPanel from './check-return/ReviewLogPanel'
 import { openSourceDocumentReviewPopout } from '../lib/prototypeRoutes'
+import type { ReturnContextRailItemId } from '../components/ReturnContextRail'
 import layout from '../styles/CoreScreenLayout.module.css'
 import styles from '../styles/CheckReturnPage.module.css'
 
@@ -45,6 +47,7 @@ export default function CheckReturnPage() {
   const [aiDiagnosticsView, setAiDiagnosticsView] = useState<AiDiagnosticsView>('overview')
   const [selectedDiagnosticKey, setSelectedDiagnosticKey] = useState<Phase2IssueKey | null>(null)
   const [selectedAiDiagnosticSubId, setSelectedAiDiagnosticSubId] = useState<string | null>(null)
+  const [reviewLogOpen, setReviewLogOpen] = useState(true)
 
   const { amounts, reviewedFields } = useSyncedReviewState()
   const live = useMemo(() => computeLiveReturn(amounts), [amounts])
@@ -128,6 +131,12 @@ export default function CheckReturnPage() {
     }
   }
 
+  const handleContextRailItem = (id: ReturnContextRailItemId) => {
+    if (id === 'client-activity') {
+      setReviewLogOpen(open => !open)
+    }
+  }
+
   return (
     <div className={`${layout.page} ${styles.page}`} data-theme="intuit">
       <div className={layout.body}>
@@ -160,7 +169,15 @@ export default function CheckReturnPage() {
               onAiDiagnosticsViewChange={handleAiDiagnosticsViewChange}
               diagnosticHighlightKey={selectedDiagnosticKey}
             />
-            <ReturnContextRail className={styles.contextRail} />
+            <ReviewLogPanel
+              isOpen={reviewLogOpen}
+              onToggle={() => setReviewLogOpen(open => !open)}
+            />
+            <ReturnContextRail
+              className={styles.contextRail}
+              activeItem={reviewLogOpen ? 'client-activity' : undefined}
+              onItemClick={handleContextRailItem}
+            />
           </div>
         </div>
       </div>
