@@ -1,0 +1,244 @@
+.panel {
+  display: flex;
+  flex-direction: column;
+  width: 360px;
+  min-width: 280px;
+  max-width: 360px;
+  flex-shrink: 0;
+  align-self: stretch;
+  border-left: 1px solid var(--color-divider-secondary);
+  background: var(--color-container-background-primary);
+  overflow: hidden;
+}
+
+.collapsedShell {
+  display: flex;
+  flex-direction: column;
+  align-self: stretch;
+  flex-shrink: 0;
+  border-left: 1px solid var(--color-divider-secondary);
+  background: var(--color-container-background-primary);
+}
+
+.expandButton {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-component-gap-small);
+  width: 40px;
+  min-height: 120px;
+  padding: var(--space-component-padding-small);
+  border: none;
+  border-right: 1px solid var(--color-divider-tertiary);
+  background: var(--color-page-background-secondary);
+  color: var(--color-action-standard);
+  font-family: var(--font-family-component);
+  font-size: var(--font-size-component-x-small);
+  font-weight: var(--font-weight-component);
+  line-height: 1.2;
+  cursor: pointer;
+}
+
+.expandButton:hover {
+  background: var(--color-container-background-info);
+}
+
+.expandLabel {
+  writing-mode: vertical-rl;
+  transform: rotate(180deg);
+  letter-spacing: 0.02em;
+}
+
+.header {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-component-gap-small);
+  padding: var(--space-container-padding-medium);
+  padding-bottom: var(--space-component-padding-medium);
+  border-bottom: 1px solid var(--color-divider-tertiary);
+  flex-shrink: 0;
+}
+
+.headerTop {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-component-gap-small);
+}
+
+.title {
+  margin: 0;
+  font-family: var(--font-family-component);
+  font-size: var(--font-size-component-large);
+  font-weight: var(--font-weight-component-bold);
+  line-height: 1.3;
+  color: var(--color-text-primary);
+}
+
+.segmentRow {
+  padding: var(--space-component-padding-medium) var(--space-container-padding-medium);
+  border-bottom: 1px solid var(--color-divider-tertiary);
+  flex-shrink: 0;
+}
+
+.segmentControl {
+  width: 100%;
+}
+
+.scroll {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  padding: var(--space-container-padding-medium);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-large);
+}
+
+.placeholder {
+  margin: 0;
+  font-family: var(--font-family-body);
+  font-size: var(--font-size-body-3);
+  line-height: 1.5;
+  color: var(--color-text-secondary);
+}
+
+/* Progress brief (mirrors HandoffSummary conversational brief) */
+.progressBrief {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-component-gap-medium);
+}
+
+.progressHeading {
+  margin: 0;
+  font-family: var(--font-family-heading);
+  font-size: var(--font-size-component-medium);
+  font-weight: var(--font-weight-heading);
+  color: var(--color-text-primary);
+  line-height: 1.35;
+}
+
+.progressIntro {
+  margin: 0;
+  font-family: var(--font-family-body);
+  font-size: var(--font-size-body-3);
+  color: var(--color-text-secondary);
+  line-height: 1.5;
+}
+
+.progressSection {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-component-gap-small);
+}
+
+.progressSectionLabel {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-component-gap-small);
+  margin: 0;
+  font-family: var(--font-family-component);
+  font-size: var(--font-size-component-small);
+  font-weight: var(--font-weight-component-semibold);
+  color: var(--color-text-primary);
+  line-height: 1.35;
+}
+
+.progressSectionIconDone {
+  flex-shrink: 0;
+  color: var(--color-ui-positive);
+}
+
+.progressList {
+  margin: 0;
+  padding: 0 0 0 var(--space-container-padding-medium);
+  list-style: disc;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-component-gap-small);
+}
+
+.progressListItem {
+  padding-left: var(--space-component-gap-small);
+  font-family: var(--font-family-body);
+  font-size: var(--font-size-body-3);
+  color: var(--color-text-primary);
+  line-height: 1.5;
+}
+
+.progressEmphasis {
+  font-weight: var(--font-weight-body-bold);
+}
+
+.progressAttentionText {
+  margin: 0;
+  font-family: var(--font-family-body);
+  font-size: var(--font-size-body-3);
+  color: var(--color-text-primary);
+  line-height: 1.5;
+}
+
+.progressSynced {
+  margin: 0;
+  font-family: var(--font-family-component);
+  font-size: var(--font-size-component-small);
+  color: var(--color-text-secondary);
+  line-height: 1.4;
+}
+
+.activityIntro {
+  margin: 0;
+  font-family: var(--font-family-body);
+  font-size: var(--font-size-body-3);
+  line-height: 1.45;
+  color: var(--color-text-secondary);
+}
+
+.activityStack {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-large);
+}
+
+.entryAttribution {
+  font-family: var(--font-family-component);
+  font-size: var(--font-size-component-x-small);
+  font-weight: var(--font-weight-component-semibold);
+  color: var(--color-text-tertiary);
+  line-height: 1.3;
+}
+
+.valueChange {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: var(--space-component-gap-x-small);
+  margin: 0;
+  font-family: var(--font-family-component);
+  font-size: var(--font-size-component-small);
+  font-weight: var(--font-weight-component);
+  line-height: 1.35;
+}
+
+.valueBefore {
+  color: var(--color-text-tertiary);
+  text-decoration: line-through;
+}
+
+.valueArrow {
+  color: var(--color-text-tertiary);
+  font-size: var(--font-size-component-x-small);
+}
+
+.valueAfter {
+  color: var(--color-text-primary);
+}
+
+@media (max-width: 1280px) {
+  .panel {
+    width: 320px;
+    max-width: 320px;
+  }
+}

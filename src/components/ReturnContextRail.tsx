@@ -11,7 +11,7 @@ export type ReturnContextRailItemId =
   | 'tax-organizer'
   | 'import-hub'
   | 'documents-list'
-  | 'client-activity'
+  | 'activity'
   | 'flagged-items'
   | 'comments'
 
@@ -29,7 +29,7 @@ const RAIL_ITEMS: RailItem[] = [
   { id: 'tax-organizer', iconSrc: sidebarTaxOrganizerIcon, label: <>Tax<br />Organizer</> },
   { id: 'import-hub', iconSrc: sidebarImportHubIcon, label: <>Import<br />hub</>, route: '/smart-return' },
   { id: 'documents-list', iconSrc: sidebarDocumentsListIcon, label: <>Documents<br />list</>, route: '/smart-return' },
-  { id: 'client-activity', iconSrc: sidebarClientActivityIcon, label: <>Client<br />activity</> },
+  { id: 'activity', iconSrc: sidebarClientActivityIcon, label: 'Activity' },
 ]
 
 const RAIL_ITEMS_SECONDARY: RailItem[] = [

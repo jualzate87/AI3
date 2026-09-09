@@ -30,17 +30,6 @@ export type ReviewLogDay = {
   entries: readonly ReviewLogEntry[]
 }
 
-export const REVIEW_LOG_FILTERS: readonly {
-  id: ReviewLogKind | 'all'
-  label: string
-}[] = [
-  { id: 'all', label: 'All activity' },
-  { id: 'edit', label: 'Fields edited' },
-  { id: 'document', label: 'Documents reviewed' },
-  { id: 'form-check', label: 'Form lines checked' },
-  { id: 'diagnostic', label: 'Diagnostics resolved' },
-]
-
 export const REVIEW_LOG_DAYS: readonly ReviewLogDay[] = [
   {
     id: 'today',

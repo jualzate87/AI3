@@ -18,7 +18,7 @@ import {
   primaryIssueKeyForCategory,
 } from './check-return/aiDiagnosticCategories'
 import type { AiDiagnosticsView } from './check-return/AiDiagnosticsPanel'
-import ReviewLogPanel from './check-return/ReviewLogPanel'
+import ActivityPanel from './check-return/ActivityPanel'
 import { openSourceDocumentReviewPopout } from '../lib/prototypeRoutes'
 import type { ReturnContextRailItemId } from '../components/ReturnContextRail'
 import layout from '../styles/CoreScreenLayout.module.css'
@@ -132,7 +132,7 @@ export default function CheckReturnPage() {
   }
 
   const handleContextRailItem = (id: ReturnContextRailItemId) => {
-    if (id === 'client-activity') {
+    if (id === 'activity') {
       setReviewLogOpen(open => !open)
     }
   }
@@ -169,13 +169,13 @@ export default function CheckReturnPage() {
               onAiDiagnosticsViewChange={handleAiDiagnosticsViewChange}
               diagnosticHighlightKey={selectedDiagnosticKey}
             />
-            <ReviewLogPanel
+            <ActivityPanel
               isOpen={reviewLogOpen}
               onToggle={() => setReviewLogOpen(open => !open)}
             />
             <ReturnContextRail
               className={styles.contextRail}
-              activeItem={reviewLogOpen ? 'client-activity' : undefined}
+              activeItem={reviewLogOpen ? 'activity' : undefined}
               onItemClick={handleContextRailItem}
             />
           </div>
