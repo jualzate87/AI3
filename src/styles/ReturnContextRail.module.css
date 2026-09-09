@@ -1,14 +1,15 @@
 .rail {
   width: 76px;
-  border-left: 1px solid var(--color-divider-secondary, #babec5);
+  height: 100%;
+  border-left: 1px solid var(--color-divider-secondary, #d5dee3);
   background: var(--color-container-background-primary, #ffffff);
   display: flex;
   flex-direction: column;
   align-items: center;
-  padding: var(--space-component-padding-small, 8px) 0;
+  padding: 8px 0;
   gap: 2px;
   flex-shrink: 0;
-  overflow-y: auto;
+  overflow: hidden;
 }
 
 .item {
@@ -17,17 +18,17 @@
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: var(--space-component-gap-x-small, 4px);
+  gap: 4px;
   width: 68px;
   min-height: 64px;
+  padding: 8px 4px;
   color: var(--color-text-secondary, #6b6c72);
   font-family: var(--font-family-component);
   font-size: 10px;
-  font-weight: var(--font-weight-component-semibold, 500);
+  font-weight: 500;
   line-height: 1.2;
   text-align: center;
-  border-radius: var(--radius-small, 4px);
-  padding: var(--space-component-padding-small, 8px) var(--space-component-padding-x-small, 4px);
+  border-radius: var(--radius-small, 6px);
   border: none;
   background: transparent;
   cursor: default;
@@ -39,17 +40,21 @@ button.item {
 }
 
 button.item:hover {
-  background: var(--color-page-background-secondary, #f4f5f8);
-  color: var(--color-action-standard, #205ea3);
+  background: var(--color-page-background-secondary, #f0f4f6);
+  color: var(--color-text-primary, #393a3d);
 }
 
 .itemActive {
-  background: var(--color-container-background-info, #ebf9ff);
+  background: #e2e9ed;
   color: var(--color-action-standard, #205ea3);
 }
 
 .itemActive .idsIcon {
   color: var(--color-action-standard, #205ea3);
+}
+
+.itemActive .icon {
+  filter: none;
 }
 
 .iconWrap {
@@ -71,6 +76,11 @@ button.item:hover {
   top: 5px;
   right: 4px;
   pointer-events: none;
+  padding: 1px 4px;
+  border-radius: 3px;
+  background: #e91e8c;
+  color: #ffffff;
+  font-family: var(--font-family-component);
   font-size: 8px;
   font-weight: 800;
   line-height: 1.4;
@@ -88,6 +98,6 @@ button.item:hover {
   width: 44px;
   height: 1px;
   background: var(--color-divider-tertiary, #d4d7dc);
-  margin: var(--space-component-gap-x-small, 4px) 0;
+  margin: 4px 0;
   flex-shrink: 0;
 }

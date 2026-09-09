@@ -18,6 +18,7 @@
 .contextRail {
   align-self: stretch;
   flex-shrink: 0;
+  height: 100%;
 }
 
 .tableScroll {

@@ -10,8 +10,6 @@ import SegmentedButton from '@ids-ts/segmented-button'
 import '@ids-ts/segmented-button/dist/main.css'
 import { TextField } from '@ids-ts/text-field'
 import '@ids-ts/text-field/dist/main.css'
-import { H6 } from '@ids-ts/typography'
-import '@ids-ts/typography/dist/main.css'
 import {
   ACTIVITY_FEED_ENTRIES,
   ACTIVITY_KIND_BADGE,
@@ -59,13 +57,12 @@ function ActivityEntryRow({ entry }: { entry: ActivityFeedEntry }) {
 
   return (
     <li className={styles.entry}>
-      <span className={styles.entryTime}>{entry.time}</span>
-      <div className={styles.entryMain}>
-        <div className={styles.entryTitleRow}>
-          <span
-            className={`${styles.statusDot} ${KIND_DOT_CLASS[entry.kind]}`}
-            aria-hidden
-          />
+      <span
+        className={`${styles.statusDot} ${KIND_DOT_CLASS[entry.kind]}`}
+        aria-hidden
+      />
+      <div className={styles.entryBody}>
+        <div className={styles.entryTop}>
           <p className={styles.entryTitle}>{entry.title}</p>
           <Badge
             status={badge.status}
@@ -133,9 +130,9 @@ function ReviewFeed({
           className={styles.dayGroup}
           aria-labelledby={`activity-day-${day.id}`}
         >
-          <H6 id={`activity-day-${day.id}`} className={styles.dayLabel}>
+          <h3 id={`activity-day-${day.id}`} className={styles.dayLabel}>
             {day.label}
-          </H6>
+          </h3>
           <ul className={styles.entryList}>
             {day.entries.map(entry => (
               <ActivityEntryRow key={entry.id} entry={entry} />
@@ -200,108 +197,123 @@ export default function ActivityPanel({ isOpen, onToggle }: ActivityPanelProps) 
 
   return (
     <aside id="activity-feed-panel" className={styles.panel} aria-label="Activity feed">
-      <div className={styles.stickyChrome}>
-        <header className={styles.header}>
-          <H6 className={styles.title}>Activity feed</H6>
-          <IconControl size="medium" onClick={onToggle} aria-label="Close activity feed">
-            <Close aria-hidden />
-          </IconControl>
-        </header>
+      <header className={styles.header}>
+        <h2 className={styles.title}>Activity feed</h2>
+        <IconControl size="medium" onClick={onToggle} aria-label="Close activity feed">
+          <Close aria-hidden />
+        </IconControl>
+      </header>
 
-        <div className={styles.segmentRow}>
-          <SegmentedButton
-            ariaLabel="Activity segment"
-            buttonPosition="center"
-            buttonType="mini"
-            buttonInfos={[
-              {
-                label: 'Data entry',
-                selected: segment === 'data-entry',
-                onClick: () => setSegment('data-entry'),
-              },
-              {
-                label: 'Review',
-                selected: segment === 'review',
-                onClick: () => setSegment('review'),
-              },
-              {
-                label: 'Client',
-                selected: segment === 'client',
-                onClick: () => setSegment('client'),
-              },
-            ]}
-          />
+      <div className={styles.segmentRow}>
+        <SegmentedButton
+          ariaLabel="Activity segment"
+          buttonPosition="center"
+          buttonType="mini"
+          buttonInfos={[
+            {
+              label: 'Data entry',
+              selected: segment === 'data-entry',
+              onClick: () => setSegment('data-entry'),
+            },
+            {
+              label: 'Review',
+              selected: segment === 'review',
+              onClick: () => setSegment('review'),
+            },
+            {
+              label: 'Client',
+              selected: segment === 'client',
+              onClick: () => setSegment('client'),
+            },
+          ]}
+        />
+      </div>
+
+      {segment === 'review' ? (
+        <div className={styles.toolbar}>
+          <span className={styles.entryCount} aria-live="polite">
+            {filteredCount} {filteredCount === 1 ? 'entry' : 'entries'}
+          </span>
         </div>
+      ) : null}
 
+      <div className={styles.filters}>
         <div className={styles.searchRow}>
           <TextField
             aria-label="Search activity"
             placeholder="Search activity"
             size="small"
+            width="100%"
             value={searchQuery}
             onChange={e => setSearchQuery(e.target.value)}
           />
         </div>
 
         <div className={styles.filterRow}>
-          <Dropdown
-            label="Date"
-            size="small"
-            value={dateFilter}
-            width="100%"
-            preventMenuOverflow={{ enabled: true, padding: 8 }}
-            positions={['bottom', 'top']}
-            onChange={e => {
-              const target = e.target as HTMLInputElement
-              if (target?.value) setDateFilter(target.value as DateFilterValue)
-            }}
-          >
-            {DATE_FILTER_OPTIONS.map(opt => (
-              <MenuItem key={opt.value} value={opt.value}>
-                {opt.label}
-              </MenuItem>
-            ))}
-          </Dropdown>
+          <div className={styles.filterField}>
+            <Dropdown
+              label="Date"
+              size="small"
+              value={dateFilter}
+              width="100%"
+              preventMenuOverflow={{ enabled: true, padding: 8 }}
+              positions={['bottom', 'top']}
+              onChange={e => {
+                const target = e.target as HTMLInputElement
+                if (target?.value) setDateFilter(target.value as DateFilterValue)
+              }}
+            >
+              {DATE_FILTER_OPTIONS.map(opt => (
+                <MenuItem key={opt.value} value={opt.value}>
+                  {opt.label}
+                </MenuItem>
+              ))}
+            </Dropdown>
+          </div>
 
-          <Dropdown
-            label="Author"
-            size="small"
-            value={authorFilter}
-            width="100%"
-            preventMenuOverflow={{ enabled: true, padding: 8 }}
-            positions={['bottom', 'top']}
-            onChange={e => {
-              const target = e.target as HTMLInputElement
-              if (target?.value) setAuthorFilter(target.value as AuthorFilterValue)
-            }}
-          >
-            {AUTHOR_FILTER_OPTIONS.map(opt => (
-              <MenuItem key={opt.value} value={opt.value}>
-                {opt.label}
-              </MenuItem>
-            ))}
-          </Dropdown>
+          <div className={styles.filterField}>
+            <Dropdown
+              label="Author"
+              size="small"
+              value={authorFilter}
+              width="100%"
+              preventMenuOverflow={{ enabled: true, padding: 8 }}
+              positions={['bottom', 'top']}
+              onChange={e => {
+                const target = e.target as HTMLInputElement
+                if (target?.value) setAuthorFilter(target.value as AuthorFilterValue)
+              }}
+            >
+              {AUTHOR_FILTER_OPTIONS.map(opt => (
+                <MenuItem key={opt.value} value={opt.value}>
+                  {opt.label}
+                </MenuItem>
+              ))}
+            </Dropdown>
+          </div>
 
-          <Dropdown
-            label="Activity type"
-            size="small"
-            value={activityTypeFilter}
-            width="100%"
-            preventMenuOverflow={{ enabled: true, padding: 8 }}
-            positions={['bottom', 'top']}
-            onChange={e => {
-              const target = e.target as HTMLInputElement
-              if (target?.value) {
-                setActivityTypeFilter(target.value as ActivityTypeFilterValue)
-              }
-            }}
-          >
-            {ACTIVITY_TYPE_FILTER_OPTIONS.map(opt => (
-              <MenuItem key={opt.value} value={opt.value}>
-                {opt.label}
-              </MenuItem>
-            ))}
-          </Dropdown>
+          <div className={styles.filterField}>
+            <Dropdown
+              label="Activity type"
+              size="small"
+              value={activityTypeFilter}
+              width="100%"
+              preventMenuOverflow={{ enabled: true, padding: 8 }}
+              positions={['bottom', 'top']}
+              onChange={e => {
+                const target = e.target as HTMLInputElement
+                if (target?.value) {
+                  setActivityTypeFilter(target.value as ActivityTypeFilterValue)
+                }
+              }}
+            >
+              {ACTIVITY_TYPE_FILTER_OPTIONS.map(opt => (
+                <MenuItem key={opt.value} value={opt.value}>
+                  {opt.label}
+                </MenuItem>
+              ))}
+            </Dropdown>
+          </div>
 
           <IconControl
             size="medium"
@@ -312,12 +324,6 @@ export default function ActivityPanel({ isOpen, onToggle }: ActivityPanelProps) 
             <Refresh aria-hidden />
           </IconControl>
         </div>
-
-        {segment === 'review' ? (
-          <p className={styles.entryCount} aria-live="polite">
-            {filteredCount} {filteredCount === 1 ? 'entry' : 'entries'}
-          </p>
-        ) : null}
       </div>
 
       <div className={styles.scroll}>

@@ -169,14 +169,14 @@ export default function CheckReturnPage() {
               onAiDiagnosticsViewChange={handleAiDiagnosticsViewChange}
               diagnosticHighlightKey={selectedDiagnosticKey}
             />
-            <ActivityPanel
-              isOpen={reviewLogOpen}
-              onToggle={() => setReviewLogOpen(open => !open)}
-            />
             <ReturnContextRail
               className={styles.contextRail}
               activeItem={reviewLogOpen ? 'activity' : undefined}
               onItemClick={handleContextRailItem}
+            />
+            <ActivityPanel
+              isOpen={reviewLogOpen}
+              onToggle={() => setReviewLogOpen(open => !open)}
             />
           </div>
         </div>

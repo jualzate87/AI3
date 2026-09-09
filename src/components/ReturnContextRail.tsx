@@ -1,8 +1,6 @@
 import type { ReactNode } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { CommentDots, Flag } from '@design-systems/icons'
-import { Badge } from '@ids-ts/badge'
-import '@ids-ts/badge/dist/main.css'
 import sidebarTaxOrganizerIcon from '../assets/icons/sidebar-tax-organizer.svg'
 import sidebarImportHubIcon from '../assets/icons/sidebar-import-hub.svg'
 import sidebarDocumentsListIcon from '../assets/icons/sidebar-documents-list.svg'
@@ -101,9 +99,9 @@ export default function ReturnContextRail({
             <img src={item.iconSrc} alt="" className={styles.icon} />
           )}
           {item.showNewBadge ? (
-            <Badge status="new" className={styles.newBadge} aria-label="New">
+            <span className={styles.newBadge} aria-label="New">
               NEW
-            </Badge>
+            </span>
           ) : null}
         </span>
         <span>{item.label}</span>
