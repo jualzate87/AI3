@@ -304,3 +304,12 @@ export function actorInitials(name: string): string {
     .join('')
     .slice(0, 2)
 }
+
+/** Legacy filter chips for ReviewLogPanel (not used in Activity feed). */
+export const REVIEW_LOG_FILTERS = [
+  { id: 'all' as const, label: 'All' },
+  { id: 'edit' as const, label: 'Edits' },
+  { id: 'document' as const, label: 'Documents' },
+  { id: 'form-check' as const, label: 'Form checks' },
+  { id: 'diagnostic' as const, label: 'Diagnostics' },
+] as const

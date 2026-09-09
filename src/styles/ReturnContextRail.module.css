@@ -12,6 +12,7 @@
 }
 
 .item {
+  position: relative;
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -45,10 +46,27 @@ button.item:hover {
   color: var(--color-action-standard, #205ea3);
 }
 
+.iconWrap {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
 .icon {
   width: 48px;
   height: 40px;
   flex-shrink: 0;
+}
+
+.newBadge {
+  position: absolute;
+  top: 0;
+  right: -2px;
+  pointer-events: none;
+  font-size: var(--font-size-component-x-small);
+  line-height: 1;
 }
 
 .idsIcon {

@@ -1,14 +1,31 @@
-import { useState } from 'react'
-import { ChevronLeft, ChevronRight, CircleCheckFill } from '@design-systems/icons'
+import { useMemo, useState } from 'react'
+import { ChevronLeft, Close, Refresh } from '@design-systems/icons'
+import { Badge } from '@ids-ts/badge'
+import '@ids-ts/badge/dist/main.css'
+import { Dropdown, MenuItem } from '@ids-ts/dropdown'
+import '@ids-ts/dropdown/dist/main.css'
 import { IconControl } from '@ids-ts/icon-control'
 import '@ids-ts/icon-control/dist/main.css'
 import SegmentedButton from '@ids-ts/segmented-button'
 import '@ids-ts/segmented-button/dist/main.css'
-import { ActivityCategoryCard } from './ReviewActivityCards'
+import { TextField } from '@ids-ts/text-field'
+import '@ids-ts/text-field/dist/main.css'
+import { H6 } from '@ids-ts/typography'
+import '@ids-ts/typography/dist/main.css'
 import {
-  CHECK_RETURN_ACTIVITY_CATEGORIES,
-  CHECK_RETURN_REVIEW_BRIEF,
-} from './reviewActivityData'
+  ACTIVITY_FEED_ENTRIES,
+  ACTIVITY_KIND_BADGE,
+  ACTIVITY_TYPE_FILTER_OPTIONS,
+  AUTHOR_FILTER_OPTIONS,
+  DATE_FILTER_OPTIONS,
+  filterActivityEntries,
+  groupActivityEntriesByDay,
+  type ActivityFeedEntry,
+  type ActivityKind,
+  type ActivityTypeFilterValue,
+  type AuthorFilterValue,
+  type DateFilterValue,
+} from './activityFeedData'
 import styles from '../../styles/check-return/ActivityPanel.module.css'
 
 type ActivitySegment = 'data-entry' | 'review' | 'client'
@@ -18,130 +35,313 @@ type ActivityPanelProps = {
   onToggle: () => void
 }
 
-function ReviewProgressBrief() {
-  const brief = CHECK_RETURN_REVIEW_BRIEF
+const KIND_DOT_CLASS: Record<ActivityKind, string> = {
+  edit: styles.dotAttention,
+  document: styles.dotInfo,
+  'form-check': styles.dotNeutral,
+  diagnostic: styles.dotPositive,
+}
 
+function ValueChange({ before, after }: { before: string; after: string }) {
   return (
-    <section className={styles.progressBrief} aria-labelledby="review-progress-heading">
-      <h3 id="review-progress-heading" className={styles.progressHeading}>
-        {brief.heading}
-      </h3>
-      <p className={styles.progressIntro}>{brief.intro}</p>
-
-      <div className={styles.progressSection}>
-        <h4 className={styles.progressSectionLabel}>
-          <CircleCheckFill size="x-small" className={styles.progressSectionIconDone} aria-hidden />
-          {brief.completedLabel}
-        </h4>
-        <ul className={styles.progressList}>
-          {brief.completedItems.map(item => (
-            <li key={item.id} className={styles.progressListItem}>
-              {item.emphasis ? (
-                <span className={styles.progressEmphasis}>{item.emphasis}</span>
-              ) : null}
-              {item.text}
-            </li>
-          ))}
-        </ul>
-      </div>
-
-      <div className={styles.progressSection}>
-        <h4 className={styles.progressSectionLabel}>{brief.attentionLabel}</h4>
-        <p className={styles.progressAttentionText}>{brief.attentionText}</p>
-      </div>
-
-      <p className={styles.progressSynced}>{brief.syncedAt}</p>
-    </section>
+    <p className={styles.valueChange}>
+      <span className={styles.valueBefore}>{before}</span>
+      <span className={styles.valueArrow} aria-hidden>
+        to
+      </span>
+      <span className={styles.valueAfter}>{after}</span>
+    </p>
   )
 }
 
-function ReviewSegment() {
+function ActivityEntryRow({ entry }: { entry: ActivityFeedEntry }) {
+  const badge = ACTIVITY_KIND_BADGE[entry.kind]
+
+  return (
+    <li className={styles.entry}>
+      <span className={styles.entryTime}>{entry.time}</span>
+      <div className={styles.entryMain}>
+        <div className={styles.entryTitleRow}>
+          <span
+            className={`${styles.statusDot} ${KIND_DOT_CLASS[entry.kind]}`}
+            aria-hidden
+          />
+          <p className={styles.entryTitle}>{entry.title}</p>
+          <Badge
+            status={badge.status}
+            capitalization="sentence"
+            priority="secondary"
+            className={styles.typeBadge}
+          >
+            {badge.label}
+          </Badge>
+        </div>
+        {entry.detail ? <p className={styles.entryDetail}>{entry.detail}</p> : null}
+        {entry.before != null && entry.after != null ? (
+          <ValueChange before={entry.before} after={entry.after} />
+        ) : null}
+        <p className={styles.entryMeta}>
+          <span>{entry.actor}</span>
+          {entry.source ? (
+            <>
+              <span className={styles.metaSep} aria-hidden>
+                ·
+              </span>
+              <span>{entry.source}</span>
+            </>
+          ) : null}
+          <span className={styles.metaSep} aria-hidden>
+            ·
+          </span>
+          <span>{entry.time}</span>
+        </p>
+      </div>
+    </li>
+  )
+}
+
+function ReviewFeed({
+  searchQuery,
+  dateFilter,
+  authorFilter,
+  activityTypeFilter,
+}: {
+  searchQuery: string
+  dateFilter: DateFilterValue
+  authorFilter: AuthorFilterValue
+  activityTypeFilter: ActivityTypeFilterValue
+}) {
+  const filteredDays = useMemo(() => {
+    const filtered = filterActivityEntries(ACTIVITY_FEED_ENTRIES, {
+      date: dateFilter,
+      author: authorFilter,
+      activityType: activityTypeFilter,
+      search: searchQuery,
+    })
+    return groupActivityEntriesByDay(filtered)
+  }, [searchQuery, dateFilter, authorFilter, activityTypeFilter])
+
+  if (filteredDays.length === 0) {
+    return <p className={styles.emptyState}>No activity matches your filters.</p>
+  }
+
   return (
     <>
-      <ReviewProgressBrief />
-      <p className={styles.activityIntro}>
-        Shared activity trail. Updates sync in real time for preparer and reviewer.
-      </p>
-      <div className={styles.activityStack}>
-        {CHECK_RETURN_ACTIVITY_CATEGORIES.map(category => (
-          <ActivityCategoryCard key={category.id} category={category} />
-        ))}
-      </div>
+      {filteredDays.map(day => (
+        <section
+          key={day.id}
+          className={styles.dayGroup}
+          aria-labelledby={`activity-day-${day.id}`}
+        >
+          <H6 id={`activity-day-${day.id}`} className={styles.dayLabel}>
+            {day.label}
+          </H6>
+          <ul className={styles.entryList}>
+            {day.entries.map(entry => (
+              <ActivityEntryRow key={entry.id} entry={entry} />
+            ))}
+          </ul>
+        </section>
+      ))}
     </>
   )
 }
 
-function PlaceholderSegment({ label }: { label: string }) {
+function PlaceholderSegment({ title, body }: { title: string; body: string }) {
   return (
-    <p className={styles.placeholder}>
-      {label} activity will appear here in a future prototype pass.
-    </p>
+    <div className={styles.placeholderBlock}>
+      <p className={styles.placeholderTitle}>{title}</p>
+      <p className={styles.placeholder}>{body}</p>
+    </div>
   )
 }
 
 export default function ActivityPanel({ isOpen, onToggle }: ActivityPanelProps) {
   const [segment, setSegment] = useState<ActivitySegment>('review')
+  const [searchQuery, setSearchQuery] = useState('')
+  const [dateFilter, setDateFilter] = useState<DateFilterValue>('any')
+  const [authorFilter, setAuthorFilter] = useState<AuthorFilterValue>('any')
+  const [activityTypeFilter, setActivityTypeFilter] =
+    useState<ActivityTypeFilterValue>('any')
+
+  const filteredCount = useMemo(() => {
+    if (segment !== 'review') return 0
+    return filterActivityEntries(ACTIVITY_FEED_ENTRIES, {
+      date: dateFilter,
+      author: authorFilter,
+      activityType: activityTypeFilter,
+      search: searchQuery,
+    }).length
+  }, [segment, searchQuery, dateFilter, authorFilter, activityTypeFilter])
+
+  const handleRefresh = () => {
+    setSearchQuery('')
+    setDateFilter('any')
+    setAuthorFilter('any')
+    setActivityTypeFilter('any')
+  }
 
   if (!isOpen) {
     return (
-      <aside className={styles.collapsedShell} aria-label="Activity">
+      <aside className={styles.collapsedShell} aria-label="Activity feed">
         <button
           type="button"
           className={styles.expandButton}
           onClick={onToggle}
           aria-expanded={false}
-          aria-controls="activity-panel"
+          aria-controls="activity-feed-panel"
         >
           <ChevronLeft size="medium" aria-hidden />
-          <span className={styles.expandLabel}>Activity</span>
+          <span className={styles.expandLabel}>Activity feed</span>
         </button>
       </aside>
     )
   }
 
   return (
-    <aside id="activity-panel" className={styles.panel} aria-label="Activity">
-      <header className={styles.header}>
-        <div className={styles.headerTop}>
-          <h2 className={styles.title}>Activity</h2>
-          <IconControl size="medium" onClick={onToggle} aria-label="Collapse activity panel">
-            <ChevronRight aria-hidden />
+    <aside id="activity-feed-panel" className={styles.panel} aria-label="Activity feed">
+      <div className={styles.stickyChrome}>
+        <header className={styles.header}>
+          <H6 className={styles.title}>Activity feed</H6>
+          <IconControl size="medium" onClick={onToggle} aria-label="Close activity feed">
+            <Close aria-hidden />
+          </IconControl>
+        </header>
+
+        <div className={styles.searchRow}>
+          <TextField
+            aria-label="Search activity"
+            placeholder="Search activity"
+            size="small"
+            value={searchQuery}
+            onChange={e => setSearchQuery(e.target.value)}
+          />
+        </div>
+
+        <div className={styles.filterRow}>
+          <Dropdown
+            label="Date"
+            size="small"
+            value={dateFilter}
+            width="100%"
+            preventMenuOverflow={{ enabled: true, padding: 8 }}
+            positions={['bottom', 'top']}
+            onChange={e => {
+              const target = e.target as HTMLInputElement
+              if (target?.value) setDateFilter(target.value as DateFilterValue)
+            }}
+          >
+            {DATE_FILTER_OPTIONS.map(opt => (
+              <MenuItem key={opt.value} value={opt.value}>
+                {opt.label}
+              </MenuItem>
+            ))}
+          </Dropdown>
+
+          <Dropdown
+            label="Author"
+            size="small"
+            value={authorFilter}
+            width="100%"
+            preventMenuOverflow={{ enabled: true, padding: 8 }}
+            positions={['bottom', 'top']}
+            onChange={e => {
+              const target = e.target as HTMLInputElement
+              if (target?.value) setAuthorFilter(target.value as AuthorFilterValue)
+            }}
+          >
+            {AUTHOR_FILTER_OPTIONS.map(opt => (
+              <MenuItem key={opt.value} value={opt.value}>
+                {opt.label}
+              </MenuItem>
+            ))}
+          </Dropdown>
+
+          <Dropdown
+            label="Activity type"
+            size="small"
+            value={activityTypeFilter}
+            width="100%"
+            preventMenuOverflow={{ enabled: true, padding: 8 }}
+            positions={['bottom', 'top']}
+            onChange={e => {
+              const target = e.target as HTMLInputElement
+              if (target?.value) {
+                setActivityTypeFilter(target.value as ActivityTypeFilterValue)
+              }
+            }}
+          >
+            {ACTIVITY_TYPE_FILTER_OPTIONS.map(opt => (
+              <MenuItem key={opt.value} value={opt.value}>
+                {opt.label}
+              </MenuItem>
+            ))}
+          </Dropdown>
+
+          <IconControl
+            size="medium"
+            className={styles.refreshButton}
+            onClick={handleRefresh}
+            aria-label="Refresh filters"
+          >
+            <Refresh aria-hidden />
           </IconControl>
         </div>
-      </header>
 
-      <div className={styles.segmentRow}>
-        <div className={styles.segmentControl}>
-          <SegmentedButton
-            ariaLabel="Activity segment"
-            buttonType="mini"
-            buttonInfos={[
-              {
-                label: 'Data entry',
-                selected: segment === 'data-entry',
-                onClick: () => setSegment('data-entry'),
-              },
-              {
-                label: 'Review',
-                selected: segment === 'review',
-                onClick: () => setSegment('review'),
-              },
-              {
-                label: 'Client',
-                selected: segment === 'client',
-                onClick: () => setSegment('client'),
-              },
-            ]}
-          />
+        {segment === 'review' ? (
+          <p className={styles.entryCount} aria-live="polite">
+            {filteredCount} {filteredCount === 1 ? 'entry' : 'entries'}
+          </p>
+        ) : null}
+
+        <div className={styles.segmentRow}>
+          <div className={styles.segmentControl}>
+            <SegmentedButton
+              ariaLabel="Activity segment"
+              buttonType="mini"
+              buttonInfos={[
+                {
+                  label: 'Data entry',
+                  selected: segment === 'data-entry',
+                  onClick: () => setSegment('data-entry'),
+                },
+                {
+                  label: 'Review',
+                  selected: segment === 'review',
+                  onClick: () => setSegment('review'),
+                },
+                {
+                  label: 'Client',
+                  selected: segment === 'client',
+                  onClick: () => setSegment('client'),
+                },
+              ]}
+            />
+          </div>
         </div>
       </div>
 
       <div className={styles.scroll}>
-        {segment === 'review' ? <ReviewSegment /> : null}
-        {segment === 'data-entry' ? (
-          <PlaceholderSegment label="Data entry" />
+        {segment === 'review' ? (
+          <ReviewFeed
+            searchQuery={searchQuery}
+            dateFilter={dateFilter}
+            authorFilter={authorFilter}
+            activityTypeFilter={activityTypeFilter}
+          />
         ) : null}
-        {segment === 'client' ? <PlaceholderSegment label="Client" /> : null}
+        {segment === 'data-entry' ? (
+          <PlaceholderSegment
+            title="Data entry activity"
+            body="Data entry history is in the audit log workspace."
+          />
+        ) : null}
+        {segment === 'client' ? (
+          <PlaceholderSegment
+            title="Client activity"
+            body="Client messages and uploads will appear here in a future prototype pass."
+          />
+        ) : null}
       </div>
     </aside>
   )
