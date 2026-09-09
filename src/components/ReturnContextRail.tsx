@@ -96,7 +96,7 @@ export default function ReturnContextRail({
       >
         <span className={styles.iconWrap}>
           {Icon ? (
-            <Icon size="medium" className={styles.idsIcon} aria-hidden />
+            <Icon size="small" className={styles.idsIcon} aria-hidden />
           ) : (
             <img src={item.iconSrc} alt="" className={styles.icon} />
           )}

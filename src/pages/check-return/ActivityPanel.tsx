@@ -208,6 +208,31 @@ export default function ActivityPanel({ isOpen, onToggle }: ActivityPanelProps) 
           </IconControl>
         </header>
 
+        <div className={styles.segmentRow}>
+          <SegmentedButton
+            ariaLabel="Activity segment"
+            buttonPosition="center"
+            buttonType="mini"
+            buttonInfos={[
+              {
+                label: 'Data entry',
+                selected: segment === 'data-entry',
+                onClick: () => setSegment('data-entry'),
+              },
+              {
+                label: 'Review',
+                selected: segment === 'review',
+                onClick: () => setSegment('review'),
+              },
+              {
+                label: 'Client',
+                selected: segment === 'client',
+                onClick: () => setSegment('client'),
+              },
+            ]}
+          />
+        </div>
+
         <div className={styles.searchRow}>
           <TextField
             aria-label="Search activity"
@@ -293,32 +318,6 @@ export default function ActivityPanel({ isOpen, onToggle }: ActivityPanelProps) 
             {filteredCount} {filteredCount === 1 ? 'entry' : 'entries'}
           </p>
         ) : null}
-
-        <div className={styles.segmentRow}>
-          <div className={styles.segmentControl}>
-            <SegmentedButton
-              ariaLabel="Activity segment"
-              buttonType="mini"
-              buttonInfos={[
-                {
-                  label: 'Data entry',
-                  selected: segment === 'data-entry',
-                  onClick: () => setSegment('data-entry'),
-                },
-                {
-                  label: 'Review',
-                  selected: segment === 'review',
-                  onClick: () => setSegment('review'),
-                },
-                {
-                  label: 'Client',
-                  selected: segment === 'client',
-                  onClick: () => setSegment('client'),
-                },
-              ]}
-            />
-          </div>
-        </div>
       </div>
 
       <div className={styles.scroll}>

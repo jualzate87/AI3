@@ -54,7 +54,6 @@
   display: flex;
   flex-direction: column;
   flex-shrink: 0;
-  border-bottom: 1px solid var(--color-divider-tertiary);
   background: var(--color-container-background-primary);
 }
 
@@ -63,8 +62,8 @@
   align-items: center;
   justify-content: space-between;
   gap: var(--space-component-gap-small);
-  padding: var(--space-container-padding-medium);
-  padding-bottom: var(--space-component-padding-medium);
+  padding: 14px var(--space-container-padding-medium);
+  border-bottom: 1px solid var(--color-divider-secondary);
 }
 
 .title {
@@ -78,7 +77,7 @@
 }
 
 .searchRow {
-  padding: 0 var(--space-container-padding-medium) var(--space-component-padding-medium);
+  padding: 10px var(--space-container-padding-medium) var(--space-component-gap-small);
 }
 
 .filterRow {
@@ -86,7 +85,7 @@
   grid-template-columns: 1fr 1fr 1fr auto;
   align-items: end;
   gap: var(--space-component-gap-small);
-  padding: 0 var(--space-container-padding-medium) var(--space-component-padding-medium);
+  padding: 0 var(--space-container-padding-medium) 12px;
 }
 
 .refreshButton {
@@ -96,7 +95,7 @@
 
 .entryCount {
   margin: 0;
-  padding: 0 var(--space-container-padding-medium) var(--space-component-padding-small);
+  padding: 0 var(--space-container-padding-medium) var(--space-component-padding-medium);
   font-family: var(--font-family-component);
   font-size: var(--font-size-component-small);
   font-weight: var(--font-weight-component);
@@ -105,12 +104,10 @@
 }
 
 .segmentRow {
-  padding: var(--space-component-padding-medium) var(--space-container-padding-medium);
-  border-top: 1px solid var(--color-divider-tertiary);
-}
-
-.segmentControl {
-  width: 100%;
+  display: flex;
+  justify-content: center;
+  padding: 10px var(--space-container-padding-medium) var(--space-component-gap-small);
+  border-bottom: 1px solid var(--color-divider-tertiary);
 }
 
 .scroll {
