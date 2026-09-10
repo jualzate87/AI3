@@ -8,8 +8,10 @@ import { FROZEN_RETURN, TOKEN_QUALIFIED_DIVS_RETURN } from './frozenReturn'
 
 /** Editable amounts persisted in useSyncedReviewState. */
 export type LiveAmounts = {
-  /** W-2 Box 1 - frozen seed 118,940 (source 148,940) */
+  /** W-2 Box 1 (Tech Circle) - frozen seed 118,940 (source 148,940) */
   wages: number
+  /** W-2 Box 1 (Bing Equipment) - separate employer; not on return totals */
+  wagesBingEquipment: number
   /** W-2 Box 2 - matches source (not in error map) */
   w2Withholding: number
   /** 1099-INT Box 1 per payer */
@@ -75,6 +77,7 @@ export type LiveAmounts = {
 /** Build Spec INITIAL seeds - verification anchors at session start. */
 export const SEED_AMOUNTS: LiveAmounts = {
   wages: FROZEN_RETURN.wages,
+  wagesBingEquipment: 0,
   w2Withholding: FROZEN_RETURN.w2Withholding,
   interestUnwavering: 1_986,
   interestHarborline: 3_200,
@@ -113,6 +116,7 @@ export const SEED_AMOUNTS: LiveAmounts = {
 /** Blank return before SmartReturn import - manual entry starts empty. */
 export const PRE_IMPORT_AMOUNTS: LiveAmounts = {
   wages: 0,
+  wagesBingEquipment: 0,
   w2Withholding: 0,
   interestUnwavering: 0,
   interestHarborline: 0,

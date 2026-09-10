@@ -209,7 +209,7 @@ export default function ReviewTab({
             Add source
           </Button>
         )}
-        {showNextDocument && onNextDocumentClick && unreviewedDocCount > 0 && (
+        {showNextDocument && onNextDocumentClick && (
           <Button
             priority="primary"
             size="small"

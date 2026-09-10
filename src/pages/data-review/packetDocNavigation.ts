@@ -95,7 +95,8 @@ export function selectNextUnreviewedPacketDoc(
   current: PacketDocNavPosition,
   setters: PacketDocNavSetters,
 ): PacketSourceDoc | null {
-  const next = getNextUnreviewedSourceDoc(unreviewed, current)
+  const pool = unreviewed.length > 0 ? unreviewed : listPacketSourceDocs()
+  const next = getNextUnreviewedSourceDoc(pool, current)
   if (!next) return null
   navigateToPacketDoc(next, setters)
   return next

@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
-import { ChevronLeft, Close, OverflowWeb, Refresh } from '@design-systems/icons'
+import { Close, OverflowWeb, Refresh } from '@design-systems/icons'
 import { Dropdown, MenuItem } from '@ids-ts/dropdown'
 import '@ids-ts/dropdown/dist/main.css'
 import { IconControl } from '@ids-ts/icon-control'
@@ -245,20 +245,7 @@ export default function ActivityPanel({ isOpen, onToggle, onNavigate }: Activity
   }
 
   if (!isOpen) {
-    return (
-      <aside className={styles.collapsedShell} aria-label="Activity feed">
-        <button
-          type="button"
-          className={styles.expandButton}
-          onClick={onToggle}
-          aria-expanded={false}
-          aria-controls="activity-feed-panel"
-        >
-          <ChevronLeft size="medium" aria-hidden />
-          <span className={styles.expandLabel}>Activity feed</span>
-        </button>
-      </aside>
-    )
+    return null
   }
 
   return (
@@ -306,6 +293,14 @@ export default function ActivityPanel({ isOpen, onToggle, onNavigate }: Activity
           <span className={styles.entryCount} aria-live="polite">
             {filteredCount} {filteredCount === 1 ? 'entry' : 'entries'}
           </span>
+          <IconControl
+            size="medium"
+            className={styles.refreshButton}
+            onClick={handleRefresh}
+            aria-label="Refresh filters"
+          >
+            <Refresh aria-hidden />
+          </IconControl>
         </div>
       ) : null}
 
@@ -389,15 +384,6 @@ export default function ActivityPanel({ isOpen, onToggle, onNavigate }: Activity
               ))}
             </Dropdown>
           </div>
-
-          <IconControl
-            size="medium"
-            className={styles.refreshButton}
-            onClick={handleRefresh}
-            aria-label="Refresh filters"
-          >
-            <Refresh aria-hidden />
-          </IconControl>
         </div>
       </div>
 

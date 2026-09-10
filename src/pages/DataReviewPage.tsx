@@ -44,11 +44,12 @@ import {
   getReviewActor,
   STORAGE_KEY,
 } from '../hooks/useSyncedReviewState'
-import { openSourceDocumentById, openSourceDocumentFromFieldOrigin } from '../lib/sourceDocPopoutNavigation'
+import { openSourceDocumentById } from '../lib/sourceDocPopoutNavigation'
+import { navigateToInputFromFieldOrigin } from '../lib/inputReturnNavigation'
 import type { FieldOriginSource } from '../data/fieldOrigins'
 import intuitAssistIcon from '../assets/icons/intuit-assist.svg'
 import LeftPanel1040 from './data-review/LeftPanel1040'
-import ReviewTab from './data-review/ReviewTab'
+import ReviewTab, { type TopTab } from './data-review/ReviewTab'
 import AddItemReviewPane, { type AddItemLinkResult } from './data-review/AddItemReviewPane'
 import type { ReviewInputScreen } from '../data/reviewInputScreens'
 import { applyInputDocKey } from '../data/inputDocTabs'
@@ -79,7 +80,8 @@ import {
   countVerifiedPacketDocs,
   getDocConfirmStatus,
 } from './data-review/docReviewStatus'
-import { buildUnreviewedSourceDocs, selectNextUnreviewedPacketDoc } from './data-review/packetDocNavigation'
+import { usePacketDocReviewControls } from '../hooks/usePacketDocReviewControls'
+import { buildUnreviewedSourceDocs } from './data-review/packetDocNavigation'
 import { isDocShownVerified, navigationForVerifiedDocKey } from '../data/verifiedDocKeys'
 import DetailFields1099R, { R_PAYER_TABS } from './data-review/DetailFields1099R'
 import DetailFieldsNec, { NEC_PAYER_TABS } from './data-review/DetailFieldsNec'
@@ -600,6 +602,51 @@ export default function DataReviewPage() {
     hideOutputsForSourceFocusRef.current()
   }, [openRightPanel])
 
+  const onBeforePacketNavigate = useCallback(() => {
+    if (reviewRole !== 'reviewer') {
+      if (!importsStarted) startReviewingImports()
+      else ensureSourcePanelVisible()
+    } else {
+      ensureSourcePanelVisible()
+    }
+  }, [reviewRole, importsStarted, startReviewingImports, ensureSourcePanelVisible])
+
+  const {
+    handleTopTabChange: packetTopTabChange,
+    handlePeelDocChange,
+    handleReviewNextDocument: packetReviewNextDocument,
+  } = usePacketDocReviewControls({
+    reviewedFields,
+    verifiedDocs,
+    activeTopTab,
+    activeSubTab,
+    activeDivPayer,
+    activeIntPayer,
+    setActiveTopTab,
+    setActiveSubTab,
+    setActiveDivPayer,
+    setActiveIntPayer,
+    setSelectedField,
+    toggleVerifiedDoc,
+    onBeforeNavigate: onBeforePacketNavigate,
+  })
+
+  const handleTopTabChange = useCallback((tab: TopTab) => {
+    setFromAgent(false)
+    setActiveIssueField(null)
+    setActiveDiagnosticKey(null)
+    if (tab === 'questionnaire') setAddItemReviewMode(false)
+    packetTopTabChange(tab)
+  }, [packetTopTabChange])
+
+  const handleReviewNextDocument = useCallback(() => {
+    const next = packetReviewNextDocument()
+    if (!next) return
+    setActiveIssueField(null)
+    setActiveDiagnosticKey(null)
+    if (next.tab === 'questionnaire') setQuestionnaireHighlightId(null)
+  }, [packetReviewNextDocument])
+
   /** Preparer import-first: size source panel on mount when landing with sources open */
   useEffect(() => {
     if (reviewRole !== 'preparer' || phase !== 'import' || !importsStarted) return
@@ -749,39 +796,6 @@ export default function DataReviewPage() {
     applyVerifyNavigation(next.field)
   }, [reviewRole, importsStarted, startReviewingImports, reviewedFields, selectedField, applyVerifyNavigation])
 
-  const handleReviewNextDocument = useCallback(() => {
-    if (reviewRole !== 'reviewer') {
-      if (!importsStarted) startReviewingImports()
-      else ensureSourcePanelVisible()
-    } else {
-      ensureSourcePanelVisible()
-    }
-    const next = selectNextUnreviewedPacketDoc(
-      unreviewedSourceDocs,
-      {
-        tab: activeTopTab,
-        w2SubTab: activeSubTab,
-        divPayer: activeDivPayer,
-        intPayer: activeIntPayer,
-      },
-      {
-        setActiveTopTab,
-        setActiveSubTab,
-        setActiveDivPayer,
-        setActiveIntPayer,
-        setSelectedField,
-      },
-    )
-    if (!next) return
-    setActiveIssueField(null)
-    setActiveDiagnosticKey(null)
-    if (next.tab === 'questionnaire') setQuestionnaireHighlightId(null)
-  }, [
-    reviewRole, importsStarted, startReviewingImports, ensureSourcePanelVisible,
-    unreviewedSourceDocs, activeTopTab, activeSubTab, activeDivPayer, activeIntPayer,
-    setActiveTopTab, setActiveSubTab, setActiveDivPayer, setActiveIntPayer, setSelectedField,
-  ])
-
   const handleAddItemClick = useCallback(() => {
     if (!importsStarted) startReviewingImports()
     else ensureSourcePanelVisible()
@@ -894,9 +908,9 @@ export default function DataReviewPage() {
     openSourceDocumentById(docId, selectedField, setSelectedField, 'document')
   }, [selectedField, setSelectedField])
 
-  /** From FieldPopover source row - open detached source-document review. */
+  /** From FieldPopover source row - open Input return tab with field focused. */
   const handleNavigateSource = useCallback((source: FieldOriginSource) => {
-    openSourceDocumentFromFieldOrigin(source, setSelectedField, 'input')
+    navigateToInputFromFieldOrigin(source, setSelectedField)
   }, [setSelectedField])
 
   /** ProtoC: 1040 row click selects/highlights only - does not open Sources until user follows a source link or banner CTA. */
@@ -2232,13 +2246,7 @@ export default function DataReviewPage() {
                 showNextDocument={showPreparerImportPhase}
                 onNextDocumentClick={handleReviewNextDocument}
                 unreviewedDocCount={unreviewedDocCount}
-                onTopTabChange={(tab) => {
-                  setActiveTopTab(tab)
-                  setFromAgent(false)
-                  setSelectedField(null)
-                  setActiveIssueField(null)
-                  if (tab === 'questionnaire') setAddItemReviewMode(false)
-                }}
+                onTopTabChange={handleTopTabChange}
               />
 
               {addItemReviewMode ? (
@@ -2261,7 +2269,7 @@ export default function DataReviewPage() {
                     confirmStatus: peelDocConfirmStatus(divVerifiedDocKey(t.key)),
                   }))}
                   activeKey={activeDivPayer}
-                  onChange={key => setActiveDivPayer(key as DivPayer)}
+                  onChange={handlePeelDocChange}
                 />
               )}
               {activeTopTab === '1099-ints' && (
@@ -2274,7 +2282,7 @@ export default function DataReviewPage() {
                     confirmStatus: peelDocConfirmStatus(intVerifiedDocKey(t.key)),
                   }))}
                   activeKey={activeIntPayer}
-                  onChange={key => setActiveIntPayer(key as IntPayer)}
+                  onChange={handlePeelDocChange}
                 />
               )}
               {activeTopTab === 'w2s' && (
@@ -2287,7 +2295,7 @@ export default function DataReviewPage() {
                     confirmStatus: peelDocConfirmStatus(t.key),
                   }))}
                   activeKey={activeSubTab}
-                  onChange={key => setActiveSubTab(key as W2Employer)}
+                  onChange={handlePeelDocChange}
                 />
               )}
               {activeTopTab === '1099-rs' && (
@@ -2394,7 +2402,7 @@ export default function DataReviewPage() {
                   onFieldSelect={handleFieldSelect}
                   activeSubTab={activeSubTab}
                   onSubTabChange={(tab) => setActiveSubTab(tab as W2Employer)}
-                  wages={{ bingEquipment: 0, techCircle: wages.techCircle }}
+                  wages={wages}
                   onWageChange={(employer, value) => {
                     setWages({ ...wages, [employer]: value })
                     saveFieldEditOnMain(`wages-${employer}`)

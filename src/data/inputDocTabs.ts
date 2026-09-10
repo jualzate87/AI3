@@ -7,6 +7,17 @@ import { navigationForVerifiedDocKey } from './verifiedDocKeys'
 
 export const INPUT_FORM_PARAM = 'form'
 export const INPUT_DOC_PARAM = 'doc'
+/** Detail field to highlight in the input form panel. */
+export const INPUT_FIELD_PARAM = 'field'
+
+const SOURCE_DOC_TOP_TABS = new Set<TopTab>([
+  'w2s',
+  '1099-divs',
+  '1099-ints',
+  '1099-rs',
+  '1099-necs',
+  'questionnaire',
+])
 
 export type InputDocTab = { key: string; label: string }
 
@@ -42,6 +53,54 @@ export function docKeyFromVerifiedDocId(docId: string): string | null {
   if (nav.divPayer) return nav.divPayer
   if (nav.intPayer) return nav.intPayer
   return null
+}
+
+/** Apply deep-link / popout navigation context to review panel tab state. */
+export function applySourceDocumentPopoutContext(
+  context: {
+    tab?: string
+    subTab?: string
+    divPayer?: string
+    intPayer?: string
+    field?: string
+  },
+  handlers: {
+    setActiveTopTab: (tab: TopTab) => void
+    setActiveSubTab: (subTab: W2Employer) => void
+    setActiveDivPayer: (payer: DivPayer) => void
+    setActiveIntPayer: (payer: IntPayer) => void
+    setSelectedField: (field: string | null) => void
+  },
+): void {
+  const tab = context.tab as TopTab | undefined
+  if (tab && SOURCE_DOC_TOP_TABS.has(tab)) {
+    handlers.setActiveTopTab(tab)
+  }
+
+  const activeTab = tab && SOURCE_DOC_TOP_TABS.has(tab) ? tab : undefined
+
+  if (
+    (activeTab === 'w2s' || !activeTab)
+    && isValidDocKey('w2s', context.subTab)
+  ) {
+    handlers.setActiveSubTab(context.subTab as W2Employer)
+  }
+  if (
+    (activeTab === '1099-divs' || !activeTab)
+    && isValidDocKey('1099-divs', context.divPayer)
+  ) {
+    handlers.setActiveDivPayer(context.divPayer as DivPayer)
+  }
+  if (
+    (activeTab === '1099-ints' || !activeTab)
+    && isValidDocKey('1099-ints', context.intPayer)
+  ) {
+    handlers.setActiveIntPayer(context.intPayer as IntPayer)
+  }
+
+  if (context.field) {
+    handlers.setSelectedField(context.field)
+  }
 }
 
 export function applyInputDocKey(

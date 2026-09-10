@@ -23,7 +23,7 @@ export default function ViewSourceDocumentsButton({
       automationId="view-source-documents-cta"
     >
       <PopOut size="small" aria-hidden />
-      View source documents
+      Source documents
     </Button>
   )
 }

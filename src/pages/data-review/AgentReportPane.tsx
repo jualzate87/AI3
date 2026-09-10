@@ -108,6 +108,9 @@ export type DiagnosticIssueCard = {
     badge?: 'red' | 'orange' | 'grey' | 'green' | 'blue'
     fixField?: string
     fixTab?: string
+    /** Override the default action link label in check-return AI review. */
+    actionLabel?: string
+    questionnaireResponseId?: QuestionnaireResponseId
     /** Output form holding this number, when it lives on the return rather than a source doc. */
     viewForm?: string
     viewFormLabel?: string
@@ -455,7 +458,14 @@ function buildNecScheduleCIssue(): DiagnosticIssueCard {
 }
 
 function buildOptItemizeIssue(amounts: LiveAmounts): DiagnosticIssueCard {
-  const p = projectItemizedDeduction(amounts)
+  const enteredMortgage = amounts.mortgageInterest
+  const p = projectItemizedDeduction(
+    amounts,
+    enteredMortgage > 0 ? enteredMortgage : undefined,
+  )
+  const mortgageDisplay =
+    enteredMortgage > 0 ? fmtUsd(enteredMortgage) : `${fmtUsd(p.mortgageInterest)} (estimate)`
+
   return {
     issueKey: 'optItemize',
     dotColor: 'blue',
@@ -463,70 +473,61 @@ function buildOptItemizeIssue(amounts: LiveAmounts): DiagnosticIssueCard {
     category: 'Planning opportunities',
     summary: `The return takes the ${fmtUsd(p.stdDeduction)} standard deduction, but Jessica confirmed she paid mortgage interest in the mid five figures and never uploaded the 1098. At her estimate, Schedule A clears the standard deduction by a wide margin.`,
     taxImpact: `Using ${fmtUsd(p.mortgageInterest)} of interest, Schedule A totals ${fmtUsd(p.itemizedTotal)} against a ${fmtUsd(p.stdDeduction)} standard deduction. That is ${fmtUsd(p.advantage)} of additional deduction, worth about ${fmtUsd(p.taxSaved)} at her 35% marginal rate. This is the single largest planning item on the return.`,
-    rootCause: `The 1098 is not in the import packet, so nothing populated Schedule A and the return defaulted to the standard deduction. Only ${fmtUsd(p.saltTaxes)} of state and local taxes and ${fmtUsd(p.charitableContributions)} of charitable gifts are on file, which on their own fall short of the standard deduction.`,
+    rootCause: `The 1098 is not in the import packet, so nothing populated Schedule A and the return defaulted to the standard deduction. SALT and charitable gifts on file (${fmtUsd(p.saltTaxes)} + ${fmtUsd(p.charitableContributions)}) are not enough on their own — mortgage interest is what makes itemizing win.`,
     clientResponseNote:
       'Jessica Drake (Feb 28, 2025): "Yes. I own my home and paid mortgage interest in 2025. I think I got a Form 1098 from my lender but I haven\'t uploaded it yet."',
     questionnaireResponseId: 'mortgage',
     tableRows: [
       {
-        label: 'Mortgage interest (client estimate)',
+        label: 'Mortgage interest (questionnaire)',
         cols: [
-          fmtUsd(p.mortgageInterest),
-          'Jessica told us she paid mortgage interest in 2025 but has not uploaded the Form 1098 yet.',
+          mortgageDisplay,
+          'Jessica confirmed mortgage interest paid; enter the Form 1098 amount to post on Schedule A line 8a.',
         ],
         fixTab: 'questionnaire',
-      },
-      {
-        label: 'State and local taxes',
-        cols: [
-          fmtUsd(p.saltTaxes),
-          'State and local taxes already on the return, subject to the $10,000 SALT cap.',
-        ],
-        viewForm: 'schA',
-        viewFormLabel: 'Schedule A',
-      },
-      {
-        label: 'Charitable contributions',
-        cols: [
-          fmtUsd(p.charitableContributions),
-          'Charitable gifts on file. On their own these do not exceed the standard deduction.',
-        ],
-        viewForm: 'schA',
-        viewFormLabel: 'Schedule A',
+        fixField: 'mortgage',
+        actionLabel: enteredMortgage > 0 ? 'Edit mortgage interest' : 'Add mortgage interest',
+        questionnaireResponseId: 'mortgage',
       },
       {
         label: 'Projected Schedule A total',
         cols: [
           fmtUsd(p.itemizedTotal),
-          `Projected itemized total compared with the ${fmtUsd(p.stdDeduction)} standard deduction.`,
+          `Beats the ${fmtUsd(p.stdDeduction)} standard deduction by ${fmtUsd(p.advantage)}.`,
         ],
         viewForm: 'schA',
         viewFormLabel: 'Schedule A',
+        actionLabel: 'View Schedule A',
       },
       {
         label: 'Estimated federal tax saved',
         cols: [
           fmtUsd(p.taxSaved),
-          'Extra deduction from itemizing, valued at Jessica\'s 35% marginal rate.',
+          `${fmtUsd(p.advantage)} extra deduction × 35% marginal rate.`,
         ],
         viewForm: '1040',
         viewFormLabel: 'Form 1040',
         total: true,
       },
     ],
-    tableHeaders: ['Item', 'Amount', 'What this means', 'Action'],
+    tableHeaders: ['Calculation', 'Amount', 'Projection', 'Action'],
     suggestedActions: [
-      'Request the Form 1098 from her lender: this is the one document standing between the return and the deduction.',
-      'SALT tip: the state and local deduction is capped at $10,000, so the mortgage interest is what actually carries Schedule A here.',
-      'While you have her, ask about points paid and mortgage insurance premiums, which also land on Schedule A.',
+      'Add the mortgage interest amount from Jessica\'s Form 1098 (or her estimate) on the questionnaire card.',
+      `If itemizing wins, switching from the standard deduction saves about ${fmtUsd(p.taxSaved)} on this return.`,
+      'Open Schedule A to confirm line 8a and the itemized total before you sign off.',
     ],
     actions: [
-      { type: 'viewClientResponse', label: 'View client response', questionnaireResponseId: 'mortgage' },
-      { type: 'goToInput', label: 'Go to deductions', field: 'stdDeduction' },
+      {
+        type: 'goToInput',
+        label: enteredMortgage > 0 ? 'Edit mortgage interest' : 'Add mortgage interest',
+        tab: 'questionnaire',
+        field: 'mortgage',
+      },
       {
         type: 'openForm',
         label: 'Open Schedule A',
       },
+      { type: 'viewClientResponse', label: 'View client response', questionnaireResponseId: 'mortgage' },
     ],
     sources: [
       {

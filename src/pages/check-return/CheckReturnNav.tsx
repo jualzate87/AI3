@@ -130,7 +130,7 @@ function NavAiDiagnosticsHeader({
     >
       <span className={styles.navAiDiagnosticsLeading}>
         <img src={intuitIntelligenceLogo} alt="" className={styles.navAiDiagnosticsLogo} />
-        <span className={styles.navAiDiagnosticsLabel}>AI Diagnostics</span>
+        <span className={styles.navAiDiagnosticsLabel}>AI review</span>
       </span>
       <span className={styles.navAiCountBadge}>
         <NumericBadge quantity={String(count)} maxLimit={99} />

@@ -120,7 +120,7 @@ export default function InputFormPanel({
             onFieldSelect={setSelectedField}
             activeSubTab={activeSubTab}
             onSubTabChange={tab => handleDocTabChange(tab)}
-            wages={{ bingEquipment: 0, techCircle: wages.techCircle }}
+            wages={wages}
             onWageChange={(employer, value) => {
               setWages({ ...wages, [employer]: value })
               markEdited(`wages-${employer}`)

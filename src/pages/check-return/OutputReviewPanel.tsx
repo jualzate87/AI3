@@ -5,8 +5,8 @@ import type { FieldOriginSource } from '../../data/fieldOrigins'
 import { useSyncedReviewState, getReviewActor, REVIEWER_NAME } from '../../hooks/useSyncedReviewState'
 import {
   openSourceDocumentById,
-  openSourceDocumentFromFieldOrigin,
 } from '../../lib/sourceDocPopoutNavigation'
+import { navigateToInputFromFieldOrigin } from '../../lib/inputReturnNavigation'
 import LeftPanel1040 from '../data-review/LeftPanel1040'
 import type { OutputFormId } from '../data-review/outputForms'
 import { field1040ToDetail } from '../data-review/phase1FieldSync'
@@ -75,7 +75,7 @@ export default function OutputReviewPanel({
 
   const handleViewSourceInput = useCallback(
     (source: FieldOriginSource) => {
-      openSourceDocumentFromFieldOrigin(source, setSelectedField, 'input')
+      navigateToInputFromFieldOrigin(source, setSelectedField)
     },
     [setSelectedField],
   )

@@ -215,6 +215,12 @@ export default function DetailFields1099({
     }
   }, [selectedField])
 
+  useEffect(() => {
+    setEditingField(null)
+    setDraftValue('')
+    setOriginalValue('')
+  }, [activePayer, activeDocKey])
+
   const startEdit = (field: string, currentValue: string) => {
     if (!canEditField(field, variant, importReadOnly)) return
     const clean = currentValue.replace(/,/g, '')

@@ -1,12 +1,10 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { useSearchParams } from 'react-router-dom'
-import { ChevronRight, Close, DotsSix } from '@design-systems/icons'
+import { ChevronRight, CircleCheck, Close, DotsSix } from '@design-systems/icons'
 import { Button } from '@ids-ts/button'
 import '@ids-ts/button/dist/main.css'
 import { IconControl } from '@ids-ts/icon-control'
 import '@ids-ts/icon-control/dist/main.css'
-import ToastMessage from '@ids-ts/toast-message'
-import '@ids-ts/toast-message/dist/main.css'
 import ReviewTab from './data-review/ReviewTab'
 import type { TopTab } from './data-review/ReviewTab'
 import ImportSourceBadge from '../components/ImportSourceBadge/ImportSourceBadge'
@@ -47,6 +45,7 @@ import DetailFields1099R, { R_PAYER_TABS } from './data-review/DetailFields1099R
 import DetailFieldsNec, { NEC_PAYER_TABS } from './data-review/DetailFieldsNec'
 import PeelTab from './data-review/PeelTab'
 import QuestionnaireResponsesPanel from './data-review/QuestionnaireResponsesPanel'
+import type { QuestionnaireResponseId } from './data-review/questionnaireData'
 import DocReviewProgress from './data-review/DocReviewProgress'
 import UnsavedChangesModal from './data-review/UnsavedChangesModal'
 import { useSyncedReviewState } from '../hooks/useSyncedReviewState'
@@ -62,6 +61,7 @@ import img1040PriorPage1 from '../assets/jessica-1040-2024-variant-1.png'
 import img1040PriorPage2 from '../assets/jessica-1040-2024-variant-2.png'
 import { isDocShownVerified } from '../data/verifiedDocKeys'
 import { resolveActiveVerifyDocKey } from '../data/documentImportMeta'
+import { applySourceDocumentPopoutContext } from '../data/inputDocTabs'
 import { getStoredDemoRole, SOURCE_DOC_POPOUT_NAV_CHANNEL, type SourceDocumentPopoutContext } from '../lib/prototypeRoutes'
 import dragStyles from '../styles/data-review/DragHandle.module.css'
 import styles from '../styles/data-review/DataReviewPopout.module.css'
@@ -90,26 +90,7 @@ function applyPopoutContext(
     setSelectedField: (field: string | null) => void
   },
 ): void {
-  const { tab, subTab, divPayer, intPayer, field } = context
-  if (tab && POPOUT_TOP_TABS.has(tab)) {
-    handlers.setActiveTopTab(tab as TopTab)
-  }
-  if (subTab === 'techCircle' || subTab === 'bingEquipment') {
-    handlers.setActiveSubTab(subTab)
-  }
-  if (divPayer === 'beacon' || divPayer === 'northmark' || divPayer === 'token') {
-    handlers.setActiveDivPayer(divPayer)
-  }
-  if (
-    intPayer === 'harborline'
-    || intPayer === 'cascade'
-    || intPayer === 'unwavering'
-  ) {
-    handlers.setActiveIntPayer(intPayer)
-  }
-  if (field) {
-    handlers.setSelectedField(field)
-  }
+  applySourceDocumentPopoutContext(context, handlers)
 }
 
 function contextFromSearchParams(params: URLSearchParams): SourceDocumentPopoutContext {
@@ -127,13 +108,21 @@ function contextFromSearchParams(params: URLSearchParams): SourceDocumentPopoutC
   return context
 }
 
+function questionnaireHighlightFromField(
+  tab: TopTab,
+  field: string | null,
+): QuestionnaireResponseId | null {
+  if (tab !== 'questionnaire' || !field) return null
+  if (field === 'mortgage') return 'mortgage'
+  return null
+}
+
 export default function DataReviewPopout() {
   const [searchParams] = useSearchParams()
   const [sessionDirty, setSessionDirty] = useState(false)
   const [unsavedModalOpen, setUnsavedModalOpen] = useState(false)
   const [recalculatedFields, setRecalculatedFields] = useState<Set<string>>(new Set())
-  const [saveToastOpen, setSaveToastOpen] = useState(false)
-  const [saveToastMessage, setSaveToastMessage] = useState('')
+  const [saveStatusVisible, setSaveStatusVisible] = useState(false)
 
   const reviewRole = getStoredDemoRole() ?? 'preparer'
   const isReviewerConfirmMode = reviewRole === 'reviewer'
@@ -167,7 +156,10 @@ export default function DataReviewPopout() {
 
   const baselineRef = useRef<ReturnType<typeof getSyncedSnapshot> | null>(null)
 
-  const touchDirty = useCallback(() => setSessionDirty(true), [])
+  const touchDirty = useCallback(() => {
+    setSessionDirty(true)
+    setSaveStatusVisible(false)
+  }, [])
 
   const markFieldEdited = useCallback((fieldKey: string) => {
     markUnsaved(fieldKey)
@@ -261,13 +253,7 @@ export default function DataReviewPopout() {
     baselineRef.current = getSyncedSnapshot()
     setSessionDirty(false)
     setUnsavedModalOpen(false)
-
-    const message =
-      committed.length > 0
-        ? `Your changes were saved and the return was recalculated.`
-        : `The return is up to date — nothing new to save.`
-    setSaveToastMessage(message)
-    setSaveToastOpen(true)
+    setSaveStatusVisible(true)
   }, [commitUnsavedEdits, flashRecalculatedFields, getSyncedSnapshot])
 
   useEffect(() => {
@@ -478,14 +464,22 @@ export default function DataReviewPopout() {
     <div className={styles.page}>
       <header className={styles.titleBar}>
         <h1 className={styles.titleBarHeading}>Source document review</h1>
-        <IconControl
-          aria-label="Close source document review"
-          size="medium"
-          shape="square"
-          onClick={requestClose}
-        >
-          <Close />
-        </IconControl>
+        <div className={styles.titleBarActions}>
+          {saveStatusVisible && (
+            <span className={styles.savedStatus} role="status" aria-live="polite">
+              <CircleCheck size="small" className={styles.savedStatusIcon} aria-hidden />
+              All changes saved
+            </span>
+          )}
+          <IconControl
+            aria-label="Close source document review"
+            size="medium"
+            shape="square"
+            onClick={requestClose}
+          >
+            <Close />
+          </IconControl>
+        </div>
       </header>
 
       <div className={styles.walkNav}>
@@ -495,7 +489,7 @@ export default function DataReviewPopout() {
           verified={verifiedDocCount}
           total={totalDocCount}
         />
-        {showPreparerImportPhase && unreviewedDocCount > 0 && (
+        {showPreparerImportPhase && (
           <Button
             priority="primary"
             size="small"
@@ -645,7 +639,7 @@ export default function DataReviewPopout() {
                 onFieldSelect={setSelectedField}
                 activeSubTab={activeSubTab}
                 onSubTabChange={(tab) => setActiveSubTab(tab as W2Employer)}
-                wages={{ bingEquipment: 0, techCircle: wages.techCircle }}
+                wages={wages}
                 onWageChange={(employer, value) => {
                   setWages({ ...wages, [employer]: value })
                   markFieldEdited(`wages-${employer}`)
@@ -849,6 +843,7 @@ export default function DataReviewPopout() {
                 onVerifyDoc={handleVerifyDoc}
                 reviewerConfirmedDocs={reviewerConfirmedDocs}
                 reviewerConfirmedDocsMeta={reviewerConfirmedDocsMeta}
+                highlightResponseId={questionnaireHighlightFromField(activeTopTab, selectedField)}
               />
             )}
           </div>
@@ -871,18 +866,6 @@ export default function DataReviewPopout() {
         onStay={handleStayEditing}
         onLeaveWithoutSaving={handleLeaveWithoutSaving}
       />
-
-      <ToastMessage
-        open={saveToastOpen}
-        actionLabel="Dismiss"
-        dismissible
-        duration={5000}
-        showIcon
-        onClose={() => setSaveToastOpen(false)}
-        onActionClick={() => setSaveToastOpen(false)}
-      >
-        {saveToastMessage}
-      </ToastMessage>
     </div>
   )
 }

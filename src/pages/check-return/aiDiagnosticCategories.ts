@@ -34,7 +34,7 @@ export const AI_DIAGNOSTIC_CATEGORIES: readonly AiDiagnosticCategory[] = [
   },
   {
     id: 'compliance',
-    navLabel: 'Compliance checks',
+    navLabel: 'Withholding & missing income',
     title: 'Compliance and completeness',
     badgeLabel: 'COMPLIANCE CHECK',
     badgeStatus: 'warning',
@@ -45,7 +45,7 @@ export const AI_DIAGNOSTIC_CATEGORIES: readonly AiDiagnosticCategory[] = [
   },
   {
     id: 'optimization',
-    navLabel: 'Planning opportunities',
+    navLabel: 'Unclaimed deductions & IRA',
     title: 'Deduction and planning opportunities',
     badgeLabel: 'OPTIMIZATION',
     badgeStatus: 'info',

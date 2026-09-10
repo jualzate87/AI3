@@ -55,6 +55,8 @@ interface SyncedState {
   reviewerSignedOffFormsList: [string, ActivityEntry][]
   /** Summary fields needing reviewer re-confirm after post-verify edit */
   reviewerConfirmStaleFieldsList: string[]
+  /** Source docs with an edit-after-verify banner (until dismissed or re-verified) */
+  docEditAfterVerifyNoticesList: string[]
   /** Manual attestation checkboxes for review checklist (Phase 2 sign-off) */
   manualChecklistItems: Record<string, boolean>
   /** Declaration milestone completions - who/when for flexible checklist */
@@ -83,12 +85,13 @@ interface SyncedState {
 
 const CHANNEL_NAME = 'protoc3-data-review-sync'
 // Bump whenever DEFAULT_STATE shape or seed values change so stale sessions reset.
-const STATE_VERSION = 32
+const STATE_VERSION = 34
 const STORAGE_KEY = 'protoc3-data-review-state-v' + STATE_VERSION
 /** Prior keys - sessionStorage (tab-scoped) and older localStorage versions */
 const LEGACY_STORAGE_KEYS = [
   STORAGE_KEY,
   'protoc3-data-review-state-v29',
+  'protoc3-data-review-state-v32',
   'protoc3-data-review-state-v28',
   'protoc3-data-review-state-v27',
   'protoc3-data-review-state-v26',
@@ -158,6 +161,11 @@ function hydrateSyncedState(raw: string): SyncedState {
     reviewerConfirmStaleFieldsList: Array.isArray(parsed.reviewerConfirmStaleFieldsList)
       ? parsed.reviewerConfirmStaleFieldsList.filter((k): k is string => typeof k === 'string')
       : [],
+    docEditAfterVerifyNoticesList: Array.isArray(parsed.docEditAfterVerifyNoticesList)
+      ? parsed.docEditAfterVerifyNoticesList
+          .filter((k): k is string => typeof k === 'string')
+          .map(normalizeVerifiedDocKey)
+      : [],
     reviewedFieldsList: migrateActivityList(parsed.reviewedFieldsList),
     editedFieldsList: migrateActivityList(parsed.editedFieldsList),
     unsavedFieldsList: Array.isArray(parsed.unsavedFieldsList)
@@ -201,6 +209,32 @@ export const PREPARER_NAME = 'Sara Chen'
 export const REVIEWER_NAME = 'Jordan Lee'
 /** Storage key for review state - exported for tests and diagnostics */
 export { STORAGE_KEY }
+
+/** Imperative navigation patch for cross-route jumps (Input return, popovers). */
+export function patchSyncedReviewNavigation(
+  patch: Partial<
+    Pick<
+      SyncedState,
+      | 'activeTopTab'
+      | 'activeSubTab'
+      | 'activeDivPayer'
+      | 'activeIntPayer'
+      | 'selectedField'
+    >
+  >,
+): void {
+  try {
+    const raw = readPersistedRaw()
+    const current = raw ? hydrateSyncedState(raw) : sanitizeSyncedState({ ...DEFAULT_STATE })
+    const next = sanitizeSyncedState({ ...current, ...patch })
+    writePersisted(next)
+    const channel = new BroadcastChannel(CHANNEL_NAME)
+    channel.postMessage(next)
+    channel.close()
+  } catch {
+    // ignore quota / private mode
+  }
+}
 
 /** C2: who stamps checks/flags/edits - switched when “Open as reviewer” */
 let currentActorName = PREPARER_NAME
@@ -433,6 +467,7 @@ const DEFAULT_STATE: SyncedState = {
   reviewerConfirmedDocsList: [],
   reviewerSignedOffFormsList: [],
   reviewerConfirmStaleFieldsList: [],
+  docEditAfterVerifyNoticesList: [],
   manualChecklistItems: {},
   completedMilestones: {},
   summaryFlaggedFieldsList: [],
@@ -714,6 +749,77 @@ export function useSyncedReviewState() {
   const summaryFlagNotes = state.summaryFlagNotes
   const summaryFlagActivity = state.summaryFlagActivity
 
+  const docEditAfterVerifyNoticeKeys = new Set(
+    state.docEditAfterVerifyNoticesList.map(normalizeVerifiedDocKey),
+  )
+
+  const clearDocEditAfterVerifyNotice = (rawDocKey: string) => {
+    const docKey = normalizeVerifiedDocKey(rawDocKey)
+    const next = stateRef.current.docEditAfterVerifyNoticesList.filter(
+      k => normalizeVerifiedDocKey(k) !== docKey,
+    )
+    if (next.length === stateRef.current.docEditAfterVerifyNoticesList.length) return
+    update({ docEditAfterVerifyNoticesList: next })
+  }
+
+  const removePreparerDocVerification = (
+    rawDocKey: string,
+    options?: { restoreAutoFlags?: boolean; showEditNotice?: boolean },
+  ) => {
+    const docKey = normalizeVerifiedDocKey(rawDocKey)
+    const nextVerified = new Map(stateRef.current.verifiedDocsList)
+    const existing = [...nextVerified.keys()].find(k => normalizeVerifiedDocKey(k) === docKey)
+    if (!existing) return false
+
+    nextVerified.delete(existing)
+
+    const patch: Partial<SyncedState> = {
+      verifiedDocsList: Array.from(nextVerified.entries()),
+    }
+
+    if (options?.restoreAutoFlags !== false) {
+      const autoFlagsMap = new Map(stateRef.current.verifiedDocAutoFlagsList)
+      const autoFlags = autoFlagsMap.get(docKey) ?? autoFlagsMap.get(existing) ?? []
+      autoFlagsMap.delete(docKey)
+      autoFlagsMap.delete(existing)
+      const nextReviewed = new Map(stateRef.current.reviewedFieldsList)
+      for (const flag of autoFlags) {
+        nextReviewed.delete(flag)
+      }
+      patch.verifiedDocAutoFlagsList = Array.from(autoFlagsMap.entries())
+      patch.reviewedFieldsList = Array.from(nextReviewed.entries())
+    }
+
+    const nextReviewerDocs = new Map(stateRef.current.reviewerConfirmedDocsList)
+    const reviewerExisting = [...nextReviewerDocs.keys()].find(
+      k => normalizeVerifiedDocKey(k) === docKey,
+    )
+    if (reviewerExisting) nextReviewerDocs.delete(reviewerExisting)
+    patch.reviewerConfirmedDocsList = Array.from(nextReviewerDocs.entries())
+
+    const notices = new Set(
+      stateRef.current.docEditAfterVerifyNoticesList.map(normalizeVerifiedDocKey),
+    )
+    if (options?.showEditNotice) notices.add(docKey)
+    else notices.delete(docKey)
+    patch.docEditAfterVerifyNoticesList = [...notices]
+
+    update(patch)
+    return true
+  }
+
+  const unverifyDocDueToEdit = (rawDocKey: string) => {
+    if (isReviewerActor()) return
+    removePreparerDocVerification(rawDocKey, {
+      restoreAutoFlags: false,
+      showEditNotice: true,
+    })
+  }
+
+  const dismissDocEditAfterVerifyNotice = (rawDocKey: string) => {
+    clearDocEditAfterVerifyNotice(rawDocKey)
+  }
+
   const toggleVerifiedDoc = (rawDocKey: string) => {
     const docKey = normalizeVerifiedDocKey(rawDocKey)
     if (isReviewerActor()) {
@@ -726,25 +832,13 @@ export function useSyncedReviewState() {
     }
 
     const nextVerified = new Map(stateRef.current.verifiedDocsList)
-    const autoFlagsMap = new Map(stateRef.current.verifiedDocAutoFlagsList)
     const existing = [...nextVerified.keys()].find(k => normalizeVerifiedDocKey(k) === docKey)
     if (existing) {
-      nextVerified.delete(existing)
-      const autoFlags = autoFlagsMap.get(docKey) ?? autoFlagsMap.get(existing) ?? []
-      autoFlagsMap.delete(docKey)
-      autoFlagsMap.delete(existing)
-      const nextReviewed = new Map(stateRef.current.reviewedFieldsList)
-      for (const flag of autoFlags) {
-        nextReviewed.delete(flag)
-      }
-      update({
-        verifiedDocsList: Array.from(nextVerified.entries()),
-        verifiedDocAutoFlagsList: Array.from(autoFlagsMap.entries()),
-        reviewedFieldsList: Array.from(nextReviewed.entries()),
-      })
+      removePreparerDocVerification(docKey, { restoreAutoFlags: true, showEditNotice: false })
       return
     }
 
+    const autoFlagsMap = new Map(stateRef.current.verifiedDocAutoFlagsList)
     const reviewedMap = new Map(stateRef.current.reviewedFieldsList)
     const verifyResult = canVerifyDoc({
       docKey,
@@ -760,6 +854,9 @@ export function useSyncedReviewState() {
     update({
       verifiedDocsList: Array.from(nextVerified.entries()),
       verifiedDocAutoFlagsList: Array.from(autoFlagsMap.entries()),
+      docEditAfterVerifyNoticesList: stateRef.current.docEditAfterVerifyNoticesList.filter(
+        k => normalizeVerifiedDocKey(k) !== docKey,
+      ),
     })
   }
 
@@ -862,9 +959,12 @@ export function useSyncedReviewState() {
     update({ amounts: nextAmounts })
   }
 
-  /** Convenience - update W-2 wages object shape used by DetailFields. */
-  const setWages = (wages: { techCircle: number }) => {
-    updateAmounts({ wages: wages.techCircle })
+  /** Convenience - update W-2 wages per employer used by DetailFields. */
+  const setWages = (next: { techCircle: number; bingEquipment?: number }) => {
+    updateAmounts({
+      wages: next.techCircle,
+      ...(next.bingEquipment !== undefined ? { wagesBingEquipment: next.bingEquipment } : {}),
+    })
   }
 
   /**
@@ -898,7 +998,7 @@ export function useSyncedReviewState() {
   }
 
   const amounts = state.amounts
-  const wages = { techCircle: amounts.wages }
+  const wages = { techCircle: amounts.wages, bingEquipment: amounts.wagesBingEquipment ?? 0 }
   const fieldValues: FieldValues = {
     withholding: { techCircle: amounts.w2Withholding },
     box12: amounts.box12,
@@ -1006,6 +1106,9 @@ export function useSyncedReviewState() {
     verifiedDocs: verifiedDocKeys,
     verifiedDocsMeta: verifiedDocs,
     toggleVerifiedDoc,
+    unverifyDocDueToEdit,
+    docEditAfterVerifyNotices: docEditAfterVerifyNoticeKeys,
+    dismissDocEditAfterVerifyNotice,
     reviewerConfirmedDocs: reviewerConfirmedDocKeys,
     reviewerConfirmedDocsMeta: reviewerConfirmedDocs,
     /** Set of preparer-checked summary field keys */

@@ -201,6 +201,12 @@ export default function DetailFields({
     }
   }, [selectedField])
 
+  useEffect(() => {
+    setEditingField(null)
+    setDraftValue('')
+    setOriginalValue('')
+  }, [activeSubTab, activeDocKey])
+
   const startEdit = (field: string, currentValue: string) => {
     if (!canEditField(field, variant, importReadOnly)) return
     const clean = currentValue.replace(/,/g, '')

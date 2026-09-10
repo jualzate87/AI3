@@ -5,6 +5,8 @@ import { Badge } from '@ids-ts/badge'
 import '@ids-ts/badge/dist/main.css'
 import { LinkActionButton } from '@ids-ts/link-action-button'
 import '@ids-ts/link-action-button/dist/main.css'
+import { TextField } from '@ids-ts/text-field'
+import '@ids-ts/text-field/dist/main.css'
 import { B3 } from '@ids-ts/typography'
 import '@ids-ts/typography/dist/main.css'
 import DocVerifyHeaderActions from './DocVerifyHeaderActions'
@@ -18,7 +20,8 @@ import {
   type QuestionnaireFieldLinkStatus,
   type QuestionnaireResponseId,
 } from './questionnaireData'
-import type { ActivityEntry } from '../../hooks/useSyncedReviewState'
+import { ESTIMATED_MORTGAGE_INTEREST } from '../../data/liveReturn'
+import { useSyncedReviewState, type ActivityEntry } from '../../hooks/useSyncedReviewState'
 import styles from '../../styles/data-review/QuestionnaireResponsesPanel.module.css'
 
 interface QuestionnaireResponsesPanelProps {
@@ -57,8 +60,18 @@ export default function QuestionnaireResponsesPanel({
   highlightResponseId = null,
   onNavigateToField,
 }: QuestionnaireResponsesPanelProps) {
+  const { amounts, updateAmounts } = useSyncedReviewState()
   const cardRefs = useRef<Partial<Record<QuestionnaireResponseId, HTMLElement | null>>>({})
   const [introOpen, setIntroOpen] = useState(true)
+  const [mortgageDraft, setMortgageDraft] = useState(() =>
+    amounts.mortgageInterest > 0 ? String(amounts.mortgageInterest) : '',
+  )
+
+  useEffect(() => {
+    if (amounts.mortgageInterest > 0) {
+      setMortgageDraft(String(amounts.mortgageInterest))
+    }
+  }, [amounts.mortgageInterest])
 
   useEffect(() => {
     if (!highlightResponseId) return
@@ -147,6 +160,27 @@ export default function QuestionnaireResponsesPanel({
                 <p className={styles.qaAnswer}>{qa.answer}</p>
               </div>
             </div>
+
+            {qa.id === 'mortgage' && (
+              <div className={styles.mortgageInputSection}>
+                <TextField
+                  aria-label="Mortgage interest amount for Schedule A line 8a"
+                  label="Mortgage interest amount (Schedule A line 8a)"
+                  placeholder={ESTIMATED_MORTGAGE_INTEREST.toLocaleString()}
+                  helperText={`Enter the Form 1098 amount. Projection uses ${ESTIMATED_MORTGAGE_INTEREST.toLocaleString()} until you add one.`}
+                  size="small"
+                  width="100%"
+                  value={mortgageDraft}
+                  onChange={event => setMortgageDraft(event.target.value.replace(/[^\d]/g, ''))}
+                  onBlur={() => {
+                    const parsed = Number(mortgageDraft)
+                    if (Number.isFinite(parsed) && parsed > 0) {
+                      updateAmounts({ mortgageInterest: parsed })
+                    }
+                  }}
+                />
+              </div>
+            )}
 
             <div className={styles.linkageSection}>
               <p className={styles.linkageHeading}>On return</p>

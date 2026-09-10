@@ -148,11 +148,9 @@
   align-items: center;
   justify-content: center;
   flex-shrink: 0;
-  margin-left: auto;
   width: 32px;
   height: 32px;
   padding: 0;
-  align-self: center;
 }
 
 .scroll {
@@ -427,9 +425,5 @@
 
   .filterField {
     flex: 1 1 calc(50% - 4px);
-  }
-
-  .refreshButton {
-    margin-left: 0;
   }
 }

@@ -39,7 +39,7 @@ export default function ReviewReturnPopoutHeader({
           automationId="review-return-popout-view-source-docs"
         >
           <PopOut size="small" aria-hidden />
-          View source documents
+          Source documents
         </Button>
         <Button
           priority="primary"

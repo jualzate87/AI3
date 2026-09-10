@@ -49,7 +49,7 @@ export default function CheckReturnPage() {
   const [aiDiagnosticsView, setAiDiagnosticsView] = useState<AiDiagnosticsView>('overview')
   const [selectedDiagnosticKey, setSelectedDiagnosticKey] = useState<Phase2IssueKey | null>(null)
   const [selectedAiDiagnosticSubId, setSelectedAiDiagnosticSubId] = useState<string | null>(null)
-  const [reviewLogOpen, setReviewLogOpen] = useState(true)
+  const [reviewLogOpen, setReviewLogOpen] = useState(false)
 
   const { amounts, reviewedFields } = useSyncedReviewState()
   const live = useMemo(() => computeLiveReturn(amounts), [amounts])

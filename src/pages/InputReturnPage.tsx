@@ -15,6 +15,7 @@ import {
   applyInputDocKey,
   getDefaultDocKey,
   INPUT_DOC_PARAM,
+  INPUT_FIELD_PARAM,
   INPUT_FORM_PARAM,
   readActiveDocKey,
   resolveDocKeyFromUrl,
@@ -29,6 +30,7 @@ export default function InputReturnPage() {
   const [searchParams, setSearchParams] = useSearchParams()
   const formParam = searchParams.get(INPUT_FORM_PARAM) as InputNavItemId | null
   const docParam = searchParams.get(INPUT_DOC_PARAM)
+  const fieldParam = searchParams.get(INPUT_FIELD_PARAM)
   const diagnostic = searchParams.get('diagnostic')
   const [activeItemId, setActiveItemId] = useState<InputNavItemId>(
     () => inputNavItemById(formParam).id,
@@ -45,6 +47,8 @@ export default function InputReturnPage() {
     setActiveDivPayer,
     activeIntPayer,
     setActiveIntPayer,
+    selectedField,
+    setSelectedField,
   } = useSyncedReviewState()
 
   const docSetters = { setActiveSubTab, setActiveDivPayer, setActiveIntPayer }
@@ -90,6 +94,12 @@ export default function InputReturnPage() {
       applyInputDocKey(navItem.topTab, resolved, docSetters)
     }
   }, [docParam, activeItemId, activeSubTab, activeDivPayer, activeIntPayer, setActiveSubTab, setActiveDivPayer, setActiveIntPayer])
+
+  useEffect(() => {
+    if (fieldParam && fieldParam !== selectedField) {
+      setSelectedField(fieldParam)
+    }
+  }, [fieldParam, selectedField, setSelectedField])
 
   const handleSelectItem = (id: InputNavItemId) => {
     setActiveItemId(id)

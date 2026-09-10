@@ -1,4 +1,5 @@
-import { openSourceDocumentById } from '../../lib/sourceDocPopoutNavigation'
+import { openSourceDocumentForView } from '../../lib/sourceDocPopoutNavigation'
+import { navigateToInputReturn } from '../../lib/inputReturnNavigation'
 import type { AiDiagnosticCategoryId } from './aiDiagnosticCategories'
 import { AI_DIAGNOSTIC_CATEGORIES } from './aiDiagnosticCategories'
 import type { ActivityDeepLink } from './activityTypes'
@@ -40,12 +41,11 @@ export function navigateToActivityTarget(
       handlers.handleSelectFederal()
       break
     case 'source-document':
-      openSourceDocumentById(
-        link.docId,
-        link.detailFieldId,
-        undefined,
-        link.focus ?? (link.detailFieldId ? 'input' : 'document'),
-      )
+      if (link.focus === 'input' && link.detailFieldId) {
+        navigateToInputReturn(link.docId, link.detailFieldId)
+      } else {
+        openSourceDocumentForView(link.docId)
+      }
       break
     default:
       break

@@ -1,6 +1,10 @@
 import { navigationForSourceDoc } from '../data/sourceDocuments'
 import type { FieldOriginSource } from '../data/fieldOrigins'
 import {
+  navigateToInputFromFieldOrigin,
+  navigateToInputReturn,
+} from './inputReturnNavigation'
+import {
   openSourceDocumentReviewPopout,
   type SourceDocumentPopoutContext,
 } from './prototypeRoutes'
@@ -16,25 +20,21 @@ export function popoutContextFromDocId(docId: string): SourceDocumentPopoutConte
   }
 }
 
-/** Open popout on document preview (no input field focus). */
+/** Open source-document popout on the PDF preview (View document). */
 export function openSourceDocumentForView(docId: string): void {
   openSourceDocumentReviewPopout(popoutContextFromDocId(docId))
 }
 
-/** Open popout with a detail input field selected (View input). */
+/** Navigate to Input return tab with the detail field focused (View input). */
 export function openSourceDocumentForInput(
   docId: string,
   detailFieldId: string,
   onSelectField?: (detailFieldId: string) => void,
 ): void {
-  onSelectField?.(detailFieldId)
-  openSourceDocumentReviewPopout({
-    ...popoutContextFromDocId(docId),
-    field: detailFieldId,
-  })
+  navigateToInputReturn(docId, detailFieldId, onSelectField)
 }
 
-/** Open detached source-document review focused on a field origin row. */
+/** View document → source popout; View input → Input return tab. */
 export function openSourceDocumentFromFieldOrigin(
   source: FieldOriginSource,
   onSelectField?: (detailFieldId: string) => void,
@@ -44,10 +44,10 @@ export function openSourceDocumentFromFieldOrigin(
     openSourceDocumentForView(source.docId)
     return
   }
-  openSourceDocumentForInput(source.docId, source.detailFieldId, onSelectField)
+  navigateToInputFromFieldOrigin(source, onSelectField)
 }
 
-/** Open popout for a source document id (optional detail field highlight). */
+/** Open source popout (document) or Input return (input field). */
 export function openSourceDocumentById(
   docId: string,
   detailFieldId?: string | null,
@@ -58,5 +58,5 @@ export function openSourceDocumentById(
     openSourceDocumentForView(docId)
     return
   }
-  openSourceDocumentForInput(docId, detailFieldId, onSelectField)
+  navigateToInputReturn(docId, detailFieldId, onSelectField)
 }

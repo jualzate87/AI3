@@ -12,7 +12,11 @@ import intuitIntelligenceLogo from '../../assets/icons/intuit-intelligence-logo-
 import { computeLiveReturn } from '../../data/liveReturn'
 import { useSyncedReviewState } from '../../hooks/useSyncedReviewState'
 import { openReviewReturnPopout, openSourceDocumentReviewPopout } from '../../lib/prototypeRoutes'
-import { buildAllDiagnosticIssues } from '../data-review/AgentReportPane'
+import {
+  buildAllDiagnosticIssues,
+  type DiagnosticIssueCard,
+} from '../data-review/AgentReportPane'
+import type { IssueAction } from '../data-review/IssueDetailPane'
 import type { OutputFormId } from '../data-review/outputForms'
 import {
   CHECKED_NO_ACTION_ITEMS,
@@ -91,6 +95,64 @@ function RowActionLink({ label, onClick }: { label: string; onClick: () => void 
   )
 }
 
+const OPEN_FORM_BY_ACTION_LABEL: Partial<Record<string, OutputFormId>> = {
+  'Open Form 8960': 'f8960',
+  'Open Form 2210': 'f2210',
+  'Open Schedule C': 'schC',
+  'Open Schedule A': 'schA',
+  'Open Schedule 1': 'sch1',
+}
+
+type FixStep = {
+  text: string
+  action?: IssueAction
+}
+
+function resolveFixStepAction(
+  action: IssueAction | undefined,
+  mismatchRow?: ReturnType<typeof getOutstandingImportMismatches>[number],
+): IssueAction | undefined {
+  if (!action) {
+    if (!mismatchRow) return undefined
+    return {
+      type: 'goToInput',
+      label: `Fix ${mismatchRow.label}`,
+      tab: mismatchRow.tab,
+      field: mismatchRow.field,
+    }
+  }
+
+  if (action.menuItems?.length) {
+    const first = action.menuItems[0]
+    return {
+      type: 'goToInput',
+      label: first.label,
+      tab: first.tab,
+      field: first.field,
+      summaryOnly: first.summaryOnly,
+    }
+  }
+
+  return action
+}
+
+function buildFixSteps(
+  issue: DiagnosticIssueCard,
+  mismatchRows: ReturnType<typeof getOutstandingImportMismatches>,
+): FixStep[] {
+  const navigableActions = issue.actions.filter(
+    action => action.type === 'goToInput' || action.type === 'openForm',
+  )
+
+  return issue.suggestedActions.slice(0, 3).map((text, index) => ({
+    text,
+    action: resolveFixStepAction(
+      navigableActions[index],
+      issue.issueKey === 'importMismatches' ? mismatchRows[index] : undefined,
+    ),
+  }))
+}
+
 export default function AiDiagnosticsPanel({
   view,
   selectedIssueKey,
@@ -120,6 +182,13 @@ export default function AiDiagnosticsPanel({
   }
 
   const handleViewSourceForField = (field?: string, tab?: string, subTab?: string) => {
+    if (tab === 'questionnaire') {
+      openSourceDocumentReviewPopout({
+        tab: 'questionnaire',
+        field: field ?? 'mortgage',
+      })
+      return
+    }
     openSourceDocumentReviewPopout({
       tab,
       subTab,
@@ -131,12 +200,36 @@ export default function AiDiagnosticsPanel({
     openReviewReturnPopout({ form: formId, diagnostic: issueKey })
   }
 
+  const runIssueAction = (issueKey: Phase2IssueKey, action: IssueAction) => {
+    switch (action.type) {
+      case 'goToInput':
+        if (action.tab === 'questionnaire') {
+          handleViewSourceForField(action.field ?? 'mortgage', 'questionnaire')
+          return
+        }
+        if (action.summaryOnly) {
+          openReviewReturnPopout({ diagnostic: issueKey })
+          return
+        }
+        handleViewSourceForField(action.field, action.tab)
+        break
+      case 'openForm': {
+        const formId = OPEN_FORM_BY_ACTION_LABEL[action.label]
+        if (formId) handleViewForm(formId, issueKey)
+        break
+      }
+      default:
+        break
+    }
+  }
+
   if (view === 'detail' && selectedIssue) {
     const category = categoryForIssueKey(selectedIssue.issueKey)
     const mismatchRows =
       selectedIssue.issueKey === 'importMismatches'
         ? getOutstandingImportMismatches(amounts)
         : []
+    const fixSteps = buildFixSteps(selectedIssue, mismatchRows)
 
     return (
       <div className={styles.panel}>
@@ -148,7 +241,7 @@ export default function AiDiagnosticsPanel({
           onClick={() => onViewChange('overview', null)}
         >
           <ChevronLeft size="xsmall" aria-hidden />
-          Back to AI Diagnostics
+          Back to return review
         </LinkActionButton>
 
         <div className={styles.detailHeader}>
@@ -254,14 +347,14 @@ export default function AiDiagnosticsPanel({
                 <span className={styles.detailTableCellAction}>
                   {row.fixTab ? (
                     <RowActionLink
-                      label="View source"
+                      label={row.actionLabel ?? 'View source'}
                       onClick={() =>
                         handleViewSourceForField(row.fixField, row.fixTab, undefined)
                       }
                     />
                   ) : row.viewForm ? (
                     <RowActionLink
-                      label={`View on ${row.viewFormLabel ?? row.viewForm}`}
+                      label={row.actionLabel ?? `View on ${row.viewFormLabel ?? row.viewForm}`}
                       onClick={() => handleViewForm(row.viewForm!, selectedIssue.issueKey)}
                     />
                   ) : null}
@@ -271,19 +364,25 @@ export default function AiDiagnosticsPanel({
           </div>
         )}
 
-        {selectedIssue.suggestedActions.length > 0 && (
+        {fixSteps.length > 0 && (
           <div className={styles.tipsCard}>
             <div className={styles.logoGroup}>
               <img src={intuitIntelligenceLogo} alt="" className={styles.logoIcon} />
-              <span className={styles.wordmark}>Tips from Intuit Assist</span>
+              <span className={styles.wordmark}>Steps to fix</span>
             </div>
-            <ul className={styles.tipsList}>
-              {selectedIssue.suggestedActions.slice(0, 3).map(tip => (
-                <li key={tip} className={styles.tipItem}>
-                  {tip}
+            <ol className={styles.fixStepsList}>
+              {fixSteps.map((step, index) => (
+                <li key={`${selectedIssue.issueKey}-step-${index}`} className={styles.fixStepItem}>
+                  <span className={styles.fixStepText}>{step.text}</span>
+                  {step.action ? (
+                    <RowActionLink
+                      label={step.action.label}
+                      onClick={() => runIssueAction(selectedIssue.issueKey, step.action!)}
+                    />
+                  ) : null}
                 </li>
               ))}
-            </ul>
+            </ol>
           </div>
         )}
       </div>
@@ -294,16 +393,12 @@ export default function AiDiagnosticsPanel({
     <div className={styles.panel}>
       <div className={styles.headerArea}>
         <div className={styles.logoTitleRow}>
-          <div className={styles.logoGroup}>
-            <img src={intuitIntelligenceLogo} alt="" className={styles.logoIcon} />
-            <span className={styles.wordmark}>Intuit Intelligence</span>
-          </div>
-          <span className={styles.titleDivider} aria-hidden />
-          <h1 className={styles.pageTitle}>AI Diagnostics</h1>
+          <img src={intuitIntelligenceLogo} alt="" className={styles.logoIcon} />
+          <h1 className={styles.pageTitle}>Return review by Intuit Intelligence</h1>
         </div>
         <p className={styles.introText}>
           I&apos;ve reviewed Jordan&apos;s 2025 return and found {overview.total} item
-          {overview.total === 1 ? '' : 's'} that need attention before filing.
+          {overview.total === 1 ? '' : 's'} that need attention.
         </p>
       </div>
 

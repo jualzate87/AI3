@@ -18,7 +18,7 @@ interface SmartReturnHeaderProps {
   /** Primary styling after review has started */
   reviewReturnStarted?: boolean
   onReviewReturn?: () => void
-  /** Show View source documents CTA in tab row (Check return) */
+  /** Show Source documents CTA in tab row (Check return) */
   showViewSourceDocuments?: boolean
   onViewSourceDocuments?: () => void
 }
@@ -161,7 +161,7 @@ export default function SmartReturnHeader({
               automationId="view-source-documents-header-cta"
             >
               <PopOut size="small" aria-hidden />
-              View source documents
+              Source documents
             </Button>
           )}
         </div>

@@ -1,3 +1,4 @@
+import { CircleCheck } from '@design-systems/icons'
 import { ProgressBar } from '@ids-ts/progress-bar'
 import '@ids-ts/progress-bar/dist/main.css'
 import styles from '../../styles/data-review/DocReviewProgress.module.css'
@@ -23,20 +24,36 @@ export default function DocReviewProgress({
   if (variant === 'compact') {
     return (
       <div
-        className={[styles.compactWrap, className].filter(Boolean).join(' ')}
+        className={[
+          styles.compactWrap,
+          complete ? styles.compactWrapComplete : '',
+          className,
+        ]
+          .filter(Boolean)
+          .join(' ')}
         aria-live="polite"
       >
         <p className={styles.compactLabel}>
+          {complete && (
+            <CircleCheck
+              size="small"
+              className={styles.compactCheck}
+              aria-hidden
+            />
+          )}
           <strong className={styles.compactNum}>{verified}</strong>
           <span className={styles.compactOf}> / {total} Documents verified</span>
         </p>
+        {complete && (
+          <span className={styles.compactCompleteHint}>All documents verified</span>
+        )}
         <div className={styles.compactProgressBar}>
           <ProgressBar
             value={verified}
             max={total || 1}
             persistent={complete}
             automationId="doc-review-progress"
-            aria-label={`${verified} of ${total} documents verified${remaining > 0 ? `, ${remaining} remaining` : ''}`}
+            aria-label={`${verified} of ${total} documents verified${remaining > 0 ? `, ${remaining} remaining` : ', complete'}`}
           />
         </div>
       </div>
