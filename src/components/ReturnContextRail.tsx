@@ -1,11 +1,15 @@
+import type { ComponentType } from 'react'
 import type { ReactNode } from 'react'
 import { useNavigate } from 'react-router-dom'
-import sidebarTaxOrganizerIcon from '../assets/icons/sidebar-tax-organizer.svg'
-import sidebarImportHubIcon from '../assets/icons/sidebar-import-hub.svg'
-import sidebarDocumentsListIcon from '../assets/icons/sidebar-documents-list.svg'
-import sidebarClientActivityIcon from '../assets/icons/sidebar-client-activity.svg'
-import sidebarFlaggedItemsIcon from '../assets/icons/sidebar-flagged-items.svg'
-import sidebarCommentsIcon from '../assets/icons/sidebar-comments.svg'
+import {
+  CircleZap,
+  Clipboard,
+  ClipboardFileBox,
+  CommentDots,
+  Flag,
+  ViewList,
+} from '@design-systems/icons'
+import type { IconProps } from '@design-systems/icons'
 import styles from '../styles/ReturnContextRail.module.css'
 
 export type ReturnContextRailItemId =
@@ -16,21 +20,28 @@ export type ReturnContextRailItemId =
   | 'flagged-items'
   | 'comments'
 
+type RailIcon = ComponentType<IconProps>
+
 type RailItem = {
   id: ReturnContextRailItemId
-  iconSrc: string
+  Icon: RailIcon
   label: ReactNode
   route?: string
   showNewBadge?: boolean
 }
 
 const RAIL_ITEMS: RailItem[] = [
-  { id: 'tax-organizer', iconSrc: sidebarTaxOrganizerIcon, label: <>Tax<br />Organizer</> },
-  { id: 'import-hub', iconSrc: sidebarImportHubIcon, label: <>Import<br />hub</>, route: '/smart-return' },
-  { id: 'documents-list', iconSrc: sidebarDocumentsListIcon, label: <>Documents<br />list</>, route: '/smart-return' },
+  { id: 'tax-organizer', Icon: Clipboard, label: <>Tax<br />Organizer</> },
+  { id: 'import-hub', Icon: CircleZap, label: <>Import<br />hub</>, route: '/smart-return' },
+  {
+    id: 'documents-list',
+    Icon: ClipboardFileBox,
+    label: <>Documents<br />list</>,
+    route: '/smart-return',
+  },
   {
     id: 'activity',
-    iconSrc: sidebarClientActivityIcon,
+    Icon: ViewList,
     label: <>Activity<br />feed</>,
     showNewBadge: true,
   },
@@ -39,13 +50,13 @@ const RAIL_ITEMS: RailItem[] = [
 const RAIL_ITEMS_SECONDARY: RailItem[] = [
   {
     id: 'flagged-items',
-    iconSrc: sidebarFlaggedItemsIcon,
+    Icon: Flag,
     label: <>Flagged<br />items</>,
     route: '/data-review?entry=input-return&role=preparer',
   },
   {
     id: 'comments',
-    iconSrc: sidebarCommentsIcon,
+    Icon: CommentDots,
     label: 'Comments',
     route: '/data-review?entry=input-return&role=preparer',
   },
@@ -58,7 +69,7 @@ type ReturnContextRailProps = {
   onItemClick?: (id: ReturnContextRailItemId) => void
 }
 
-/** Right-edge icon rail - Tax Organizer, Import hub, Documents, etc. */
+/** Right-edge icon rail — Megafirms Figma node 2602:54845 */
 export default function ReturnContextRail({
   activeItem,
   className,
@@ -70,6 +81,7 @@ export default function ReturnContextRail({
     const isActive = activeItem === item.id
     const isClickable = Boolean(item.route || onItemClick)
     const Tag = isClickable ? 'button' : 'div'
+    const Icon = item.Icon
 
     const handleClick = () => {
       if (item.route) {
@@ -89,15 +101,17 @@ export default function ReturnContextRail({
         aria-pressed={onItemClick && !item.route ? isActive : undefined}
         onClick={isClickable ? handleClick : undefined}
       >
-        <span className={styles.iconWrap}>
-          <img src={item.iconSrc} alt="" className={styles.icon} />
-        </span>
+        <div className={styles.iconLabelGroup}>
+          <span className={styles.iconSlot}>
+            <Icon size="medium" aria-hidden />
+          </span>
+          <span className={styles.label}>{item.label}</span>
+        </div>
         {item.showNewBadge ? (
           <span className={styles.newBadge} aria-label="New">
             NEW
           </span>
         ) : null}
-        <span>{item.label}</span>
       </Tag>
     )
   }

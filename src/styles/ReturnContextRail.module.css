@@ -1,13 +1,15 @@
+/* Megafirms rail — Figma node 2602:54845 */
 .rail {
-  width: 76px;
+  width: 56px;
   height: 100%;
-  border-left: 1px solid var(--color-divider-secondary, #d5dee3);
+  border-left: 1px solid var(--color-divider-secondary, #babec5);
+  border-right: 1px solid var(--color-divider-secondary, #babec5);
   background: var(--color-container-background-primary, #ffffff);
   display: flex;
   flex-direction: column;
   align-items: center;
-  padding: 8px 0;
-  gap: 2px;
+  padding: 8px 4px;
+  gap: 16px;
   flex-shrink: 0;
   overflow: hidden;
 }
@@ -18,17 +20,16 @@
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: 4px;
-  width: 68px;
-  min-height: 88px;
-  padding: 8px 4px 10px;
-  color: var(--color-text-secondary, #6b6c72);
+  gap: 6px;
+  width: 100%;
+  padding: 0;
+  color: var(--color-text-primary, #21262a);
   font-family: var(--font-family-component);
-  font-size: 10px;
-  font-weight: 500;
-  line-height: 1.2;
+  font-size: var(--font-size-component-small, 12px);
+  font-weight: var(--font-weight-component, 400);
+  line-height: 16px;
   text-align: center;
-  border-radius: var(--radius-small, 6px);
+  border-radius: var(--radius-small, 4px);
   border: none;
   background: transparent;
   cursor: default;
@@ -41,62 +42,70 @@ button.item {
 
 button.item:hover {
   background: var(--color-page-background-secondary, #f0f4f6);
-  color: var(--color-text-primary, #393a3d);
 }
 
 .itemActive {
-  background: #e2e9ed;
+  background: var(--color-container-background-secondary, #e2e9ed);
   color: var(--color-action-standard, #205ea3);
 }
 
-.itemActive .icon {
-  color: var(--color-action-standard, #205ea3);
+.iconLabelGroup {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  width: 100%;
 }
 
-.iconWrap {
-  position: relative;
+.iconSlot {
   display: flex;
   align-items: center;
   justify-content: center;
-  flex-shrink: 0;
-  width: 50px;
-  height: 50px;
-  color: var(--color-icon-secondary, #5d686f);
+  width: 48px;
+  height: 40px;
+  padding: 3px 6px 0;
+  box-sizing: border-box;
+  color: var(--color-icon-primary, #393a3d);
 }
 
-.itemActive .iconWrap {
+.itemActive .iconSlot {
   color: var(--color-action-standard, #205ea3);
 }
 
-.icon {
+.iconSlot svg {
   display: block;
-  width: 50px;
-  height: 50px;
+  width: 24px;
+  height: 24px;
   flex-shrink: 0;
-  object-fit: contain;
+}
+
+.label {
+  display: block;
+  width: 100%;
+  word-break: break-word;
 }
 
 .newBadge {
-  position: absolute;
-  top: 2px;
-  right: 0;
-  z-index: 1;
-  pointer-events: none;
-  padding: 1px 4px;
-  border-radius: 3px;
-  background: #e91e8c;
-  color: #ffffff;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 2px 4px;
+  border-radius: var(--radius-small, 4px);
+  background: var(--color-ui-new, #d72792);
+  color: var(--color-text-inverse, #ffffff);
   font-family: var(--font-family-component);
-  font-size: 8px;
-  font-weight: 800;
-  line-height: 1.4;
-  letter-spacing: 0.04em;
+  font-size: var(--font-size-component-small, 12px);
+  font-weight: var(--font-weight-component-semibold, 600);
+  line-height: 16px;
+  letter-spacing: 0;
+  text-transform: uppercase;
+  white-space: nowrap;
 }
 
 .divider {
   width: 44px;
   height: 1px;
   background: var(--color-divider-tertiary, #d4d7dc);
-  margin: 4px 0;
   flex-shrink: 0;
 }
