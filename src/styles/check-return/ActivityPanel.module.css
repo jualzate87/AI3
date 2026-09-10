@@ -254,8 +254,8 @@
   flex: 1;
   margin: 0;
   font-family: var(--font-family-component);
-  font-size: var(--font-size-body-2, 16px);
-  font-weight: var(--font-weight-component, 400);
+  font-size: var(--font-size-14);
+  font-weight: var(--font-weight-component-semibold);
   line-height: 1.4;
   color: var(--color-text-primary);
   word-break: break-word;
@@ -323,9 +323,9 @@
 .entryDetail {
   margin: 5px 0 0;
   font-family: var(--font-family-component);
-  font-size: var(--font-size-component-small, 12px);
+  font-size: var(--font-size-14);
   font-weight: var(--font-weight-component);
-  line-height: 1.35;
+  line-height: 1.4;
   color: var(--color-text-secondary, #5d686f);
 }
 
@@ -336,8 +336,8 @@
   gap: 4px;
   margin: 6px 0 0;
   font-family: var(--font-family-component);
-  font-size: var(--font-size-component-small, 12px);
-  font-weight: var(--font-weight-component);
+  font-size: var(--font-size-14);
+  font-weight: var(--font-weight-component-semibold);
   line-height: 1.4;
 }
 
@@ -348,12 +348,12 @@
 
 .valueArrow {
   color: var(--color-text-tertiary);
-  font-size: 10px;
+  font-size: var(--font-size-14);
+  font-weight: var(--font-weight-component);
 }
 
 .valueAfter {
   color: var(--color-text-primary);
-  font-weight: var(--font-weight-component-semibold, 500);
 }
 
 .entryMeta {
@@ -363,12 +363,14 @@
   gap: 5px;
   margin-top: 4px;
   font-family: var(--font-family-component);
+  font-size: var(--font-size-12);
+  line-height: 16px;
 }
 
 .entryTypeBadge {
   display: inline-flex;
   align-items: center;
-  font-size: 10px;
+  font-size: var(--font-size-12);
   font-weight: 700;
   letter-spacing: 0.3px;
   padding: 2px 7px;
@@ -378,25 +380,25 @@
 }
 
 .entryLocation {
-  font-size: var(--font-size-component-small, 12px);
+  font-size: var(--font-size-12);
   font-weight: var(--font-weight-component);
   color: var(--color-text-secondary, #5d686f);
 }
 
 .entryAuthor {
-  font-size: var(--font-size-component-small, 12px);
+  font-size: var(--font-size-12);
   font-weight: var(--font-weight-component-semibold, 500);
   color: var(--color-text-secondary, #5d686f);
 }
 
 .entryTime {
-  font-size: var(--font-size-component-small, 12px);
+  font-size: var(--font-size-12);
   font-weight: var(--font-weight-component);
   color: var(--color-text-tertiary, #6b6c72);
 }
 
 .entrySep {
-  font-size: var(--font-size-component-small, 12px);
+  font-size: var(--font-size-12);
   color: var(--color-text-tertiary, #6b6c72);
 }
 
