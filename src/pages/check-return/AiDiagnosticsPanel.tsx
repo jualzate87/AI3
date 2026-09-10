@@ -181,19 +181,10 @@ function PreparerChecklistRow({
           />
           <div className={styles.checklistText}>
             <span
-              className={`${styles.checklistTitle} ${isComplete ? styles.checklistTitleDone : ''}`}
+              className={styles.checklistTitle}
             >
               {item.title}
             </span>
-            <p className={`${styles.checklistNote} ${isComplete ? styles.checklistNoteDone : ''}`}>
-              {item.note}
-            </p>
-            {item.externalReference && (
-              <ExternalReferenceLink
-                href={item.externalReference.href}
-                label={item.externalReference.label}
-              />
-            )}
           </div>
         </div>
         {item.jump && (
@@ -647,9 +638,8 @@ export default function AiDiagnosticsPanel({
           {checklistExpanded && (
             <>
               <p className={styles.findingDescription}>
-                Items Intuit Intelligence already verified from your inputs, plus areas worth
-                confirming yourself before sign-off. Use the links to jump to the right form or
-                source document.
+                Rules Intuit Intelligence already cleared, plus preparer attestation items not
+                covered by the import mismatches and diagnostics above.
               </p>
 
               <p className={styles.checklistGroupLabel}>Checked from inputs</p>

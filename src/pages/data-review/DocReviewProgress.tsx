@@ -44,9 +44,6 @@ export default function DocReviewProgress({
           <strong className={styles.compactNum}>{verified}</strong>
           <span className={styles.compactOf}> / {total} Documents verified</span>
         </p>
-        {complete && (
-          <span className={styles.compactCompleteHint}>All documents verified</span>
-        )}
         <div className={styles.compactProgressBar}>
           <ProgressBar
             value={verified}

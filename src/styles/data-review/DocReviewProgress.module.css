@@ -24,22 +24,9 @@
   white-space: nowrap;
 }
 
-.compactWrapComplete .compactNum,
-.compactWrapComplete .compactOf {
-  color: var(--color-text-success, #1a7f37);
-}
-
 .compactCheck {
   flex-shrink: 0;
-  color: var(--color-icon-success, #1a7f37);
-}
-
-.compactCompleteHint {
-  font-family: var(--font-family-body, sans-serif);
-  font-size: var(--font-size-body-4, 12px);
-  font-weight: var(--font-weight-body-semibold, 500);
-  line-height: 1.5;
-  color: var(--color-text-success, #1a7f37);
+  color: var(--color-icon-primary, #393a3d);
 }
 
 .compactNum {
@@ -49,7 +36,7 @@
 
 .compactOf {
   font-weight: var(--font-weight-body-semibold, 500);
-  color: var(--color-text-secondary, #6b6c72);
+  color: var(--color-text-primary, #393a3d);
 }
 
 .compactProgressBar {
