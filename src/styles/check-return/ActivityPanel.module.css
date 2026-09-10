@@ -326,7 +326,7 @@
   font-size: var(--font-size-component-small, 14px);
   font-weight: var(--font-weight-component, 400);
   line-height: 1.4;
-  color: var(--color-text-secondary, #5d686f);
+  color: var(--color-text-primary);
 }
 
 .valueChange {
@@ -365,6 +365,7 @@
   font-family: var(--font-family-component);
   font-size: var(--font-size-component-x-small, 12px);
   line-height: 16px;
+  color: var(--color-text-secondary);
 }
 
 .entryTypeBadge {
@@ -382,24 +383,24 @@
 .entryLocation {
   font-size: inherit;
   font-weight: var(--font-weight-component, 400);
-  color: var(--color-text-secondary, #5d686f);
+  color: inherit;
 }
 
 .entryAuthor {
   font-size: inherit;
   font-weight: var(--font-weight-component-semibold, 500);
-  color: var(--color-text-secondary, #5d686f);
+  color: inherit;
 }
 
 .entryTime {
   font-size: inherit;
   font-weight: var(--font-weight-component, 400);
-  color: var(--color-text-tertiary, #6b6c72);
+  color: inherit;
 }
 
 .entrySep {
   font-size: inherit;
-  color: var(--color-text-tertiary, #6b6c72);
+  color: inherit;
 }
 
 .emptyState {
