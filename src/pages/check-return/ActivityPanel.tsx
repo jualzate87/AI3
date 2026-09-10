@@ -1,11 +1,11 @@
 import { useMemo, useState } from 'react'
-import { ChevronLeft, Close, Refresh } from '@design-systems/icons'
-import { Badge } from '@ids-ts/badge'
-import '@ids-ts/badge/dist/main.css'
+import { ChevronLeft, Close, OverflowWeb, Refresh } from '@design-systems/icons'
 import { Dropdown, MenuItem } from '@ids-ts/dropdown'
 import '@ids-ts/dropdown/dist/main.css'
 import { IconControl } from '@ids-ts/icon-control'
 import '@ids-ts/icon-control/dist/main.css'
+import { Menu, MenuItem as OverflowMenuItem } from '@ids-ts/menu'
+import '@ids-ts/menu/dist/main.css'
 import SegmentedButton from '@ids-ts/segmented-button'
 import '@ids-ts/segmented-button/dist/main.css'
 import { TextField } from '@ids-ts/text-field'
@@ -20,7 +20,6 @@ import {
   filterActivityEntries,
   groupActivityEntriesByDay,
   type ActivityDeepLink,
-  type ActivityEntryType,
   type ActivityFeedEntry,
   type ActivityTypeFilterValue,
   type AuthorFilterValue,
@@ -36,16 +35,6 @@ type ActivityPanelProps = {
   onNavigate?: (link: ActivityDeepLink) => void
 }
 
-const ENTRY_DOT_CLASS: Record<ActivityEntryType, string> = {
-  'field-edited': styles.dotAttention,
-  'form-line-checked': styles.dotNeutral,
-  'document-verified': styles.dotInfo,
-  'import-diagnostic-fixed': styles.dotAttention,
-  'compliance-diagnostic-fixed': styles.dotPositive,
-  'planning-diagnostic-fixed': styles.dotInfo,
-  'return-sign-off': styles.dotPositive,
-}
-
 function ValueChange({ before, after }: { before: string; after: string }) {
   return (
     <p className={styles.valueChange}>
@@ -55,6 +44,54 @@ function ValueChange({ before, after }: { before: string; after: string }) {
       </span>
       <span className={styles.valueAfter}>{after}</span>
     </p>
+  )
+}
+
+function ActivityEntryOverflowMenu({
+  linkLabel,
+  deepLink,
+  onNavigate,
+}: {
+  linkLabel: string
+  deepLink: ActivityDeepLink
+  onNavigate: (link: ActivityDeepLink) => void
+}) {
+  const [open, setOpen] = useState(false)
+
+  const handleClose = () => setOpen(false)
+
+  const handleSelect = () => {
+    onNavigate(deepLink)
+    setOpen(false)
+  }
+
+  return (
+    <Menu
+      open={open}
+      size="small"
+      alignment="right"
+      positions={['bottom', 'top']}
+      preventMenuOverflow={{ enabled: true, padding: 8 }}
+      anchorElement={
+        <IconControl
+          size="small"
+          shape="square"
+          className={styles.entryMenuBtn}
+          aria-label="Entry actions"
+          aria-haspopup="true"
+          aria-expanded={open}
+          selected={open}
+          onClick={() => setOpen(prev => !prev)}
+        >
+          <OverflowWeb aria-hidden />
+        </IconControl>
+      }
+      onSelect={handleSelect}
+      onClose={handleClose}
+      onClickAway={handleClose}
+    >
+      <OverflowMenuItem value="open">{linkLabel}</OverflowMenuItem>
+    </Menu>
   )
 }
 
@@ -71,48 +108,48 @@ function ActivityEntryRow({
   return (
     <li className={styles.entry}>
       <span
-        className={`${styles.statusDot} ${ENTRY_DOT_CLASS[entry.entryType]}`}
+        className={styles.statusDot}
+        style={{ background: badge.pillBackground }}
         aria-hidden
       />
       <div className={styles.entryBody}>
-        <p className={styles.entryTitle}>{entry.title}</p>
+        <div className={styles.entryTop}>
+          <p className={styles.entryTitle}>{entry.title}</p>
+          {entry.deepLink && linkLabel && onNavigate ? (
+            <div className={styles.entryMenuWrap}>
+              <ActivityEntryOverflowMenu
+                linkLabel={linkLabel}
+                deepLink={entry.deepLink}
+                onNavigate={onNavigate}
+              />
+            </div>
+          ) : null}
+        </div>
         {entry.detail ? <p className={styles.entryDetail}>{entry.detail}</p> : null}
         {entry.before != null && entry.after != null ? (
           <ValueChange before={entry.before} after={entry.after} />
         ) : null}
-        {entry.deepLink && linkLabel && onNavigate ? (
-          <p className={styles.entryLinkRow}>
-            <button
-              type="button"
-              className={styles.entryLink}
-              onClick={() => onNavigate(entry.deepLink!)}
-            >
-              {linkLabel}
-            </button>
-          </p>
-        ) : null}
-        <p className={styles.entryMeta}>
-          <Badge
-            status={badge.status}
-            capitalization="sentence"
-            priority="secondary"
-            className={styles.typeBadge}
+        <div className={styles.entryMeta}>
+          <span
+            className={styles.entryTypeBadge}
+            style={{
+              background: badge.pillBackground,
+              color: '#ffffff',
+              borderColor: 'transparent',
+            }}
           >
             {badge.label}
-          </Badge>
-          <span className={styles.metaSep} aria-hidden>
+          </span>
+          <span className={styles.entryLocation}>{entry.location}</span>
+          <span className={styles.entrySep} aria-hidden>
             ·
           </span>
-          <span className={styles.metaText}>{entry.location}</span>
-          <span className={styles.metaSep} aria-hidden>
+          <span className={styles.entryAuthor}>{entry.actor}</span>
+          <span className={styles.entrySep} aria-hidden>
             ·
           </span>
-          <span className={styles.metaText}>{entry.actor}</span>
-          <span className={styles.metaSep} aria-hidden>
-            ·
-          </span>
-          <span className={styles.metaText}>{entry.time}</span>
-        </p>
+          <span className={styles.entryTime}>{entry.time}</span>
+        </div>
       </div>
     </li>
   )
@@ -281,9 +318,10 @@ export default function ActivityPanel({ isOpen, onToggle, onNavigate }: Activity
         <div className={styles.filterRow}>
           <div className={styles.filterField}>
             <Dropdown
-              label="Date"
+              aria-label="Date"
+              placeholder="Date"
               size="small"
-              value={dateFilter}
+              value={dateFilter === 'any' ? undefined : dateFilter}
               width="100%"
               preventMenuOverflow={{ enabled: true, padding: 8 }}
               positions={['bottom', 'top']}
@@ -302,9 +340,10 @@ export default function ActivityPanel({ isOpen, onToggle, onNavigate }: Activity
 
           <div className={styles.filterField}>
             <Dropdown
-              label="Author"
+              aria-label="Author"
+              placeholder="Author"
               size="small"
-              value={authorFilter}
+              value={authorFilter === 'any' ? undefined : authorFilter}
               width="100%"
               preventMenuOverflow={{ enabled: true, padding: 8 }}
               positions={['bottom', 'top']}
@@ -323,9 +362,10 @@ export default function ActivityPanel({ isOpen, onToggle, onNavigate }: Activity
 
           <div className={styles.filterField}>
             <Dropdown
-              label="Activity type"
+              aria-label="Activity type"
+              placeholder="Activity type"
               size="small"
-              value={activityTypeFilter}
+              value={activityTypeFilter === 'any' ? undefined : activityTypeFilter}
               width="100%"
               preventMenuOverflow={{ enabled: true, padding: 8 }}
               positions={['bottom', 'top']}
