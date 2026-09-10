@@ -1,5 +1,5 @@
 .rail {
-  width: 76px;
+  width: 56px;
   height: 100%;
   border-left: 1px solid var(--color-divider-secondary, #d5dee3);
   background: var(--color-container-background-primary, #ffffff);
@@ -19,9 +19,9 @@
   align-items: center;
   justify-content: center;
   gap: 4px;
-  width: 68px;
-  min-height: 88px;
-  padding: 8px 4px 10px;
+  width: 48px;
+  min-height: 80px;
+  padding: 6px 0 8px;
   color: var(--color-text-secondary, #6b6c72);
   font-family: var(--font-family-component);
   font-size: 10px;
@@ -59,8 +59,9 @@ button.item:hover {
   align-items: center;
   justify-content: center;
   flex-shrink: 0;
-  width: 50px;
-  height: 50px;
+  width: 48px;
+  height: 48px;
+  overflow: visible;
   color: var(--color-icon-secondary, #5d686f);
 }
 
@@ -70,16 +71,17 @@ button.item:hover {
 
 .icon {
   display: block;
-  width: 50px;
-  height: 50px;
+  width: 68px;
+  height: 68px;
+  margin: -10px;
   flex-shrink: 0;
   object-fit: contain;
 }
 
 .newBadge {
   position: absolute;
-  top: 2px;
-  right: 0;
+  top: 0;
+  right: -4px;
   z-index: 1;
   pointer-events: none;
   padding: 1px 4px;
@@ -94,7 +96,7 @@ button.item:hover {
 }
 
 .divider {
-  width: 44px;
+  width: 32px;
   height: 1px;
   background: var(--color-divider-tertiary, #d4d7dc);
   margin: 4px 0;
