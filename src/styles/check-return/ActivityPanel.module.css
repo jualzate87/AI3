@@ -52,17 +52,28 @@
 }
 
 .header {
-  display: flex;
+  display: grid;
+  grid-template-columns: 32px 1fr 32px;
   align-items: center;
-  justify-content: space-between;
-  padding: 14px 16px;
+  height: 56px;
+  min-height: 56px;
+  max-height: 56px;
+  padding: 0 12px;
+  box-sizing: border-box;
   border-bottom: 1px solid var(--color-divider-secondary, #d5dee3);
   flex-shrink: 0;
 }
 
+.headerSpacer {
+  width: 32px;
+}
+
+.closeControl {
+  justify-self: end;
+}
+
 .title {
   margin: 0;
-  flex: 1;
   text-align: center;
   font-family: var(--font-family-component);
   font-size: var(--font-size-component-medium, 14px);
@@ -237,9 +248,9 @@
 .entryTitle {
   margin: 0;
   font-family: var(--font-family-component);
-  font-size: var(--font-size-component-small, 13px);
-  font-weight: var(--font-weight-component);
-  line-height: 1.4;
+  font-size: var(--font-size-component-small, 14px);
+  font-weight: var(--font-weight-component-semibold, 600);
+  line-height: 1.35;
   color: var(--color-text-primary);
   word-break: break-word;
 }
@@ -250,12 +261,12 @@
 }
 
 .entryDetail {
-  margin: 4px 0 0;
+  margin: 2px 0 0;
   font-family: var(--font-family-component);
-  font-size: var(--font-size-component-small, 13px);
+  font-size: var(--font-size-component-small, 12px);
   font-weight: var(--font-weight-component);
-  line-height: 1.4;
-  color: var(--color-text-primary);
+  line-height: 1.35;
+  color: var(--color-text-secondary, #5d686f);
 }
 
 .valueChange {
@@ -293,13 +304,44 @@
   margin: 4px 0 0;
   font-family: var(--font-family-component);
   font-size: var(--font-size-component-small, 12px);
-  font-weight: var(--font-weight-component-semibold, 500);
   line-height: 1.3;
+}
+
+.metaText {
+  font-weight: var(--font-weight-component);
   color: var(--color-text-secondary, #5d686f);
 }
 
 .metaSep {
   color: var(--color-text-tertiary, #6b6c72);
+}
+
+.entryLinkRow {
+  margin: 6px 0 0;
+}
+
+.entryLink {
+  display: inline;
+  padding: 0;
+  border: none;
+  background: none;
+  font-family: var(--font-family-component);
+  font-size: var(--font-size-component-small, 12px);
+  font-weight: var(--font-weight-component-semibold);
+  line-height: 1.3;
+  color: var(--color-action-standard);
+  text-align: left;
+  cursor: pointer;
+}
+
+.entryLink:hover {
+  color: var(--color-action-standard-hover);
+  text-decoration: underline;
+}
+
+.entryLink:focus-visible {
+  outline: 2px solid var(--color-action-standard);
+  outline-offset: 2px;
 }
 
 .emptyState {

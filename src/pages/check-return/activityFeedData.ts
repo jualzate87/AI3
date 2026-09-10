@@ -1,18 +1,29 @@
 /**
  * Unified chronological activity feed for Check Return (Review segment).
- * Merged from reviewLogData day groups into a single filterable list.
  */
 
-import { REVIEW_LOG_DAYS, type ReviewLogEntry, type ReviewLogKind } from './reviewLogData'
+import {
+  REVIEW_LOG_DAYS,
+  type ReviewLogEntry,
+} from './reviewLogData'
+import {
+  ACTIVITY_ENTRY_BADGE,
+  ACTIVITY_ENTRY_DOT_CLASS,
+  entryTypeToFilterCategory,
+  type ActivityDeepLink,
+  type ActivityEntryType,
+  type ActivityFilterCategory,
+} from './activityTypes'
 
-export type ActivityKind = ReviewLogKind
-
-export type ActivityDayGroupId = 'today' | 'yesterday' | 'mar-6' | 'older'
+export type { ActivityDeepLink, ActivityEntryType, ActivityFilterCategory }
 
 export type ActivityFeedEntry = ReviewLogEntry & {
+  filterCategory: ActivityFilterCategory
   dayGroupId: ActivityDayGroupId
   dayGroupLabel: string
 }
+
+export type ActivityDayGroupId = 'today' | 'yesterday' | 'mar-6' | 'older'
 
 export type ActivityFeedDayGroup = {
   id: ActivityDayGroupId
@@ -35,10 +46,10 @@ export const AUTHOR_FILTER_OPTIONS = [
 
 export const ACTIVITY_TYPE_FILTER_OPTIONS = [
   { value: 'any', label: 'Any type' },
-  { value: 'edit', label: 'Fields changed' },
-  { value: 'document', label: 'Documents verified' },
-  { value: 'form-check', label: 'Form lines checked' },
-  { value: 'diagnostic', label: 'Diagnostics fixed' },
+  { value: 'field-edited', label: 'Fields edited' },
+  { value: 'document-verified', label: 'Documents verified' },
+  { value: 'form-line-checked', label: 'Form lines checked' },
+  { value: 'diagnostic-fixed', label: 'Diagnostics fixed' },
 ] as const
 
 export type DateFilterValue = (typeof DATE_FILTER_OPTIONS)[number]['value']
@@ -54,14 +65,33 @@ function toDayGroupId(id: string): ActivityDayGroupId {
   return 'older'
 }
 
-/** Flat list, newest day first; within each day entries stay in narrative order (newest first). */
 export const ACTIVITY_FEED_ENTRIES: readonly ActivityFeedEntry[] = REVIEW_LOG_DAYS.flatMap(day =>
   day.entries.map(entry => ({
     ...entry,
+    filterCategory: entryTypeToFilterCategory(entry.entryType),
     dayGroupId: toDayGroupId(day.id),
     dayGroupLabel: day.label,
   })),
 )
+
+export { ACTIVITY_ENTRY_BADGE, ACTIVITY_ENTRY_DOT_CLASS }
+
+export function defaultLinkLabel(entry: ActivityFeedEntry): string | null {
+  if (!entry.deepLink) return null
+  if (entry.linkLabel) return entry.linkLabel
+  switch (entry.deepLink.target) {
+    case 'form':
+      return `Open ${entry.deepLink.formLabel}`
+    case 'ai-diagnostics':
+      return 'Open AI diagnostics'
+    case 'federal-summary':
+      return 'Open federal summary'
+    case 'source-document':
+      return 'Open source document'
+    default:
+      return 'View'
+  }
+}
 
 export function groupActivityEntriesByDay(
   entries: readonly ActivityFeedEntry[],
@@ -102,7 +132,7 @@ export function filterActivityEntries(
       return false
     }
 
-    if (filters.activityType !== 'any' && entry.kind !== filters.activityType) {
+    if (filters.activityType !== 'any' && entry.filterCategory !== filters.activityType) {
       return false
     }
 
@@ -117,7 +147,16 @@ export function filterActivityEntries(
     }
 
     if (query) {
-      const haystack = [entry.title, entry.detail, entry.source, entry.actor, entry.before, entry.after]
+      const badge = ACTIVITY_ENTRY_BADGE[entry.entryType].label
+      const haystack = [
+        entry.title,
+        entry.detail,
+        entry.location,
+        entry.actor,
+        entry.before,
+        entry.after,
+        badge,
+      ]
         .filter(Boolean)
         .join(' ')
         .toLowerCase()
@@ -128,21 +167,4 @@ export function filterActivityEntries(
 
     return true
   })
-}
-
-export const ACTIVITY_KIND_BADGE: Record<
-  ActivityKind,
-  { label: string; status: 'warning' | 'info' | 'success' | 'pending' }
-> = {
-  edit: { label: 'Edit', status: 'warning' },
-  document: { label: 'Document', status: 'info' },
-  'form-check': { label: 'Form check', status: 'pending' },
-  diagnostic: { label: 'Diagnostic', status: 'success' },
-}
-
-export const ACTIVITY_KIND_DOT_CLASS: Record<ActivityKind, string> = {
-  edit: 'dotAttention',
-  document: 'dotInfo',
-  'form-check': 'dotNeutral',
-  diagnostic: 'dotPositive',
 }

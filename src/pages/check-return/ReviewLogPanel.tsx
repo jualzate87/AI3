@@ -6,6 +6,7 @@ import {
   REVIEW_LOG_DAYS,
   REVIEW_LOG_FILTERS,
   actorInitials,
+  getEntryKind,
   getReviewLogCounts,
   type ReviewLogEntry,
   type ReviewLogKind,
@@ -55,7 +56,7 @@ function LogEntryRow({ entry }: { entry: ReviewLogEntry }) {
   return (
     <li className={styles.entry}>
       <div className={styles.entryRail} aria-hidden>
-        <span className={`${styles.summaryDot} ${KIND_DOT_CLASS[entry.kind]}`} />
+        <span className={`${styles.summaryDot} ${KIND_DOT_CLASS[getEntryKind(entry)]}`} />
         <span className={styles.entryLine} />
       </div>
       <div className={styles.entryBody}>
@@ -70,7 +71,7 @@ function LogEntryRow({ entry }: { entry: ReviewLogEntry }) {
         ) : null}
         {entry.detail ? <p className={styles.entryDetail}>{entry.detail}</p> : null}
         <p className={styles.entryMeta}>
-          {entry.source ? <span className={styles.entrySource}>{entry.source}</span> : null}
+          <span className={styles.entrySource}>{entry.location}</span>
           <span className={styles.entryTime}>{entry.time}</span>
         </p>
       </div>
@@ -86,7 +87,7 @@ export default function ReviewLogPanel({ isOpen, onToggle }: ReviewLogPanelProps
     if (activeFilter === 'all') return REVIEW_LOG_DAYS
     return REVIEW_LOG_DAYS.map(day => ({
       ...day,
-      entries: day.entries.filter(entry => entry.kind === activeFilter),
+      entries: day.entries.filter(entry => getEntryKind(entry) === activeFilter),
     })).filter(day => day.entries.length > 0)
   }, [activeFilter])
 

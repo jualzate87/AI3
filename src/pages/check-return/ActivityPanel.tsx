@@ -11,15 +11,17 @@ import '@ids-ts/segmented-button/dist/main.css'
 import { TextField } from '@ids-ts/text-field'
 import '@ids-ts/text-field/dist/main.css'
 import {
+  ACTIVITY_ENTRY_BADGE,
   ACTIVITY_FEED_ENTRIES,
-  ACTIVITY_KIND_BADGE,
   ACTIVITY_TYPE_FILTER_OPTIONS,
   AUTHOR_FILTER_OPTIONS,
   DATE_FILTER_OPTIONS,
+  defaultLinkLabel,
   filterActivityEntries,
   groupActivityEntriesByDay,
+  type ActivityDeepLink,
+  type ActivityEntryType,
   type ActivityFeedEntry,
-  type ActivityKind,
   type ActivityTypeFilterValue,
   type AuthorFilterValue,
   type DateFilterValue,
@@ -31,13 +33,17 @@ type ActivitySegment = 'data-entry' | 'review' | 'client'
 type ActivityPanelProps = {
   isOpen: boolean
   onToggle: () => void
+  onNavigate?: (link: ActivityDeepLink) => void
 }
 
-const KIND_DOT_CLASS: Record<ActivityKind, string> = {
-  edit: styles.dotAttention,
-  document: styles.dotInfo,
-  'form-check': styles.dotNeutral,
-  diagnostic: styles.dotPositive,
+const ENTRY_DOT_CLASS: Record<ActivityEntryType, string> = {
+  'field-edited': styles.dotAttention,
+  'form-line-checked': styles.dotNeutral,
+  'document-verified': styles.dotInfo,
+  'import-diagnostic-fixed': styles.dotAttention,
+  'compliance-diagnostic-fixed': styles.dotPositive,
+  'planning-diagnostic-fixed': styles.dotInfo,
+  'return-sign-off': styles.dotPositive,
 }
 
 function ValueChange({ before, after }: { before: string; after: string }) {
@@ -52,13 +58,20 @@ function ValueChange({ before, after }: { before: string; after: string }) {
   )
 }
 
-function ActivityEntryRow({ entry }: { entry: ActivityFeedEntry }) {
-  const badge = ACTIVITY_KIND_BADGE[entry.kind]
+function ActivityEntryRow({
+  entry,
+  onNavigate,
+}: {
+  entry: ActivityFeedEntry
+  onNavigate?: (link: ActivityDeepLink) => void
+}) {
+  const badge = ACTIVITY_ENTRY_BADGE[entry.entryType]
+  const linkLabel = defaultLinkLabel(entry)
 
   return (
     <li className={styles.entry}>
       <span
-        className={`${styles.statusDot} ${KIND_DOT_CLASS[entry.kind]}`}
+        className={`${styles.statusDot} ${ENTRY_DOT_CLASS[entry.entryType]}`}
         aria-hidden
       />
       <div className={styles.entryBody}>
@@ -66,6 +79,17 @@ function ActivityEntryRow({ entry }: { entry: ActivityFeedEntry }) {
         {entry.detail ? <p className={styles.entryDetail}>{entry.detail}</p> : null}
         {entry.before != null && entry.after != null ? (
           <ValueChange before={entry.before} after={entry.after} />
+        ) : null}
+        {entry.deepLink && linkLabel && onNavigate ? (
+          <p className={styles.entryLinkRow}>
+            <button
+              type="button"
+              className={styles.entryLink}
+              onClick={() => onNavigate(entry.deepLink!)}
+            >
+              {linkLabel}
+            </button>
+          </p>
         ) : null}
         <p className={styles.entryMeta}>
           <Badge
@@ -79,19 +103,15 @@ function ActivityEntryRow({ entry }: { entry: ActivityFeedEntry }) {
           <span className={styles.metaSep} aria-hidden>
             ·
           </span>
-          <span>{entry.actor}</span>
-          {entry.source ? (
-            <>
-              <span className={styles.metaSep} aria-hidden>
-                ·
-              </span>
-              <span>{entry.source}</span>
-            </>
-          ) : null}
+          <span className={styles.metaText}>{entry.location}</span>
           <span className={styles.metaSep} aria-hidden>
             ·
           </span>
-          <span>{entry.time}</span>
+          <span className={styles.metaText}>{entry.actor}</span>
+          <span className={styles.metaSep} aria-hidden>
+            ·
+          </span>
+          <span className={styles.metaText}>{entry.time}</span>
         </p>
       </div>
     </li>
@@ -103,11 +123,13 @@ function ReviewFeed({
   dateFilter,
   authorFilter,
   activityTypeFilter,
+  onNavigate,
 }: {
   searchQuery: string
   dateFilter: DateFilterValue
   authorFilter: AuthorFilterValue
   activityTypeFilter: ActivityTypeFilterValue
+  onNavigate?: (link: ActivityDeepLink) => void
 }) {
   const filteredDays = useMemo(() => {
     const filtered = filterActivityEntries(ACTIVITY_FEED_ENTRIES, {
@@ -136,7 +158,7 @@ function ReviewFeed({
           </h3>
           <ul className={styles.entryList}>
             {day.entries.map(entry => (
-              <ActivityEntryRow key={entry.id} entry={entry} />
+              <ActivityEntryRow key={entry.id} entry={entry} onNavigate={onNavigate} />
             ))}
           </ul>
         </section>
@@ -154,7 +176,7 @@ function PlaceholderSegment({ title, body }: { title: string; body: string }) {
   )
 }
 
-export default function ActivityPanel({ isOpen, onToggle }: ActivityPanelProps) {
+export default function ActivityPanel({ isOpen, onToggle, onNavigate }: ActivityPanelProps) {
   const [segment, setSegment] = useState<ActivitySegment>('review')
   const [searchQuery, setSearchQuery] = useState('')
   const [dateFilter, setDateFilter] = useState<DateFilterValue>('any')
@@ -199,8 +221,14 @@ export default function ActivityPanel({ isOpen, onToggle }: ActivityPanelProps) 
   return (
     <aside id="activity-feed-panel" className={styles.panel} aria-label="Activity feed">
       <header className={styles.header}>
+        <span className={styles.headerSpacer} aria-hidden />
         <h2 className={styles.title}>Activity feed</h2>
-        <IconControl size="medium" onClick={onToggle} aria-label="Close activity feed">
+        <IconControl
+          size="medium"
+          className={styles.closeControl}
+          onClick={onToggle}
+          aria-label="Close activity feed"
+        >
           <Close aria-hidden />
         </IconControl>
       </header>
@@ -334,6 +362,7 @@ export default function ActivityPanel({ isOpen, onToggle }: ActivityPanelProps) 
             dateFilter={dateFilter}
             authorFilter={authorFilter}
             activityTypeFilter={activityTypeFilter}
+            onNavigate={onNavigate}
           />
         ) : null}
         {segment === 'data-entry' ? (

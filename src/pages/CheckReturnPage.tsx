@@ -19,6 +19,8 @@ import {
 } from './check-return/aiDiagnosticCategories'
 import type { AiDiagnosticsView } from './check-return/AiDiagnosticsPanel'
 import ActivityPanel from './check-return/ActivityPanel'
+import { navigateToActivityTarget } from './check-return/activityNavigation'
+import type { ActivityDeepLink } from './check-return/activityTypes'
 import { openSourceDocumentReviewPopout } from '../lib/prototypeRoutes'
 import type { ReturnContextRailItemId } from '../components/ReturnContextRail'
 import layout from '../styles/CoreScreenLayout.module.css'
@@ -137,6 +139,16 @@ export default function CheckReturnPage() {
     }
   }
 
+  const handleActivityNavigate = (link: ActivityDeepLink) => {
+    navigateToActivityTarget(link, {
+      setContentView,
+      setSelectedForm,
+      setOutputFormId,
+      handleSelectAiDiagnosticSub,
+      handleSelectFederal,
+    })
+  }
+
   return (
     <div className={`${layout.page} ${styles.page}`} data-theme="intuit">
       <div className={layout.body}>
@@ -177,6 +189,7 @@ export default function CheckReturnPage() {
             <ActivityPanel
               isOpen={reviewLogOpen}
               onToggle={() => setReviewLogOpen(open => !open)}
+              onNavigate={handleActivityNavigate}
             />
           </div>
         </div>
