@@ -18,6 +18,7 @@
         Redeploy from the project folder: <code>bash deploy.sh</code>, then in repo Settings → Pages,
         set source to <strong>gh-pages</strong> / root.
       </p>
+      <p id="boot-fallback-detail" style="color: #5d686f; font-size: 14px;"></p>
       <p>Live URL: <a href="https://jualzate87.github.io/AI3/">jualzate87.github.io/AI3</a></p>
     </div>
     <script>
@@ -41,14 +42,46 @@
       })()
     </script>
     <script>
-      // If React never mounts (wrong branch, 404 assets), show deploy help after a short wait.
-      window.setTimeout(function () {
+      // Boot watchdog: hide fallback once React mounts; surface load errors if it never does.
+      (function () {
         var root = document.getElementById('root')
         var fallback = document.getElementById('boot-fallback')
-        if (root && fallback && root.childElementCount === 0) {
+        if (!root || !fallback) return
+
+        function hideFallback() {
+          fallback.hidden = true
+        }
+
+        function showFallback(message) {
+          if (message) {
+            var detail = document.getElementById('boot-fallback-detail')
+            if (detail) detail.textContent = message
+          }
           fallback.hidden = false
         }
-      }, 6000)
+
+        if (root.childElementCount > 0) hideFallback()
+
+        if (typeof MutationObserver !== 'undefined') {
+          new MutationObserver(function () {
+            if (root.childElementCount > 0) hideFallback()
+          }).observe(root, { childList: true })
+        }
+
+        window.addEventListener('error', function (event) {
+          showFallback(event.message || 'The app failed to start.')
+        })
+        window.addEventListener('unhandledrejection', function (event) {
+          var reason = event.reason
+          var message =
+            reason && reason.message ? reason.message : 'The app failed to start.'
+          showFallback(message)
+        })
+
+        window.setTimeout(function () {
+          if (root.childElementCount === 0) showFallback()
+        }, 12000)
+      })()
     </script>
     <script type="module" src="/src/main.tsx"></script>
   </body>

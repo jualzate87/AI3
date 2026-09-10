@@ -1,11 +1,9 @@
-import { useMemo, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import { ChevronLeft, Close, OverflowWeb, Refresh } from '@design-systems/icons'
 import { Dropdown, MenuItem } from '@ids-ts/dropdown'
 import '@ids-ts/dropdown/dist/main.css'
 import { IconControl } from '@ids-ts/icon-control'
 import '@ids-ts/icon-control/dist/main.css'
-import { Menu, MenuItem as OverflowMenuItem } from '@ids-ts/menu'
-import '@ids-ts/menu/dist/main.css'
 import SegmentedButton from '@ids-ts/segmented-button'
 import '@ids-ts/segmented-button/dist/main.css'
 import { TextField } from '@ids-ts/text-field'
@@ -57,41 +55,51 @@ function ActivityEntryOverflowMenu({
   onNavigate: (link: ActivityDeepLink) => void
 }) {
   const [open, setOpen] = useState(false)
+  const menuRef = useRef<HTMLDivElement>(null)
 
-  const handleClose = () => setOpen(false)
+  useEffect(() => {
+    if (!open) return
+    const handlePointerDown = (event: MouseEvent) => {
+      if (menuRef.current && !menuRef.current.contains(event.target as Node)) {
+        setOpen(false)
+      }
+    }
+    document.addEventListener('mousedown', handlePointerDown)
+    return () => document.removeEventListener('mousedown', handlePointerDown)
+  }, [open])
 
-  const handleSelect = () => {
+  const handleNavigate = () => {
     onNavigate(deepLink)
     setOpen(false)
   }
 
   return (
-    <Menu
-      open={open}
-      size="small"
-      alignment="right"
-      positions={['bottom', 'top']}
-      preventMenuOverflow={{ enabled: true, padding: 8 }}
-      anchorElement={
-        <IconControl
-          size="small"
-          shape="square"
-          className={styles.entryMenuBtn}
-          aria-label="Entry actions"
-          aria-haspopup="true"
-          aria-expanded={open}
-          selected={open}
-          onClick={() => setOpen(prev => !prev)}
-        >
-          <OverflowWeb aria-hidden />
-        </IconControl>
-      }
-      onSelect={handleSelect}
-      onClose={handleClose}
-      onClickAway={handleClose}
-    >
-      <OverflowMenuItem value="open">{linkLabel}</OverflowMenuItem>
-    </Menu>
+    <div className={styles.entryMenuWrap} ref={menuRef}>
+      <IconControl
+        size="small"
+        shape="square"
+        className={styles.entryMenuBtn}
+        aria-label="Entry actions"
+        aria-haspopup="menu"
+        aria-expanded={open}
+        selected={open}
+        onClick={() => setOpen(prev => !prev)}
+      >
+        <OverflowWeb aria-hidden />
+      </IconControl>
+      {open ? (
+        <div className={styles.actionMenu} role="menu">
+          <button
+            type="button"
+            className={styles.actionMenuItem}
+            role="menuitem"
+            onClick={handleNavigate}
+          >
+            {linkLabel}
+          </button>
+        </div>
+      ) : null}
+    </div>
   )
 }
 
@@ -116,13 +124,11 @@ function ActivityEntryRow({
         <div className={styles.entryTop}>
           <p className={styles.entryTitle}>{entry.title}</p>
           {entry.deepLink && linkLabel && onNavigate ? (
-            <div className={styles.entryMenuWrap}>
-              <ActivityEntryOverflowMenu
-                linkLabel={linkLabel}
-                deepLink={entry.deepLink}
-                onNavigate={onNavigate}
-              />
-            </div>
+            <ActivityEntryOverflowMenu
+              linkLabel={linkLabel}
+              deepLink={entry.deepLink}
+              onNavigate={onNavigate}
+            />
           ) : null}
         </div>
         {entry.detail ? <p className={styles.entryDetail}>{entry.detail}</p> : null}
