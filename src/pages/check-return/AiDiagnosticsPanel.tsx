@@ -1,5 +1,12 @@
 import { useMemo, useState } from 'react'
-import { ChevronDown, ChevronLeft, ChevronUp, NewWindow } from '@design-systems/icons'
+import {
+  ChevronDown,
+  ChevronLeft,
+  ChevronUp,
+  CircleCheck,
+  CircleCheckFill,
+  NewWindow,
+} from '@design-systems/icons'
 import { Badge, SuccessBadgeIcon } from '@ids-ts/badge'
 import '@ids-ts/badge/dist/main.css'
 import { Button } from '@ids-ts/button'
@@ -19,11 +26,18 @@ import {
 import type { IssueAction } from '../data-review/IssueDetailPane'
 import type { OutputFormId } from '../data-review/outputForms'
 import {
-  CHECKED_NO_ACTION_ITEMS,
   getImportMismatchTaxImpact,
   getOutstandingImportMismatches,
   type Phase2IssueKey,
 } from '../data-review/phase2FlagSync'
+import {
+  getPreparerChecklistCounts,
+  PREPARER_CHECKLIST_CLEARED,
+  PREPARER_CHECKLIST_MANUAL,
+  type PreparerChecklistJump,
+  type PreparerReviewChecklistItem,
+} from './preparerReviewChecklist'
+import ItemizeDiagnosticEmbed from './ItemizeDiagnosticEmbed'
 import {
   AI_DIAGNOSTIC_CATEGORIES,
   categoryForIssueKey,
@@ -95,6 +109,101 @@ function RowActionLink({ label, onClick }: { label: string; onClick: () => void 
   )
 }
 
+function PreparerChecklistStatusIcon({
+  checked,
+  onToggle,
+  itemId,
+  title,
+}: {
+  checked: boolean
+  onToggle?: (itemId: string, checked: boolean) => void
+  itemId: string
+  title: string
+}) {
+  if (!onToggle) {
+    return checked ? (
+      <CircleCheckFill size="small" className={styles.checklistSuccessIcon} aria-hidden />
+    ) : (
+      <CircleCheck size="small" aria-hidden />
+    )
+  }
+
+  return (
+    <button
+      type="button"
+      className={styles.checklistToggle}
+      aria-pressed={checked}
+      aria-label={checked ? `Mark "${title}" as not confirmed` : `Mark "${title}" as confirmed`}
+      onClick={() => onToggle(itemId, !checked)}
+    >
+      {checked ? (
+        <CircleCheckFill size="small" className={styles.checklistSuccessIcon} aria-hidden />
+      ) : (
+        <CircleCheck size="small" aria-hidden />
+      )}
+    </button>
+  )
+}
+
+function PreparerChecklistRow({
+  item,
+  checked,
+  onJump,
+  onToggle,
+  showDivider,
+}: {
+  item: PreparerReviewChecklistItem
+  checked?: boolean
+  onJump: (jump: PreparerChecklistJump) => void
+  onToggle?: (itemId: string, checked: boolean) => void
+  showDivider?: boolean
+}) {
+  const isManual = item.kind === 'manual'
+  const isComplete = isManual ? Boolean(checked) : true
+
+  return (
+    <li
+      className={[
+        styles.checklistRow,
+        isComplete ? styles.checklistRowComplete : '',
+        showDivider ? styles.checklistRowDivider : '',
+      ]
+        .filter(Boolean)
+        .join(' ')}
+    >
+      <div className={styles.checklistRowMain}>
+        <div className={styles.checklistCheck}>
+          <PreparerChecklistStatusIcon
+            checked={isComplete}
+            onToggle={isManual ? onToggle : undefined}
+            itemId={item.id}
+            title={item.title}
+          />
+          <div className={styles.checklistText}>
+            <span
+              className={`${styles.checklistTitle} ${isComplete ? styles.checklistTitleDone : ''}`}
+            >
+              {item.title}
+            </span>
+            <p className={`${styles.checklistNote} ${isComplete ? styles.checklistNoteDone : ''}`}>
+              {item.note}
+            </p>
+            {item.externalReference && (
+              <ExternalReferenceLink
+                href={item.externalReference.href}
+                label={item.externalReference.label}
+              />
+            )}
+          </div>
+        </div>
+        {item.jump && (
+          <RowActionLink label={item.jump.label} onClick={() => onJump(item.jump!)} />
+        )}
+      </div>
+    </li>
+  )
+}
+
 const OPEN_FORM_BY_ACTION_LABEL: Partial<Record<string, OutputFormId>> = {
   'Open Form 8960': 'f8960',
   'Open Form 2210': 'f2210',
@@ -158,7 +267,8 @@ export default function AiDiagnosticsPanel({
   selectedIssueKey,
   onViewChange,
 }: AiDiagnosticsPanelProps) {
-  const { amounts, reviewedFields } = useSyncedReviewState()
+  const { amounts, reviewedFields, manualChecklistItems, setManualChecklistItem } =
+    useSyncedReviewState()
   const live = useMemo(() => computeLiveReturn(amounts), [amounts])
   const syncCtx = useMemo(
     () => ({ reviewedFields, live, amounts }),
@@ -171,7 +281,11 @@ export default function AiDiagnosticsPanel({
   const [expandedCategory, setExpandedCategory] = useState<AiDiagnosticCategoryId | null>(
     'import-mismatches',
   )
-  const [checkedExpanded, setCheckedExpanded] = useState(false)
+  const [checklistExpanded, setChecklistExpanded] = useState(false)
+  const checklistCounts = useMemo(
+    () => getPreparerChecklistCounts(manualChecklistItems),
+    [manualChecklistItems],
+  )
 
   const selectedIssue = selectedIssueKey
     ? allIssues.find(i => i.issueKey === selectedIssueKey) ?? null
@@ -198,6 +312,25 @@ export default function AiDiagnosticsPanel({
 
   const handleViewForm = (formId: OutputFormId, issueKey: Phase2IssueKey) => {
     openReviewReturnPopout({ form: formId, diagnostic: issueKey })
+  }
+
+  const runPreparerChecklistJump = (jump: PreparerChecklistJump) => {
+    switch (jump.type) {
+      case 'source':
+        openSourceDocumentReviewPopout(jump.context)
+        break
+      case 'form':
+        openReviewReturnPopout({ form: jump.formId })
+        break
+      case 'questionnaire':
+        openSourceDocumentReviewPopout({
+          tab: 'questionnaire',
+          field: jump.field ?? jump.responseId,
+        })
+        break
+      default:
+        break
+    }
   }
 
   const runIssueAction = (issueKey: Phase2IssueKey, action: IssueAction) => {
@@ -346,12 +479,14 @@ export default function AiDiagnosticsPanel({
                 <span className={styles.detailTableNote}>{row.cols[1]}</span>
                 <span className={styles.detailTableCellAction}>
                   {row.fixTab ? (
-                    <RowActionLink
-                      label={row.actionLabel ?? 'View source'}
-                      onClick={() =>
-                        handleViewSourceForField(row.fixField, row.fixTab, undefined)
-                      }
-                    />
+                    amounts.mortgageInterest === 0 ? null : (
+                      <RowActionLink
+                        label={row.actionLabel ?? 'View source'}
+                        onClick={() =>
+                          handleViewSourceForField(row.fixField, row.fixTab, undefined)
+                        }
+                      />
+                    )
                   ) : row.viewForm ? (
                     <RowActionLink
                       label={row.actionLabel ?? `View on ${row.viewFormLabel ?? row.viewForm}`}
@@ -362,6 +497,10 @@ export default function AiDiagnosticsPanel({
               </div>
             ))}
           </div>
+        )}
+
+        {selectedIssue.issueKey === 'optItemize' && amounts.mortgageInterest === 0 && (
+          <ItemizeDiagnosticEmbed />
         )}
 
         {fixSteps.length > 0 && (
@@ -479,44 +618,66 @@ export default function AiDiagnosticsPanel({
         })}
 
         <div
-          className={`${styles.findingCard} ${checkedExpanded ? '' : styles.findingCardCollapsed}`}
+          className={`${styles.findingCard} ${checklistExpanded ? '' : styles.findingCardCollapsed}`}
         >
           <button
             type="button"
             className={styles.findingHeader}
-            aria-expanded={checkedExpanded}
-            onClick={() => setCheckedExpanded(prev => !prev)}
+            aria-expanded={checklistExpanded}
+            onClick={() => setChecklistExpanded(prev => !prev)}
           >
             <span className={styles.findingHeaderLeft}>
-              <span className={styles.findingTitle}>Checked, no action needed</span>
+              <span className={styles.findingTitle}>Preparer review checklist</span>
               <Badge
                 shape="round"
                 status="success"
                 capitalization="sentence"
-                label={`${CHECKED_NO_ACTION_ITEMS.length} rules cleared`}
+                label={`${checklistCounts.clearedCount} checked · ${checklistCounts.manualConfirmed} of ${checklistCounts.manualCount} confirmed`}
               >
                 <SuccessBadgeIcon />
               </Badge>
             </span>
-            {checkedExpanded ? (
+            {checklistExpanded ? (
               <ChevronUp size="small" className={styles.findingChevron} aria-hidden />
             ) : (
               <ChevronDown size="small" className={styles.findingChevron} aria-hidden />
             )}
           </button>
 
-          {checkedExpanded && (
-            <ul className={styles.checkedList}>
-              {CHECKED_NO_ACTION_ITEMS.map(item => (
-                <li key={item.id} className={styles.checkedItem}>
-                  <span className={styles.checkedTitle}>{item.title}</span>
-                  <span className={styles.checkedConclusion}>{item.conclusion}</span>
-                  {item.source && (
-                    <ExternalReferenceLink href={item.source.href} label={item.source.label} />
-                  )}
-                </li>
-              ))}
-            </ul>
+          {checklistExpanded && (
+            <>
+              <p className={styles.findingDescription}>
+                Items Intuit Intelligence already verified from your inputs, plus areas worth
+                confirming yourself before sign-off. Use the links to jump to the right form or
+                source document.
+              </p>
+
+              <p className={styles.checklistGroupLabel}>Checked from inputs</p>
+              <ul className={styles.checklistList}>
+                {PREPARER_CHECKLIST_CLEARED.map((item, index) => (
+                  <PreparerChecklistRow
+                    key={item.id}
+                    item={item}
+                    onJump={runPreparerChecklistJump}
+                    showDivider={index > 0}
+                  />
+                ))}
+              </ul>
+
+              <p className={styles.checklistGroupLabel}>Worth confirming</p>
+              <ul className={styles.checklistList}>
+                {PREPARER_CHECKLIST_MANUAL.map((item, index) => (
+                  <PreparerChecklistRow
+                    key={item.id}
+                    item={item}
+                    checked={manualChecklistItems[item.id]}
+                    onJump={runPreparerChecklistJump}
+                    onToggle={setManualChecklistItem}
+                    showDivider={index > 0}
+                  />
+                ))}
+              </ul>
+            </>
           )}
         </div>
       </div>
