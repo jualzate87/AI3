@@ -91,12 +91,12 @@ export default function ReturnContextRail({
       >
         <span className={styles.iconWrap}>
           <img src={item.iconSrc} alt="" className={styles.icon} />
-          {item.showNewBadge ? (
-            <span className={styles.newBadge} aria-label="New">
-              NEW
-            </span>
-          ) : null}
         </span>
+        {item.showNewBadge ? (
+          <span className={styles.newBadge} aria-label="New">
+            NEW
+          </span>
+        ) : null}
         <span>{item.label}</span>
       </Tag>
     )
