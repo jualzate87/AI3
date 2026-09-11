@@ -82,6 +82,8 @@ export type SourceDocumentPopoutContext = {
 /** Build hash route for the detached source-document review window. */
 export function buildSourceDocumentPopoutRoute(context?: SourceDocumentPopoutContext): string {
   const params = new URLSearchParams()
+  // Popout is always the editable preparer workspace — not reviewer confirm mode.
+  params.set('role', 'preparer')
   if (context?.tab) params.set('tab', context.tab)
   if (context?.subTab) params.set('subTab', context.subTab)
   if (context?.divPayer) params.set('divPayer', context.divPayer)

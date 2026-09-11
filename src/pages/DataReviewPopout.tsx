@@ -36,10 +36,7 @@ import {
   buildTabReviewCounts,
   buildTabUnreviewedCounts,
   buildTypeReviewed,
-  buildTabConfirmCounts,
-  buildTabConfirmStatus,
   countVerifiedPacketDocs,
-  getDocConfirmStatus,
 } from './data-review/docReviewStatus'
 import DetailFields1099R, { R_PAYER_TABS } from './data-review/DetailFields1099R'
 import DetailFieldsNec, { NEC_PAYER_TABS } from './data-review/DetailFieldsNec'
@@ -48,7 +45,11 @@ import QuestionnaireResponsesPanel from './data-review/QuestionnaireResponsesPan
 import type { QuestionnaireResponseId } from './data-review/questionnaireData'
 import DocReviewProgress from './data-review/DocReviewProgress'
 import UnsavedChangesModal from './data-review/UnsavedChangesModal'
-import { useSyncedReviewState } from '../hooks/useSyncedReviewState'
+import {
+  PREPARER_NAME,
+  setReviewActor,
+  useSyncedReviewState,
+} from '../hooks/useSyncedReviewState'
 import { usePacketDocReviewControls } from '../hooks/usePacketDocReviewControls'
 import { computeLiveReturn } from '../data/liveReturn'
 import { PHASE1_FLAG_MESSAGES } from './data-review/phase1FlagMessages'
@@ -62,7 +63,11 @@ import img1040PriorPage2 from '../assets/jessica-1040-2024-variant-2.png'
 import { isDocShownVerified } from '../data/verifiedDocKeys'
 import { resolveActiveVerifyDocKey } from '../data/documentImportMeta'
 import { applySourceDocumentPopoutContext } from '../data/inputDocTabs'
-import { getStoredDemoRole, SOURCE_DOC_POPOUT_NAV_CHANNEL, type SourceDocumentPopoutContext } from '../lib/prototypeRoutes'
+import {
+  SOURCE_DOCUMENT_REVIEW_POPOUT_PATH,
+  SOURCE_DOC_POPOUT_NAV_CHANNEL,
+  type SourceDocumentPopoutContext,
+} from '../lib/prototypeRoutes'
 import dragStyles from '../styles/data-review/DragHandle.module.css'
 import styles from '../styles/data-review/DataReviewPopout.module.css'
 
@@ -124,8 +129,13 @@ export default function DataReviewPopout() {
   const [recalculatedFields, setRecalculatedFields] = useState<Set<string>>(new Set())
   const [saveStatusVisible, setSaveStatusVisible] = useState(false)
 
-  const reviewRole = getStoredDemoRole() ?? 'preparer'
-  const isReviewerConfirmMode = reviewRole === 'reviewer'
+  // Popout is always the editable preparer source-doc workspace, even when opened
+  // from Check Return while the stored demo role is reviewer.
+  useEffect(() => {
+    setReviewActor(PREPARER_NAME)
+  }, [])
+
+  const isReviewerConfirmMode = false
 
   const {
     activeTopTab, setActiveTopTab,
@@ -320,6 +330,26 @@ export default function DataReviewPopout() {
     intCounts: intPayerFieldCounts,
     rRemaining: tabFlagCounts['1099-rs'] ?? 0,
   })
+  const syncPopoutHash = useCallback(
+    (overrides?: Partial<SourceDocumentPopoutContext>) => {
+      const params = new URLSearchParams()
+      params.set('role', 'preparer')
+      const tab = overrides?.tab ?? activeTopTab
+      params.set('tab', tab)
+      if (tab === 'w2s') {
+        params.set('subTab', overrides?.subTab ?? activeSubTab)
+      } else if (tab === '1099-divs') {
+        params.set('divPayer', overrides?.divPayer ?? activeDivPayer)
+      } else if (tab === '1099-ints') {
+        params.set('intPayer', overrides?.intPayer ?? activeIntPayer)
+      }
+      if (overrides?.field) params.set('field', overrides.field)
+      const route = `${SOURCE_DOCUMENT_REVIEW_POPOUT_PATH}?${params.toString()}`
+      window.history.replaceState(null, '', `#${route}`)
+    },
+    [activeTopTab, activeSubTab, activeDivPayer, activeIntPayer],
+  )
+
   const {
     unreviewedDocCount,
     handleTopTabChange,
@@ -341,35 +371,40 @@ export default function DataReviewPopout() {
     toggleVerifiedDoc,
     onAfterMutation: touchDirty,
   })
+
+  const onTopTabChange = useCallback(
+    (tab: TopTab) => {
+      handleTopTabChange(tab)
+      syncPopoutHash({ tab })
+    },
+    [handleTopTabChange, syncPopoutHash],
+  )
+
+  const onPeelDocChange = useCallback(
+    (docKey: string) => {
+      handlePeelDocChange(docKey)
+      syncPopoutHash()
+    },
+    [handlePeelDocChange, syncPopoutHash],
+  )
+
+  const onReviewNextDocument = useCallback(() => {
+    handleReviewNextDocument()
+    syncPopoutHash()
+  }, [handleReviewNextDocument, syncPopoutHash])
+
   const { verified: verifiedDocCount, total: totalDocCount } = countVerifiedPacketDocs({
     verifiedDocs,
     reviewerConfirmedDocs,
   })
   const flagsCleared = phase1Remaining === 0
-  const showPreparerImportPhase = reviewRole === 'preparer'
-  const tabConfirmStatus = buildTabConfirmStatus({
-    verifiedDocs,
-    reviewerConfirmedDocs,
-    tabVerifiedKeys,
-    isReviewer: reviewRole === 'reviewer',
-  })
-  const tabConfirmCounts = buildTabConfirmCounts({
-    verifiedDocs,
-    reviewerConfirmedDocs,
-    tabVerifiedKeys,
-    isReviewer: reviewRole === 'reviewer',
-  })
+  const showPreparerImportPhase = true
   const tabReviewCounts = buildTabReviewCounts({
     verifiedDocs,
     reviewerConfirmedDocs,
     tabVerifiedKeys,
   })
-  const peelDocConfirmStatus = (docKey: string) => {
-    if (reviewRole !== 'reviewer') return undefined
-    const status = getDocConfirmStatus(verifiedDocs, docKey, reviewerConfirmedDocs)
-    if (status === 'unverified') return undefined
-    return status
-  }
+  const peelDocConfirmStatus = (_docKey: string) => undefined
   const activeVerifyDocKey = resolveActiveVerifyDocKey({
     activeTopTab,
     activeSubTab,
@@ -493,7 +528,7 @@ export default function DataReviewPopout() {
           <Button
             priority="primary"
             size="small"
-            onClick={handleReviewNextDocument}
+            onClick={onReviewNextDocument}
           >
             Next document
             <ChevronRight size="small" />
@@ -510,12 +545,13 @@ export default function DataReviewPopout() {
           tabVerifiedKeys={tabVerifiedKeys}
           tabReviewCounts={showPreparerImportPhase ? tabReviewCounts : undefined}
           typeReviewed={showPreparerImportPhase ? typeReviewed : undefined}
-          tabConfirmStatus={reviewRole === 'reviewer' ? tabConfirmStatus : undefined}
-          tabConfirmCounts={reviewRole === 'reviewer' ? tabConfirmCounts : undefined}
+          tabConfirmStatus={undefined}
+          tabConfirmCounts={undefined}
           showAddItem={false}
           showNextDocument={false}
           unreviewedDocCount={unreviewedDocCount}
-          onTopTabChange={handleTopTabChange}
+          onTopTabChange={onTopTabChange}
+          isPopout
         />
 
         {showPreparerImportPhase && SHOW_IMPORT_FLAGS && unreviewedDocCount === 0 && phase1Remaining > 0 && (
@@ -537,7 +573,7 @@ export default function DataReviewPopout() {
             confirmStatus: peelDocConfirmStatus(divVerifiedDocKey(t.key)),
           }))}
           activeKey={activeDivPayer}
-          onChange={handlePeelDocChange}
+          onChange={onPeelDocChange}
         />
       )}
       {activeTopTab === '1099-ints' && (
@@ -550,7 +586,7 @@ export default function DataReviewPopout() {
             confirmStatus: peelDocConfirmStatus(intVerifiedDocKey(t.key)),
           }))}
           activeKey={activeIntPayer}
-          onChange={handlePeelDocChange}
+          onChange={onPeelDocChange}
         />
       )}
       {activeTopTab === 'w2s' && (
@@ -563,7 +599,7 @@ export default function DataReviewPopout() {
             confirmStatus: peelDocConfirmStatus(t.key),
           }))}
           activeKey={activeSubTab}
-          onChange={handlePeelDocChange}
+          onChange={onPeelDocChange}
         />
       )}
       {activeTopTab === '1099-rs' && (

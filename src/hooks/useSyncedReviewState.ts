@@ -709,13 +709,20 @@ export function useSyncedReviewState() {
   const markReviewed = (fieldName: string) => {
     const at = formatActivityTimestamp()
     const next = new Map(stateRef.current.reviewedFieldsList)
-    next.set(fieldName, { by: PREPARER_NAME, at })
-    // Auto-dismiss linked Phase 2 insights when a Phase 1 flag is resolved
     const linked = PHASE1_TO_PHASE2_ISSUES[fieldName]
-    if (linked) {
-      linked.forEach(issueKey => {
-        if (!next.has(issueKey)) next.set(issueKey, { by: PREPARER_NAME, at })
-      })
+    if (next.has(fieldName)) {
+      next.delete(fieldName)
+      if (linked) {
+        linked.forEach(issueKey => next.delete(issueKey))
+      }
+    } else {
+      next.set(fieldName, { by: PREPARER_NAME, at })
+      // Auto-dismiss linked Phase 2 insights when a Phase 1 flag is resolved
+      if (linked) {
+        linked.forEach(issueKey => {
+          if (!next.has(issueKey)) next.set(issueKey, { by: PREPARER_NAME, at })
+        })
+      }
     }
     update({ reviewedFieldsList: Array.from(next.entries()) })
   }
