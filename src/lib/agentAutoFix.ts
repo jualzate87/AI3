@@ -188,7 +188,9 @@ export function buildViewLinksForIssue(
 export function buildAgentFixPlan(ctx: DiagnosticSyncContext): AgentFixPlanItem[] {
   const live = ctx.live
   const amounts = ctx.amounts
-  const activeKeys = getCategoryScopedActiveKeys(ctx)
+  const activeKeys = getCategoryScopedActiveKeys(ctx).filter(
+    key => !ctx.reviewedFields.has(key),
+  )
   const issues = buildAllDiagnosticIssues(live, amounts)
   const issueByKey = new Map(issues.map(i => [i.issueKey, i]))
 

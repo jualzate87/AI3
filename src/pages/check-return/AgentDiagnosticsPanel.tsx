@@ -4,9 +4,6 @@ import {
   ChevronRight,
   ChevronUp,
   CircleCheck,
-  CircleExclamation,
-  Comment,
-  List,
   Plus,
   Send,
   StopFill,
@@ -26,7 +23,6 @@ import { useSyncedReviewState } from '../../hooks/useSyncedReviewState'
 import { navigateToScheduleAInterestInput } from '../../lib/inputReturnNavigation'
 import {
   buildAgentFixPlan,
-  buildStandardSourceLinks,
   getAgentFixContext,
   type AgentFixPlanItem,
   type AgentViewLink,
@@ -37,13 +33,6 @@ import {
   openSourceDocumentReviewPopout,
   PREPARER_DATA_REVIEW_PATH,
 } from '../../lib/prototypeRoutes'
-import {
-  AI_DIAGNOSTIC_CATEGORIES,
-  getCategoryDiagnosticCount,
-  getDiagnosticOverviewCounts,
-  primaryIssueKeyForCategory,
-} from './aiDiagnosticCategories'
-import type { DiagnosticSyncContext } from '../data-review/phase2FlagSync'
 import styles from '../../styles/check-return/AgentDiagnosticsPanel.module.css'
 
 type AgentPhase = 'ready' | 'running' | 'complete' | 'awaiting-next'
@@ -53,13 +42,10 @@ type ThreadEntry =
       id: string
       kind: 'agent'
       isWelcome?: boolean
-      isPlan?: boolean
-      showSources?: boolean
       showNextActions?: boolean
       remainingCount?: number
       heading?: string
       text: string
-      bullets?: string[]
     }
   | { id: string; kind: 'user'; text: string }
   | { id: string; kind: 'milestone'; text: string }
@@ -91,10 +77,7 @@ function runAgentViewLink(link: AgentViewLink): void {
     return
   }
   if (link.formId) {
-    openReviewReturnPopout({
-      form: link.formId,
-      diagnostic: link.diagnostic,
-    })
+    openReviewReturnPopout({ form: link.formId, diagnostic: link.diagnostic })
     return
   }
   if (link.tab === 'questionnaire') {
@@ -105,219 +88,91 @@ function runAgentViewLink(link: AgentViewLink): void {
     return
   }
   if (link.tab && link.field) {
-    openSourceDocumentReviewPopout({
-      tab: link.tab,
-      field: link.field,
-    })
+    openSourceDocumentReviewPopout({ tab: link.tab, field: link.field })
   }
 }
 
 function AgentAvatar() {
   return (
-    <img
-      src={intuitIntelligenceLogo}
-      alt=""
-      className={styles.agentAvatar}
-      aria-hidden
-    />
+    <img src={intuitIntelligenceLogo} alt="" className={styles.agentAvatar} aria-hidden />
   )
 }
 
-function IntelligenceBrand({ meta }: { meta?: string }) {
-  return (
-    <div className={styles.brandRow}>
-      <div className={styles.logoGroup}>
-        <img src={intuitIntelligenceLogo} alt="" className={styles.brandLogo} aria-hidden />
-        <span className={styles.wordmark}>Intuit Intelligence</span>
+/** Single card listing open diagnostics — the initial diagnosis state. */
+function DiagnosisCard({
+  plan,
+  phase,
+  onFixItem,
+  onFixAll,
+}: {
+  plan: AgentFixPlanItem[]
+  phase: AgentPhase
+  onFixItem: (item: AgentFixPlanItem) => void
+  onFixAll: () => void
+}) {
+  const canFix = phase === 'ready' || phase === 'awaiting-next'
+
+  if (plan.length === 0) {
+    return (
+      <div className={styles.diagnosisCard}>
+        <Badge status="success" label="Clear" capitalization="sentence" priority="secondary" />
+        <p className={styles.diagnosisEmpty}>
+          No open diagnostics on this return — you are ready to sign off.
+        </p>
       </div>
-      {meta && <span className={styles.brandMeta}>{meta}</span>}
-    </div>
-  )
-}
-
-function ReturnStandingCard({ ctx, phase }: { ctx: DiagnosticSyncContext; phase: AgentPhase }) {
-  const overview = getDiagnosticOverviewCounts(ctx)
-  const stillNeeded = fixPlanTitlesFromCtx(ctx)
+    )
+  }
 
   return (
-    <div className={styles.interactiveCard}>
-      <p className={styles.cardEyebrow}>Return status</p>
-      <h3 className={styles.cardTitle}>Here&apos;s where Jordan&apos;s 2025 return stands</h3>
-      <ul className={styles.statusList}>
-        {AI_DIAGNOSTIC_CATEGORIES.map(category => {
-          const count = getCategoryDiagnosticCount(category.id, ctx)
-          const issueKey = primaryIssueKeyForCategory(category.id, overview.activeKeys)
-          const isDone =
-            !issueKey ||
-            ctx.reviewedFields.has(issueKey) ||
-            (phase === 'complete' && count === 0)
-          const isActive = count > 0 && !isDone
-          return (
-            <li key={category.id} className={styles.statusRow}>
-              <span className={styles.statusIcon} aria-hidden>
-                {isDone ? (
-                  <CircleCheck size="small" color="var(--color-action-standard)" />
-                ) : isActive ? (
-                  <CircleExclamation size="small" color="var(--color-ui-attention)" />
-                ) : (
-                  <span className={styles.statusDot} />
-                )}
-              </span>
-              <div className={styles.statusCopy}>
-                <span className={styles.statusLabel}>{category.navLabel}</span>
-                <span className={styles.statusMeta}>
-                  {isDone ? 'Done' : isActive ? `${count} open` : 'Not started'}
-                </span>
+    <div className={styles.diagnosisCard}>
+      <div className={styles.diagnosisHeader}>
+        <p className={styles.cardEyebrow}>Diagnostics found</p>
+        <span className={styles.diagnosisCount}>
+          {plan.length} open
+        </span>
+      </div>
+      <ul className={styles.diagnosisList}>
+        {plan.map(item => (
+          <li key={item.issueKey} className={styles.diagnosisItem}>
+            <div className={styles.diagnosisItemMain}>
+              <Badge
+                status="warning"
+                label="Needs fix"
+                capitalization="sentence"
+                priority="secondary"
+              />
+              <div className={styles.diagnosisItemText}>
+                <p className={styles.diagnosisItemTitle}>{item.title}</p>
+                <p className={styles.diagnosisItemSummary}>{item.fixSummary}</p>
               </div>
-              {isActive && issueKey && (
+            </div>
+            <div className={styles.diagnosisItemActions}>
+              {item.viewLinks[0] && (
                 <LinkActionButton
                   size="small"
                   weight="regular"
                   alignment="left"
-                  onClick={() => {
-                    const planItem = buildAgentFixPlan(ctx).find(p => p.issueKey === issueKey)
-                    const firstLink = planItem?.viewLinks[0]
-                    if (firstLink) runAgentViewLink(firstLink)
-                  }}
+                  onClick={() => runAgentViewLink(item.viewLinks[0])}
                 >
-                  View
+                  {item.viewLinks[0].label}
                 </LinkActionButton>
               )}
-            </li>
-          )
-        })}
-      </ul>
-      {stillNeeded.length > 0 && phase !== 'complete' && (
-        <div className={styles.stillNeededBlock}>
-          <p className={styles.stillNeededLabel}>Still needed</p>
-          <ul className={styles.stillNeededList}>
-            {stillNeeded.map(item => (
-              <li key={item}>{item}</li>
-            ))}
-          </ul>
-        </div>
-      )}
-    </div>
-  )
-}
-
-function fixPlanTitlesFromCtx(ctx: DiagnosticSyncContext): string[] {
-  return buildAgentFixPlan(ctx).map(item => item.title)
-}
-
-function SourceExplorerCard({ links }: { links: AgentViewLink[] }) {
-  return (
-    <div className={styles.interactiveCard}>
-      <p className={styles.cardEyebrow}>Review sources</p>
-      <p className={styles.cardBody}>
-        Jump to any source document, input screen, or output form tied to these diagnostics.
-      </p>
-      <div className={styles.sourceButtonGrid}>
-        {links.map(link => (
-          <Button
-            key={link.label}
-            priority="secondary"
-            size="medium"
-            onClick={() => runAgentViewLink(link)}
-          >
-            {link.label}
-          </Button>
+              {canFix && (
+                <Button priority="secondary" size="medium" onClick={() => onFixItem(item)}>
+                  Fix this
+                </Button>
+              )}
+            </div>
+          </li>
         ))}
-      </div>
-    </div>
-  )
-}
-
-function DiagnosticsPlanCard({
-  bullets,
-  plan,
-  phase,
-  onFixItem,
-  onViewLink,
-}: {
-  bullets: string[]
-  plan: AgentFixPlanItem[]
-  phase: AgentPhase
-  onFixItem: (item: AgentFixPlanItem) => void
-  onViewLink: (link: AgentViewLink) => void
-}) {
-  const canFix = phase === 'ready' || phase === 'awaiting-next'
-
-  return (
-    <div className={styles.interactiveCard}>
-      <p className={styles.cardEyebrow}>Open diagnostics</p>
-      <ul className={styles.planList}>
-        {bullets.map((bullet, bi) => {
-          const item = plan[bi]
-          if (!item) return null
-          const primaryLink = item.viewLinks[0]
-          return (
-            <li key={bullet} className={styles.planRow}>
-              <div className={styles.planRowMain}>
-                <Badge
-                  status="warning"
-                  label="Open"
-                  capitalization="sentence"
-                  priority="secondary"
-                />
-                <span className={styles.planRowTitle}>{bullet}</span>
-              </div>
-              <div className={styles.planRowActions}>
-                {primaryLink && (
-                  <LinkActionButton
-                    size="small"
-                    weight="regular"
-                    alignment="left"
-                    onClick={() => onViewLink(primaryLink)}
-                  >
-                    {primaryLink.label}
-                  </LinkActionButton>
-                )}
-                {canFix && (
-                  <Button priority="secondary" size="medium" onClick={() => onFixItem(item)}>
-                    Fix this
-                  </Button>
-                )}
-              </div>
-            </li>
-          )
-        })}
       </ul>
-      {plan.some(item => item.viewLinks.length > 1) && (
-        <div className={styles.cardActions}>
-          {plan.flatMap(item => item.viewLinks).slice(0, 4).map(link => (
-            <Button
-              key={`${link.label}-${link.tab ?? link.formId}`}
-              priority="secondary"
-              size="medium"
-              onClick={() => onViewLink(link)}
-            >
-              {link.label}
-            </Button>
-          ))}
+      {canFix && plan.length > 1 && (
+        <div className={styles.diagnosisFooter}>
+          <Button priority="primary" onClick={onFixAll}>
+            Fix all {plan.length} issues
+          </Button>
         </div>
       )}
-    </div>
-  )
-}
-
-function NextFixActions({
-  remainingCount,
-  onFixNext,
-  onFixAll,
-}: {
-  remainingCount: number
-  onFixNext: () => void
-  onFixAll: () => void
-}) {
-  return (
-    <div className={styles.responsePills}>
-      <Button priority="primary" onClick={onFixNext}>
-        Fix next issue
-      </Button>
-      <Button priority="secondary" onClick={onFixAll}>
-        Fix all remaining ({remainingCount})
-      </Button>
     </div>
   )
 }
@@ -341,12 +196,7 @@ function ThinkingBlock({
         onClick={() => setExpanded(open => !open)}
         aria-expanded={expanded}
       >
-        <img
-          src={intuitIntelligenceLogo}
-          alt=""
-          className={styles.generationIcon}
-          aria-hidden
-        />
+        <img src={intuitIntelligenceLogo} alt="" className={styles.generationIcon} aria-hidden />
         <span className={styles.generationTitle}>
           {isComplete ? 'Reasoning complete' : 'Reasoning in progress'}
         </span>
@@ -357,8 +207,8 @@ function ThinkingBlock({
           {expanded ? <ChevronUp size="small" /> : <ChevronDown size="small" />}
         </span>
       </button>
-      {(expanded || !isComplete) && (
-        <ol className={styles.stepper} aria-label={`Reasoning steps for ${entry.issueTitle}`}>
+      {expanded && (
+        <ol className={styles.stepper} aria-label={`Reasoning for ${entry.issueTitle}`}>
           {entry.steps.map((step, si) => {
             const isActive = si === entry.activeStep && !isComplete
             const isDone = si < entry.activeStep || isComplete
@@ -379,9 +229,7 @@ function ThinkingBlock({
                   <p className={styles.stepperTitle}>{step}</p>
                   {(isActive || isDone) && (
                     <p className={styles.stepperBody}>
-                      {isDone
-                        ? 'Complete'
-                        : 'Analyzing return data and source documents…'}
+                      {isDone ? 'Complete' : 'Analyzing return data and source documents…'}
                     </p>
                   )}
                 </div>
@@ -395,24 +243,23 @@ function ThinkingBlock({
 }
 
 function ProgressRail({
-  ctx,
   plan,
   completedCount,
   activeIndex,
   phase,
 }: {
-  ctx: DiagnosticSyncContext
   plan: AgentFixPlanItem[]
   completedCount: number
   activeIndex: number
   phase: AgentPhase
 }) {
-  const overview = getDiagnosticOverviewCounts(ctx)
-  const totalSteps = plan.length || AI_DIAGNOSTIC_CATEGORIES.length
+  if (plan.length === 0 && phase !== 'complete') return null
+
+  const total = plan.length || completedCount
   const readinessPct =
-    phase === 'complete' || plan.length === 0
+    phase === 'complete' || total === 0
       ? 100
-      : Math.round((completedCount / plan.length) * 100)
+      : Math.round((completedCount / total) * 100)
 
   return (
     <aside className={styles.progressRail} aria-label="Fix progress">
@@ -420,11 +267,11 @@ function ProgressRail({
         <div className={styles.progressCardHeader}>
           <span className={styles.progressLabel}>Progress</span>
           <span className={styles.progressCount}>
-            {phase === 'complete' ? totalSteps : completedCount}/{totalSteps || 1}
+            {phase === 'complete' ? total : completedCount}/{total || 1}
           </span>
         </div>
         <ol className={styles.progressTimeline}>
-          {(plan.length > 0 ? plan : buildAgentFixPlan(ctx)).map((item, index) => {
+          {plan.map((item, index) => {
             const isDone = index < completedCount || phase === 'complete'
             const isActive = phase === 'running' && index === activeIndex
             return (
@@ -437,18 +284,8 @@ function ProgressRail({
                 </span>
                 <div className={styles.progressStepBody}>
                   <p className={styles.progressStepTitle}>{item.title}</p>
-                  {isActive && <p className={styles.progressStepMeta}>Fixing now…</p>}
+                  {isActive && <p className={styles.progressStepMeta}>Reasoning…</p>}
                   {isDone && !isActive && <p className={styles.progressStepMeta}>Fixed</p>}
-                  {!isDone && !isActive && item.viewLinks[0] && (
-                    <LinkActionButton
-                      size="small"
-                      weight="regular"
-                      alignment="left"
-                      onClick={() => runAgentViewLink(item.viewLinks[0])}
-                    >
-                      {item.viewLinks[0].label}
-                    </LinkActionButton>
-                  )}
                 </div>
               </li>
             )
@@ -467,27 +304,6 @@ function ProgressRail({
           <ChevronRight size="small" aria-hidden />
         </span>
       </button>
-
-      <div className={styles.taxProfileCard}>
-        <div className={styles.progressCardHeader}>
-          <span className={styles.progressLabel}>Tax profile</span>
-          <ChevronRight size="small" aria-hidden />
-        </div>
-        <dl className={styles.taxProfileGrid}>
-          <div className={styles.taxProfileItem}>
-            <dt>Taxpayer</dt>
-            <dd>Jordan Patel</dd>
-          </div>
-          <div className={styles.taxProfileItem}>
-            <dt>Filing status</dt>
-            <dd>Single</dd>
-          </div>
-          <div className={styles.taxProfileItem}>
-            <dt>Open diagnostics</dt>
-            <dd>{overview.remaining}</dd>
-          </div>
-        </dl>
-      </div>
     </aside>
   )
 }
@@ -499,21 +315,19 @@ export default function AgentDiagnosticsPanel() {
     () => ({ reviewedFields, live, amounts }),
     [reviewedFields, live, amounts],
   )
-  const overview = useMemo(() => getDiagnosticOverviewCounts(syncCtx), [syncCtx])
   const fixPlan = useMemo(() => buildAgentFixPlan(syncCtx), [syncCtx])
 
   const [phase, setPhase] = useState<AgentPhase>('ready')
   const [thread, setThread] = useState<ThreadEntry[]>([])
   const [progressValue, setProgressValue] = useState(0)
+  const [sessionPlan, setSessionPlan] = useState<AgentFixPlanItem[]>([])
   const [activeFixIndex, setActiveFixIndex] = useState(-1)
   const [chatInput, setChatInput] = useState('')
   const runRef = useRef(false)
   const welcomeAddedRef = useRef(false)
   const chatScrollRef = useRef<HTMLDivElement>(null)
 
-  const remaining = overview.remaining
-  const total = overview.total
-  const standardSourceLinks = useMemo(() => buildStandardSourceLinks(), [])
+  const openCount = fixPlan.length
 
   const scrollToBottom = useCallback(() => {
     const el = chatScrollRef.current
@@ -542,43 +356,27 @@ export default function AgentDiagnosticsPanel() {
   const runFixForItems = useCallback(
     async (
       items: AgentFixPlanItem[],
-      opts?: { single?: boolean; showPlanPreamble?: boolean; progressOffset?: number },
+      opts?: { single?: boolean; progressOffset?: number },
     ) => {
       if (runRef.current || items.length === 0) return
       runRef.current = true
       setPhase('running')
+      setSessionPlan(items)
 
-      const openBefore = buildAgentFixPlan(
-        getAgentFixContext(amounts, reviewedFields),
-      ).length
-
-      if (opts?.showPlanPreamble !== false && !opts?.single) {
-        appendThread({
-          kind: 'milestone',
-          text: 'Automated fix started',
-        })
-        appendThread({
-          kind: 'agent',
-          isPlan: true,
-          heading: 'Fix plan',
-          text: `I'll work through ${items.length} item${items.length === 1 ? '' : 's'} on this return. You'll see my full reasoning for each one.`,
-          bullets: items.map(p => p.title),
-        })
-      }
-
+      const openBefore = buildAgentFixPlan(getAgentFixContext(amounts, reviewedFields)).length
       const progressStart = opts?.progressOffset ?? 0
 
       for (let i = 0; i < items.length; i++) {
         const item = items[i]
-        setActiveFixIndex(progressStart + i)
-        const thinkingId = nextThreadEntryId()
+        setActiveFixIndex(i)
 
         appendThread({
           kind: 'agent',
           heading: opts?.single ? 'Working on this issue' : `Issue ${i + 1} of ${items.length}`,
-          text: `Reasoning through ${item.title.toLowerCase()} before applying the fix.`,
+          text: `Reviewing source documents and return inputs before applying a fix.`,
         })
 
+        const thinkingId = nextThreadEntryId()
         appendThread({
           id: thinkingId,
           kind: 'thinking',
@@ -601,11 +399,7 @@ export default function AgentDiagnosticsPanel() {
         applyFixForIssue(item)
         setProgressValue(progressStart + i + 1)
 
-        appendThread({
-          kind: 'milestone',
-          text: `Fixed: ${item.title}`,
-        })
-
+        appendThread({ kind: 'milestone', text: `Fixed: ${item.title}` })
         appendThread({
           kind: 'fixed',
           title: item.title,
@@ -627,47 +421,29 @@ export default function AgentDiagnosticsPanel() {
           kind: 'agent',
           showNextActions: true,
           remainingCount: remainingAfter,
-          text: `${remainingAfter} diagnostic${remainingAfter === 1 ? '' : 's'} still open. Review the reasoning above, then fix the next one or finish the rest automatically.`,
+          text: `${remainingAfter} issue${remainingAfter === 1 ? '' : 's'} still open. Review the reasoning above, then continue.`,
         })
         return
       }
 
       setPhase('complete')
-      appendThread({
-        kind: 'milestone',
-        text: 'All diagnostics resolved',
-      })
+      appendThread({ kind: 'milestone', text: 'All diagnostics resolved' })
       appendThread({
         kind: 'agent',
         heading: 'Review complete',
-        text: 'Every open item has been corrected. Expand any reasoning block above to revisit how each fix was derived.',
+        text: 'Every open item has been corrected. Expand any reasoning block above to see how each fix was derived.',
       })
     },
     [appendThread, applyFixForIssue, amounts, reviewedFields],
   )
 
-  const runFixSequence = useCallback(
-    async (plan: AgentFixPlanItem[]) => {
-      setProgressValue(0)
-      await runFixForItems(plan, { showPlanPreamble: true, progressOffset: 0 })
-    },
-    [runFixForItems],
-  )
-
   const handleFixAll = useCallback(() => {
     const plan = buildAgentFixPlan(getAgentFixContext(amounts, reviewedFields))
-    if (plan.length === 0) {
-      setPhase('complete')
-      appendThread({
-        kind: 'agent',
-        heading: 'No open diagnostics',
-        text: 'This return has no open diagnostics — you are ready to sign off.',
-      })
-      return
-    }
+    if (plan.length === 0) return
     appendThread({ kind: 'user', text: 'Fix all issues' })
-    void runFixSequence(plan)
-  }, [amounts, reviewedFields, runFixSequence, appendThread])
+    setProgressValue(0)
+    void runFixForItems(plan)
+  }, [amounts, reviewedFields, runFixForItems, appendThread])
 
   const handleFixOne = useCallback(
     (item?: AgentFixPlanItem) => {
@@ -675,11 +451,7 @@ export default function AgentDiagnosticsPanel() {
       const target = item ?? plan[0]
       if (!target) return
       appendThread({ kind: 'user', text: `Fix: ${target.title}` })
-      void runFixForItems([target], {
-        single: true,
-        showPlanPreamble: false,
-        progressOffset: progressValue,
-      })
+      void runFixForItems([target], { single: true, progressOffset: progressValue })
     },
     [amounts, reviewedFields, runFixForItems, appendThread, progressValue],
   )
@@ -688,11 +460,7 @@ export default function AgentDiagnosticsPanel() {
     const plan = buildAgentFixPlan(getAgentFixContext(amounts, reviewedFields))
     if (plan.length === 0) return
     appendThread({ kind: 'user', text: 'Fix next issue' })
-    void runFixForItems([plan[0]], {
-      single: true,
-      showPlanPreamble: false,
-      progressOffset: progressValue,
-    })
+    void runFixForItems([plan[0]], { single: true, progressOffset: progressValue })
   }, [amounts, reviewedFields, runFixForItems, appendThread, progressValue])
 
   const handleChatSend = useCallback(() => {
@@ -702,44 +470,21 @@ export default function AgentDiagnosticsPanel() {
     setChatInput('')
 
     const lower = text.toLowerCase()
-    if (lower.includes('next') && (lower.includes('fix') || lower.includes('issue'))) {
+    if (lower.includes('next')) {
       handleFixNext()
-    } else if (lower.includes('all') && (lower.includes('fix') || lower.includes('resolve'))) {
-      appendThread({ kind: 'agent', text: 'Starting automated fixes now…' })
-      void runFixSequence(buildAgentFixPlan(getAgentFixContext(amounts, reviewedFields)))
-    } else if (
-      lower.includes('one') ||
-      lower.includes('single') ||
-      lower.includes('at a time')
-    ) {
+    } else if (lower.includes('all')) {
+      handleFixAll()
+    } else if (lower.includes('one') || lower.includes('single')) {
       handleFixOne()
     } else if (lower.includes('fix') || lower.includes('resolve')) {
-      handleFixOne()
-    } else if (lower.includes('pending') || lower.includes('open')) {
-      appendThread({
-        kind: 'agent',
-        isPlan: true,
-        heading: 'Open diagnostics',
-        text: `${remaining} item${remaining === 1 ? '' : 's'} still need attention on this return.`,
-        bullets: fixPlan.map(p => p.title),
-      })
+      handleFixAll()
     } else {
       appendThread({
         kind: 'agent',
-        text: `I found ${remaining} open diagnostic${remaining === 1 ? '' : 's'}. Say "fix all" or use the quick actions below.`,
+        text: `You have ${openCount} open diagnostic${openCount === 1 ? '' : 's'}. Use Fix all or Fix one at a time above, or say "fix all".`,
       })
     }
-  }, [
-    chatInput,
-    appendThread,
-    runFixSequence,
-    amounts,
-    reviewedFields,
-    remaining,
-    fixPlan,
-    handleFixNext,
-    handleFixOne,
-  ])
+  }, [chatInput, appendThread, openCount, handleFixNext, handleFixAll, handleFixOne])
 
   useEffect(() => {
     if (welcomeAddedRef.current) return
@@ -748,11 +493,15 @@ export default function AgentDiagnosticsPanel() {
       kind: 'agent',
       isWelcome: true,
       heading: 'Return review',
-      text: `I've reviewed Jordan's 2025 return and found ${total} diagnostic${total === 1 ? '' : 's'} that need attention. I can fix them automatically — you'll see each step as I work.`,
+      text:
+        openCount > 0
+          ? `I've analyzed Jordan's 2025 return and found ${openCount} issue${openCount === 1 ? '' : 's'} to resolve. Review each diagnostic below, then tell me how you'd like to proceed.`
+          : `I've analyzed Jordan's 2025 return — no open diagnostics remain.`,
     })
-  }, [appendThread, total])
+  }, [appendThread, openCount])
 
-  const showCompletion = phase === 'complete' || (total > 0 && overview.complete)
+  const railPlan = sessionPlan.length > 0 ? sessionPlan : fixPlan
+  const showCompletion = phase === 'complete'
 
   return (
     <div className={styles.panel}>
@@ -781,77 +530,60 @@ export default function AgentDiagnosticsPanel() {
                   return (
                     <div key={entry.id} className={styles.agentRow}>
                       <AgentAvatar />
-                      <div className={styles.agentContent}>
-                        {entry.isWelcome ? (
-                          <>
-                            <IntelligenceBrand meta="Analyzed just now" />
-                            <div className={styles.titleRow}>
-                              <h1 className={styles.welcomeTitle}>{entry.heading}</h1>
+                      <div className={styles.messageColumn}>
+                        {entry.isWelcome && (
+                          <header className={styles.welcomeHeader}>
+                            <div className={styles.logoGroup}>
+                              <img
+                                src={intuitIntelligenceLogo}
+                                alt=""
+                                className={styles.brandLogo}
+                                aria-hidden
+                              />
+                              <span className={styles.wordmark}>Intuit Intelligence</span>
                             </div>
-                          </>
-                        ) : (
+                            <span className={styles.brandMeta}>Analyzed just now</span>
+                          </header>
+                        )}
+                        {entry.heading && (
+                          <h2
+                            className={
+                              entry.isWelcome ? styles.welcomeTitle : styles.agentHeading
+                            }
+                          >
+                            {entry.heading}
+                          </h2>
+                        )}
+                        <p className={styles.agentBody}>{entry.text}</p>
+
+                        {entry.isWelcome && (
                           <>
-                            <IntelligenceBrand />
-                            {entry.heading && (
-                              <h2 className={styles.agentHeading}>{entry.heading}</h2>
+                            <DiagnosisCard
+                              plan={fixPlan}
+                              phase={phase}
+                              onFixItem={handleFixOne}
+                              onFixAll={handleFixAll}
+                            />
+                            {openCount > 0 && phase === 'ready' && (
+                              <div className={styles.responsePills}>
+                                <Button priority="primary" onClick={handleFixAll}>
+                                  Fix all issues
+                                </Button>
+                                <Button priority="secondary" onClick={() => handleFixOne()}>
+                                  Fix one at a time
+                                </Button>
+                              </div>
                             )}
                           </>
                         )}
-                        <p className={styles.agentBody}>{entry.text}</p>
-                        {entry.isWelcome && (
-                          <>
-                            <ReturnStandingCard ctx={syncCtx} phase={phase} />
-                            <SourceExplorerCard links={standardSourceLinks} />
-                          </>
-                        )}
-                        {entry.showSources && (
-                          <SourceExplorerCard links={standardSourceLinks} />
-                        )}
-                        {entry.isPlan && entry.bullets && entry.bullets.length > 0 && (
-                          <DiagnosticsPlanCard
-                            bullets={entry.bullets}
-                            plan={fixPlan}
-                            phase={phase}
-                            onFixItem={handleFixOne}
-                            onViewLink={runAgentViewLink}
-                          />
-                        )}
+
                         {entry.showNextActions && entry.remainingCount != null && (
-                          <NextFixActions
-                            remainingCount={entry.remainingCount}
-                            onFixNext={handleFixNext}
-                            onFixAll={handleFixAll}
-                          />
-                        )}
-                        {!entry.isPlan && entry.bullets && entry.bullets.length > 0 && (
-                          <ul className={styles.agentList}>
-                            {entry.bullets.map((bullet, bi) => (
-                              <li key={bi}>{bullet}</li>
-                            ))}
-                          </ul>
-                        )}
-                        {entry.isWelcome && remaining > 0 && phase === 'ready' && (
                           <div className={styles.responsePills}>
-                            <Button priority="primary" onClick={handleFixAll}>
-                              Fix all issues
+                            <Button priority="primary" onClick={handleFixNext}>
+                              Fix next issue
                             </Button>
-                            <Button priority="secondary" onClick={() => handleFixOne()}>
-                              Fix one at a time
-                            </Button>
-                            <Button
-                              priority="secondary"
-                              onClick={() => {
-                                appendThread({ kind: 'user', text: "What's pending?" })
-                                appendThread({
-                                  kind: 'agent',
-                                  isPlan: true,
-                                  heading: 'Open diagnostics',
-                                  text: `${remaining} item${remaining === 1 ? '' : 's'} still need attention.`,
-                                  bullets: fixPlan.map(p => p.title),
-                                })
-                              }}
-                            >
-                              What&apos;s pending?
+                            <Button priority="secondary" onClick={handleFixAll}>
+                              Fix all remaining ({entry.remainingCount})
                             </Button>
                           </div>
                         )}
@@ -863,7 +595,7 @@ export default function AgentDiagnosticsPanel() {
                   return (
                     <div key={entry.id} className={styles.agentRow}>
                       <AgentAvatar />
-                      <div className={styles.agentContentWide}>
+                      <div className={styles.messageColumn}>
                         <ThinkingBlock entry={entry} />
                       </div>
                     </div>
@@ -873,9 +605,8 @@ export default function AgentDiagnosticsPanel() {
                   return (
                     <div key={entry.id} className={styles.agentRow}>
                       <AgentAvatar />
-                      <div className={styles.agentContentWide}>
-                        <div className={styles.interactiveCard}>
-                          <IntelligenceBrand meta="Fixed just now" />
+                      <div className={styles.messageColumn}>
+                        <div className={styles.fixedCard}>
                           <div className={styles.fixedHeader}>
                             <Badge
                               status="success"
@@ -887,21 +618,18 @@ export default function AgentDiagnosticsPanel() {
                           </div>
                           <p className={styles.cardBody}>{entry.summary}</p>
                           {entry.viewLinks.length > 0 && (
-                            <>
-                              <p className={styles.cardEyebrow}>Review changes</p>
-                              <div className={styles.sourceButtonGrid}>
-                                {entry.viewLinks.map(link => (
-                                  <Button
-                                    key={link.label}
-                                    priority="secondary"
-                                    size="medium"
-                                    onClick={() => runAgentViewLink(link)}
-                                  >
-                                    {link.label}
-                                  </Button>
-                                ))}
-                              </div>
-                            </>
+                            <div className={styles.viewLinkRow}>
+                              {entry.viewLinks.map(link => (
+                                <Button
+                                  key={link.label}
+                                  priority="secondary"
+                                  size="medium"
+                                  onClick={() => runAgentViewLink(link)}
+                                >
+                                  {link.label}
+                                </Button>
+                              ))}
+                            </div>
                           )}
                         </div>
                       </div>
@@ -910,12 +638,9 @@ export default function AgentDiagnosticsPanel() {
                 }
                 return null
               })}
-            </div>
 
-            {showCompletion && (
-              <div className={styles.completionCard}>
-                <IntelligenceBrand meta="Review complete" />
-                <div className={styles.completionHeader}>
+              {showCompletion && (
+                <div className={styles.completionCard}>
                   <Badge
                     status="success"
                     label="Complete"
@@ -923,144 +648,118 @@ export default function AgentDiagnosticsPanel() {
                     priority="secondary"
                   />
                   <h2 className={styles.completionTitle}>All issues fixed</h2>
-                </div>
-                <p className={styles.completionBody}>
-                  Every diagnostic has been resolved. Review the changes on source documents,
-                  input fields, or the output forms.
-                </p>
-                <p className={styles.cardEyebrow}>Review changes</p>
-                <div className={styles.sourceButtonGrid}>
-                  {standardSourceLinks.map(link => (
+                  <p className={styles.completionBody}>
+                    Review source documents or the 1040 to verify changes.
+                  </p>
+                  <div className={styles.responsePills}>
                     <Button
-                      key={`done-${link.label}`}
                       priority="secondary"
                       size="medium"
-                      onClick={() => runAgentViewLink(link)}
+                      onClick={() => openSourceDocumentReviewPopout()}
                     >
-                      {link.label}
+                      View source documents
                     </Button>
-                  ))}
+                    <Button
+                      priority="secondary"
+                      size="medium"
+                      onClick={() => openReviewReturnPopout('1040')}
+                    >
+                      View 1040
+                    </Button>
+                  </div>
                 </div>
-              </div>
-            )}
+              )}
+            </div>
           </div>
 
           <div className={styles.composerArea}>
-            <div className={styles.composerFade} aria-hidden />
-            <div className={styles.quickActions} role="toolbar" aria-label="Quick actions">
-              {phase === 'awaiting-next' && remaining > 0 && (
-                <button type="button" className={styles.quickChip} onClick={handleFixNext}>
-                  Fix next issue
-                </button>
-              )}
-              {phase !== 'running' && phase !== 'awaiting-next' && remaining > 0 && (
-                <>
-                  <button type="button" className={styles.quickChip} onClick={handleFixAll}>
-                    Fix all issues
-                  </button>
-                  <button type="button" className={styles.quickChip} onClick={() => handleFixOne()}>
-                    Fix one at a time
-                  </button>
-                </>
-              )}
-              <button
-                type="button"
-                className={styles.quickChip}
-                onClick={() => {
-                  appendThread({ kind: 'user', text: "What's pending?" })
-                  appendThread({
-                    kind: 'agent',
-                    isPlan: true,
-                    heading: 'Open diagnostics',
-                    text: `${remaining} item${remaining === 1 ? '' : 's'} still need attention.`,
-                    bullets: fixPlan.map(p => p.title),
-                  })
-                }}
-              >
-                <List size="small" aria-hidden />
-                What&apos;s pending?
-              </button>
-              <button
-                type="button"
-                className={styles.quickChip}
-                onClick={() => openSourceDocumentReviewPopout()}
-              >
-                <Upload size="small" aria-hidden />
-                View source documents
-              </button>
-              <button
-                type="button"
-                className={styles.quickChip}
-                onClick={() => {
-                  appendThread({ kind: 'user', text: 'Show me all review sources' })
-                  appendThread({
-                    kind: 'agent',
-                    showSources: true,
-                    text: 'Open any source below to inspect documents, inputs, or the 1040.',
-                  })
-                }}
-              >
-                <Comment size="small" aria-hidden />
-                Review sources
-              </button>
-            </div>
-            <div className={styles.composerBox}>
-              <textarea
-                className={styles.composerInput}
-                rows={1}
-                placeholder="Ask or attach anything"
-                value={chatInput}
-                onChange={e => setChatInput(e.target.value)}
-                onKeyDown={e => {
-                  if (e.key === 'Enter' && !e.shiftKey) {
-                    e.preventDefault()
-                    if (phase !== 'running') handleChatSend()
-                  }
-                }}
-                aria-label="Ask Intuit Intelligence"
-                disabled={phase === 'running'}
-              />
-              <div className={styles.composerActions}>
-                <button type="button" className={styles.attachBtn} aria-label="Attach">
-                  <Plus size="medium" />
-                </button>
-                {phase === 'running' ? (
-                  <button
-                    type="button"
-                    className={`${styles.sendBtn} ${styles.sendBtnActive}`}
-                    aria-label="Stop generation"
-                    disabled
-                  >
-                    <StopFill size="medium" />
-                  </button>
-                ) : (
-                  <button
-                    type="button"
-                    className={`${styles.sendBtn} ${chatInput.trim() ? styles.sendBtnActive : ''}`}
-                    aria-label="Send message"
-                    disabled={!chatInput.trim()}
-                    onClick={handleChatSend}
-                  >
-                    <Send size="medium" />
+            <div className={styles.composerInner}>
+              <div className={styles.quickActions} role="toolbar" aria-label="Quick actions">
+                {phase === 'awaiting-next' && openCount > 0 && (
+                  <button type="button" className={styles.quickChip} onClick={handleFixNext}>
+                    Fix next issue
                   </button>
                 )}
+                {(phase === 'ready' || phase === 'awaiting-next') && openCount > 0 && (
+                  <>
+                    <button type="button" className={styles.quickChip} onClick={handleFixAll}>
+                      Fix all issues
+                    </button>
+                    <button
+                      type="button"
+                      className={styles.quickChip}
+                      onClick={() => handleFixOne()}
+                    >
+                      Fix one at a time
+                    </button>
+                  </>
+                )}
+                <button
+                  type="button"
+                  className={styles.quickChip}
+                  onClick={() => openSourceDocumentReviewPopout()}
+                >
+                  <Upload size="small" aria-hidden />
+                  View source documents
+                </button>
               </div>
+              <div className={styles.composerBox}>
+                <textarea
+                  className={styles.composerInput}
+                  rows={1}
+                  placeholder="Ask or attach anything"
+                  value={chatInput}
+                  onChange={e => setChatInput(e.target.value)}
+                  onKeyDown={e => {
+                    if (e.key === 'Enter' && !e.shiftKey) {
+                      e.preventDefault()
+                      if (phase !== 'running') handleChatSend()
+                    }
+                  }}
+                  aria-label="Ask Intuit Intelligence"
+                  disabled={phase === 'running'}
+                />
+                <div className={styles.composerActions}>
+                  <button type="button" className={styles.attachBtn} aria-label="Attach">
+                    <Plus size="medium" />
+                  </button>
+                  {phase === 'running' ? (
+                    <button
+                      type="button"
+                      className={`${styles.sendBtn} ${styles.sendBtnActive}`}
+                      aria-label="Stop generation"
+                      disabled
+                    >
+                      <StopFill size="medium" />
+                    </button>
+                  ) : (
+                    <button
+                      type="button"
+                      className={`${styles.sendBtn} ${chatInput.trim() ? styles.sendBtnActive : ''}`}
+                      aria-label="Send message"
+                      disabled={!chatInput.trim()}
+                      onClick={handleChatSend}
+                    >
+                      <Send size="medium" />
+                    </button>
+                  )}
+                </div>
+              </div>
+              <Link
+                href="#"
+                size="body-4"
+                inline
+                onClick={e => e.preventDefault()}
+                className={styles.legalLink}
+              >
+                Important information about how we use generative AI
+              </Link>
             </div>
-            <Link
-              href="#"
-              size="body-4"
-              inline
-              onClick={e => e.preventDefault()}
-              className={styles.legalLink}
-            >
-              Important information about how we use generative AI
-            </Link>
           </div>
         </div>
 
         <ProgressRail
-          ctx={syncCtx}
-          plan={fixPlan}
+          plan={railPlan}
           completedCount={progressValue}
           activeIndex={activeFixIndex}
           phase={phase}

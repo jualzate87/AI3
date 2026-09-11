@@ -23,7 +23,7 @@
   flex: 1;
   min-height: 0;
   height: 100%;
-  background: var(--color-page-background-secondary, #f4f5f8);
+  background: var(--color-page-background-primary, #ffffff);
   box-sizing: border-box;
 }
 
@@ -46,16 +46,17 @@
   flex: 1;
   min-height: 0;
   overflow-y: auto;
-  padding: var(--space-container-padding-large, 24px);
+  padding: var(--space-container-padding-x-large, 32px)
+    var(--space-container-padding-large, 24px);
   padding-bottom: var(--space-container-padding-small, 8px);
-  background: var(--color-page-background-secondary, #f4f5f8);
+  background: var(--color-page-background-primary, #ffffff);
 }
 
 .thread {
   display: flex;
   flex-direction: column;
-  gap: var(--space-container-gap-large, 28px);
-  max-width: 720px;
+  gap: var(--space-container-gap-large, 24px);
+  max-width: 640px;
   width: 100%;
   margin: 0 auto;
 }
@@ -75,7 +76,7 @@
   margin-top: 2px;
 }
 
-.agentContent {
+.messageColumn {
   display: flex;
   flex-direction: column;
   gap: var(--space-component-gap-medium, 12px);
@@ -83,9 +84,11 @@
   min-width: 0;
 }
 
-.agentContentWide {
-  flex: 1;
-  min-width: 0;
+.welcomeHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-component-gap-medium, 12px);
 }
 
 /* ── Milestone divider pill ── */
@@ -94,7 +97,7 @@
   align-items: center;
   gap: var(--space-component-gap-medium, 12px);
   width: 100%;
-  max-width: 720px;
+  max-width: 640px;
   margin: 0 auto;
 }
 
@@ -118,17 +121,107 @@
   white-space: nowrap;
 }
 
-/* ── Interactive nested cards ── */
-.interactiveCard {
+/* ── Initial diagnosis card ── */
+.diagnosisCard {
   display: flex;
   flex-direction: column;
-  gap: var(--space-component-gap-medium, 12px);
-  padding: var(--space-container-padding-medium, 16px)
-    var(--space-container-padding-large, 20px);
+  gap: var(--space-container-gap-medium, 16px);
+  padding: var(--space-container-padding-large, 20px);
   border: 1px solid var(--color-divider-tertiary, #d4d7dc);
   border-radius: var(--radius-large, 12px);
   background: var(--color-container-background-primary, #ffffff);
-  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04);
+}
+
+.diagnosisHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-component-gap-medium, 12px);
+}
+
+.diagnosisCount {
+  font-family: var(--font-family-component);
+  font-size: var(--font-size-component-small, 14px);
+  font-weight: var(--font-weight-component-semibold, 600);
+  color: var(--color-text-secondary, #6b6c72);
+}
+
+.diagnosisList {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+}
+
+.diagnosisItem {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-component-gap-medium, 12px);
+  padding: var(--space-container-padding-medium, 16px) 0;
+  border-bottom: 1px solid var(--color-divider-tertiary, #d4d7dc);
+}
+
+.diagnosisItem:first-child {
+  padding-top: 0;
+}
+
+.diagnosisItem:last-child {
+  border-bottom: none;
+  padding-bottom: 0;
+}
+
+.diagnosisItemMain {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--space-component-gap-medium, 12px);
+}
+
+.diagnosisItemText {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-component-gap-x-small, 4px);
+}
+
+.diagnosisItemTitle {
+  margin: 0;
+  font-family: var(--font-family-component);
+  font-size: var(--font-size-component-medium, 16px);
+  font-weight: var(--font-weight-component-semibold, 600);
+  line-height: 1.35;
+  color: var(--color-text-primary, #393a3d);
+}
+
+.diagnosisItemSummary {
+  margin: 0;
+  font-family: var(--font-family-body);
+  font-size: var(--font-size-body-3, 14px);
+  line-height: 1.5;
+  color: var(--color-text-secondary, #6b6c72);
+}
+
+.diagnosisItemActions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-component-gap-medium, 12px);
+  padding-left: calc(20px + var(--space-component-gap-medium, 12px));
+}
+
+.diagnosisFooter {
+  padding-top: var(--space-component-gap-small, 8px);
+  border-top: 1px solid var(--color-divider-tertiary, #d4d7dc);
+}
+
+.diagnosisEmpty {
+  margin: 0;
+  font-family: var(--font-family-body);
+  font-size: var(--font-size-body-3, 14px);
+  line-height: 1.5;
+  color: var(--color-text-primary, #393a3d);
 }
 
 .cardEyebrow {
@@ -628,10 +721,8 @@
   display: flex;
   flex-direction: column;
   gap: var(--space-container-gap-medium, 16px);
-  max-width: 768px;
   width: 100%;
-  margin: var(--space-container-gap-large, 24px) auto 0;
-  padding: var(--space-container-padding-large, 24px);
+  padding: var(--space-container-padding-large, 20px);
   border-radius: var(--radius-large, 12px);
   border: 1px solid var(--color-divider-tertiary, #d4d7dc);
   background: var(--color-container-background-primary, #ffffff);
@@ -670,14 +761,21 @@
 .composerArea {
   flex-shrink: 0;
   display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: var(--space-component-gap-small, 8px);
-  padding: 0 var(--space-container-padding-medium, 20px)
+  justify-content: center;
+  padding: var(--space-container-padding-medium, 16px)
+    var(--space-container-padding-large, 24px)
     var(--space-container-padding-small, 8px);
-  background: var(--color-container-background-primary, #ffffff);
+  background: var(--color-page-background-primary, #ffffff);
   position: relative;
   border-top: 1px solid var(--color-divider-tertiary, #d4d7dc);
+}
+
+.composerInner {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-component-gap-small, 8px);
+  width: 100%;
+  max-width: 640px;
 }
 
 .composerFade {
@@ -699,13 +797,12 @@
   flex-direction: column;
   gap: var(--space-container-gap-medium, 16px);
   width: 100%;
-  max-width: 768px;
   min-width: 280px;
   padding: var(--space-container-padding-medium, 16px);
   background: var(--color-input-background-primary, #ffffff);
   border: 1px solid var(--color-container-border-primary, #d4d7dc);
   border-radius: 32px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
 }
 
 .composerInput {
@@ -784,7 +881,6 @@
 
 .legalLink {
   width: 100%;
-  max-width: 768px;
   text-align: center;
   font-family: var(--font-family-component);
   font-size: var(--font-size-body-4, 12px);
@@ -1012,8 +1108,6 @@
   flex-wrap: wrap;
   gap: var(--space-component-gap-small, 8px);
   width: 100%;
-  max-width: 720px;
-  justify-content: center;
 }
 
 .quickChip {
@@ -1045,9 +1139,7 @@
 
   .thread,
   .milestoneRow,
-  .quickActions,
-  .composerBox,
-  .legalLink {
+  .composerInner {
     max-width: 100%;
   }
 }
