@@ -1,7 +1,7 @@
 import ScheduleAInterestInputPanel, {
   SCHEDULE_A_MORTGAGE_FIELD,
 } from '../input-return/ScheduleAInterestInputPanel'
-import styles from '../../styles/check-return/ItemizeDiagnosticEmbed.module.css'
+import styles from '../../styles/check-return/DiagnosticEmbed.module.css'
 
 export default function ItemizeDiagnosticEmbed() {
   return (

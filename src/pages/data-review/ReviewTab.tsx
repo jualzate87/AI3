@@ -1,4 +1,4 @@
-import { ChevronRight, CircleCheck, CirclePlus, PopIn } from '@design-systems/icons'
+import { ChevronRight, CircleCheck, CirclePlus } from '@design-systems/icons'
 import { Button } from '@ids-ts/button'
 import '@ids-ts/button/dist/main.css'
 import sparklesIcon from '../../assets/icons/sparkles.svg'
@@ -52,8 +52,6 @@ interface ReviewTabProps {
   tabConfirmStatus?: Record<string, DocConfirmStatus>
   /** Pass 2 reviewer: count of docs awaiting confirmation per top tab */
   tabConfirmCounts?: Record<string, number>
-  /** When true, shows Dock back control (popout window only) */
-  isPopout?: boolean
   /** Phase 1 preparer: show "+ Add source" at end of tab row */
   showAddItem?: boolean
   onAddItemClick?: () => void
@@ -76,7 +74,6 @@ export default function ReviewTab({
   typeReviewed,
   tabConfirmStatus,
   tabConfirmCounts,
-  isPopout = false,
   showAddItem = true,
   onAddItemClick,
   showNextDocument = false,
@@ -219,17 +216,6 @@ export default function ReviewTab({
             Next document
             <ChevronRight size="small" />
           </Button>
-        )}
-        {isPopout && (
-          <button
-            type="button"
-            className={styles.dockBackBtn}
-            aria-label="Dock back to main window"
-            onClick={() => window.close()}
-          >
-            <PopIn size="small" />
-            Dock back
-          </button>
         )}
       </div>
     </div>

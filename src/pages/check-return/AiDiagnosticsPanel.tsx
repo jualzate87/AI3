@@ -39,6 +39,9 @@ import {
   type PreparerReviewChecklistItem,
 } from './preparerReviewChecklist'
 import ItemizeDiagnosticEmbed from './ItemizeDiagnosticEmbed'
+import { ImportMismatchDiagnosticEmbed } from './DiagnosticFieldEmbed'
+import QualifiedDivDiagnosticEmbed from './QualifiedDivDiagnosticEmbed'
+import UnderpaymentDiagnosticEmbed from './UnderpaymentDiagnosticEmbed'
 import {
   AI_DIAGNOSTIC_CATEGORIES,
   categoryForIssueKey,
@@ -522,6 +525,18 @@ export default function AiDiagnosticsPanel({
               ))}
             </ol>
           </div>
+        )}
+
+        {selectedIssue.issueKey === 'importMismatches' && mismatchRows.length > 0 && (
+          <ImportMismatchDiagnosticEmbed row={mismatchRows[0]} />
+        )}
+
+        {selectedIssue.issueKey === 'qualifiedDivClassification' && (
+          <QualifiedDivDiagnosticEmbed />
+        )}
+
+        {selectedIssue.issueKey === 'underpaymentRisk' && (
+          <UnderpaymentDiagnosticEmbed />
         )}
 
         {selectedIssue.issueKey === 'optItemize' && amounts.mortgageInterest === 0 && (

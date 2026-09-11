@@ -551,7 +551,6 @@ export default function DataReviewPopout() {
           showNextDocument={false}
           unreviewedDocCount={unreviewedDocCount}
           onTopTabChange={onTopTabChange}
-          isPopout
         />
 
         {showPreparerImportPhase && SHOW_IMPORT_FLAGS && unreviewedDocCount === 0 && phase1Remaining > 0 && (
