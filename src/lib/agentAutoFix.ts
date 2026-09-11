@@ -7,9 +7,18 @@ import {
   SOURCE_AMOUNTS,
   type Phase2IssueKey,
 } from '../pages/data-review/phase2FlagSync'
-import { buildAllDiagnosticIssues } from '../pages/data-review/AgentReportPane'
+import {
+  buildAllDiagnosticIssues,
+  type DiagnosticIssueCard,
+} from '../pages/data-review/AgentReportPane'
 import { computeLiveReturn } from '../data/liveReturn'
-import type { DiagnosticSyncContext } from '../pages/data-review/phase2FlagSync'
+import type { OutputFormId } from '../pages/data-review/outputForms'
+import type { QuestionnaireResponseId } from '../pages/data-review/questionnaireData'
+import {
+  getOutstandingImportMismatches,
+  type DiagnosticSyncContext,
+  type Phase2IssueKey,
+} from '../pages/data-review/phase2FlagSync'
 import { getCategoryScopedActiveKeys } from '../pages/check-return/aiDiagnosticCategories'
 
 /** Demo auto-fix patch per active diagnostic issue. */
@@ -53,12 +62,115 @@ export function getAutoFixPatchForIssue(
   }
 }
 
+export type AgentViewLink = {
+  label: string
+  tab?: string
+  field?: string
+  formId?: OutputFormId
+  questionnaireResponseId?: QuestionnaireResponseId
+  schAInterest?: boolean
+  diagnostic?: Phase2IssueKey
+}
+
 export type AgentFixPlanItem = {
   issueKey: Phase2IssueKey
   title: string
   thinkingSteps: string[]
   fixSummary: string
   amountPatch: Partial<LiveAmounts>
+  viewLinks: AgentViewLink[]
+}
+
+/** Deep links to review where each auto-fix landed (source doc, input, or 1040). */
+export function buildViewLinksForIssue(
+  issue: DiagnosticIssueCard,
+  amounts: LiveAmounts,
+): AgentViewLink[] {
+  const links: AgentViewLink[] = []
+  const seen = new Set<string>()
+
+  const push = (link: AgentViewLink) => {
+    if (seen.has(link.label)) return
+    seen.add(link.label)
+    links.push(link)
+  }
+
+  if (issue.issueKey === 'importMismatches') {
+    for (const gap of getOutstandingImportMismatches(amounts)) {
+      push({
+        label: `View ${gap.label}`,
+        tab: gap.tab,
+        field: gap.field,
+      })
+    }
+    push({
+      label: 'View on Form 1040',
+      formId: '1040',
+      diagnostic: 'importMismatches',
+    })
+    return links.slice(0, 6)
+  }
+
+  for (const row of issue.tableRows) {
+    if (row.fixTab === 'sch-a-interest' && row.fixField) {
+      push({
+        label: row.actionLabel ?? 'View on input screen',
+        schAInterest: true,
+        field: row.fixField,
+      })
+    } else if (row.fixTab === 'questionnaire') {
+      push({
+        label: row.actionLabel ?? 'View source',
+        tab: 'questionnaire',
+        field: row.fixField,
+        questionnaireResponseId: row.questionnaireResponseId,
+      })
+    } else if (row.fixField && row.fixTab) {
+      push({
+        label: row.actionLabel ?? `View ${row.label}`,
+        tab: row.fixTab,
+        field: row.fixField,
+      })
+    }
+    if (row.viewForm && row.viewFormLabel) {
+      push({
+        label: row.actionLabel ?? `View ${row.viewFormLabel}`,
+        formId: row.viewForm as OutputFormId,
+        diagnostic: issue.issueKey,
+      })
+    }
+  }
+
+  for (const action of issue.actions) {
+    if (action.type === 'goToInput' && action.menuItems) continue
+    if (action.type === 'goToInput' && action.tab === 'sch-a-interest') {
+      push({
+        label: action.label,
+        schAInterest: true,
+        field: action.field,
+      })
+    } else if (action.type === 'goToInput' && action.tab && action.field) {
+      push({ label: action.label, tab: action.tab, field: action.field })
+    } else if (action.type === 'openForm') {
+      const formMap: Record<string, OutputFormId> = {
+        'Open Form 8960': 'f8960',
+        'Open Form 2210': 'f2210',
+        'Open Schedule C': 'schC',
+        'Open Schedule A': 'schA',
+        'Open Schedule 1': 'sch1',
+      }
+      const formId = formMap[action.label]
+      if (formId) {
+        push({
+          label: action.label.replace(/^Open /, 'View '),
+          formId,
+          diagnostic: issue.issueKey,
+        })
+      }
+    }
+  }
+
+  return links.slice(0, 5)
 }
 
 /** Build ordered fix plan from active AI-scoped diagnostics. */
@@ -80,6 +192,7 @@ export function buildAgentFixPlan(ctx: DiagnosticSyncContext): AgentFixPlanItem[
       thinkingSteps,
       fixSummary: issue?.suggestedActions[0] ?? `Resolved ${title.toLowerCase()}.`,
       amountPatch,
+      viewLinks: issue ? buildViewLinksForIssue(issue, amounts) : [],
     }
   })
 }
