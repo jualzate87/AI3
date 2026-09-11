@@ -6,9 +6,7 @@ import DetailFields1099R from '../data-review/DetailFields1099R'
 import DetailFieldsDiv from '../data-review/DetailFieldsDiv'
 import type { DivPayer } from '../data-review/DetailFieldsDiv'
 import DetailFieldsNec from '../data-review/DetailFieldsNec'
-import { navigationForDetailField } from '../data-review/phase1FieldSync'
 import type { TopTab } from '../data-review/ReviewTab'
-import type { ImportMismatchRow } from '../data-review/phase2FlagSync'
 import styles from '../../styles/check-return/DiagnosticEmbed.module.css'
 
 export type DiagnosticFieldEmbedProps = {
@@ -179,18 +177,5 @@ export function DiagnosticFieldEmbed({
         />
       )}
     </section>
-  )
-}
-
-export function ImportMismatchDiagnosticEmbed({ row }: { row: ImportMismatchRow }) {
-  const nav = navigationForDetailField(row.field)
-  return (
-    <DiagnosticFieldEmbed
-      highlightField={row.field}
-      tab={row.tab}
-      ariaLabel={`Fix ${row.label}`}
-      divPayer={nav?.divPayer}
-      subTab={nav?.tab === 'w2s' ? 'techCircle' : undefined}
-    />
   )
 }

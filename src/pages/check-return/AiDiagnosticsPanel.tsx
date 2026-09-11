@@ -39,7 +39,7 @@ import {
   type PreparerReviewChecklistItem,
 } from './preparerReviewChecklist'
 import ItemizeDiagnosticEmbed from './ItemizeDiagnosticEmbed'
-import { ImportMismatchDiagnosticEmbed } from './DiagnosticFieldEmbed'
+import ImportMismatchDiagnosticEmbed from './ImportMismatchDiagnosticEmbed'
 import QualifiedDivDiagnosticEmbed from './QualifiedDivDiagnosticEmbed'
 import UnderpaymentDiagnosticEmbed from './UnderpaymentDiagnosticEmbed'
 import {
@@ -528,7 +528,7 @@ export default function AiDiagnosticsPanel({
         )}
 
         {selectedIssue.issueKey === 'importMismatches' && mismatchRows.length > 0 && (
-          <ImportMismatchDiagnosticEmbed row={mismatchRows[0]} />
+          <ImportMismatchDiagnosticEmbed rows={mismatchRows} />
         )}
 
         {selectedIssue.issueKey === 'qualifiedDivClassification' && (
