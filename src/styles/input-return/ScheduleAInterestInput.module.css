@@ -3,6 +3,7 @@
   height: auto;
   min-height: 0;
   overflow: visible;
+  background: var(--color-container-background-primary, #ffffff);
 }
 
 .sectionTitleRow {
@@ -11,6 +12,7 @@
   gap: var(--space-component-gap-x-small, 4px);
   padding: var(--space-component-padding-small, 10px) var(--space-container-padding-medium, 20px);
   border-bottom: 1px solid var(--color-divider-tertiary, #d9d9d9);
+  background: var(--color-container-background-neutral, #f4f5f8);
 }
 
 .sectionTitle {
@@ -39,10 +41,16 @@
   width: 100%;
 }
 
+.gridSpacer {
+  height: 20px;
+  border-bottom: 1px solid var(--color-divider-tertiary, #d9d9d9);
+}
+
 .gridHeaderRow,
-.gridRow {
+.gridRow,
+.checkboxRow {
   display: grid;
-  grid-template-columns: minmax(0, 1.15fr) minmax(0, 0.95fr) minmax(0, 0.95fr);
+  grid-template-columns: minmax(0, 1.18fr) minmax(0, 0.91fr) minmax(0, 0.91fr);
   align-items: stretch;
   border-bottom: 1px solid var(--color-divider-tertiary, #d9d9d9);
 }
@@ -51,9 +59,10 @@
   min-height: 40px;
   font-family: var(--font-family-component);
   font-size: var(--font-size-component-medium, 16px);
-  font-weight: var(--font-weight-component, 400);
+  font-weight: var(--font-weight-component-semibold, 500);
   line-height: 24px;
   color: var(--color-text-primary, #393a3d);
+  text-transform: uppercase;
 }
 
 .colLabel,
@@ -61,14 +70,16 @@
 .colPrior,
 .rowLabelCell,
 .federalCell,
-.priorCell {
+.priorCell,
+.checkboxLabelCell {
   padding: var(--space-component-inline-padding-small, 8px);
   min-width: 0;
 }
 
 .colFederal,
 .federalCell,
-.rowLabelCell {
+.rowLabelCell,
+.checkboxLabelCell {
   border-right: 1px dashed var(--color-divider-tertiary, #d9d9d9);
 }
 
@@ -77,10 +88,39 @@
   border-right: none;
 }
 
+.checkboxRow {
+  min-height: 56px;
+}
+
+.checkboxLabelCell {
+  display: flex;
+  align-items: center;
+  padding-top: var(--space-component-padding-small, 12px);
+  padding-bottom: var(--space-component-padding-small, 12px);
+}
+
+.checkboxLabel {
+  display: inline-flex;
+  align-items: flex-start;
+  gap: var(--space-component-gap-small, 8px);
+  font-family: var(--font-family-component);
+  font-size: var(--font-size-component-medium, 16px);
+  font-weight: var(--font-weight-component, 400);
+  line-height: 24px;
+  color: var(--color-text-primary, #393a3d);
+}
+
+.checkbox {
+  width: 16px;
+  height: 16px;
+  margin-top: 4px;
+  flex-shrink: 0;
+  accent-color: var(--color-action-standard, #205ea3);
+}
+
 .rowLabelCell {
   display: flex;
   align-items: flex-start;
-  gap: var(--space-component-gap-x-small, 4px);
   padding-top: var(--space-component-padding-small, 12px);
   padding-bottom: var(--space-component-padding-small, 12px);
 }
@@ -95,23 +135,11 @@
   color: var(--color-text-primary, #393a3d);
 }
 
-.rowLabelHint {
-  display: block;
-  color: var(--color-text-primary, #393a3d);
-}
-
-.labelInfoBtn {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  flex-shrink: 0;
-  margin-top: 2px;
-  padding: 0;
-  border: 1px solid var(--color-container-border-primary, #babec5);
-  border-radius: var(--radius-small, 4px);
-  background: var(--color-container-background-primary, #ffffff);
+.inlineInfoIcon {
+  display: inline-block;
+  vertical-align: middle;
+  margin-left: var(--space-component-gap-x-small, 4px);
   color: var(--color-icon-secondary, #205ea3);
-  cursor: pointer;
 }
 
 .federalCell,

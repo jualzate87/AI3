@@ -1,12 +1,6 @@
 .embed {
   display: flex;
   flex-direction: column;
-  gap: var(--space-container-gap-medium, 16px);
-}
-
-.inputShell {
-  border: 1px solid var(--color-container-border-primary, #d4d7dc);
-  border-radius: var(--radius-large, 12px);
-  overflow: hidden;
-  background: var(--color-container-background-primary, #ffffff);
+  width: 100%;
+  border-top: 1px solid var(--color-divider-tertiary, #d9d9d9);
 }

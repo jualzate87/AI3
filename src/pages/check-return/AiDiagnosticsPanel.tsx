@@ -484,14 +484,12 @@ export default function AiDiagnosticsPanel({
                 <span className={styles.detailTableNote}>{row.cols[1]}</span>
                 <span className={styles.detailTableCellAction}>
                   {row.fixTab ? (
-                    amounts.mortgageInterest === 0 ? null : (
-                      <RowActionLink
-                        label={row.actionLabel ?? 'View source'}
-                        onClick={() =>
-                          handleViewSourceForField(row.fixField, row.fixTab, undefined)
-                        }
-                      />
-                    )
+                    <RowActionLink
+                      label={row.actionLabel ?? 'View source'}
+                      onClick={() =>
+                        handleViewSourceForField(row.fixField, row.fixTab, undefined)
+                      }
+                    />
                   ) : row.viewForm ? (
                     <RowActionLink
                       label={row.actionLabel ?? `View on ${row.viewFormLabel ?? row.viewForm}`}
@@ -502,10 +500,6 @@ export default function AiDiagnosticsPanel({
               </div>
             ))}
           </div>
-        )}
-
-        {selectedIssue.issueKey === 'optItemize' && amounts.mortgageInterest === 0 && (
-          <ItemizeDiagnosticEmbed />
         )}
 
         {fixSteps.length > 0 && (
@@ -528,6 +522,10 @@ export default function AiDiagnosticsPanel({
               ))}
             </ol>
           </div>
+        )}
+
+        {selectedIssue.issueKey === 'optItemize' && amounts.mortgageInterest === 0 && (
+          <ItemizeDiagnosticEmbed />
         )}
       </div>
     )

@@ -474,8 +474,8 @@ function buildOptItemizeIssue(amounts: LiveAmounts): DiagnosticIssueCard {
     dotColor: 'blue',
     title: `Missing Form 1098 is likely worth ${fmtUsd(p.taxSaved)}`,
     category: 'Planning opportunities',
-    summary: `The return takes the ${fmtUsd(p.stdDeduction)} standard deduction, but Jessica confirmed she paid mortgage interest in the mid five figures and never uploaded the 1098. At her estimate, Schedule A clears the standard deduction by a wide margin.`,
-    taxImpact: `Using ${fmtUsd(mortgageForProjection)} of interest, Schedule A totals ${fmtUsd(p.itemizedTotal)} against a ${fmtUsd(p.stdDeduction)} standard deduction. That is ${fmtUsd(p.advantage)} of additional deduction, worth about ${fmtUsd(p.taxSaved)} at her 35% marginal rate. This is the single largest planning item on the return.`,
+    summary: `The return takes the ${fmtUsd(p.stdDeduction)} standard deduction, but Jordan confirmed about ${fmtUsd(ESTIMATED_MORTGAGE_INTEREST)} in mortgage interest and never uploaded the 1098. At that estimate, Schedule A clears the standard deduction by a wide margin.`,
+    taxImpact: `Using ${fmtUsd(mortgageForProjection)} of interest, Schedule A totals ${fmtUsd(p.itemizedTotal)} against a ${fmtUsd(p.stdDeduction)} standard deduction. That is ${fmtUsd(p.advantage)} of additional deduction, worth about ${fmtUsd(p.taxSaved)} at a 35% marginal rate.`,
     rootCause: `The 1098 is not in the import packet, so nothing populated Schedule A and the return defaulted to the standard deduction. SALT and charitable gifts on file (${fmtUsd(p.saltTaxes)} + ${fmtUsd(p.charitableContributions)}) are not enough on their own — mortgage interest is what makes itemizing win.`,
     clientResponseNote:
       'Jessica Drake (Feb 28, 2025): "Yes. I own my home and paid mortgage interest in 2025. I think I got a Form 1098 from my lender but I haven\'t uploaded it yet."',
@@ -499,13 +499,13 @@ function buildOptItemizeIssue(amounts: LiveAmounts): DiagnosticIssueCard {
           mortgageDisplay,
           enteredMortgage > 0
             ? `Posted on Schedule A line 8a from the Form 1098 amount you entered.`
-            : `Jessica confirmed mid-five-figure mortgage interest in the questionnaire — enter the Form 1098 amount in the Input return screen below.`,
+            : `Jordan confirmed ${fmtUsd(ESTIMATED_MORTGAGE_INTEREST)} mortgage interest in the questionnaire.`,
         ],
         ...(enteredMortgage === 0
           ? {
-              fixTab: 'sch-a-interest',
-              fixField: 'mortgage1098',
-              actionLabel: 'Add mortgage interest',
+              fixTab: 'questionnaire',
+              fixField: 'mortgage',
+              actionLabel: 'View source',
             }
           : {}),
       },
@@ -539,7 +539,7 @@ function buildOptItemizeIssue(amounts: LiveAmounts): DiagnosticIssueCard {
             `Switching from the standard deduction saves about ${fmtUsd(p.taxSaved)} on this return.`,
           ]
         : [
-            'Enter the mortgage interest amount from Jessica\'s Form 1098 in the input section below.',
+            'Enter the mortgage interest amount from Jordan\'s Form 1098 in the input section below.',
             `Adding mortgage interest projects Schedule A at ${fmtUsd(p.itemizedTotal)} — about ${fmtUsd(p.taxSaved)} in federal tax saved.`,
             'Open Schedule A to confirm the itemized total before you sign off.',
           ],
@@ -552,7 +552,7 @@ function buildOptItemizeIssue(amounts: LiveAmounts): DiagnosticIssueCard {
         : [
             {
               type: 'goToInput',
-              label: 'Add mortgage interest',
+              label: 'View on input screen',
               tab: 'sch-a-interest',
               field: 'mortgage1098',
             },
