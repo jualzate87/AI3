@@ -146,7 +146,7 @@ export default function LaunchPointsFab() {
         <div className={styles.panel} role="dialog" aria-label="Launch points">
           <div className={styles.panelHeader}>
             <h2 className={styles.panelTitle}>Launch points</h2>
-            <p className={styles.panelSubtitle}>where an accountant can start a request</p>
+            <p className={styles.panelSubtitle}>AI diagnostics demo entry points</p>
           </div>
 
           <div className={styles.roleRow}>
