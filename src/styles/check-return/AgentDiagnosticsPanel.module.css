@@ -301,6 +301,14 @@
   color: var(--color-text-primary, #393a3d);
 }
 
+.planRowActions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: flex-end;
+  gap: var(--space-component-gap-small, 8px);
+}
+
 /* ── User bubble (right-aligned, blue) ── */
 .userRow {
   display: flex;
@@ -428,6 +436,10 @@
   border-radius: var(--radius-large, 12px);
   background: var(--color-container-background-primary, #ffffff);
   overflow: hidden;
+}
+
+.generationBlockDone {
+  border-color: var(--color-divider-secondary, #babec5);
 }
 
 .generationHeader {

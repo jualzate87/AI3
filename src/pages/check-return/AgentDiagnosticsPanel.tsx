@@ -46,7 +46,7 @@ import {
 import type { DiagnosticSyncContext } from '../data-review/phase2FlagSync'
 import styles from '../../styles/check-return/AgentDiagnosticsPanel.module.css'
 
-type AgentPhase = 'ready' | 'running' | 'complete'
+type AgentPhase = 'ready' | 'running' | 'complete' | 'awaiting-next'
 
 type ThreadEntry =
   | {
@@ -55,6 +55,8 @@ type ThreadEntry =
       isWelcome?: boolean
       isPlan?: boolean
       showSources?: boolean
+      showNextActions?: boolean
+      remainingCount?: number
       heading?: string
       text: string
       bullets?: string[]
@@ -229,17 +231,26 @@ function SourceExplorerCard({ links }: { links: AgentViewLink[] }) {
 function DiagnosticsPlanCard({
   bullets,
   plan,
+  phase,
+  onFixItem,
+  onViewLink,
 }: {
   bullets: string[]
   plan: AgentFixPlanItem[]
+  phase: AgentPhase
+  onFixItem: (item: AgentFixPlanItem) => void
+  onViewLink: (link: AgentViewLink) => void
 }) {
+  const canFix = phase === 'ready' || phase === 'awaiting-next'
+
   return (
     <div className={styles.interactiveCard}>
       <p className={styles.cardEyebrow}>Open diagnostics</p>
       <ul className={styles.planList}>
         {bullets.map((bullet, bi) => {
           const item = plan[bi]
-          const primaryLink = item?.viewLinks[0]
+          if (!item) return null
+          const primaryLink = item.viewLinks[0]
           return (
             <li key={bullet} className={styles.planRow}>
               <div className={styles.planRowMain}>
@@ -251,16 +262,23 @@ function DiagnosticsPlanCard({
                 />
                 <span className={styles.planRowTitle}>{bullet}</span>
               </div>
-              {primaryLink && (
-                <LinkActionButton
-                  size="small"
-                  weight="regular"
-                  alignment="left"
-                  onClick={() => runAgentViewLink(primaryLink)}
-                >
-                  {primaryLink.label}
-                </LinkActionButton>
-              )}
+              <div className={styles.planRowActions}>
+                {primaryLink && (
+                  <LinkActionButton
+                    size="small"
+                    weight="regular"
+                    alignment="left"
+                    onClick={() => onViewLink(primaryLink)}
+                  >
+                    {primaryLink.label}
+                  </LinkActionButton>
+                )}
+                {canFix && (
+                  <Button priority="secondary" size="medium" onClick={() => onFixItem(item)}>
+                    Fix this
+                  </Button>
+                )}
+              </div>
             </li>
           )
         })}
@@ -272,7 +290,7 @@ function DiagnosticsPlanCard({
               key={`${link.label}-${link.tab ?? link.formId}`}
               priority="secondary"
               size="medium"
-              onClick={() => runAgentViewLink(link)}
+              onClick={() => onViewLink(link)}
             >
               {link.label}
             </Button>
@@ -283,20 +301,40 @@ function DiagnosticsPlanCard({
   )
 }
 
+function NextFixActions({
+  remainingCount,
+  onFixNext,
+  onFixAll,
+}: {
+  remainingCount: number
+  onFixNext: () => void
+  onFixAll: () => void
+}) {
+  return (
+    <div className={styles.responsePills}>
+      <Button priority="primary" onClick={onFixNext}>
+        Fix next issue
+      </Button>
+      <Button priority="secondary" onClick={onFixAll}>
+        Fix all remaining ({remainingCount})
+      </Button>
+    </div>
+  )
+}
+
 function ThinkingBlock({
   entry,
 }: {
   entry: Extract<ThreadEntry, { kind: 'thinking' }>
 }) {
   const isComplete = entry.activeStep >= entry.steps.length
-  const [expanded, setExpanded] = useState(!isComplete)
-
-  useEffect(() => {
-    if (isComplete) setExpanded(false)
-  }, [isComplete])
+  const doneCount = isComplete ? entry.steps.length : entry.activeStep
+  const [expanded, setExpanded] = useState(true)
 
   return (
-    <div className={styles.generationBlock}>
+    <div
+      className={`${styles.generationBlock} ${isComplete ? styles.generationBlockDone : ''}`}
+    >
       <button
         type="button"
         className={styles.generationHeader}
@@ -309,14 +347,18 @@ function ThinkingBlock({
           className={styles.generationIcon}
           aria-hidden
         />
-        <span className={styles.generationTitle}>Response generation</span>
-        <span className={styles.generationSubtitle}>{entry.issueTitle}</span>
+        <span className={styles.generationTitle}>
+          {isComplete ? 'Reasoning complete' : 'Reasoning in progress'}
+        </span>
+        <span className={styles.generationSubtitle}>
+          {entry.issueTitle} · {doneCount}/{entry.steps.length} steps
+        </span>
         <span className={styles.generationChevron} aria-hidden>
           {expanded ? <ChevronUp size="small" /> : <ChevronDown size="small" />}
         </span>
       </button>
-      {expanded && (
-        <ol className={styles.stepper} aria-label={`Steps for ${entry.issueTitle}`}>
+      {(expanded || !isComplete) && (
+        <ol className={styles.stepper} aria-label={`Reasoning steps for ${entry.issueTitle}`}>
           {entry.steps.map((step, si) => {
             const isActive = si === entry.activeStep && !isComplete
             const isDone = si < entry.activeStep || isComplete
@@ -326,7 +368,11 @@ function ThinkingBlock({
                 className={`${styles.stepperItem} ${isDone ? styles.stepperItemDone : ''} ${isActive ? styles.stepperItemActive : ''}`}
               >
                 <span className={styles.stepperRail} aria-hidden>
-                  <span className={styles.stepperDot} />
+                  {isDone ? (
+                    <CircleCheck size="small" color="var(--color-action-standard)" />
+                  ) : (
+                    <span className={styles.stepperDot} />
+                  )}
                   {si < entry.steps.length - 1 && <span className={styles.stepperLine} />}
                 </span>
                 <div className={styles.stepperContent}>
@@ -493,31 +539,46 @@ export default function AgentDiagnosticsPanel() {
     [updateAmounts, markReviewedBulk],
   )
 
-  const runFixSequence = useCallback(
-    async (plan: AgentFixPlanItem[]) => {
-      if (runRef.current || plan.length === 0) return
+  const runFixForItems = useCallback(
+    async (
+      items: AgentFixPlanItem[],
+      opts?: { single?: boolean; showPlanPreamble?: boolean; progressOffset?: number },
+    ) => {
+      if (runRef.current || items.length === 0) return
       runRef.current = true
       setPhase('running')
-      setProgressValue(0)
-      setActiveFixIndex(0)
 
-      appendThread({
-        kind: 'milestone',
-        text: 'Automated fix started',
-      })
+      const openBefore = buildAgentFixPlan(
+        getAgentFixContext(amounts, reviewedFields),
+      ).length
 
-      appendThread({
-        kind: 'agent',
-        isPlan: true,
-        heading: 'Fix plan',
-        text: `I'll work through ${plan.length} item${plan.length === 1 ? '' : 's'} on this return.`,
-        bullets: plan.map(p => p.title),
-      })
+      if (opts?.showPlanPreamble !== false && !opts?.single) {
+        appendThread({
+          kind: 'milestone',
+          text: 'Automated fix started',
+        })
+        appendThread({
+          kind: 'agent',
+          isPlan: true,
+          heading: 'Fix plan',
+          text: `I'll work through ${items.length} item${items.length === 1 ? '' : 's'} on this return. You'll see my full reasoning for each one.`,
+          bullets: items.map(p => p.title),
+        })
+      }
 
-      for (let i = 0; i < plan.length; i++) {
-        const item = plan[i]
-        setActiveFixIndex(i)
+      const progressStart = opts?.progressOffset ?? 0
+
+      for (let i = 0; i < items.length; i++) {
+        const item = items[i]
+        setActiveFixIndex(progressStart + i)
         const thinkingId = nextThreadEntryId()
+
+        appendThread({
+          kind: 'agent',
+          heading: opts?.single ? 'Working on this issue' : `Issue ${i + 1} of ${items.length}`,
+          text: `Reasoning through ${item.title.toLowerCase()} before applying the fix.`,
+        })
+
         appendThread({
           id: thinkingId,
           kind: 'thinking',
@@ -538,7 +599,7 @@ export default function AgentDiagnosticsPanel() {
         }
 
         applyFixForIssue(item)
-        setProgressValue(i + 1)
+        setProgressValue(progressStart + i + 1)
 
         appendThread({
           kind: 'milestone',
@@ -556,6 +617,21 @@ export default function AgentDiagnosticsPanel() {
       }
 
       setActiveFixIndex(-1)
+      runRef.current = false
+
+      const remainingAfter = Math.max(0, openBefore - items.length)
+
+      if (opts?.single && remainingAfter > 0) {
+        setPhase('awaiting-next')
+        appendThread({
+          kind: 'agent',
+          showNextActions: true,
+          remainingCount: remainingAfter,
+          text: `${remainingAfter} diagnostic${remainingAfter === 1 ? '' : 's'} still open. Review the reasoning above, then fix the next one or finish the rest automatically.`,
+        })
+        return
+      }
+
       setPhase('complete')
       appendThread({
         kind: 'milestone',
@@ -564,15 +640,23 @@ export default function AgentDiagnosticsPanel() {
       appendThread({
         kind: 'agent',
         heading: 'Review complete',
-        text: 'Every open item has been corrected. Use the links below to inspect what changed on source documents, inputs, or the 1040.',
+        text: 'Every open item has been corrected. Expand any reasoning block above to revisit how each fix was derived.',
       })
-      runRef.current = false
     },
-    [appendThread, applyFixForIssue],
+    [appendThread, applyFixForIssue, amounts, reviewedFields],
+  )
+
+  const runFixSequence = useCallback(
+    async (plan: AgentFixPlanItem[]) => {
+      setProgressValue(0)
+      await runFixForItems(plan, { showPlanPreamble: true, progressOffset: 0 })
+    },
+    [runFixForItems],
   )
 
   const handleFixAll = useCallback(() => {
-    if (fixPlan.length === 0) {
+    const plan = buildAgentFixPlan(getAgentFixContext(amounts, reviewedFields))
+    if (plan.length === 0) {
       setPhase('complete')
       appendThread({
         kind: 'agent',
@@ -582,8 +666,34 @@ export default function AgentDiagnosticsPanel() {
       return
     }
     appendThread({ kind: 'user', text: 'Fix all issues' })
-    void runFixSequence(fixPlan)
-  }, [fixPlan, runFixSequence, appendThread])
+    void runFixSequence(plan)
+  }, [amounts, reviewedFields, runFixSequence, appendThread])
+
+  const handleFixOne = useCallback(
+    (item?: AgentFixPlanItem) => {
+      const plan = buildAgentFixPlan(getAgentFixContext(amounts, reviewedFields))
+      const target = item ?? plan[0]
+      if (!target) return
+      appendThread({ kind: 'user', text: `Fix: ${target.title}` })
+      void runFixForItems([target], {
+        single: true,
+        showPlanPreamble: false,
+        progressOffset: progressValue,
+      })
+    },
+    [amounts, reviewedFields, runFixForItems, appendThread, progressValue],
+  )
+
+  const handleFixNext = useCallback(() => {
+    const plan = buildAgentFixPlan(getAgentFixContext(amounts, reviewedFields))
+    if (plan.length === 0) return
+    appendThread({ kind: 'user', text: 'Fix next issue' })
+    void runFixForItems([plan[0]], {
+      single: true,
+      showPlanPreamble: false,
+      progressOffset: progressValue,
+    })
+  }, [amounts, reviewedFields, runFixForItems, appendThread, progressValue])
 
   const handleChatSend = useCallback(() => {
     const text = chatInput.trim()
@@ -592,12 +702,19 @@ export default function AgentDiagnosticsPanel() {
     setChatInput('')
 
     const lower = text.toLowerCase()
-    if (lower.includes('fix') || lower.includes('resolve') || lower.includes('all')) {
-      appendThread({
-        kind: 'agent',
-        text: 'Starting automated fixes now…',
-      })
+    if (lower.includes('next') && (lower.includes('fix') || lower.includes('issue'))) {
+      handleFixNext()
+    } else if (lower.includes('all') && (lower.includes('fix') || lower.includes('resolve'))) {
+      appendThread({ kind: 'agent', text: 'Starting automated fixes now…' })
       void runFixSequence(buildAgentFixPlan(getAgentFixContext(amounts, reviewedFields)))
+    } else if (
+      lower.includes('one') ||
+      lower.includes('single') ||
+      lower.includes('at a time')
+    ) {
+      handleFixOne()
+    } else if (lower.includes('fix') || lower.includes('resolve')) {
+      handleFixOne()
     } else if (lower.includes('pending') || lower.includes('open')) {
       appendThread({
         kind: 'agent',
@@ -612,7 +729,17 @@ export default function AgentDiagnosticsPanel() {
         text: `I found ${remaining} open diagnostic${remaining === 1 ? '' : 's'}. Say "fix all" or use the quick actions below.`,
       })
     }
-  }, [chatInput, appendThread, runFixSequence, amounts, reviewedFields, remaining, fixPlan])
+  }, [
+    chatInput,
+    appendThread,
+    runFixSequence,
+    amounts,
+    reviewedFields,
+    remaining,
+    fixPlan,
+    handleFixNext,
+    handleFixOne,
+  ])
 
   useEffect(() => {
     if (welcomeAddedRef.current) return
@@ -681,7 +808,20 @@ export default function AgentDiagnosticsPanel() {
                           <SourceExplorerCard links={standardSourceLinks} />
                         )}
                         {entry.isPlan && entry.bullets && entry.bullets.length > 0 && (
-                          <DiagnosticsPlanCard bullets={entry.bullets} plan={fixPlan} />
+                          <DiagnosticsPlanCard
+                            bullets={entry.bullets}
+                            plan={fixPlan}
+                            phase={phase}
+                            onFixItem={handleFixOne}
+                            onViewLink={runAgentViewLink}
+                          />
+                        )}
+                        {entry.showNextActions && entry.remainingCount != null && (
+                          <NextFixActions
+                            remainingCount={entry.remainingCount}
+                            onFixNext={handleFixNext}
+                            onFixAll={handleFixAll}
+                          />
                         )}
                         {!entry.isPlan && entry.bullets && entry.bullets.length > 0 && (
                           <ul className={styles.agentList}>
@@ -694,6 +834,9 @@ export default function AgentDiagnosticsPanel() {
                           <div className={styles.responsePills}>
                             <Button priority="primary" onClick={handleFixAll}>
                               Fix all issues
+                            </Button>
+                            <Button priority="secondary" onClick={() => handleFixOne()}>
+                              Fix one at a time
                             </Button>
                             <Button
                               priority="secondary"
@@ -709,12 +852,6 @@ export default function AgentDiagnosticsPanel() {
                               }}
                             >
                               What&apos;s pending?
-                            </Button>
-                            <Button
-                              priority="secondary"
-                              onClick={() => openSourceDocumentReviewPopout()}
-                            >
-                              Review sources
                             </Button>
                           </div>
                         )}
@@ -811,10 +948,20 @@ export default function AgentDiagnosticsPanel() {
           <div className={styles.composerArea}>
             <div className={styles.composerFade} aria-hidden />
             <div className={styles.quickActions} role="toolbar" aria-label="Quick actions">
-              {phase !== 'running' && remaining > 0 && (
-                <button type="button" className={styles.quickChip} onClick={handleFixAll}>
-                  Fix all issues
+              {phase === 'awaiting-next' && remaining > 0 && (
+                <button type="button" className={styles.quickChip} onClick={handleFixNext}>
+                  Fix next issue
                 </button>
+              )}
+              {phase !== 'running' && phase !== 'awaiting-next' && remaining > 0 && (
+                <>
+                  <button type="button" className={styles.quickChip} onClick={handleFixAll}>
+                    Fix all issues
+                  </button>
+                  <button type="button" className={styles.quickChip} onClick={() => handleFixOne()}>
+                    Fix one at a time
+                  </button>
+                </>
               )}
               <button
                 type="button"
