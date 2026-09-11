@@ -642,11 +642,16 @@
   gap: var(--space-component-gap-medium, 12px);
   margin: 0;
   padding-left: var(--space-container-padding-medium, 20px);
-  list-style: disc;
+  list-style-type: disc;
   list-style-position: outside;
 }
 
 .fixStepItem {
+  display: list-item;
+  padding-left: var(--space-component-gap-x-small, 4px);
+}
+
+.fixStepBody {
   display: flex;
   flex-direction: column;
   align-items: flex-start;
@@ -661,8 +666,8 @@
   color: var(--color-text-primary, #393a3d);
 }
 
-.fixStepItem :global([class*='LinkActionButton']) {
-  align-self: flex-start;
+.fixStepAction {
+  padding-left: 0;
 }
 
 .tipItem {

@@ -514,13 +514,17 @@ export default function AiDiagnosticsPanel({
             <ul className={styles.fixStepsList}>
               {fixSteps.map((step, index) => (
                 <li key={`${selectedIssue.issueKey}-step-${index}`} className={styles.fixStepItem}>
-                  <span className={styles.fixStepText}>{step.text}</span>
-                  {step.action ? (
-                    <RowActionLink
-                      label={step.action.label}
-                      onClick={() => runIssueAction(selectedIssue.issueKey, step.action!)}
-                    />
-                  ) : null}
+                  <div className={styles.fixStepBody}>
+                    <span className={styles.fixStepText}>{step.text}</span>
+                    {step.action ? (
+                      <span className={styles.fixStepAction}>
+                        <RowActionLink
+                          label={step.action.label}
+                          onClick={() => runIssueAction(selectedIssue.issueKey, step.action!)}
+                        />
+                      </span>
+                    ) : null}
+                  </div>
                 </li>
               ))}
             </ul>
