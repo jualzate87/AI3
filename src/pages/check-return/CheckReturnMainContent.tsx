@@ -1,5 +1,6 @@
 import OutputReviewPanel from './OutputReviewPanel'
 import AiDiagnosticsPanel, { type AiDiagnosticsView } from './AiDiagnosticsPanel'
+import AgentDiagnosticsPanel from './AgentDiagnosticsPanel'
 import { checkReturnFormToOutputId } from './outputFormNav'
 import type { ContentView } from './CheckReturnNav'
 import type { OutputFormId } from '../data-review/outputForms'
@@ -19,6 +20,8 @@ interface CheckReturnMainContentProps {
     issueKey?: Phase2IssueKey | null,
   ) => void
   diagnosticHighlightKey?: Phase2IssueKey | null
+  /** Agent mode — only set from /check-return/agent launch point. */
+  diagnosticsMode?: 'manual' | 'agent'
 }
 
 export default function CheckReturnMainContent({
@@ -29,6 +32,7 @@ export default function CheckReturnMainContent({
   selectedDiagnosticKey = null,
   onAiDiagnosticsViewChange,
   diagnosticHighlightKey = null,
+  diagnosticsMode = 'manual',
 }: CheckReturnMainContentProps) {
   return (
     <main
@@ -83,7 +87,11 @@ export default function CheckReturnMainContent({
         </div>
       )}
 
-      {contentView === 'ai-diagnostics' && onAiDiagnosticsViewChange && (
+      {contentView === 'ai-diagnostics' && diagnosticsMode === 'agent' && (
+        <AgentDiagnosticsPanel />
+      )}
+
+      {contentView === 'ai-diagnostics' && diagnosticsMode === 'manual' && onAiDiagnosticsViewChange && (
         <AiDiagnosticsPanel
           view={aiDiagnosticsView}
           selectedIssueKey={selectedDiagnosticKey}

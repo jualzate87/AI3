@@ -7,9 +7,11 @@ import SegmentedButton from '@ids-ts/segmented-button'
 import '@ids-ts/segmented-button/dist/main.css'
 import { resetPersistedReviewState } from '../../hooks/useSyncedReviewState'
 import {
+  AGENT_MODE_SESSION_KEY,
   buildHashRouteUrl,
   getStoredDemoRole,
   openReviewReturnPopout,
+  PREPARER_AGENT_DIAGNOSTICS_PATH,
   PREPARER_DATA_REVIEW_PATH,
   PREPARER_DIAGNOSTICS_PATH,
   setStoredDemoRole,
@@ -27,9 +29,19 @@ function statusBadge(status: LaunchPoint['status']) {
 }
 
 function prepareDiagnosticsLaunch(): void {
+  sessionStorage.removeItem(AGENT_MODE_SESSION_KEY)
   sessionStorage.setItem('protoc3-session-started', '1')
   sessionStorage.setItem('protoc3-imports-started', '1')
   sessionStorage.setItem('protoc3-phase', 'diagnostics')
+  sessionStorage.setItem('agentLoaded', '1')
+  setStoredDemoRole('preparer')
+}
+
+function prepareAgentLaunch(): void {
+  sessionStorage.setItem(AGENT_MODE_SESSION_KEY, '1')
+  sessionStorage.setItem('protoc3-session-started', '1')
+  sessionStorage.setItem('protoc3-imports-started', '1')
+  sessionStorage.removeItem('protoc3-phase')
   sessionStorage.setItem('agentLoaded', '1')
   setStoredDemoRole('preparer')
 }
@@ -86,6 +98,8 @@ export default function LaunchPointsFab() {
       setOpen(false)
       if (point.route === PREPARER_DIAGNOSTICS_PATH) {
         prepareDiagnosticsLaunch()
+      } else if (point.route === PREPARER_AGENT_DIAGNOSTICS_PATH) {
+        prepareAgentLaunch()
       }
       navigate(point.route)
     },
@@ -103,6 +117,7 @@ export default function LaunchPointsFab() {
     sessionStorage.removeItem('protoc3-imports-started')
     sessionStorage.removeItem('protoc3-phase')
     sessionStorage.removeItem('agentLoaded')
+    sessionStorage.removeItem(AGENT_MODE_SESSION_KEY)
     setStoredDemoRole('preparer')
     setOpen(false)
     window.location.assign(buildHashRouteUrl('/smart-return'))

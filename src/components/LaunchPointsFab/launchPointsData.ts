@@ -1,4 +1,7 @@
-import { PREPARER_DIAGNOSTICS_PATH } from '../../lib/prototypeRoutes'
+import {
+  PREPARER_AGENT_DIAGNOSTICS_PATH,
+  PREPARER_DIAGNOSTICS_PATH,
+} from '../../lib/prototypeRoutes'
 
 export type LaunchPointStatus = 'live' | 'stub'
 
@@ -26,42 +29,23 @@ export const LAUNCH_POINTS: LaunchPoint[] = [
   },
   {
     id: 3,
-    title: 'Client detail · Documents',
-    status: 'stub',
-    description: '"Create a new request" in the shared-docs section',
-  },
-  {
-    id: 4,
-    title: 'Return · Return actions',
-    status: 'stub',
-    description: '"Collect data" in the Return actions menu',
-  },
-  {
-    id: 5,
-    title: 'Return · Data import hub',
-    status: 'stub',
-    description: '"Request client information → Send request"',
-    route: '/import-confirmation',
-  },
-  {
-    id: 6,
-    title: 'Return · SmartReturn',
-    status: 'stub',
-    description: '"Request documents" on the document checklist',
-    route: '/smart-return',
-  },
-  {
-    id: 7,
     title: 'New client · Create tax return',
     status: 'live',
     description: '"Add new client → import 1040 → organizer"',
     route: '/smart-return',
   },
   {
-    id: 8,
+    id: 4,
     title: 'Phase 2 — AI Diagnostics',
     status: 'live',
     description: 'Skip to Step 2 with the AI diagnostics panel open',
     route: PREPARER_DIAGNOSTICS_PATH,
+  },
+  {
+    id: 5,
+    title: 'Smart review — Agent mode',
+    status: 'live',
+    description: 'AI agent fixes diagnostics automatically with full reasoning trail',
+    route: PREPARER_AGENT_DIAGNOSTICS_PATH,
   },
 ]

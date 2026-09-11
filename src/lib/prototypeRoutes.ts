@@ -13,6 +13,20 @@ export const REVIEWER_DATA_REVIEW_PATH = OUTPUT_REVIEW_PATH
 export const PREPARER_DIAGNOSTICS_PATH =
   '/data-review?entry=input-return&role=preparer&phase=diagnostics'
 
+/** Launch point - agent-mode auto-fix diagnostics on Check return (session-gated). */
+export const PREPARER_AGENT_DIAGNOSTICS_PATH = '/check-return/agent'
+
+/** sessionStorage key — set only from Launch Points agent entry. */
+export const AGENT_MODE_SESSION_KEY = 'protoc3-agent-mode'
+
+export function isAgentModeEnabled(): boolean {
+  try {
+    return sessionStorage.getItem(AGENT_MODE_SESSION_KEY) === '1'
+  } catch {
+    return false
+  }
+}
+
 export const VALID_DATA_REVIEW_ENTRIES = new Set(['input-return', 'review-return'])
 
 export const DEMO_ROLE_STORAGE_KEY = 'protoc-demo-role'
@@ -20,6 +34,7 @@ export const DEMO_ROLE_STORAGE_KEY = 'protoc-demo-role'
 /** Known hash routes (longest match first). */
 const KNOWN_HASH_ROUTES = [
   '/check-return/insights',
+  '/check-return/agent',
   '/check-return-popout',
   '/check-return',
   '/import-confirmation',

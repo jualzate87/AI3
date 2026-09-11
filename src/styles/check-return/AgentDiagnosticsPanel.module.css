@@ -1,0 +1,257 @@
+.panel {
+  --color-action-standard: #236cff;
+  --color-action-standard-hover: #1b56cc;
+  --color-action-standard-active: #1748aa;
+
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-container-gap-medium, 16px);
+  padding: var(--space-container-padding-large, 32px);
+  padding-bottom: var(--space-container-padding-x-large, 48px);
+  background: var(--color-container-background-primary, #ffffff);
+  min-height: 100%;
+  box-sizing: border-box;
+}
+
+.headerArea {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-component-gap-medium, 12px);
+}
+
+.logoTitleRow {
+  display: flex;
+  align-items: center;
+  gap: var(--space-component-gap-medium, 12px);
+}
+
+.logoIcon {
+  width: 20px;
+  height: 20px;
+  flex-shrink: 0;
+}
+
+.pageTitle {
+  font-family: var(--font-family-component);
+  font-size: var(--font-size-component-large, 20px);
+  font-weight: var(--font-weight-component-semibold, 600);
+  line-height: 1.4;
+  color: var(--color-text-primary, #393a3d);
+  margin: 0;
+}
+
+.introText {
+  font-family: var(--font-family-body);
+  font-size: var(--font-size-body-3, 14px);
+  line-height: 1.5;
+  color: var(--color-text-primary, #393a3d);
+  margin: 0;
+}
+
+.agentBadge {
+  align-self: flex-start;
+}
+
+.progressCard {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-component-gap-medium, 12px);
+  padding: var(--space-container-padding-medium, 16px);
+  border: 1px solid var(--color-action-passive, #e3e5e8);
+  border-radius: var(--radius-large, 12px);
+  background: var(--color-container-background-primary, #ffffff);
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+}
+
+.progressLabel {
+  font-family: var(--font-family-component);
+  font-size: var(--font-size-component-small, 14px);
+  font-weight: var(--font-weight-component-semibold, 600);
+  color: var(--color-text-primary, #393a3d);
+  margin: 0;
+}
+
+.progressMeta {
+  font-family: var(--font-family-body);
+  font-size: var(--font-size-body-4, 12px);
+  color: var(--color-text-secondary, #6b6c72);
+  margin: 0;
+}
+
+.thread {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-container-gap-medium, 16px);
+}
+
+.threadMessage {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-component-gap-small, 8px);
+  padding: var(--space-container-padding-medium, 16px);
+  border-radius: var(--radius-large, 12px);
+  border: 1px solid var(--color-divider-tertiary, #d4d7dc);
+  background: var(--color-container-background-secondary, #f4f5f8);
+}
+
+.threadMessageAgent {
+  background: var(--color-container-background-primary, #ffffff);
+  border-color: var(--color-action-passive, #e3e5e8);
+}
+
+.threadHeader {
+  display: flex;
+  align-items: center;
+  gap: var(--space-component-gap-small, 8px);
+}
+
+.wordmark {
+  font-family: var(--font-family-component);
+  font-size: var(--font-size-component-small, 14px);
+  font-weight: var(--font-weight-component-semibold, 600);
+  color: var(--color-text-primary, #393a3d);
+}
+
+.threadBody {
+  font-family: var(--font-family-body);
+  font-size: var(--font-size-body-3, 14px);
+  line-height: 1.5;
+  color: var(--color-text-primary, #393a3d);
+  margin: 0;
+}
+
+.thinkingList {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-component-gap-small, 8px);
+}
+
+.thinkingItem {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--space-component-gap-small, 8px);
+  font-family: var(--font-family-body);
+  font-size: var(--font-size-body-4, 12px);
+  line-height: 1.5;
+  color: var(--color-text-secondary, #6b6c72);
+}
+
+.thinkingItemActive {
+  color: var(--color-text-primary, #393a3d);
+  font-weight: var(--font-weight-body-semibold, 500);
+}
+
+.thinkingDot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--color-text-secondary, #6b6c72);
+  margin-top: 6px;
+  flex-shrink: 0;
+}
+
+.thinkingItemActive .thinkingDot {
+  background: var(--color-action-standard, #236cff);
+}
+
+.fixResult {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-component-gap-x-small, 4px);
+  padding: var(--space-component-gap-medium, 12px);
+  border-radius: var(--radius-medium, 8px);
+  background: var(--color-container-background-positive-subtle, #e8f5ec);
+  border: 1px solid var(--color-container-border-positive, #c5e8d0);
+}
+
+.fixResultTitle {
+  font-family: var(--font-family-component);
+  font-size: var(--font-size-component-small, 14px);
+  font-weight: var(--font-weight-component-semibold, 600);
+  color: var(--color-text-primary, #393a3d);
+  margin: 0;
+}
+
+.fixResultBody {
+  font-family: var(--font-family-body);
+  font-size: var(--font-size-body-4, 12px);
+  line-height: 1.5;
+  color: var(--color-text-secondary, #6b6c72);
+  margin: 0;
+}
+
+.actionsRow {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-component-gap-medium, 12px);
+  align-items: center;
+}
+
+.chatComposer {
+  display: flex;
+  gap: var(--space-component-gap-small, 8px);
+  align-items: flex-end;
+  padding: var(--space-container-padding-medium, 16px);
+  border: 1px solid var(--color-divider-tertiary, #d4d7dc);
+  border-radius: var(--radius-large, 12px);
+  background: var(--color-container-background-primary, #ffffff);
+}
+
+.chatInput {
+  flex: 1;
+  min-height: 40px;
+  max-height: 120px;
+  resize: vertical;
+  border: none;
+  outline: none;
+  font-family: var(--font-family-input-text);
+  font-size: var(--font-size-input-text, 16px);
+  line-height: 1.4;
+  color: var(--color-text-primary, #393a3d);
+  background: transparent;
+}
+
+.completionCard {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-container-gap-medium, 16px);
+  padding: var(--space-container-padding-large, 24px);
+  border-radius: var(--radius-large, 12px);
+  border: 1px solid var(--color-container-border-positive, #c5e8d0);
+  background: var(--color-container-background-positive-subtle, #e8f5ec);
+}
+
+.completionHeader {
+  display: flex;
+  align-items: center;
+  gap: var(--space-component-gap-medium, 12px);
+}
+
+.completionTitle {
+  font-family: var(--font-family-component);
+  font-size: var(--font-size-component-large, 20px);
+  font-weight: var(--font-weight-component-semibold, 600);
+  color: var(--color-text-primary, #393a3d);
+  margin: 0;
+}
+
+.completionBody {
+  font-family: var(--font-family-body);
+  font-size: var(--font-size-body-3, 14px);
+  line-height: 1.5;
+  color: var(--color-text-primary, #393a3d);
+  margin: 0;
+}
+
+.reviewLinks {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-component-gap-medium, 12px);
+}
+
+.successIcon {
+  color: var(--color-icon-positive, #00892e);
+}
