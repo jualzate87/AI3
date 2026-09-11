@@ -25,6 +25,7 @@ import { isAgentModeEnabled, openSourceDocumentReviewPopout } from '../lib/proto
 import type { ReturnContextRailItemId } from '../components/ReturnContextRail'
 import layout from '../styles/CoreScreenLayout.module.css'
 import styles from '../styles/CheckReturnPage.module.css'
+import agentLayout from '../styles/check-return/AgentDiagnosticsPanel.module.css'
 
 export default function CheckReturnAgentPage() {
   const agentAllowed = isAgentModeEnabled()
@@ -142,7 +143,7 @@ export default function CheckReturnAgentPage() {
             showViewSourceDocuments
             onViewSourceDocuments={() => openSourceDocumentReviewPopout()}
           />
-          <div className={styles.contentArea}>
+          <div className={`${styles.contentArea} ${agentLayout.pageShell}`}>
             <CheckReturnNav
               contentView={contentView}
               selectedForm={selectedForm}

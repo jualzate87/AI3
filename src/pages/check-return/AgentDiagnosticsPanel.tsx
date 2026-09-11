@@ -1,14 +1,19 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
-import { CircleCheckFill, Send } from '@design-systems/icons'
-import { Badge } from '@ids-ts/badge'
-import '@ids-ts/badge/dist/main.css'
+import {
+  ChevronDown,
+  ChevronUp,
+  CircleCheckFill,
+  Plus,
+  Send,
+  StopFill,
+} from '@design-systems/icons'
 import { Button } from '@ids-ts/button'
 import '@ids-ts/button/dist/main.css'
+import { Link } from '@ids-ts/link'
+import '@ids-ts/link/dist/main.css'
 import { LinkActionButton } from '@ids-ts/link-action-button'
 import '@ids-ts/link-action-button/dist/main.css'
-import { ProgressBar } from '@ids-ts/progress-bar'
-import '@ids-ts/progress-bar/dist/main.css'
-import intuitIntelligenceLogo from '../../assets/icons/intuit-intelligence-logo-small.svg'
+import intuitAssistIcon from '../../assets/icons/intuit-assist-sparkle.svg'
 import { computeLiveReturn } from '../../data/liveReturn'
 import { useSyncedReviewState } from '../../hooks/useSyncedReviewState'
 import {
@@ -28,7 +33,7 @@ import styles from '../../styles/check-return/AgentDiagnosticsPanel.module.css'
 type AgentPhase = 'ready' | 'running' | 'complete'
 
 type ThreadEntry =
-  | { id: string; kind: 'agent'; text: string }
+  | { id: string; kind: 'agent'; heading?: string; text: string; bullets?: string[] }
   | { id: string; kind: 'user'; text: string }
   | { id: string; kind: 'thinking'; issueTitle: string; steps: string[]; activeStep: number }
   | { id: string; kind: 'fixed'; title: string; summary: string }
@@ -40,6 +45,66 @@ let threadEntryCounter = 0
 function nextThreadEntryId(): string {
   threadEntryCounter += 1
   return `agent-thread-${threadEntryCounter}`
+}
+
+function ThinkingBlock({
+  entry,
+}: {
+  entry: Extract<ThreadEntry, { kind: 'thinking' }>
+}) {
+  const isComplete = entry.activeStep >= entry.steps.length
+  const [expanded, setExpanded] = useState(!isComplete)
+
+  useEffect(() => {
+    if (isComplete) setExpanded(false)
+  }, [isComplete])
+
+  return (
+    <div className={styles.generationBlock}>
+      <button
+        type="button"
+        className={styles.generationHeader}
+        onClick={() => setExpanded(open => !open)}
+        aria-expanded={expanded}
+      >
+        <img src={intuitAssistIcon} alt="" className={styles.generationIcon} aria-hidden />
+        <span className={styles.generationTitle}>Response generation</span>
+        <span className={styles.generationSubtitle}>{entry.issueTitle}</span>
+        <span className={styles.generationChevron} aria-hidden>
+          {expanded ? <ChevronUp size="small" /> : <ChevronDown size="small" />}
+        </span>
+      </button>
+      {expanded && (
+        <ol className={styles.stepper} aria-label={`Steps for ${entry.issueTitle}`}>
+          {entry.steps.map((step, si) => {
+            const isActive = si === entry.activeStep && !isComplete
+            const isDone = si < entry.activeStep || isComplete
+            return (
+              <li
+                key={si}
+                className={`${styles.stepperItem} ${isDone ? styles.stepperItemDone : ''} ${isActive ? styles.stepperItemActive : ''}`}
+              >
+                <span className={styles.stepperRail} aria-hidden>
+                  <span className={styles.stepperDot} />
+                  {si < entry.steps.length - 1 && <span className={styles.stepperLine} />}
+                </span>
+                <div className={styles.stepperContent}>
+                  <p className={styles.stepperTitle}>{step}</p>
+                  {(isActive || isDone) && (
+                    <p className={styles.stepperBody}>
+                      {isDone
+                        ? 'Complete'
+                        : 'Analyzing return data and source documents…'}
+                    </p>
+                  )}
+                </div>
+              </li>
+            )
+          })}
+        </ol>
+      )}
+    </div>
+  )
 }
 
 export default function AgentDiagnosticsPanel() {
@@ -59,9 +124,19 @@ export default function AgentDiagnosticsPanel() {
   const [chatInput, setChatInput] = useState('')
   const runRef = useRef(false)
   const welcomeAddedRef = useRef(false)
+  const chatScrollRef = useRef<HTMLDivElement>(null)
 
   const remaining = overview.remaining
   const total = overview.total
+
+  const scrollToBottom = useCallback(() => {
+    const el = chatScrollRef.current
+    if (el) el.scrollTop = el.scrollHeight
+  }, [])
+
+  useEffect(() => {
+    scrollToBottom()
+  }, [thread, scrollToBottom])
 
   const appendThread = useCallback((entry: Omit<ThreadEntry, 'id'> & { id?: string }) => {
     const withId = { ...entry, id: entry.id ?? nextThreadEntryId() } as ThreadEntry
@@ -88,7 +163,9 @@ export default function AgentDiagnosticsPanel() {
 
       appendThread({
         kind: 'agent',
-        text: `I'll work through ${plan.length} item${plan.length === 1 ? '' : 's'} on this return — updating inputs and marking each diagnostic resolved.`,
+        heading: 'Automated fix plan',
+        text: `I'll work through ${plan.length} item${plan.length === 1 ? '' : 's'} on this return.`,
+        bullets: plan.map(p => p.title),
       })
 
       for (let i = 0; i < plan.length; i++) {
@@ -128,7 +205,8 @@ export default function AgentDiagnosticsPanel() {
       setPhase('complete')
       appendThread({
         kind: 'agent',
-        text: 'All diagnostics are resolved. You can review what changed on source documents, inputs, or the 1040 below.',
+        heading: 'All diagnostics resolved',
+        text: 'Every open item has been corrected. Review what changed on source documents, inputs, or the 1040 below.',
       })
       runRef.current = false
     },
@@ -140,10 +218,12 @@ export default function AgentDiagnosticsPanel() {
       setPhase('complete')
       appendThread({
         kind: 'agent',
+        heading: 'No open diagnostics',
         text: 'This return has no open diagnostics — you are ready to sign off.',
       })
       return
     }
+    appendThread({ kind: 'user', text: 'Fix all issues' })
     void runFixSequence(fixPlan)
   }, [fixPlan, runFixSequence, appendThread])
 
@@ -163,19 +243,27 @@ export default function AgentDiagnosticsPanel() {
     } else {
       appendThread({
         kind: 'agent',
-        text: `I found ${remaining} open diagnostic${remaining === 1 ? '' : 's'}. Say "fix all" or use Fix all issues to let me apply corrections automatically.`,
+        heading: 'Open diagnostics',
+        text: `I found ${remaining} open diagnostic${remaining === 1 ? '' : 's'} on this return.`,
+        bullets: [
+          'Say "fix all" to apply corrections automatically',
+          'Or use Fix all issues to start the agent workflow',
+        ],
       })
     }
   }, [chatInput, appendThread, runFixSequence, amounts, reviewedFields, remaining])
 
   useEffect(() => {
-    // StrictMode re-runs effects with the same render closure; guard with a ref
-    // so the welcome message is not appended twice on mount.
     if (welcomeAddedRef.current) return
     welcomeAddedRef.current = true
     appendThread({
       kind: 'agent',
-      text: `I've reviewed Jordan's 2025 return and found ${total} item${total === 1 ? '' : 's'} that need attention. I can fix them automatically — you'll see each step as I work.`,
+      heading: 'Return review summary',
+      text: `I've reviewed Jordan's 2025 return and found ${total} item${total === 1 ? '' : 's'} that need attention.`,
+      bullets: [
+        'I can fix them automatically with full visibility into each step',
+        'You will see response generation progress as I work',
+      ],
     })
   }, [appendThread, total])
 
@@ -183,176 +271,162 @@ export default function AgentDiagnosticsPanel() {
 
   return (
     <div className={styles.panel}>
-      <div className={styles.headerArea}>
-        <div className={styles.logoTitleRow}>
-          <img src={intuitIntelligenceLogo} alt="" className={styles.logoIcon} />
-          <h1 className={styles.pageTitle}>Smart review — Agent mode</h1>
+      <div className={styles.chatScroll} ref={chatScrollRef}>
+        <div className={styles.thread}>
+          {thread.map(entry => {
+            if (entry.kind === 'user') {
+              return (
+                <div key={entry.id} className={styles.userRow}>
+                  <div className={styles.userBubble}>{entry.text}</div>
+                </div>
+              )
+            }
+            if (entry.kind === 'agent') {
+              return (
+                <div key={entry.id} className={styles.agentAnswer}>
+                  {entry.heading && (
+                    <h2 className={styles.agentHeading}>{entry.heading}</h2>
+                  )}
+                  <p className={styles.agentBody}>{entry.text}</p>
+                  {entry.bullets && entry.bullets.length > 0 && (
+                    <ul className={styles.agentList}>
+                      {entry.bullets.map((bullet, bi) => (
+                        <li key={bi}>{bullet}</li>
+                      ))}
+                    </ul>
+                  )}
+                </div>
+              )
+            }
+            if (entry.kind === 'thinking') {
+              return <ThinkingBlock key={entry.id} entry={entry} />
+            }
+            if (entry.kind === 'fixed') {
+              return (
+                <div key={entry.id} className={styles.agentAnswer}>
+                  <h2 className={styles.agentHeading}>
+                    <CircleCheckFill size="small" className={styles.successIcon} aria-hidden />
+                    {' '}
+                    Fixed: {entry.title}
+                  </h2>
+                  <p className={styles.agentBody}>{entry.summary}</p>
+                </div>
+              )
+            }
+            return null
+          })}
         </div>
-        <Badge
-          className={styles.agentBadge}
-          status="info"
-          label="AI AGENT"
-          capitalization="uppercase"
-          priority="secondary"
-        />
-        <p className={styles.introText}>
-          Intuit Intelligence can resolve diagnostics for you — with full visibility into
-          what changed and why.
-        </p>
+
+        {phase === 'ready' && remaining > 0 && (
+          <div className={styles.suggestedActions}>
+            <Button priority="primary" onClick={handleFixAll}>
+              Fix all issues
+            </Button>
+          </div>
+        )}
+
+        {phase === 'running' && remaining > 0 && (
+          <p className={styles.progressMeta} aria-live="polite">
+            Fixing issues… {progressValue} of {progressMax} complete
+          </p>
+        )}
+
+        {showCompletion && (
+          <div className={styles.completionCard}>
+            <div className={styles.completionHeader}>
+              <CircleCheckFill size="medium" className={styles.successIcon} aria-hidden />
+              <h2 className={styles.completionTitle}>All issues fixed</h2>
+            </div>
+            <p className={styles.completionBody}>
+              Every diagnostic has been resolved. Review the changes on source documents, input
+              fields, or the output forms.
+            </p>
+            <div className={styles.reviewLinks}>
+              <LinkActionButton
+                size="small"
+                weight="regular"
+                alignment="left"
+                onClick={() => openSourceDocumentReviewPopout()}
+              >
+                View source documents
+              </LinkActionButton>
+              <LinkActionButton
+                size="small"
+                weight="regular"
+                alignment="left"
+                onClick={() => {
+                  window.location.assign(buildHashRouteUrl(PREPARER_DATA_REVIEW_PATH))
+                }}
+              >
+                View inputs
+              </LinkActionButton>
+              <LinkActionButton
+                size="small"
+                weight="regular"
+                alignment="left"
+                onClick={() => openReviewReturnPopout('1040')}
+              >
+                View 1040
+              </LinkActionButton>
+            </div>
+          </div>
+        )}
       </div>
 
-      {(phase === 'running' || phase === 'ready') && remaining > 0 && (
-        <div className={styles.progressCard}>
-          <p className={styles.progressLabel}>
-            {phase === 'running' ? 'Fixing issues…' : 'Diagnostics to resolve'}
-          </p>
-          <ProgressBar
-            value={phase === 'running' ? progressValue : overview.reviewed}
-            max={phase === 'running' ? progressMax : total || 1}
-            persistent={phase === 'complete'}
-            automationId="agent-diagnostics-progress"
-            aria-label={`${phase === 'running' ? progressValue : overview.reviewed} of ${phase === 'running' ? progressMax : total} diagnostics`}
-          />
-          <p className={styles.progressMeta}>
-            {phase === 'running'
-              ? `${progressValue} of ${progressMax} complete`
-              : `${remaining} remaining · ${overview.reviewed} of ${total} reviewed`}
-          </p>
-        </div>
-      )}
-
-      {phase === 'ready' && remaining > 0 && (
-        <div className={styles.actionsRow}>
-          <Button priority="primary" onClick={handleFixAll}>
-            Fix all issues
-          </Button>
-        </div>
-      )}
-
-      <div className={styles.thread}>
-        {thread.map(entry => {
-          if (entry.kind === 'user') {
-            return (
-              <div key={entry.id} className={styles.threadMessage}>
-                <p className={styles.threadBody}>{entry.text}</p>
-              </div>
-            )
-          }
-          if (entry.kind === 'agent') {
-            return (
-              <div key={entry.id} className={`${styles.threadMessage} ${styles.threadMessageAgent}`}>
-                <div className={styles.threadHeader}>
-                  <img src={intuitIntelligenceLogo} alt="" className={styles.logoIcon} />
-                  <span className={styles.wordmark}>Intuit Intelligence</span>
-                </div>
-                <p className={styles.threadBody}>{entry.text}</p>
-              </div>
-            )
-          }
-          if (entry.kind === 'thinking') {
-            return (
-              <div key={entry.id} className={`${styles.threadMessage} ${styles.threadMessageAgent}`}>
-                <div className={styles.threadHeader}>
-                  <img src={intuitIntelligenceLogo} alt="" className={styles.logoIcon} />
-                  <span className={styles.wordmark}>Working on {entry.issueTitle}</span>
-                </div>
-                <ul className={styles.thinkingList}>
-                  {entry.steps.map((step, si) => (
-                    <li
-                      key={si}
-                      className={`${styles.thinkingItem} ${si < entry.activeStep ? styles.thinkingItemActive : ''}`}
-                    >
-                      <span className={styles.thinkingDot} aria-hidden />
-                      {step}
-                    </li>
-                  ))}
-                </ul>
-              </div>
-            )
-          }
-          if (entry.kind === 'fixed') {
-            return (
-              <div key={entry.id} className={styles.fixResult}>
-                <p className={styles.fixResultTitle}>
-                  <CircleCheckFill size="small" className={styles.successIcon} aria-hidden />
-                  {' '}
-                  Fixed: {entry.title}
-                </p>
-                <p className={styles.fixResultBody}>{entry.summary}</p>
-              </div>
-            )
-          }
-          return null
-        })}
-      </div>
-
-      {showCompletion && (
-        <div className={styles.completionCard}>
-          <div className={styles.completionHeader}>
-            <CircleCheckFill size="medium" className={styles.successIcon} aria-hidden />
-            <h2 className={styles.completionTitle}>All issues fixed</h2>
-          </div>
-          <p className={styles.completionBody}>
-            Every diagnostic has been resolved. Review the changes on source documents, input
-            fields, or the output forms.
-          </p>
-          <div className={styles.reviewLinks}>
-            <LinkActionButton
-              size="small"
-              weight="regular"
-              alignment="left"
-              onClick={() => openSourceDocumentReviewPopout()}
-            >
-              View source documents
-            </LinkActionButton>
-            <LinkActionButton
-              size="small"
-              weight="regular"
-              alignment="left"
-              onClick={() => {
-                window.location.assign(buildHashRouteUrl(PREPARER_DATA_REVIEW_PATH))
-              }}
-            >
-              View inputs
-            </LinkActionButton>
-            <LinkActionButton
-              size="small"
-              weight="regular"
-              alignment="left"
-              onClick={() => openReviewReturnPopout('1040')}
-            >
-              View 1040
-            </LinkActionButton>
-          </div>
-        </div>
-      )}
-
-      {phase !== 'running' && (
-        <div className={styles.chatComposer}>
+      <div className={styles.composerArea}>
+        <div className={styles.composerFade} aria-hidden />
+        <div className={styles.composerBox}>
           <textarea
-            className={styles.chatInput}
+            className={styles.composerInput}
             rows={1}
-            placeholder="Ask Intuit Intelligence to fix issues…"
+            placeholder="Ask anything"
             value={chatInput}
             onChange={e => setChatInput(e.target.value)}
             onKeyDown={e => {
               if (e.key === 'Enter' && !e.shiftKey) {
                 e.preventDefault()
-                handleChatSend()
+                if (phase !== 'running') handleChatSend()
               }
             }}
-            aria-label="Message Intuit Intelligence"
+            aria-label="Ask Intuit Intelligence"
+            disabled={phase === 'running'}
           />
-          <Button
-            priority="secondary"
-            size="small"
-            onClick={handleChatSend}
-            aria-label="Send message"
-          >
-            <Send size="small" aria-hidden />
-          </Button>
+          <div className={styles.composerActions}>
+            <button type="button" className={styles.attachBtn} aria-label="Attach">
+              <Plus size="medium" />
+            </button>
+            {phase === 'running' ? (
+              <button
+                type="button"
+                className={`${styles.sendBtn} ${styles.sendBtnActive}`}
+                aria-label="Stop generation"
+                disabled
+              >
+                <StopFill size="medium" />
+              </button>
+            ) : (
+              <button
+                type="button"
+                className={`${styles.sendBtn} ${chatInput.trim() ? styles.sendBtnActive : ''}`}
+                aria-label="Send message"
+                disabled={!chatInput.trim()}
+                onClick={handleChatSend}
+              >
+                <Send size="medium" />
+              </button>
+            )}
+          </div>
         </div>
-      )}
+        <Link
+          href="#"
+          size="body-4"
+          inline
+          onClick={e => e.preventDefault()}
+          className={styles.legalLink}
+        >
+          Important information about how we use generative AI
+        </Link>
+      </div>
     </div>
   )
 }
