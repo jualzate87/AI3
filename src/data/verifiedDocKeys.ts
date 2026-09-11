@@ -18,7 +18,7 @@ export function intVerifiedDocKey(payer: IntPayer): string {
   return `1099-int-${payer}`
 }
 
-/** All packet source documents expected on Jessica Drake TY 2025. */
+/** All packet source documents expected on Jordan Wells TY 2025. */
 export const PACKET_VERIFY_DOC_KEYS = [
   ...W2_PAYER_TABS.map(t => t.key),
   ...DIV_PAYER_TABS.map(t => divVerifiedDocKey(t.key)),

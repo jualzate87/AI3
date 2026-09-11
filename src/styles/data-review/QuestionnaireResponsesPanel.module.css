@@ -230,6 +230,13 @@
   color: var(--color-text-primary, #393a3d);
 }
 
+.fieldLinkValue {
+  font-family: var(--font-family-component);
+  font-size: var(--font-size-component-small, 14px);
+  font-weight: var(--font-weight-component-bold, 600);
+  color: var(--color-text-primary);
+}
+
 .fieldLinkNote {
   margin: 0;
   padding-left: 0;

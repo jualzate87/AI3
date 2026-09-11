@@ -1,7 +1,8 @@
 /**
- * Seeded Jessica Drake Tax Organizer / Questionnaire responses.
+ * Seeded Jordan Wells Tax Organizer / Questionnaire responses.
  * Diagnostics cite these via responseId + View client response CTAs.
  */
+import { CLIENT_ADDRESS } from '../../data/clientAddress'
 import type { TopTab } from './ReviewTab'
 
 export type QuestionnaireResponseId =
@@ -30,6 +31,8 @@ export type QuestionnaireFieldLink = {
   status: QuestionnaireFieldLinkStatus
   /** Short note on what happened (e.g. "$0 - matches client answer") */
   statusNote?: string
+  /** Value applied on the return when shown in the questionnaire panel */
+  returnValue?: string
   /** Navigate to 1040 Summary row instead of a source doc tab */
   summaryOnly?: boolean
 }
@@ -57,7 +60,7 @@ export const QUESTIONNAIRE_SOURCE_LABELS: Record<QuestionnaireSourceChannel, str
 }
 
 export const QUESTIONNAIRE_PANEL_META = {
-  clientName: 'Jessica Drake',
+  clientName: CLIENT_ADDRESS.name,
   primarySource: 'intuit-link' as QuestionnaireSourceChannel,
   /** Channels represented in this packet (shown in panel header) */
   sourceMix: ['intuit-link', 'client-portal', 'uploaded-pdf'] as QuestionnaireSourceChannel[],
@@ -74,7 +77,7 @@ export const QUESTIONNAIRE_RESPONSES: QuestionnaireResponse[] = [
     answer:
       'Yes. I own my home and paid mortgage interest in 2025. I think I got a Form 1098 from my lender but I haven’t uploaded it yet. Interest was somewhere around the mid five figures; I can dig up the form if you need the exact amount.',
     date: 'Feb 28, 2025',
-    clientName: 'Jessica Drake',
+    clientName: CLIENT_ADDRESS.name,
     sourceChannel: 'uploaded-pdf',
     appliedSummary:
       'Confirmed homeownership and mortgage interest from the uploaded organizer PDF. Return stays on the standard deduction until Form 1098 is uploaded and itemizing is evaluated.',
@@ -103,16 +106,18 @@ export const QUESTIONNAIRE_RESPONSES: QuestionnaireResponse[] = [
     answer:
       'No. I didn’t make any estimated payments this year. I figured my W-2 and 1099 withholding would cover everything like usual.',
     date: 'Mar 2, 2025',
-    clientName: 'Jessica Drake',
+    clientName: CLIENT_ADDRESS.name,
     sourceChannel: 'intuit-link',
     appliedSummary:
       'Set estimated tax payments to $0 on the return and flagged underpayment risk when combined withholding is below tax due.',
     fieldLinks: [
       {
         fieldKey: 'estimatedPayments',
-        label: '1040 · Line 26 · Estimated tax payments',
+        label: '2025 estimated payments',
         status: 'applied',
-        statusNote: '$0 - matches client answer',
+        returnValue: '$0',
+        statusNote:
+          'Jordan confirmed she made no quarterly estimated payments and expected withholding to cover the year.',
         summaryOnly: true,
       },
       {
@@ -132,7 +137,7 @@ export const QUESTIONNAIRE_RESPONSES: QuestionnaireResponse[] = [
     answer:
       'Yes. I had expenses for software, home office supplies, and some travel for that consulting work. I don’t have a clean receipt packet yet and I’m not sure what’s deductible. Nothing for expenses is on the return yet.',
     date: 'Mar 5, 2025',
-    clientName: 'Jessica Drake',
+    clientName: CLIENT_ADDRESS.name,
     sourceChannel: 'client-portal',
     appliedSummary:
       'NEC income is on the return; Schedule C expenses are not applied yet - waiting on receipt detail from the client.',
@@ -161,7 +166,7 @@ export const QUESTIONNAIRE_RESPONSES: QuestionnaireResponse[] = [
     answer:
       'Yes. Tech Circle has a 401(k) and I contribute. Box 13 on my W-2 should show retirement plan coverage.',
     date: 'Mar 5, 2025',
-    clientName: 'Jessica Drake',
+    clientName: CLIENT_ADDRESS.name,
     sourceChannel: 'intuit-link',
     appliedSummary:
       'Confirmed 401(k) coverage at Tech Circle. W-2 Box 13 retirement plan checkbox should reflect this answer.',
@@ -270,5 +275,21 @@ export function getQuestionnaireResponseById(
   id: QuestionnaireResponseId,
 ): QuestionnaireResponse | undefined {
   return QUESTIONNAIRE_RESPONSES.find(r => r.id === id)
+}
+
+/** Map a return field key or response id to the questionnaire card to highlight. */
+export function questionnaireResponseIdFromField(
+  field: string | null | undefined,
+): QuestionnaireResponseId | null {
+  if (!field) return null
+  if (QUESTIONNAIRE_RESPONSES.some(r => r.id === field)) {
+    return field as QuestionnaireResponseId
+  }
+  for (const response of QUESTIONNAIRE_RESPONSES) {
+    if (response.fieldLinks.some(link => link.fieldKey === field)) {
+      return response.id
+    }
+  }
+  return null
 }
 

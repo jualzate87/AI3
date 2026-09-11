@@ -15,7 +15,7 @@ export type DocumentImportMeta = {
   hasStructuredInput: boolean
 }
 
-/** Per-document import metadata for Jessica Drake TY 2025 packet. */
+/** Per-document import metadata for Jordan Wells TY 2025 packet. */
 const DOC_IMPORT_META: Record<string, DocumentImportMeta> = {
   techCircle: { importMode: 'extracted', hasPdf: true, hasStructuredInput: true },
   bingEquipment: { importMode: 'extracted', hasPdf: true, hasStructuredInput: true },

@@ -120,7 +120,7 @@ export const FIELD_META: Record<string, FieldMeta> = {
     label: 'Standard deduction',
     prior: 15750,
     current: 15750,
-    note: 'Jessica qualifies for the standard deduction because her itemizable expenses (mortgage interest, state and local taxes, charitable gifts) don\'t exceed the standard deduction amount for her filing status.',
+    note: 'Jordan qualifies for the standard deduction because her itemizable expenses (mortgage interest, state and local taxes, charitable gifts) don\'t exceed the standard deduction amount for her filing status.',
   },
   deductionSum: {
     label: 'Deductions total',

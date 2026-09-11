@@ -52,7 +52,7 @@ function TaxpayerStrip({ ssn }: { ssn: string }) {
         <div className={styles.infoRow}>
           <div className={`${styles.infoField} ${styles.taxpayerGridWide}`}>
             <span className={styles.infoLabel}>Name</span>
-            <span className={styles.infoValue}>Jessica Drake</span>
+            <span className={styles.infoValue}>{CLIENT_ADDRESS.name}</span>
           </div>
           <div className={styles.infoField}>
             <span className={styles.infoLabel}>Social security number</span>

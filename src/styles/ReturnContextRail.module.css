@@ -95,14 +95,15 @@ button.item:hover {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  padding: 2px 4px;
-  border-radius: var(--radius-small, 4px);
+  padding: calc(var(--space-component-stack-padding-x-small) * 0.8)
+    calc(var(--space-component-inline-padding-x-small) * 0.8);
+  border-radius: calc(var(--radius-small, 4px) * 0.8);
   background: var(--color-ui-new, #d72792);
   color: var(--color-text-inverse, #ffffff);
   font-family: var(--font-family-component);
-  font-size: var(--font-size-component-small, 12px);
+  font-size: calc(var(--font-size-component-small, 12px) * 0.8);
   font-weight: var(--font-weight-component-semibold, 600);
-  line-height: 16px;
+  line-height: 1.143;
   letter-spacing: 0;
   text-transform: uppercase;
   white-space: nowrap;

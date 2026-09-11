@@ -26,6 +26,7 @@ import sidebarImportHubIcon from '../assets/icons/sidebar-import-hub.svg'
 import sidebarDocumentsListIcon from '../assets/icons/sidebar-documents-list.svg'
 import sidebarClientActivityIcon from '../assets/icons/sidebar-client-activity.svg'
 import ProConnectNav from './ProConnectNav'
+import { CLIENT_FIRST_NAME } from '../data/clientAddress'
 import { SOURCE_DOCUMENTS } from '../data/sourceDocuments'
 import styles from '../styles/OpenReturnPage.module.css'
 
@@ -207,7 +208,7 @@ export default function OpenReturnPage() {
           <div className={styles.returnSubHeaderLeft}>
             {/* Client name */}
             <div className={styles.clientName}>
-              <span className={styles.clientNameText}>Jessica</span>
+              <span className={styles.clientNameText}>{CLIENT_FIRST_NAME}</span>
               <span className={styles.clientNameText}>Drake</span>
             </div>
             {/* Lock icon */}
@@ -320,11 +321,11 @@ export default function OpenReturnPage() {
             </div>
           )}
 
-          {/* ── STEP 2: Let's get Jessica's documents ── */}
+          {/* ── STEP 2: Let's get Jordan's documents ── */}
           {step === 2 && (
             <div className={styles.contentArea}>
               <div className={styles.pageHeading}>
-                <h1 className={styles.pageTitle}>Let's get Jessica's documents</h1>
+                <h1 className={styles.pageTitle}>Let's get {CLIENT_FIRST_NAME}'s documents</h1>
                 <p className={styles.pageSubtitle}>Gather your client's documents from the checklist, and import them all at once.</p>
               </div>
 
@@ -403,7 +404,7 @@ export default function OpenReturnPage() {
           {step === 3 && (
             <div className={styles.contentArea}>
               <div className={styles.pageHeading}>
-                <h1 className={styles.pageTitle}>Let's get Jessica's documents</h1>
+                <h1 className={styles.pageTitle}>Let's get {CLIENT_FIRST_NAME}'s documents</h1>
                 <p className={styles.pageSubtitle}>Gather your client's documents from the checklist, and import them all at once.</p>
               </div>
 

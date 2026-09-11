@@ -295,9 +295,9 @@ function buildUnderpaymentRiskIssue(live: LiveReturnTotals): DiagnosticIssueCard
     category: 'Compliance',
     summary: `Most of this gap is an import artifact, not a client behavior problem: the Meridian 1099-R reports $30,000 of federal withholding in Box 4 and none of it reached the return. Fix that first, then decide what remains.`,
     taxImpact: `Safe harbor for 2025 is ${fmtUsd(SAFE_HARBOR_2024)}, which is 110% of last year's tax. The return shows ${fmtUsd(live.totalWithholding)}. Restoring the dropped ${fmtUsd(30_000)} and correcting the dividend withholding still leaves ${fmtUsd(Math.max(0, shortfall - 31_438))} uncovered, so Form 2210 is required to calculate the underpayment penalty before filing.`,
-    rootCause: `Two separate causes stack here. Import dropped the entire 1099-R Box 4 withholding, and separately Jessica made no quarterly 1040-ES payments because she assumed withholding would cover the year as usual. Her income rose sharply, so it did not.`,
+    rootCause: `Two separate causes stack here. Import dropped the entire 1099-R Box 4 withholding, and separately Jordan made no quarterly 1040-ES payments because she assumed withholding would cover the year as usual. Her income rose sharply, so it did not.`,
     clientResponseNote:
-      'Jessica Drake (Mar 2, 2025): "No. I didn\'t make any estimated payments this year. I figured my W-2 and 1099 withholding would cover everything like usual."',
+      'Jordan Wells (Mar 2, 2025): "No. I didn\'t make any estimated payments this year. I figured my W-2 and 1099 withholding would cover everything like usual."',
     questionnaireResponseId: 'estimatedPayments',
     tableRows: [
       {
@@ -331,9 +331,12 @@ function buildUnderpaymentRiskIssue(live: LiveReturnTotals): DiagnosticIssueCard
         label: '2025 estimated payments',
         cols: [
           '$0',
-          'Jessica confirmed she made no quarterly estimated payments and expected withholding to cover the year.',
+          'Jordan confirmed she made no quarterly estimated payments and expected withholding to cover the year.',
         ],
+        fixField: 'estimatedPayments',
         fixTab: 'questionnaire',
+        actionLabel: 'View source',
+        questionnaireResponseId: 'estimatedPayments',
       },
       {
         label: 'Shortfall after both corrections',
@@ -350,7 +353,7 @@ function buildUnderpaymentRiskIssue(live: LiveReturnTotals): DiagnosticIssueCard
     suggestedActions: [
       'Restore the Meridian 1099-R Box 4 withholding first: it is the single largest correction and it is already on the source document.',
       `Complete Form 2210: the ${fmtUsd(Math.max(0, shortfall - 31_438))} shortfall after corrections requires an underpayment penalty calculation before filing.`,
-      'Then set up 2026 quarterly payments with Jessica so this does not repeat at the higher income level.',
+      'Then set up 2026 quarterly payments with Jordan so this does not repeat at the higher income level.',
     ],
     actions: [
       { type: 'goToInput', label: 'Go to DIV withholding', tab: '1099-divs', field: 'fedTaxWithheld' },
@@ -387,7 +390,7 @@ function buildNecScheduleCIssue(): DiagnosticIssueCard {
     taxImpact: `Adding ${fmtUsd(NEC_SOURCE_AMOUNT)} of nonemployee compensation triggers income tax at 35% plus self-employment tax on 92.35% of net profit, roughly ${fmtUsd(Math.round(NEC_SOURCE_AMOUNT * 0.4665))} before any expenses. It also creates the Schedule C that the expense and retirement items depend on.`,
     rootCause: `Import read the 1099-NEC but never mapped Box 1 onto a business schedule, so the income silently landed nowhere. Nothing on the return flags it because a missing form looks identical to a form that does not exist.`,
     clientResponseNote:
-      'Jessica Drake (Mar 5, 2025): "Yes. I had expenses for software, home office supplies, and some travel. Nothing for expenses is on the return yet."',
+      'Jordan Wells (Mar 5, 2025): "Yes. I had expenses for software, home office supplies, and some travel. Nothing for expenses is on the return yet."',
     questionnaireResponseId: 'necExpenses',
     tableRows: [
       {
@@ -478,7 +481,7 @@ function buildOptItemizeIssue(amounts: LiveAmounts): DiagnosticIssueCard {
     taxImpact: `Using ${fmtUsd(mortgageForProjection)} of interest, Schedule A totals ${fmtUsd(p.itemizedTotal)} against a ${fmtUsd(p.stdDeduction)} standard deduction. That is ${fmtUsd(p.advantage)} of additional deduction, worth about ${fmtUsd(p.taxSaved)} at a 35% marginal rate.`,
     rootCause: `The 1098 is not in the import packet, so nothing populated Schedule A and the return defaulted to the standard deduction. SALT and charitable gifts on file (${fmtUsd(p.saltTaxes)} + ${fmtUsd(p.charitableContributions)}) are not enough on their own — mortgage interest is what makes itemizing win.`,
     clientResponseNote:
-      'Jessica Drake (Feb 28, 2025): "Yes. I own my home and paid mortgage interest in 2025. I think I got a Form 1098 from my lender but I haven\'t uploaded it yet."',
+      'Jordan Wells (Feb 28, 2025): "Yes. I own my home and paid mortgage interest in 2025. I think I got a Form 1098 from my lender but I haven\'t uploaded it yet."',
     questionnaireResponseId: 'mortgage',
     tableRows: [
       {
@@ -662,7 +665,7 @@ function buildW2Box12Issue(amounts: LiveAmounts): DiagnosticIssueCard {
     dotColor: 'orange',
     title: `W-2 Box 12 imported ${blanks.length} code${blanks.length === 1 ? '' : 's'} without amounts`,
     category: 'Compliance',
-    summary: `The Tech Circle W-2 shows Box 12 code${blanks.length === 1 ? '' : 's'} ${codes}, but every amount came across blank. Code AA in particular tells you how much Jessica put into her Roth 401(k), which is the input for the contribution headroom question.`,
+    summary: `The Tech Circle W-2 shows Box 12 code${blanks.length === 1 ? '' : 's'} ${codes}, but every amount came across blank. Code AA in particular tells you how much Jordan put into her Roth 401(k), which is the input for the contribution headroom question.`,
     taxImpact:
       'Blank Box 12 amounts do not change tax on their own, but they remove the evidence behind Box 1 and Box 13. Code C is taxable group-term life already inside Box 1 wages, so a blank amount makes the wage mismatch harder to reconcile, and a blank code AA leaves retirement contribution room unquantified.',
     rootCause:
@@ -681,7 +684,7 @@ function buildW2Box12Issue(amounts: LiveAmounts): DiagnosticIssueCard {
         label: 'Box 13 retirement plan',
         cols: [
           'Checked',
-          'Retirement plan box matches Jessica\'s answer that she participates in a workplace plan.',
+          'Retirement plan box matches Jordan\'s answer that she participates in a workplace plan.',
         ],
         viewForm: '1040',
         viewFormLabel: 'Form 1040',
@@ -724,12 +727,12 @@ function buildSchCExpensesIssue(live: LiveReturnTotals): DiagnosticIssueCard {
     title: 'Client-confirmed business expenses are not on Schedule C',
     category: 'Planning opportunities',
     summary:
-      'Jessica told us in writing that the Summit consulting work had software, home office, and travel costs. None of it is on the return. Every dollar she substantiates is worth roughly 50 cents back.',
+      'Jordan told us in writing that the Summit consulting work had software, home office, and travel costs. None of it is on the return. Every dollar she substantiates is worth roughly 50 cents back.',
     taxImpact: `Schedule C expenses reduce both income tax at 35% and self-employment tax on 92.35% of profit, so the combined benefit is about 47 cents on the dollar. Against ${fmtUsd(grossProfit)} of gross receipts, even a modest $6,000 of documented expenses saves close to ${fmtUsd(Math.round(6_000 * 0.4665))}.`,
     rootCause:
       'The import packet has no receipts or expense schedule, so nothing populated Schedule C Part II. The client flagged the costs herself but said she does not have a clean receipt packet yet, which is why this needs a request rather than a data fix.',
     clientResponseNote:
-      'Jessica Drake (Mar 5, 2025): "Yes. I had expenses for software, home office supplies, and some travel for that consulting work. I don\'t have a clean receipt packet yet and I\'m not sure what\'s deductible."',
+      'Jordan Wells (Mar 5, 2025): "Yes. I had expenses for software, home office supplies, and some travel for that consulting work. I don\'t have a clean receipt packet yet and I\'m not sure what\'s deductible."',
     questionnaireResponseId: 'necExpenses',
     tableRows: [
       {
@@ -745,7 +748,7 @@ function buildSchCExpensesIssue(live: LiveReturnTotals): DiagnosticIssueCard {
         label: 'Expenses on return',
         cols: [
           '$0',
-          'Jessica confirmed software, home office, and travel costs, but nothing is on Schedule C line 28 yet.',
+          'Jordan confirmed software, home office, and travel costs, but nothing is on Schedule C line 28 yet.',
         ],
         viewForm: 'schC',
         viewFormLabel: 'Schedule C',

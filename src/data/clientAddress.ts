@@ -1,6 +1,8 @@
-/** Jessica Drake - client/recipient address (Loop 2 Build Spec). */
+/** Jordan Wells - client/recipient address (Loop 2 Build Spec). */
+export const CLIENT_FIRST_NAME = 'Jordan'
+
 export const CLIENT_ADDRESS = {
-  name: 'Jessica Drake',
+  name: 'Jordan Wells',
   street: '333 Easy Street',
   city: 'Austin',
   state: 'TX',

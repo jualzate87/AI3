@@ -1,3 +1,4 @@
+import { CLIENT_ADDRESS } from '../../data/clientAddress'
 import type { TopTab } from './ReviewTab'
 import type { W2Employer } from './DetailFields'
 import { W2_PAYER_TABS } from './DetailFields'
@@ -56,9 +57,9 @@ export function getSourceDocPreview({
 }: SourceDocPreviewParams): SourceDocPreview {
   switch (activeTopTab) {
     case 'questionnaire':
-      return { alt: 'Questionnaire — Jessica Drake' }
+      return { alt: `Questionnaire — ${CLIENT_ADDRESS.name}` }
     case 'prior-1040':
-      return { imageSrc: prior1040Images, alt: 'Form 1040 (2024) — Jessica Drake' }
+      return { imageSrc: prior1040Images, alt: `Form 1040 (2024) — ${CLIENT_ADDRESS.name}` }
     case '1099-ints':
       if (activeIntPayer === 'unwaverIngFinancial') {
         return {

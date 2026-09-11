@@ -25,7 +25,7 @@ export const R_PAYER_TABS: { key: RPayer; label: string }[] = [
   { key: 'meridian', label: 'Meridian Retirement Trust' },
 ]
 
-// 1099-R — Meridian Retirement Trust (Jessica Drake TY 2025)
+// 1099-R — Meridian Retirement Trust (Jordan Wells TY 2025)
 const PAYER_DATA = {
   ein: '22-3334444',
   name: 'Meridian Retirement Trust',

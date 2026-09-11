@@ -24,7 +24,7 @@ import {
 import Tooltip from './Tooltip'
 import CoachTip from './CoachTip'
 import { TAX_CONTROL_ROWS, getControlSystemValues, type TaxControlDocEntry } from '../../data/sourceDocuments'
-import { CLIENT_ADDRESS, formatClientCityStateZip } from '../../data/clientAddress'
+import { CLIENT_ADDRESS, CLIENT_FIRST_NAME, formatClientCityStateZip } from '../../data/clientAddress'
 import { summaryFieldHasUnresolvedFlags } from './phase1FieldSync'
 import { showSummaryImportAttention } from '../../lib/prototypeFeatureFlags'
 import { resolveFormLineHighlight, type Phase2IssueKey } from './phase2FlagSync'
@@ -1521,7 +1521,7 @@ export default function LeftPanel1040({
             <div className={styles.infoRow}>
               <div className={styles.infoField}>
                 <span className={styles.infoLabel}>Your first name and middle initial</span>
-                <span className={styles.infoValue}>Jessica</span>
+                <span className={styles.infoValue}>{CLIENT_FIRST_NAME}</span>
               </div>
               <div className={styles.infoField}>
                 <span className={styles.infoLabel}>Last name</span>

@@ -135,9 +135,9 @@ export default function YoYDetailPane({ onClose, onBack, onViewW2, onReviewSourc
                 {WAGES_QA.question}
               </p>
               <div className={styles.qaBubble}>
-                <span className={styles.qaAvatar}>JD</span>
+                <span className={styles.qaAvatar}>JW</span>
                 <div className={styles.qaText}>
-                  <span className={styles.qaName}>Jessica Drake · {WAGES_QA.date}</span>
+                  <span className={styles.qaName}>Jordan Wells · {WAGES_QA.date}</span>
                   <p className={styles.qaAnswer}>{WAGES_QA.answer}</p>
                 </div>
               </div>
@@ -180,7 +180,7 @@ export default function YoYDetailPane({ onClose, onBack, onViewW2, onReviewSourc
             <ul className={styles.actionList}>
               <li>Confirm Tech Circle W-2 Box 1 shows $118,940 and matches line 1a (last year was $136,480).</li>
               <li>Confirm W-2 Box 2 federal withholding is $15,840 (last year was $22,360) and matches line 25a.</li>
-              <li>Ask Jessica if she filed a new W-4 or claimed exempt. If not, request corrected withholding for 2026.</li>
+              <li>Ask Jordan if she filed a new W-4 or claimed exempt. If not, request corrected withholding for 2026.</li>
             </ul>
           </div>
 

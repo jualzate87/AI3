@@ -33,7 +33,7 @@ export const DIV_PAYER_TABS: { key: DivPayer; label: string }[] = [
 import { divVerifiedDocKey } from '../../data/verifiedDocKeys'
 export { divVerifiedDocKey }
 
-// 1099-DIV payers — Jessica Drake TY 2025
+// 1099-DIV payers — Jordan Wells TY 2025
 const PAYER_DATA: Record<DivPayer, { ein: string; name: string; street: string; city: string; state: string; zip: string; payerPhone: string }> = {
   tokenFinancial: {
     ein: '26-7488943',
@@ -69,7 +69,7 @@ const RECIPIENT_DATA = {
   ...CLIENT_ADDRESS,
 }
 
-// Form 1099-DIV boxes per payer — Jessica Drake TY 2025
+// Form 1099-DIV boxes per payer — Jordan Wells TY 2025
 const FORM_DATA: Record<DivPayer, {
   box1a_totalOrdinary: string; box1b_qualifiedDivs: string; box2a_totalCapGain: string;
   box2b_unrecap1250: string; box2c_sec1202: string; box2d_collectibles: string;

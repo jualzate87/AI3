@@ -9,6 +9,7 @@ import { B3 } from '@ids-ts/typography'
 import '@ids-ts/typography/dist/main.css'
 import DocVerifyHeaderActions from './DocVerifyHeaderActions'
 import MortgageInterestInputField from './MortgageInterestInputField'
+import { CLIENT_ADDRESS } from '../../data/clientAddress'
 import {
   QUESTIONNAIRE_DOC_KEY,
   QUESTIONNAIRE_PANEL_META,
@@ -19,6 +20,12 @@ import {
   type QuestionnaireFieldLinkStatus,
   type QuestionnaireResponseId,
 } from './questionnaireData'
+
+const CLIENT_INITIALS = CLIENT_ADDRESS.name
+  .split(/\s+/)
+  .map(part => part[0] ?? '')
+  .join('')
+  .slice(0, 2)
 import { useSyncedReviewState, type ActivityEntry } from '../../hooks/useSyncedReviewState'
 import styles from '../../styles/data-review/QuestionnaireResponsesPanel.module.css'
 
@@ -140,7 +147,7 @@ export default function QuestionnaireResponsesPanel({
             </p>
 
             <div className={styles.bubble}>
-              <span className={styles.avatar} aria-hidden="true">JD</span>
+              <span className={styles.avatar} aria-hidden="true">{CLIENT_INITIALS}</span>
               <div className={styles.qaText}>
                 <span className={styles.qaName}>
                   {qa.clientName} · {qa.date}
@@ -173,6 +180,9 @@ export default function QuestionnaireResponsesPanel({
                         </LinkActionButton>
                       ) : (
                         <span className={styles.fieldLinkLabel}>{link.label}</span>
+                      )}
+                      {link.returnValue && (
+                        <span className={styles.fieldLinkValue}>{link.returnValue}</span>
                       )}
                       {linkStatusBadge(link.status)}
                     </div>

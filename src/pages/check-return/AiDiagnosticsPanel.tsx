@@ -486,7 +486,11 @@ export default function AiDiagnosticsPanel({
                     <RowActionLink
                       label={row.actionLabel ?? 'View source'}
                       onClick={() =>
-                        handleViewSourceForField(row.fixField, row.fixTab, undefined)
+                        handleViewSourceForField(
+                          row.fixField ?? row.questionnaireResponseId,
+                          row.fixTab,
+                          undefined,
+                        )
                       }
                     />
                   ) : row.viewForm ? (

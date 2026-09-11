@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom'
 import { CircleCheckFill, Document, Flag, Comment, InboxActivity } from '@design-systems/icons'
 import LeftNavPTO from './data-review/LeftNavPTO'
 import SmartReturnHeader from './SmartReturnHeader'
+import { CLIENT_ADDRESS, CLIENT_FIRST_NAME } from '../data/clientAddress'
 import layout from '../styles/CoreScreenLayout.module.css'
 import styles from '../styles/ReadyToImportPage.module.css'
 
@@ -37,9 +38,9 @@ export default function ReadyToImportPage() {
               <div className={styles.cardInner}>
                 {/* Client row */}
                 <div className={styles.clientRow}>
-                  <div className={styles.clientAvatar}>JD</div>
+                  <div className={styles.clientAvatar}>JW</div>
                   <div className={styles.clientInfo}>
-                    <p className={styles.clientName}>Jessica Drake</p>
+                    <p className={styles.clientName}>{CLIENT_ADDRESS.name}</p>
                     <p className={styles.clientMeta}>Form 1040 · Tax Year 2025</p>
                   </div>
                 </div>
@@ -72,7 +73,7 @@ export default function ReadyToImportPage() {
               </div>
             ) : (
               <div className={styles.loadingCard}>
-                <p className={styles.loadingTitle}>Preparing Jessica's return...</p>
+                <p className={styles.loadingTitle}>Preparing {CLIENT_FIRST_NAME}'s return...</p>
                 <div className={styles.progressBar}>
                   <div className={styles.progressFill} />
                 </div>

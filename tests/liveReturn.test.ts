@@ -113,7 +113,7 @@ describe('computeLiveReturn — Build Spec seed anchors', () => {
 })
 
 describe('effective tax rate', () => {
-  it('computes Jessica Drake seed rate from total tax ÷ taxable income', () => {
+  it('computes Jordan Wells seed rate from total tax ÷ taxable income', () => {
     const live = computeLiveReturn(SEED_AMOUNTS)
     const rate = computeEffectiveTaxRate(live.totalTax, live.taxableIncome)
     expect(rate).not.toBeNull()
@@ -124,7 +124,7 @@ describe('effective tax rate', () => {
     expect(computeEffectiveTaxRate(10_000, 0)).toBeNull()
   })
 
-  it('builds Tax & Credits popover with Jessica Drake seed values', () => {
+  it('builds Tax & Credits popover with Jordan Wells seed values', () => {
     const live = computeLiveReturn(SEED_AMOUNTS)
     const { items, footnote } = buildTaxCreditsPopoverContent({
       totalTax: live.totalTax,

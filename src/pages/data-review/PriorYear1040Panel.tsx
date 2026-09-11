@@ -2,6 +2,7 @@ import { ZoomOut, ZoomIn, DotsSix } from '@design-systems/icons'
 import { useState, useRef, useCallback, useEffect } from 'react'
 import img1040PriorPage1 from '../../assets/jessica-1040-2024-variant-1.png'
 import img1040PriorPage2 from '../../assets/jessica-1040-2024-variant-2.png'
+import { CLIENT_ADDRESS, formatClientCityStateZip } from '../../data/clientAddress'
 import { PRIOR_YEAR_1040_FIELDS } from './priorYear1040Data'
 import styles from '../../styles/data-review/PriorYear1040Panel.module.css'
 import docStyles from '../../styles/data-review/DocumentPreview.module.css'
@@ -107,8 +108,8 @@ export default function PriorYear1040Panel() {
           onMouseDown={onMouseDown}
         >
           <div style={{ position: 'relative', width: `${zoom}%`, lineHeight: 0, flexShrink: 0 }}>
-            <img src={img1040PriorPage1} alt="Form 1040 (2024) page 1 - Jessica Drake" className={docStyles.documentImage} draggable={false} />
-            <img src={img1040PriorPage2} alt="Form 1040 (2024) page 2 - Jessica Drake" className={docStyles.documentImage} draggable={false} />
+            <img src={img1040PriorPage1} alt="Form 1040 (2024) page 1 - Jordan Wells" className={docStyles.documentImage} draggable={false} />
+            <img src={img1040PriorPage2} alt="Form 1040 (2024) page 2 - Jordan Wells" className={docStyles.documentImage} draggable={false} />
           </div>
         </div>
         <div className={docStyles.toolbar}>
@@ -133,7 +134,7 @@ export default function PriorYear1040Panel() {
         <div className={styles.titleRow}>
           <h2 className={styles.title}>Prior Year 1040 (2024)</h2>
         </div>
-        <div className={styles.subHeader}>Jessica Drake · Austin, TX</div>
+        <div className={styles.subHeader}>{CLIENT_ADDRESS.name} · {formatClientCityStateZip()}</div>
 
         <div className={styles.fieldsBody}>
           {PRIOR_YEAR_FIELDS.map((row, i) => {

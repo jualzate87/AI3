@@ -102,7 +102,7 @@ export const MILESTONE_PHASE_DESCRIPTIONS: Record<MilestonePhase, string> = {
   5: 'YoY variance, AI diagnostics, reviewer confirmations, and sign-off readiness.',
 }
 
-/** Representative subset for Jessica Drake 1040 - sourced from CPA milestone doc. */
+/** Representative subset for Jordan Wells 1040 - sourced from CPA milestone doc. */
 export const REVIEW_MILESTONES: ReviewMilestone[] = [
   // Phase 1
   {

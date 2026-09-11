@@ -3,7 +3,7 @@ import { readFileSync } from 'node:fs'
 import { join } from 'node:path'
 
 /**
- * Loop 2 BuildSpec: Jessica Drake (Austin TX) — Phase 2 insights/diagnostics
+ * Loop 2 BuildSpec: Jordan Wells (Austin TX) — Phase 2 insights/diagnostics
  * must be federal-only. No state return, state filing, or California diagnostics.
  */
 const PHASE2_SOURCE_FILES = [

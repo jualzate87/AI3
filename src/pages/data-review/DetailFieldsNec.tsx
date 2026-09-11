@@ -30,7 +30,7 @@ export const NEC_PAYER_TABS: { key: NecPayer; label: string }[] = [
   { key: 'summit', label: 'Summit Advisory Partners' },
 ]
 
-// 1099-NEC — Summit Advisory Partners (Jessica Drake TY 2025)
+// 1099-NEC — Summit Advisory Partners (Jordan Wells TY 2025)
 const PAYER_DATA = {
   ein: '47-2201893',
   name: 'Summit Advisory Partners LLC',

@@ -3,7 +3,7 @@ import type { W2Employer } from '../pages/data-review/DetailFields'
 import type { DivPayer } from '../pages/data-review/DetailFieldsDiv'
 import type { IntPayer } from '../pages/data-review/DetailFields1099'
 
-/** Single imported source document in Jessica Drake's TY 2025 return. */
+/** Single imported source document in Jordan Wells's TY 2025 return. */
 export type SourceDocument = {
   id: string
   formType: string

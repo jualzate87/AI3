@@ -32,7 +32,7 @@ export const INT_PAYER_TABS: { key: IntPayer; label: string }[] = [
 import { intVerifiedDocKey } from '../../data/verifiedDocKeys'
 export { intVerifiedDocKey }
 
-// 1099-INT payers — Jessica Drake TY 2025
+// 1099-INT payers — Jordan Wells TY 2025
 const PAYER_DATA: Record<IntPayer, { ein: string; name: string; street: string; city: string; state: string; zip: string; payerPhone: string }> = {
   unwaverIngFinancial: {
     ein: '47-8821034',
@@ -69,7 +69,7 @@ const RECIPIENT_DATA = {
   ...CLIENT_ADDRESS,
 }
 
-// Form 1099-INT boxes per payer — Jessica Drake values
+// Form 1099-INT boxes per payer — Jordan Wells values
 const FORM_DATA: Record<IntPayer, {
   box1_interest: string; box2_earlyPenalty: string; box3_usBonds: string;
   box4_fedTaxWithheld: string; box5_investExpenses: string; box6_foreignTax: string;

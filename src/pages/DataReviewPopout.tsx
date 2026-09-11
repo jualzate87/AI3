@@ -42,7 +42,12 @@ import DetailFields1099R, { R_PAYER_TABS } from './data-review/DetailFields1099R
 import DetailFieldsNec, { NEC_PAYER_TABS } from './data-review/DetailFieldsNec'
 import PeelTab from './data-review/PeelTab'
 import QuestionnaireResponsesPanel from './data-review/QuestionnaireResponsesPanel'
-import type { QuestionnaireResponseId } from './data-review/questionnaireData'
+import {
+  questionnaireResponseIdFromField,
+  type QuestionnaireFieldLink,
+  type QuestionnaireResponseId,
+} from './data-review/questionnaireData'
+import { openReviewReturnPopout } from '../lib/prototypeRoutes'
 import DocReviewProgress from './data-review/DocReviewProgress'
 import UnsavedChangesModal from './data-review/UnsavedChangesModal'
 import {
@@ -117,9 +122,8 @@ function questionnaireHighlightFromField(
   tab: TopTab,
   field: string | null,
 ): QuestionnaireResponseId | null {
-  if (tab !== 'questionnaire' || !field) return null
-  if (field === 'mortgage') return 'mortgage'
-  return null
+  if (tab !== 'questionnaire') return null
+  return questionnaireResponseIdFromField(field)
 }
 
 export default function DataReviewPopout() {
@@ -247,6 +251,24 @@ export default function DataReviewPopout() {
   const handleStayEditing = useCallback(() => {
     setUnsavedModalOpen(false)
   }, [])
+
+  const handleQuestionnaireNavigateToField = useCallback((link: QuestionnaireFieldLink) => {
+    if (link.summaryOnly) {
+      openReviewReturnPopout({ form: 'summary' })
+      return
+    }
+
+    if (link.tab) {
+      setActiveTopTab(link.tab)
+    } else {
+      const nav = navigationForDetailField(link.fieldKey)
+      if (nav?.tab) setActiveTopTab(nav.tab)
+      if (nav?.divPayer) setActiveDivPayer(nav.divPayer)
+      if (nav?.intPayer) setActiveIntPayer(nav.intPayer)
+    }
+
+    setSelectedField(link.fieldKey)
+  }, [setActiveTopTab, setActiveDivPayer, setActiveIntPayer, setSelectedField])
 
   const handleLeaveWithoutSaving = useCallback(() => {
     if (baselineRef.current) {
@@ -879,6 +901,7 @@ export default function DataReviewPopout() {
                 reviewerConfirmedDocs={reviewerConfirmedDocs}
                 reviewerConfirmedDocsMeta={reviewerConfirmedDocsMeta}
                 highlightResponseId={questionnaireHighlightFromField(activeTopTab, selectedField)}
+                onNavigateToField={handleQuestionnaireNavigateToField}
               />
             )}
           </div>

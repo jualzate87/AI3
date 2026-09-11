@@ -160,7 +160,7 @@ export default function PriorYear1040Fields({
     <div className={styles.container}>
       <div className={styles.pageHeader}>
         <div className={styles.headerActions}>
-          <h2 className={`${styles.title} ${styles.headerTitle}`}>Prior Year 1040 (2024) — Jessica Drake</h2>
+          <h2 className={`${styles.title} ${styles.headerTitle}`}>Prior Year 1040 (2024) — Jordan Wells</h2>
           <DocVerifyHeaderActions
             docKey={DOC_KEY}
             verifiedDocs={verifiedDocs}
