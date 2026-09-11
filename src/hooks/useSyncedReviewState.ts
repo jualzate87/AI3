@@ -84,6 +84,18 @@ interface SyncedState {
 }
 
 const CHANNEL_NAME = 'protoc3-data-review-sync'
+
+type SyncBroadcastMessage = {
+  tabId: string
+  state: SyncedState
+}
+
+function createSyncTabId(): string {
+  if (typeof crypto !== 'undefined' && typeof crypto.randomUUID === 'function') {
+    return crypto.randomUUID()
+  }
+  return `tab-${Date.now()}-${Math.random().toString(36).slice(2)}`
+}
 // Bump whenever DEFAULT_STATE shape or seed values change so stale sessions reset.
 const STATE_VERSION = 34
 const STORAGE_KEY = 'protoc3-data-review-state-v' + STATE_VERSION
@@ -562,6 +574,7 @@ export function resetPersistedReviewState(): SyncedState {
  */
 export function useSyncedReviewState() {
   const channelRef = useRef<BroadcastChannel | null>(null)
+  const tabIdRef = useRef(createSyncTabId())
   const [state, setState] = useState<SyncedState>(loadInitialState)
   const stateRef = useRef(state)
   stateRef.current = state
@@ -569,8 +582,20 @@ export function useSyncedReviewState() {
   useEffect(() => {
     const channel = new BroadcastChannel(CHANNEL_NAME)
     channelRef.current = channel
-    channel.onmessage = (e: MessageEvent<SyncedState>) => {
-      const next = sanitizeSyncedState(e.data)
+    channel.onmessage = (e: MessageEvent<SyncBroadcastMessage | SyncedState>) => {
+      const payload = e.data
+      // Ignore echoes from this tab — publish() already applied the update locally.
+      if (payload && typeof payload === 'object' && 'tabId' in payload) {
+        const msg = payload as SyncBroadcastMessage
+        if (msg.tabId === tabIdRef.current) return
+        const next = sanitizeSyncedState(msg.state)
+        stateRef.current = next
+        setState(next)
+        writePersisted(next)
+        return
+      }
+      // Legacy message shape (other tabs / older builds)
+      const next = sanitizeSyncedState(payload as SyncedState)
       stateRef.current = next
       setState(next)
       writePersisted(next)
@@ -598,7 +623,7 @@ export function useSyncedReviewState() {
     const fresh = resetPersistedReviewState()
     stateRef.current = fresh
     setState(fresh)
-    channelRef.current?.postMessage(fresh)
+    channelRef.current?.postMessage({ tabId: tabIdRef.current, state: fresh })
   }, [])
 
   const publish = (next: SyncedState) => {
@@ -610,7 +635,7 @@ export function useSyncedReviewState() {
     stateRef.current = safe
     setState(safe)
     writePersisted(safe)
-    channelRef.current?.postMessage(safe)
+    channelRef.current?.postMessage({ tabId: tabIdRef.current, state: safe })
   }
 
   const update = (patch: Partial<SyncedState>) => {

@@ -28,13 +28,19 @@ import styles from '../../styles/check-return/AgentDiagnosticsPanel.module.css'
 type AgentPhase = 'ready' | 'running' | 'complete'
 
 type ThreadEntry =
-  | { kind: 'agent'; text: string }
-  | { kind: 'user'; text: string }
-  | { kind: 'thinking'; issueTitle: string; steps: string[]; activeStep: number }
-  | { kind: 'fixed'; title: string; summary: string }
+  | { id: string; kind: 'agent'; text: string }
+  | { id: string; kind: 'user'; text: string }
+  | { id: string; kind: 'thinking'; issueTitle: string; steps: string[]; activeStep: number }
+  | { id: string; kind: 'fixed'; title: string; summary: string }
 
 const STEP_MS = 900
 const ISSUE_GAP_MS = 400
+
+let threadEntryCounter = 0
+function nextThreadEntryId(): string {
+  threadEntryCounter += 1
+  return `agent-thread-${threadEntryCounter}`
+}
 
 export default function AgentDiagnosticsPanel() {
   const { amounts, reviewedFields, updateAmounts, markReviewedBulk } = useSyncedReviewState()
@@ -52,12 +58,14 @@ export default function AgentDiagnosticsPanel() {
   const [progressMax, setProgressMax] = useState(1)
   const [chatInput, setChatInput] = useState('')
   const runRef = useRef(false)
+  const welcomeAddedRef = useRef(false)
 
   const remaining = overview.remaining
   const total = overview.total
 
-  const appendThread = useCallback((entry: ThreadEntry) => {
-    setThread(prev => [...prev, entry])
+  const appendThread = useCallback((entry: Omit<ThreadEntry, 'id'> & { id?: string }) => {
+    const withId = { ...entry, id: entry.id ?? nextThreadEntryId() } as ThreadEntry
+    setThread(prev => [...prev, withId])
   }, [])
 
   const applyFixForIssue = useCallback(
@@ -85,7 +93,9 @@ export default function AgentDiagnosticsPanel() {
 
       for (let i = 0; i < plan.length; i++) {
         const item = plan[i]
+        const thinkingId = nextThreadEntryId()
         appendThread({
+          id: thinkingId,
           kind: 'thinking',
           issueTitle: item.title,
           steps: item.thinkingSteps,
@@ -94,15 +104,13 @@ export default function AgentDiagnosticsPanel() {
 
         for (let s = 0; s < item.thinkingSteps.length; s++) {
           await new Promise(r => setTimeout(r, STEP_MS))
-          setThread(prev => {
-            const next = [...prev]
-            const idx = next.length - 1
-            const last = next[idx]
-            if (last?.kind === 'thinking') {
-              next[idx] = { ...last, activeStep: s + 1 }
-            }
-            return next
-          })
+          setThread(prev =>
+            prev.map(entry =>
+              entry.id === thinkingId && entry.kind === 'thinking'
+                ? { ...entry, activeStep: s + 1 }
+                : entry,
+            ),
+          )
         }
 
         applyFixForIssue(item)
@@ -161,13 +169,15 @@ export default function AgentDiagnosticsPanel() {
   }, [chatInput, appendThread, runFixSequence, amounts, reviewedFields, remaining])
 
   useEffect(() => {
-    if (thread.length === 0) {
-      appendThread({
-        kind: 'agent',
-        text: `I've reviewed Jordan's 2025 return and found ${total} item${total === 1 ? '' : 's'} that need attention. I can fix them automatically — you'll see each step as I work.`,
-      })
-    }
-  }, []) // eslint-disable-line react-hooks/exhaustive-deps
+    // StrictMode re-runs effects with the same render closure; guard with a ref
+    // so the welcome message is not appended twice on mount.
+    if (welcomeAddedRef.current) return
+    welcomeAddedRef.current = true
+    appendThread({
+      kind: 'agent',
+      text: `I've reviewed Jordan's 2025 return and found ${total} item${total === 1 ? '' : 's'} that need attention. I can fix them automatically — you'll see each step as I work.`,
+    })
+  }, [appendThread, total])
 
   const showCompletion = phase === 'complete' || (total > 0 && overview.complete)
 
@@ -220,17 +230,17 @@ export default function AgentDiagnosticsPanel() {
       )}
 
       <div className={styles.thread}>
-        {thread.map((entry, index) => {
+        {thread.map(entry => {
           if (entry.kind === 'user') {
             return (
-              <div key={index} className={styles.threadMessage}>
+              <div key={entry.id} className={styles.threadMessage}>
                 <p className={styles.threadBody}>{entry.text}</p>
               </div>
             )
           }
           if (entry.kind === 'agent') {
             return (
-              <div key={index} className={`${styles.threadMessage} ${styles.threadMessageAgent}`}>
+              <div key={entry.id} className={`${styles.threadMessage} ${styles.threadMessageAgent}`}>
                 <div className={styles.threadHeader}>
                   <img src={intuitIntelligenceLogo} alt="" className={styles.logoIcon} />
                   <span className={styles.wordmark}>Intuit Intelligence</span>
@@ -241,7 +251,7 @@ export default function AgentDiagnosticsPanel() {
           }
           if (entry.kind === 'thinking') {
             return (
-              <div key={index} className={`${styles.threadMessage} ${styles.threadMessageAgent}`}>
+              <div key={entry.id} className={`${styles.threadMessage} ${styles.threadMessageAgent}`}>
                 <div className={styles.threadHeader}>
                   <img src={intuitIntelligenceLogo} alt="" className={styles.logoIcon} />
                   <span className={styles.wordmark}>Working on {entry.issueTitle}</span>
@@ -262,7 +272,7 @@ export default function AgentDiagnosticsPanel() {
           }
           if (entry.kind === 'fixed') {
             return (
-              <div key={index} className={styles.fixResult}>
+              <div key={entry.id} className={styles.fixResult}>
                 <p className={styles.fixResultTitle}>
                   <CircleCheckFill size="small" className={styles.successIcon} aria-hidden />
                   {' '}
