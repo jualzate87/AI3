@@ -59,30 +59,6 @@ export default function ImportMismatchDiagnosticEmbed({
         </div>
       </div>
 
-      {rows.length > 1 && (
-        <div className={styles.embedPills} role="tablist" aria-label="Import mismatch fields">
-          {rows.map((mismatchRow, pillIndex) => (
-            <button
-              key={mismatchRow.id}
-              type="button"
-              role="tab"
-              aria-selected={pillIndex === safeIndex}
-              aria-label={`${pillIndex + 1}. ${mismatchRow.label}`}
-              title={mismatchRow.label}
-              className={[
-                styles.embedPill,
-                pillIndex === safeIndex ? styles.embedPillActive : '',
-              ]
-                .filter(Boolean)
-                .join(' ')}
-              onClick={() => setIndex(pillIndex)}
-            >
-              {pillIndex + 1}
-            </button>
-          ))}
-        </div>
-      )}
-
       <DiagnosticFieldEmbed
         key={row.id}
         highlightField={row.field}

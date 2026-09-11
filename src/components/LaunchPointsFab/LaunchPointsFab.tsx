@@ -47,6 +47,7 @@ export default function LaunchPointsFab() {
   const rootRef = useRef<HTMLDivElement>(null)
   const [open, setOpen] = useState(false)
   const role = resolveDemoRole(location.search)
+  const hideOnPopout = location.pathname.endsWith('-popout')
 
   useEffect(() => {
     if (!open) return
@@ -106,6 +107,10 @@ export default function LaunchPointsFab() {
     setOpen(false)
     window.location.assign(buildHashRouteUrl('/smart-return'))
   }, [])
+
+  if (hideOnPopout) {
+    return null
+  }
 
   return (
     <div className={styles.fabRoot} ref={rootRef}>

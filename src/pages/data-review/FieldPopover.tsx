@@ -266,6 +266,8 @@ export default function FieldPopover({
       if (!target) return
       if (ref.current?.contains(target)) return
       if (target.closest?.('[data-field-row]')) return
+      if (target.closest?.('[data-popover-anchor]')) return
+      if (target.closest?.('[data-field-info-btn]')) return
       onClose()
     }
     // Small delay so the click that opened the popover doesn't immediately close it

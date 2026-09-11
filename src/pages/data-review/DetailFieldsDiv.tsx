@@ -196,17 +196,21 @@ export default function DetailFieldsDiv({
   const fmt = (n: number) => displayEditableAmount(n, showEmptyWhenZero)
 
   const highlightedRef = useRef<HTMLDivElement>(null)
+  const lastScrolledField = useRef<string | null>(null)
   const [editingField, setEditingField] = useState<string | null>(null)
   const [draftValue, setDraftValue] = useState('')
   const [originalValue, setOriginalValue] = useState('')
   // Field key whose comment popover is currently open + its anchor position (fixed)
   useEffect(() => {
-    if (selectedField && highlightedRef.current) {
-      highlightedRef.current.scrollIntoView({ behavior: 'smooth', block: 'center' })
+    if (!selectedField || selectedField === lastScrolledField.current) return
+    if (highlightedRef.current) {
+      highlightedRef.current.scrollIntoView({ behavior: 'auto', block: 'nearest' })
+      lastScrolledField.current = selectedField
     }
   }, [selectedField])
 
   useEffect(() => {
+    lastScrolledField.current = null
     setEditingField(null)
     setDraftValue('')
     setOriginalValue('')

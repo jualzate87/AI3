@@ -117,6 +117,7 @@ export default function DetailFieldsNec({
 }: DetailFieldsNecProps) {
   const fmt = (n: number) => displayEditableAmount(n, showEmptyWhenZero)
   const highlightedRef = useRef<HTMLDivElement>(null)
+  const lastScrolledField = useRef<string | null>(null)
   const [editingField, setEditingField] = useState<string | null>(null)
   const [draftValue, setDraftValue] = useState('')
   const [originalValue, setOriginalValue] = useState('')
@@ -127,8 +128,10 @@ export default function DetailFieldsNec({
     (NEC_SOURCE_AMOUNT > 0 || (amounts?.necIncome ?? 0) > 0 || !!flaggedFields['nec-box1'])
 
   useEffect(() => {
-    if (selectedField && highlightedRef.current) {
-      highlightedRef.current.scrollIntoView({ behavior: 'smooth', block: 'center' })
+    if (!selectedField || selectedField === lastScrolledField.current) return
+    if (highlightedRef.current) {
+      highlightedRef.current.scrollIntoView({ behavior: 'auto', block: 'nearest' })
+      lastScrolledField.current = selectedField
     }
   }, [selectedField])
 

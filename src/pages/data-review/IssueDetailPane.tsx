@@ -234,11 +234,6 @@ export default function IssueDetailPane({
           )}
 
           <div className={styles.section}>
-            <p className={styles.sectionTitle}>Impact</p>
-            <p className={styles.sectionBody}>{taxImpact}</p>
-          </div>
-
-          <div className={styles.section}>
             <p className={styles.sectionTitle}>Calculations</p>
             {(() => {
               const hasFixColumn = tableRows.some(r => r.cols.some(c => c === 'Fix'))

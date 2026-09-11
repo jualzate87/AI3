@@ -407,10 +407,6 @@ export default function AiDiagnosticsPanel({
             <p className={styles.explanationLabel}>What happened</p>
             <p className={styles.explanationBody}>{selectedIssue.rootCause}</p>
           </div>
-          <div className={styles.explanationBlock}>
-            <p className={styles.explanationLabel}>Why it matters</p>
-            <p className={styles.explanationBody}>{selectedIssue.taxImpact}</p>
-          </div>
         </div>
 
         {mismatchRows.length > 0 && (
@@ -511,7 +507,7 @@ export default function AiDiagnosticsPanel({
               <img src={intuitIntelligenceLogo} alt="" className={styles.logoIcon} />
               <span className={styles.wordmark}>Steps to fix</span>
             </div>
-            <ol className={styles.fixStepsList}>
+            <ul className={styles.fixStepsList}>
               {fixSteps.map((step, index) => (
                 <li key={`${selectedIssue.issueKey}-step-${index}`} className={styles.fixStepItem}>
                   <span className={styles.fixStepText}>{step.text}</span>
@@ -523,7 +519,7 @@ export default function AiDiagnosticsPanel({
                   ) : null}
                 </li>
               ))}
-            </ol>
+            </ul>
           </div>
         )}
 

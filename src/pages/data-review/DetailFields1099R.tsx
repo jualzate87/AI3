@@ -105,13 +105,16 @@ export default function DetailFields1099R({
 }: DetailFields1099RProps) {
   const fmt = (n: number) => displayEditableAmount(n, showEmptyWhenZero)
   const highlightedRef = useRef<HTMLDivElement>(null)
+  const lastScrolledField = useRef<string | null>(null)
   const [editingField, setEditingField] = useState<string | null>(null)
   const [draftValue, setDraftValue] = useState('')
   const [originalValue, setOriginalValue] = useState('')
 
   useEffect(() => {
-    if (selectedField && highlightedRef.current) {
-      highlightedRef.current.scrollIntoView({ behavior: 'smooth', block: 'center' })
+    if (!selectedField || selectedField === lastScrolledField.current) return
+    if (highlightedRef.current) {
+      highlightedRef.current.scrollIntoView({ behavior: 'auto', block: 'nearest' })
+      lastScrolledField.current = selectedField
     }
   }, [selectedField])
 

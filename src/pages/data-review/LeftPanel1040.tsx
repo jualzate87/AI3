@@ -322,7 +322,7 @@ export default function LeftPanel1040({
     if (!target) return
     requestAnimationFrame(() => {
       const row = document.querySelector(`[data-field-row="${target}"]`) as HTMLElement | null
-      row?.scrollIntoView({ block: 'nearest', behavior: 'smooth' })
+      row?.scrollIntoView({ block: 'nearest', behavior: 'auto' })
     })
   }, [formLineHighlight, issueField, highlightField, outputFormId, activeDiagnosticKey])
 
@@ -650,7 +650,9 @@ export default function LeftPanel1040({
   const handleClosePopover = () => {
     setPopoverField(null)
     setPopoverRect(null)
-    onFieldClick?.(null)
+    if (!embeddedInCheckReturn) {
+      onFieldClick?.(null)
+    }
   }
 
   // Close popover UI only - keep field selected so highlight persists during navigation
@@ -812,6 +814,7 @@ export default function LeftPanel1040({
                   <button
                     type="button"
                     className={`${styles.summaryInfoBtn} ${isPopoverOpen ? styles.summaryInfoBtnActive : ''}`}
+                    data-field-info-btn
                     aria-label={kind === 'calc' ? `View subtotals for ${label}` : `View sources for ${label}`}
                     onClick={e => {
                       e.stopPropagation()

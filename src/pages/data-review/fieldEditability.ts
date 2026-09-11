@@ -21,7 +21,9 @@ const INPUT_EDITABLE_PATTERNS: RegExp[] = [
   /^nec-box1$/,
   /^r-taxableAmt$/,
   /^r-fedTaxWithheld$/,
+  /^withholding1099$/,
   /^fedTaxWithheld$/,
+  /^fedTaxWithheld-/,
 ]
 
 /** Whether a field key supports in-place editing for the current variant. */

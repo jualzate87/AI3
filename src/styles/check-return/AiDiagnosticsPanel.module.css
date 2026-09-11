@@ -642,7 +642,8 @@
   gap: var(--space-component-gap-medium, 12px);
   margin: 0;
   padding-left: var(--space-container-padding-medium, 20px);
-  list-style: decimal;
+  list-style: disc;
+  list-style-position: outside;
 }
 
 .fixStepItem {

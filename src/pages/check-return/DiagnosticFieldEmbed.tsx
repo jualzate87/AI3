@@ -31,6 +31,7 @@ export function DiagnosticFieldEmbed({
     setActiveSubTab,
     activeDivPayer,
     setActiveDivPayer,
+    selectedField,
     wages,
     setWages,
     amounts,
@@ -47,12 +48,15 @@ export function DiagnosticFieldEmbed({
     setActiveTopTab(tab as TopTab)
     if (subTab) setActiveSubTab(subTab)
     if (divPayer) setActiveDivPayer(divPayer)
-    setSelectedField(highlightField)
+    if (selectedField !== highlightField) {
+      setSelectedField(highlightField)
+    }
   }, [
     tab,
     subTab,
     divPayer,
     highlightField,
+    selectedField,
     setActiveTopTab,
     setActiveSubTab,
     setActiveDivPayer,

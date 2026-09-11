@@ -177,6 +177,7 @@ export default function DetailFields({
   const highlightedRef = useRef<HTMLDivElement>(null)
   const withholdingRef = useRef<HTMLDivElement>(null)
   const box12Ref = useRef<HTMLDivElement>(null)
+  const lastScrolledField = useRef<string | null>(null)
 
   // Track which field is in edit mode, its draft value, and original for undo
   const [editingField, setEditingField] = useState<string | null>(null)
@@ -192,16 +193,19 @@ export default function DetailFields({
     return m ? `Marked correct · ${m.by} · ${m.at}` : 'Click to unmark'
   }
   useEffect(() => {
+    if (!selectedField || selectedField === lastScrolledField.current) return
     const ref =
       selectedField === 'withholding' ? withholdingRef :
       selectedField === 'box12'       ? box12Ref       :
       highlightedRef
-    if (selectedField && ref.current) {
-      ref.current.scrollIntoView({ behavior: 'smooth', block: 'center' })
+    if (ref.current) {
+      ref.current.scrollIntoView({ behavior: 'auto', block: 'nearest' })
+      lastScrolledField.current = selectedField
     }
   }, [selectedField])
 
   useEffect(() => {
+    lastScrolledField.current = null
     setEditingField(null)
     setDraftValue('')
     setOriginalValue('')
