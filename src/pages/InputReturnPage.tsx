@@ -9,6 +9,7 @@ import { openReviewReturnPopout } from '../lib/prototypeRoutes'
 import InputFormPanel from './input-return/InputFormPanel'
 import {
   inputNavItemById,
+  isScheduleAInterestNavItem,
   type InputNavItemId,
 } from '../data/inputMenuNav'
 import {
@@ -76,13 +77,14 @@ export default function InputReturnPage() {
 
   useEffect(() => {
     const navItem = inputNavItemById(activeItemId)
-    if (activeTopTab !== navItem.topTab) {
+    if (navItem.topTab && activeTopTab !== navItem.topTab) {
       setActiveTopTab(navItem.topTab)
     }
   }, [activeItemId, activeTopTab, setActiveTopTab])
 
   useEffect(() => {
     const navItem = inputNavItemById(activeItemId)
+    if (!navItem.topTab) return
     const resolved = resolveDocKeyFromUrl(navItem.topTab, docParam)
     if (!resolved) return
     const current = readActiveDocKey(navItem.topTab, {
@@ -104,29 +106,38 @@ export default function InputReturnPage() {
   const handleSelectItem = (id: InputNavItemId) => {
     setActiveItemId(id)
     const navItem = inputNavItemById(id)
-    setActiveTopTab(navItem.topTab)
-    const defaultDoc = getDefaultDocKey(navItem.topTab)
-    if (defaultDoc) {
-      applyInputDocKey(navItem.topTab, defaultDoc, docSetters)
+    if (navItem.topTab) {
+      setActiveTopTab(navItem.topTab)
+      const defaultDoc = getDefaultDocKey(navItem.topTab)
+      if (defaultDoc) {
+        applyInputDocKey(navItem.topTab, defaultDoc, docSetters)
+      }
     }
     const next = new URLSearchParams(searchParams)
-    writeInputReturnParams(next, id, navItem.topTab, defaultDoc)
+    writeInputReturnParams(next, id, navItem.topTab, navItem.topTab ? getDefaultDocKey(navItem.topTab) : null)
+    if (isScheduleAInterestNavItem(navItem)) {
+      next.delete(INPUT_DOC_PARAM)
+    }
     setSearchParams(next, { replace: true })
   }
 
   const handleDocChange = (docKey: string) => {
     const navItem = inputNavItemById(activeItemId)
+    if (!navItem.topTab) return
     applyInputDocKey(navItem.topTab, docKey, docSetters)
     const next = new URLSearchParams(searchParams)
     next.set(INPUT_DOC_PARAM, docKey)
     setSearchParams(next, { replace: true })
   }
 
-  const activeDocKey = readActiveDocKey(inputNavItemById(activeItemId).topTab, {
-    activeSubTab,
-    activeDivPayer,
-    activeIntPayer,
-  })
+  const activeNavItem = inputNavItemById(activeItemId)
+  const activeDocKey = activeNavItem.topTab
+    ? readActiveDocKey(activeNavItem.topTab, {
+        activeSubTab,
+        activeDivPayer,
+        activeIntPayer,
+      })
+    : null
 
   return (
     <div className={`${layout.page} ${styles.page}`} data-theme="intuit">

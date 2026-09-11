@@ -26,6 +26,15 @@ export function buildInputReturnRoute(docId: string, detailFieldId?: string): st
   return `/input-return?${params.toString()}`
 }
 
+/** Navigate to Schedule A → Interest in Input return (Form 1098 mortgage row). */
+export function navigateToScheduleAInterestInput(field = 'mortgage1098'): void {
+  patchSyncedReviewNavigation({ selectedField: field })
+  const params = new URLSearchParams()
+  writeInputReturnParams(params, 'sch-a-interest')
+  params.set(INPUT_FIELD_PARAM, field)
+  window.location.hash = `/input-return?${params.toString()}`
+}
+
 /** Navigate to Input return tab with the matching form, document, and field focused. */
 export function navigateToInputReturn(
   docId: string,

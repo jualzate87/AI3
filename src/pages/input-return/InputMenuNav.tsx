@@ -99,7 +99,7 @@ export default function InputMenuNav({
               </div>
               {visibleItems.map((item, itemIndex) => {
                 const isActive = activeItemId === item.id
-                const docTabs = getInputDocTabs(item.topTab)
+                const docTabs = item.topTab ? getInputDocTabs(item.topTab) : []
                 const isLastItem =
                   isLastCategory && itemIndex === visibleItems.length - 1 && docTabs.length === 0
 

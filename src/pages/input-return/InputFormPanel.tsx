@@ -7,14 +7,16 @@ import DetailFields1099 from '../data-review/DetailFields1099'
 import DetailFieldsDiv from '../data-review/DetailFieldsDiv'
 import DetailFields1099R from '../data-review/DetailFields1099R'
 import DetailFieldsNec from '../data-review/DetailFieldsNec'
-import { resolveActiveVerifyDocKey } from '../../data/documentImportMeta'
 import { openSourceDocumentReviewPopout } from '../../lib/prototypeRoutes'
 import {
   applyInputDocKey,
   getInputDocTabs,
   readActiveDocKey,
 } from '../../data/inputDocTabs'
-import { inputNavItemById, type InputNavItemId } from '../../data/inputMenuNav'
+import { inputNavItemById, isScheduleAInterestNavItem, type InputNavItemId } from '../../data/inputMenuNav'
+import ScheduleAInterestInputPanel, {
+  SCHEDULE_A_MORTGAGE_FIELD,
+} from './ScheduleAInterestInputPanel'
 import panelStyles from '../../styles/shared/ReturnMainPanel.module.css'
 import styles from '../../styles/InputReturnPage.module.css'
 
@@ -30,6 +32,8 @@ export default function InputFormPanel({
   onDocChange,
 }: InputFormPanelProps) {
   const navItem = inputNavItemById(activeItemId)
+  const isScheduleAInterest = isScheduleAInterestNavItem(navItem)
+  const topTab = navItem.topTab
   const {
     activeTopTab,
     setActiveTopTab,
@@ -52,28 +56,32 @@ export default function InputFormPanel({
     setActiveIntPayer,
   } = useSyncedReviewState()
 
-  const docTabs = getInputDocTabs(navItem.topTab)
+  const docTabs = topTab ? getInputDocTabs(topTab) : []
   const activeDocKey =
-    readActiveDocKey(navItem.topTab, {
-      activeSubTab,
-      activeDivPayer,
-      activeIntPayer,
-    }) ?? docTabs[0]?.key ?? ''
-
-  const verifyDocKey = resolveActiveVerifyDocKey({
-    activeTopTab: navItem.topTab,
-    activeSubTab,
-    activeDivPayer,
-    activeIntPayer,
-  })
+    (topTab
+      ? readActiveDocKey(topTab, {
+          activeSubTab,
+          activeDivPayer,
+          activeIntPayer,
+        })
+      : null) ?? docTabs[0]?.key ?? ''
 
   const docSetters = { setActiveSubTab, setActiveDivPayer, setActiveIntPayer }
 
   useEffect(() => {
-    if (activeTopTab !== navItem.topTab) {
-      setActiveTopTab(navItem.topTab)
+    if (topTab && activeTopTab !== topTab) {
+      setActiveTopTab(topTab)
     }
-  }, [activeTopTab, navItem.topTab, setActiveTopTab])
+  }, [activeTopTab, topTab, setActiveTopTab])
+
+  useEffect(() => {
+    if (isScheduleAInterest && selectedField === SCHEDULE_A_MORTGAGE_FIELD) {
+      return
+    }
+    if (isScheduleAInterest && activeItemId === 'sch-a-interest') {
+      setSelectedField(SCHEDULE_A_MORTGAGE_FIELD)
+    }
+  }, [isScheduleAInterest, activeItemId, selectedField, setSelectedField])
 
   useEffect(() => {
     if (showMissingEinDiagnostic && activeItemId === 'w2') {
@@ -85,13 +93,15 @@ export default function InputFormPanel({
     fieldValues.withholding.techCircle + amounts.intWithholding + amounts.divWithholding
 
   const handleDocTabChange = (docKey: string) => {
-    applyInputDocKey(navItem.topTab, docKey, docSetters)
+    if (!topTab) return
+    applyInputDocKey(topTab, docKey, docSetters)
     onDocChange?.(docKey)
   }
 
   const handleViewSourceDocuments = () => {
+    if (!topTab) return
     openSourceDocumentReviewPopout({
-      tab: navItem.topTab,
+      tab: topTab,
       subTab: activeSubTab,
       divPayer: activeDivPayer,
       intPayer: activeIntPayer,
@@ -112,7 +122,15 @@ export default function InputFormPanel({
       )}
 
       <div className={styles.formScroll}>
-        {navItem.topTab === 'w2s' && (
+        {isScheduleAInterest && (
+          <ScheduleAInterestInputPanel
+            variant="input"
+            highlightField={selectedField}
+            autoFocusField={selectedField === SCHEDULE_A_MORTGAGE_FIELD}
+          />
+        )}
+
+        {topTab === 'w2s' && (
           <DetailFields
             variant="input"
             formTitle="Details: Wages, Salaries, Tips (W-2)"
@@ -179,7 +197,7 @@ export default function InputFormPanel({
           />
         )}
 
-        {navItem.topTab === '1099-divs' && (
+        {topTab === '1099-divs' && (
           <DetailFieldsDiv
             variant="input"
             activePayer={activeDivPayer}
@@ -202,7 +220,7 @@ export default function InputFormPanel({
           />
         )}
 
-        {navItem.topTab === '1099-ints' && (
+        {topTab === '1099-ints' && (
           <DetailFields1099
             variant="input"
             activePayer={activeIntPayer}
@@ -225,7 +243,7 @@ export default function InputFormPanel({
           />
         )}
 
-        {navItem.topTab === '1099-rs' && (
+        {topTab === '1099-rs' && (
           <DetailFields1099R
             variant="input"
             fieldValues={{ ...fieldValues, withholding: totalWithholding }}
@@ -244,7 +262,7 @@ export default function InputFormPanel({
           />
         )}
 
-        {navItem.topTab === '1099-necs' && (
+        {topTab === '1099-necs' && (
           <DetailFieldsNec
             variant="input"
             onAmountChange={(patch, editedKey) => {

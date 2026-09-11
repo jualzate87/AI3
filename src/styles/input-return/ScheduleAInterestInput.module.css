@@ -1,0 +1,194 @@
+.embedRoot {
+  flex: 0 0 auto;
+  height: auto;
+  min-height: 0;
+  overflow: visible;
+}
+
+.sectionTitleRow {
+  display: flex;
+  align-items: center;
+  gap: var(--space-component-gap-x-small, 4px);
+  padding: var(--space-component-padding-small, 10px) var(--space-container-padding-medium, 20px);
+  border-bottom: 1px solid var(--color-divider-tertiary, #d9d9d9);
+}
+
+.sectionTitle {
+  margin: 0;
+  font-family: var(--font-family-component);
+  font-size: var(--font-size-component-medium, 16px);
+  font-weight: var(--font-weight-component-semibold, 500);
+  line-height: 24px;
+  color: var(--color-text-primary, #21262a);
+}
+
+.helpBtn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: var(--space-component-inline-padding-x-small, 2px);
+  border: none;
+  background: none;
+  color: var(--color-icon-secondary, #6b6c72);
+  cursor: pointer;
+}
+
+.grid {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+}
+
+.gridHeaderRow,
+.gridRow {
+  display: grid;
+  grid-template-columns: minmax(0, 1.15fr) minmax(0, 0.95fr) minmax(0, 0.95fr);
+  align-items: stretch;
+  border-bottom: 1px solid var(--color-divider-tertiary, #d9d9d9);
+}
+
+.gridHeaderRow {
+  min-height: 40px;
+  font-family: var(--font-family-component);
+  font-size: var(--font-size-component-medium, 16px);
+  font-weight: var(--font-weight-component, 400);
+  line-height: 24px;
+  color: var(--color-text-primary, #393a3d);
+}
+
+.colLabel,
+.colFederal,
+.colPrior,
+.rowLabelCell,
+.federalCell,
+.priorCell {
+  padding: var(--space-component-inline-padding-small, 8px);
+  min-width: 0;
+}
+
+.colFederal,
+.federalCell,
+.rowLabelCell {
+  border-right: 1px dashed var(--color-divider-tertiary, #d9d9d9);
+}
+
+.colPrior,
+.priorCell {
+  border-right: none;
+}
+
+.rowLabelCell {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--space-component-gap-x-small, 4px);
+  padding-top: var(--space-component-padding-small, 12px);
+  padding-bottom: var(--space-component-padding-small, 12px);
+}
+
+.rowLabel {
+  flex: 1;
+  min-width: 0;
+  font-family: var(--font-family-component);
+  font-size: var(--font-size-component-medium, 16px);
+  font-weight: var(--font-weight-component, 400);
+  line-height: 24px;
+  color: var(--color-text-primary, #393a3d);
+}
+
+.rowLabelHint {
+  display: block;
+  color: var(--color-text-primary, #393a3d);
+}
+
+.labelInfoBtn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  margin-top: 2px;
+  padding: 0;
+  border: 1px solid var(--color-container-border-primary, #babec5);
+  border-radius: var(--radius-small, 4px);
+  background: var(--color-container-background-primary, #ffffff);
+  color: var(--color-icon-secondary, #205ea3);
+  cursor: pointer;
+}
+
+.federalCell,
+.priorCell {
+  display: flex;
+  align-items: center;
+}
+
+.inputWithExpand {
+  display: flex;
+  align-items: stretch;
+  width: 100%;
+  max-width: 300px;
+  min-height: 36px;
+  border: 1px solid var(--color-input-border-primary, #8d9096);
+  border-radius: var(--radius-small, 4px);
+  overflow: hidden;
+  background: var(--color-container-background-primary, #ffffff);
+}
+
+.federalInput {
+  flex: 1 1 auto;
+  min-width: 0;
+  height: 34px;
+  padding: 5px 8px;
+  border: none;
+  outline: none;
+  font-family: var(--font-family-component);
+  font-size: var(--font-size-component-small, 14px);
+  font-weight: var(--font-weight-component-semibold, 500);
+  line-height: 20px;
+  color: var(--color-text-primary, #21262a);
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+  background: transparent;
+}
+
+.federalInputHighlighted {
+  background: rgba(32, 94, 163, 0.08);
+}
+
+.expandBtn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 45px;
+  flex-shrink: 0;
+  border: none;
+  border-left: 1px solid var(--color-input-border-primary, #8d9096);
+  background: var(--color-container-background-neutral, #f4f5f8);
+  color: var(--color-icon-secondary, #393a3d);
+  cursor: pointer;
+}
+
+.priorInput {
+  width: 100%;
+  max-width: 275px;
+  height: 36px;
+  padding: 5px 8px;
+  border: 1px solid var(--color-input-border-disabled, #babec5);
+  border-radius: var(--radius-small, 4px);
+  background: var(--color-container-background-neutral, #f4f5f8);
+  font-family: var(--font-family-component);
+  font-size: var(--font-size-component-small, 14px);
+  font-weight: var(--font-weight-component, 400);
+  line-height: 20px;
+  color: var(--color-text-disabled, #8d9096);
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+  cursor: default;
+}
+
+.gridRowHighlighted {
+  background: rgba(32, 94, 163, 0.04);
+}
+
+.gridRowHighlighted .inputWithExpand {
+  border-color: var(--color-action-standard, #205ea3);
+  box-shadow: 0 0 0 1px rgba(32, 94, 163, 0.12);
+}

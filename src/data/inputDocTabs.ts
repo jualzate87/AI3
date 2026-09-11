@@ -156,10 +156,14 @@ export function resolveDocKeyFromUrl(
 export function writeInputReturnParams(
   params: URLSearchParams,
   formId: InputNavItemId,
-  topTab: TopTab,
+  topTab?: TopTab,
   docKey?: string | null,
 ): void {
   params.set(INPUT_FORM_PARAM, formId)
+  if (!topTab) {
+    params.delete(INPUT_DOC_PARAM)
+    return
+  }
   const tabs = getInputDocTabs(topTab)
   if (tabs.length > 1) {
     const doc =

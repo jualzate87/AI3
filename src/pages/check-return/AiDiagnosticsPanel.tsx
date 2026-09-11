@@ -18,6 +18,7 @@ import '@ids-ts/link-action-button/dist/main.css'
 import intuitIntelligenceLogo from '../../assets/icons/intuit-intelligence-logo-small.svg'
 import { computeLiveReturn } from '../../data/liveReturn'
 import { useSyncedReviewState } from '../../hooks/useSyncedReviewState'
+import { navigateToScheduleAInterestInput } from '../../lib/inputReturnNavigation'
 import { openReviewReturnPopout, openSourceDocumentReviewPopout } from '../../lib/prototypeRoutes'
 import {
   buildAllDiagnosticIssues,
@@ -32,8 +33,8 @@ import {
 } from '../data-review/phase2FlagSync'
 import {
   getPreparerChecklistCounts,
+  getManualItemsByPhase,
   PREPARER_CHECKLIST_CLEARED,
-  PREPARER_CHECKLIST_MANUAL,
   type PreparerChecklistJump,
   type PreparerReviewChecklistItem,
 } from './preparerReviewChecklist'
@@ -180,11 +181,16 @@ function PreparerChecklistRow({
             title={item.title}
           />
           <div className={styles.checklistText}>
-            <span
-              className={styles.checklistTitle}
-            >
-              {item.title}
-            </span>
+            <span className={styles.checklistTitle}>{item.title}</span>
+            {item.note.trim() && (
+              <p className={styles.checklistNote}>{item.note}</p>
+            )}
+            {item.externalReference && item.kind === 'cleared' && (
+              <ExternalReferenceLink
+                href={item.externalReference.href}
+                label={item.externalReference.label}
+              />
+            )}
           </div>
         </div>
         {item.jump && (
@@ -287,6 +293,10 @@ export default function AiDiagnosticsPanel({
   }
 
   const handleViewSourceForField = (field?: string, tab?: string, subTab?: string) => {
+    if (tab === 'sch-a-interest') {
+      navigateToScheduleAInterestInput(field ?? 'mortgage1098')
+      return
+    }
     if (tab === 'questionnaire') {
       openSourceDocumentReviewPopout({
         tab: 'questionnaire',
@@ -327,6 +337,10 @@ export default function AiDiagnosticsPanel({
   const runIssueAction = (issueKey: Phase2IssueKey, action: IssueAction) => {
     switch (action.type) {
       case 'goToInput':
+        if (action.tab === 'sch-a-interest') {
+          navigateToScheduleAInterestInput(action.field ?? 'mortgage1098')
+          return
+        }
         if (action.tab === 'questionnaire') {
           handleViewSourceForField(action.field ?? 'mortgage', 'questionnaire')
           return
@@ -655,18 +669,23 @@ export default function AiDiagnosticsPanel({
               </ul>
 
               <p className={styles.checklistGroupLabel}>Worth confirming</p>
-              <ul className={styles.checklistList}>
-                {PREPARER_CHECKLIST_MANUAL.map((item, index) => (
-                  <PreparerChecklistRow
-                    key={item.id}
-                    item={item}
-                    checked={manualChecklistItems[item.id]}
-                    onJump={runPreparerChecklistJump}
-                    onToggle={setManualChecklistItem}
-                    showDivider={index > 0}
-                  />
-                ))}
-              </ul>
+              {getManualItemsByPhase().map(group => (
+                <div key={group.phase} className={styles.checklistPhaseBlock}>
+                  <p className={styles.checklistPhaseLabel}>{group.label}</p>
+                  <ul className={styles.checklistList}>
+                    {group.items.map((item, index) => (
+                      <PreparerChecklistRow
+                        key={item.id}
+                        item={item}
+                        checked={manualChecklistItems[item.id]}
+                        onJump={runPreparerChecklistJump}
+                        onToggle={setManualChecklistItem}
+                        showDivider={index > 0}
+                      />
+                    ))}
+                  </ul>
+                </div>
+              ))}
             </>
           )}
         </div>

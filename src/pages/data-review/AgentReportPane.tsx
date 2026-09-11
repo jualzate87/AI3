@@ -499,14 +499,13 @@ function buildOptItemizeIssue(amounts: LiveAmounts): DiagnosticIssueCard {
           mortgageDisplay,
           enteredMortgage > 0
             ? `Posted on Schedule A line 8a from the Form 1098 amount you entered.`
-            : `Jessica confirmed mid-five-figure mortgage interest in the questionnaire — enter the amount in the input section below.`,
+            : `Jessica confirmed mid-five-figure mortgage interest in the questionnaire — enter the Form 1098 amount in the Input return screen below.`,
         ],
         ...(enteredMortgage === 0
           ? {
-              fixTab: 'questionnaire',
-              fixField: 'mortgage',
+              fixTab: 'sch-a-interest',
+              fixField: 'mortgage1098',
               actionLabel: 'Add mortgage interest',
-              questionnaireResponseId: 'mortgage',
             }
           : {}),
       },
@@ -554,8 +553,8 @@ function buildOptItemizeIssue(amounts: LiveAmounts): DiagnosticIssueCard {
             {
               type: 'goToInput',
               label: 'Add mortgage interest',
-              tab: 'questionnaire',
-              field: 'mortgage',
+              tab: 'sch-a-interest',
+              field: 'mortgage1098',
             },
             {
               type: 'openForm',

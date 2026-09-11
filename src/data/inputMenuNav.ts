@@ -1,11 +1,20 @@
 import type { TopTab } from '../pages/data-review/ReviewTab'
 
-export type InputNavItemId = 'w2' | '1099-int' | '1099-div' | '1099-r' | '1099-nec'
+export type InputNavItemId =
+  | 'w2'
+  | '1099-int'
+  | '1099-div'
+  | '1099-r'
+  | '1099-nec'
+  | 'sch-a-interest'
+
+export type InputNavPanel = 'schedule-a-interest'
 
 export interface InputNavItem {
   id: InputNavItemId
   label: string
-  topTab: TopTab
+  topTab?: TopTab
+  panel?: InputNavPanel
 }
 
 export interface InputNavCategory {
@@ -27,7 +36,17 @@ export const INPUT_NAV_CATEGORIES: InputNavCategory[] = [
       { id: '1099-nec', label: '1099-NEC — Nonemployee compensation', topTab: '1099-necs' },
     ],
   },
-  { id: 'deductions', label: 'Deductions', items: [], disabled: true },
+  {
+    id: 'deductions',
+    label: 'Deductions',
+    items: [
+      {
+        id: 'sch-a-interest',
+        label: 'Itemized Deductions (Sch A) — Interest',
+        panel: 'schedule-a-interest',
+      },
+    ],
+  },
   { id: 'credits', label: 'Credits', items: [], disabled: true },
   { id: 'taxes', label: 'Taxes', items: [], disabled: true },
   { id: 'other', label: 'Other', items: [], disabled: true },
@@ -41,4 +60,8 @@ export function inputNavItemById(id: string | null | undefined): InputNavItem {
 
 export function inputNavItemByTopTab(tab: TopTab): InputNavItem {
   return ALL_ITEMS.find(item => item.topTab === tab) ?? ALL_ITEMS[0]
+}
+
+export function isScheduleAInterestNavItem(item: InputNavItem): boolean {
+  return item.panel === 'schedule-a-interest'
 }
