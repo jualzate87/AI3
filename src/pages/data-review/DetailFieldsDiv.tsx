@@ -337,7 +337,7 @@ export default function DetailFieldsDiv({
           </DestinationFieldLabel>
           <input
             className={`${styles.fieldInput} ${inputClass} ${!editable ? styles.fieldInputDisplay : ''} ${isEditing ? styles.fieldInputEditing : isFlagged ? styles.fieldInputHighlightedOrange : isSelected ? styles.fieldInputHighlighted : ''}`}
-            readOnly
+            readOnly={!isEditing}
             tabIndex={editable ? undefined : -1}
             aria-readonly={!editable}
             value={isEditing ? draftValue : currentVal}
