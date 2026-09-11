@@ -5,6 +5,8 @@ import {
 } from '../data/liveReturn'
 import {
   SOURCE_AMOUNTS,
+  getOutstandingImportMismatches,
+  type DiagnosticSyncContext,
   type Phase2IssueKey,
 } from '../pages/data-review/phase2FlagSync'
 import {
@@ -14,11 +16,6 @@ import {
 import { computeLiveReturn } from '../data/liveReturn'
 import type { OutputFormId } from '../pages/data-review/outputForms'
 import type { QuestionnaireResponseId } from '../pages/data-review/questionnaireData'
-import {
-  getOutstandingImportMismatches,
-  type DiagnosticSyncContext,
-  type Phase2IssueKey,
-} from '../pages/data-review/phase2FlagSync'
 import { getCategoryScopedActiveKeys } from '../pages/check-return/aiDiagnosticCategories'
 
 /** Demo auto-fix patch per active diagnostic issue. */
@@ -69,7 +66,21 @@ export type AgentViewLink = {
   formId?: OutputFormId
   questionnaireResponseId?: QuestionnaireResponseId
   schAInterest?: boolean
+  inputScreens?: boolean
   diagnostic?: Phase2IssueKey
+}
+
+/** Common source destinations for agent-mode exploration (chat quick nav). */
+export function buildStandardSourceLinks(): AgentViewLink[] {
+  return [
+    { label: 'W-2 Tech Circle', tab: 'w2s', field: 'wages' },
+    { label: '1099-DIV Token', tab: '1099-divs', field: 'qualifiedDivs' },
+    { label: '1099-R Meridian', tab: '1099-rs', field: 'taxablePension' },
+    { label: 'Questionnaire', tab: 'questionnaire', field: 'mortgageInterest' },
+    { label: 'Schedule A inputs', schAInterest: true, field: 'mortgage1098' },
+    { label: 'Form 1040', formId: '1040' },
+    { label: 'Input screens', inputScreens: true },
+  ]
 }
 
 export type AgentFixPlanItem = {

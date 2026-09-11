@@ -4,9 +4,13 @@ import {
   ChevronRight,
   ChevronUp,
   CircleCheck,
+  CircleExclamation,
+  Comment,
+  List,
   Plus,
   Send,
   StopFill,
+  Upload,
 } from '@design-systems/icons'
 import { Badge } from '@ids-ts/badge'
 import '@ids-ts/badge/dist/main.css'
@@ -14,12 +18,15 @@ import { Button } from '@ids-ts/button'
 import '@ids-ts/button/dist/main.css'
 import { Link } from '@ids-ts/link'
 import '@ids-ts/link/dist/main.css'
+import { LinkActionButton } from '@ids-ts/link-action-button'
+import '@ids-ts/link-action-button/dist/main.css'
 import intuitIntelligenceLogo from '../../assets/icons/intuit-intelligence-logo-small.svg'
 import { computeLiveReturn } from '../../data/liveReturn'
 import { useSyncedReviewState } from '../../hooks/useSyncedReviewState'
 import { navigateToScheduleAInterestInput } from '../../lib/inputReturnNavigation'
 import {
   buildAgentFixPlan,
+  buildStandardSourceLinks,
   getAgentFixContext,
   type AgentFixPlanItem,
   type AgentViewLink,
@@ -30,7 +37,13 @@ import {
   openSourceDocumentReviewPopout,
   PREPARER_DATA_REVIEW_PATH,
 } from '../../lib/prototypeRoutes'
-import { getDiagnosticOverviewCounts } from './aiDiagnosticCategories'
+import {
+  AI_DIAGNOSTIC_CATEGORIES,
+  getCategoryDiagnosticCount,
+  getDiagnosticOverviewCounts,
+  primaryIssueKeyForCategory,
+} from './aiDiagnosticCategories'
+import type { DiagnosticSyncContext } from '../data-review/phase2FlagSync'
 import styles from '../../styles/check-return/AgentDiagnosticsPanel.module.css'
 
 type AgentPhase = 'ready' | 'running' | 'complete'
@@ -41,6 +54,7 @@ type ThreadEntry =
       kind: 'agent'
       isWelcome?: boolean
       isPlan?: boolean
+      showSources?: boolean
       heading?: string
       text: string
       bullets?: string[]
@@ -66,6 +80,10 @@ function nextThreadEntryId(): string {
 }
 
 function runAgentViewLink(link: AgentViewLink): void {
+  if (link.inputScreens) {
+    window.location.assign(buildHashRouteUrl(PREPARER_DATA_REVIEW_PATH))
+    return
+  }
   if (link.schAInterest) {
     navigateToScheduleAInterestInput(link.field ?? 'mortgage1098')
     return
@@ -100,6 +118,168 @@ function AgentAvatar() {
       className={styles.agentAvatar}
       aria-hidden
     />
+  )
+}
+
+function IntelligenceBrand({ meta }: { meta?: string }) {
+  return (
+    <div className={styles.brandRow}>
+      <div className={styles.logoGroup}>
+        <img src={intuitIntelligenceLogo} alt="" className={styles.brandLogo} aria-hidden />
+        <span className={styles.wordmark}>Intuit Intelligence</span>
+      </div>
+      {meta && <span className={styles.brandMeta}>{meta}</span>}
+    </div>
+  )
+}
+
+function ReturnStandingCard({ ctx, phase }: { ctx: DiagnosticSyncContext; phase: AgentPhase }) {
+  const overview = getDiagnosticOverviewCounts(ctx)
+  const stillNeeded = fixPlanTitlesFromCtx(ctx)
+
+  return (
+    <div className={styles.interactiveCard}>
+      <p className={styles.cardEyebrow}>Return status</p>
+      <h3 className={styles.cardTitle}>Here&apos;s where Jordan&apos;s 2025 return stands</h3>
+      <ul className={styles.statusList}>
+        {AI_DIAGNOSTIC_CATEGORIES.map(category => {
+          const count = getCategoryDiagnosticCount(category.id, ctx)
+          const issueKey = primaryIssueKeyForCategory(category.id, overview.activeKeys)
+          const isDone =
+            !issueKey ||
+            ctx.reviewedFields.has(issueKey) ||
+            (phase === 'complete' && count === 0)
+          const isActive = count > 0 && !isDone
+          return (
+            <li key={category.id} className={styles.statusRow}>
+              <span className={styles.statusIcon} aria-hidden>
+                {isDone ? (
+                  <CircleCheck size="small" color="var(--color-action-standard)" />
+                ) : isActive ? (
+                  <CircleExclamation size="small" color="var(--color-ui-attention)" />
+                ) : (
+                  <span className={styles.statusDot} />
+                )}
+              </span>
+              <div className={styles.statusCopy}>
+                <span className={styles.statusLabel}>{category.navLabel}</span>
+                <span className={styles.statusMeta}>
+                  {isDone ? 'Done' : isActive ? `${count} open` : 'Not started'}
+                </span>
+              </div>
+              {isActive && issueKey && (
+                <LinkActionButton
+                  size="small"
+                  weight="regular"
+                  alignment="left"
+                  onClick={() => {
+                    const planItem = buildAgentFixPlan(ctx).find(p => p.issueKey === issueKey)
+                    const firstLink = planItem?.viewLinks[0]
+                    if (firstLink) runAgentViewLink(firstLink)
+                  }}
+                >
+                  View
+                </LinkActionButton>
+              )}
+            </li>
+          )
+        })}
+      </ul>
+      {stillNeeded.length > 0 && phase !== 'complete' && (
+        <div className={styles.stillNeededBlock}>
+          <p className={styles.stillNeededLabel}>Still needed</p>
+          <ul className={styles.stillNeededList}>
+            {stillNeeded.map(item => (
+              <li key={item}>{item}</li>
+            ))}
+          </ul>
+        </div>
+      )}
+    </div>
+  )
+}
+
+function fixPlanTitlesFromCtx(ctx: DiagnosticSyncContext): string[] {
+  return buildAgentFixPlan(ctx).map(item => item.title)
+}
+
+function SourceExplorerCard({ links }: { links: AgentViewLink[] }) {
+  return (
+    <div className={styles.interactiveCard}>
+      <p className={styles.cardEyebrow}>Review sources</p>
+      <p className={styles.cardBody}>
+        Jump to any source document, input screen, or output form tied to these diagnostics.
+      </p>
+      <div className={styles.sourceButtonGrid}>
+        {links.map(link => (
+          <Button
+            key={link.label}
+            priority="secondary"
+            size="medium"
+            onClick={() => runAgentViewLink(link)}
+          >
+            {link.label}
+          </Button>
+        ))}
+      </div>
+    </div>
+  )
+}
+
+function DiagnosticsPlanCard({
+  bullets,
+  plan,
+}: {
+  bullets: string[]
+  plan: AgentFixPlanItem[]
+}) {
+  return (
+    <div className={styles.interactiveCard}>
+      <p className={styles.cardEyebrow}>Open diagnostics</p>
+      <ul className={styles.planList}>
+        {bullets.map((bullet, bi) => {
+          const item = plan[bi]
+          const primaryLink = item?.viewLinks[0]
+          return (
+            <li key={bullet} className={styles.planRow}>
+              <div className={styles.planRowMain}>
+                <Badge
+                  status="warning"
+                  label="Open"
+                  capitalization="sentence"
+                  priority="secondary"
+                />
+                <span className={styles.planRowTitle}>{bullet}</span>
+              </div>
+              {primaryLink && (
+                <LinkActionButton
+                  size="small"
+                  weight="regular"
+                  alignment="left"
+                  onClick={() => runAgentViewLink(primaryLink)}
+                >
+                  {primaryLink.label}
+                </LinkActionButton>
+              )}
+            </li>
+          )
+        })}
+      </ul>
+      {plan.some(item => item.viewLinks.length > 1) && (
+        <div className={styles.cardActions}>
+          {plan.flatMap(item => item.viewLinks).slice(0, 4).map(link => (
+            <Button
+              key={`${link.label}-${link.tab ?? link.formId}`}
+              priority="secondary"
+              size="medium"
+              onClick={() => runAgentViewLink(link)}
+            >
+              {link.label}
+            </Button>
+          ))}
+        </div>
+      )}
+    </div>
   )
 }
 
@@ -169,17 +349,24 @@ function ThinkingBlock({
 }
 
 function ProgressRail({
+  ctx,
   plan,
   completedCount,
   activeIndex,
   phase,
 }: {
+  ctx: DiagnosticSyncContext
   plan: AgentFixPlanItem[]
   completedCount: number
   activeIndex: number
   phase: AgentPhase
 }) {
-  if (plan.length === 0) return null
+  const overview = getDiagnosticOverviewCounts(ctx)
+  const totalSteps = plan.length || AI_DIAGNOSTIC_CATEGORIES.length
+  const readinessPct =
+    phase === 'complete' || plan.length === 0
+      ? 100
+      : Math.round((completedCount / plan.length) * 100)
 
   return (
     <aside className={styles.progressRail} aria-label="Fix progress">
@@ -187,11 +374,11 @@ function ProgressRail({
         <div className={styles.progressCardHeader}>
           <span className={styles.progressLabel}>Progress</span>
           <span className={styles.progressCount}>
-            {phase === 'complete' ? plan.length : completedCount}/{plan.length}
+            {phase === 'complete' ? totalSteps : completedCount}/{totalSteps || 1}
           </span>
         </div>
         <ol className={styles.progressTimeline}>
-          {plan.map((item, index) => {
+          {(plan.length > 0 ? plan : buildAgentFixPlan(ctx)).map((item, index) => {
             const isDone = index < completedCount || phase === 'complete'
             const isActive = phase === 'running' && index === activeIndex
             return (
@@ -204,11 +391,17 @@ function ProgressRail({
                 </span>
                 <div className={styles.progressStepBody}>
                   <p className={styles.progressStepTitle}>{item.title}</p>
-                  {isActive && (
-                    <p className={styles.progressStepMeta}>Fixing now…</p>
-                  )}
-                  {isDone && !isActive && (
-                    <p className={styles.progressStepMeta}>Fixed</p>
+                  {isActive && <p className={styles.progressStepMeta}>Fixing now…</p>}
+                  {isDone && !isActive && <p className={styles.progressStepMeta}>Fixed</p>}
+                  {!isDone && !isActive && item.viewLinks[0] && (
+                    <LinkActionButton
+                      size="small"
+                      weight="regular"
+                      alignment="left"
+                      onClick={() => runAgentViewLink(item.viewLinks[0])}
+                    >
+                      {item.viewLinks[0].label}
+                    </LinkActionButton>
                   )}
                 </div>
               </li>
@@ -224,10 +417,31 @@ function ProgressRail({
       >
         <span className={styles.readinessLabel}>Document readiness</span>
         <span className={styles.readinessValue}>
-          {phase === 'complete' ? '100%' : `${Math.round((completedCount / plan.length) * 100)}%`}
+          {readinessPct}%
           <ChevronRight size="small" aria-hidden />
         </span>
       </button>
+
+      <div className={styles.taxProfileCard}>
+        <div className={styles.progressCardHeader}>
+          <span className={styles.progressLabel}>Tax profile</span>
+          <ChevronRight size="small" aria-hidden />
+        </div>
+        <dl className={styles.taxProfileGrid}>
+          <div className={styles.taxProfileItem}>
+            <dt>Taxpayer</dt>
+            <dd>Jordan Patel</dd>
+          </div>
+          <div className={styles.taxProfileItem}>
+            <dt>Filing status</dt>
+            <dd>Single</dd>
+          </div>
+          <div className={styles.taxProfileItem}>
+            <dt>Open diagnostics</dt>
+            <dd>{overview.remaining}</dd>
+          </div>
+        </dl>
+      </div>
     </aside>
   )
 }
@@ -253,6 +467,7 @@ export default function AgentDiagnosticsPanel() {
 
   const remaining = overview.remaining
   const total = overview.total
+  const standardSourceLinks = useMemo(() => buildStandardSourceLinks(), [])
 
   const scrollToBottom = useCallback(() => {
     const el = chatScrollRef.current
@@ -405,12 +620,8 @@ export default function AgentDiagnosticsPanel() {
     appendThread({
       kind: 'agent',
       isWelcome: true,
-      heading: 'Return review by Intuit Intelligence',
-      text: `I've reviewed Jordan's 2025 return and found ${total} item${total === 1 ? '' : 's'} that need attention.`,
-      bullets: [
-        'I can fix them automatically with full visibility into each step',
-        'You will see response generation progress as I work',
-      ],
+      heading: 'Return review',
+      text: `I've reviewed Jordan's 2025 return and found ${total} diagnostic${total === 1 ? '' : 's'} that need attention. I can fix them automatically — you'll see each step as I work.`,
     })
   }, [appendThread, total])
 
@@ -445,22 +656,32 @@ export default function AgentDiagnosticsPanel() {
                       <AgentAvatar />
                       <div className={styles.agentContent}>
                         {entry.isWelcome ? (
-                          <h1 className={styles.welcomeTitle}>{entry.heading}</h1>
+                          <>
+                            <IntelligenceBrand meta="Analyzed just now" />
+                            <div className={styles.titleRow}>
+                              <h1 className={styles.welcomeTitle}>{entry.heading}</h1>
+                            </div>
+                          </>
                         ) : (
-                          entry.heading && (
-                            <h2 className={styles.agentHeading}>{entry.heading}</h2>
-                          )
+                          <>
+                            <IntelligenceBrand />
+                            {entry.heading && (
+                              <h2 className={styles.agentHeading}>{entry.heading}</h2>
+                            )}
+                          </>
                         )}
                         <p className={styles.agentBody}>{entry.text}</p>
+                        {entry.isWelcome && (
+                          <>
+                            <ReturnStandingCard ctx={syncCtx} phase={phase} />
+                            <SourceExplorerCard links={standardSourceLinks} />
+                          </>
+                        )}
+                        {entry.showSources && (
+                          <SourceExplorerCard links={standardSourceLinks} />
+                        )}
                         {entry.isPlan && entry.bullets && entry.bullets.length > 0 && (
-                          <div className={styles.interactiveCard}>
-                            <p className={styles.cardEyebrow}>Items to fix</p>
-                            <ul className={styles.cardChecklist}>
-                              {entry.bullets.map((bullet, bi) => (
-                                <li key={bi}>{bullet}</li>
-                              ))}
-                            </ul>
-                          </div>
+                          <DiagnosticsPlanCard bullets={entry.bullets} plan={fixPlan} />
                         )}
                         {!entry.isPlan && entry.bullets && entry.bullets.length > 0 && (
                           <ul className={styles.agentList}>
@@ -470,9 +691,30 @@ export default function AgentDiagnosticsPanel() {
                           </ul>
                         )}
                         {entry.isWelcome && remaining > 0 && phase === 'ready' && (
-                          <div className={styles.inlineActions}>
+                          <div className={styles.responsePills}>
                             <Button priority="primary" onClick={handleFixAll}>
                               Fix all issues
+                            </Button>
+                            <Button
+                              priority="secondary"
+                              onClick={() => {
+                                appendThread({ kind: 'user', text: "What's pending?" })
+                                appendThread({
+                                  kind: 'agent',
+                                  isPlan: true,
+                                  heading: 'Open diagnostics',
+                                  text: `${remaining} item${remaining === 1 ? '' : 's'} still need attention.`,
+                                  bullets: fixPlan.map(p => p.title),
+                                })
+                              }}
+                            >
+                              What&apos;s pending?
+                            </Button>
+                            <Button
+                              priority="secondary"
+                              onClick={() => openSourceDocumentReviewPopout()}
+                            >
+                              Review sources
                             </Button>
                           </div>
                         )}
@@ -496,6 +738,7 @@ export default function AgentDiagnosticsPanel() {
                       <AgentAvatar />
                       <div className={styles.agentContentWide}>
                         <div className={styles.interactiveCard}>
+                          <IntelligenceBrand meta="Fixed just now" />
                           <div className={styles.fixedHeader}>
                             <Badge
                               status="success"
@@ -507,18 +750,21 @@ export default function AgentDiagnosticsPanel() {
                           </div>
                           <p className={styles.cardBody}>{entry.summary}</p>
                           {entry.viewLinks.length > 0 && (
-                            <div className={styles.cardActions}>
-                              {entry.viewLinks.map(link => (
-                                <Button
-                                  key={link.label}
-                                  priority="secondary"
-                                  size="medium"
-                                  onClick={() => runAgentViewLink(link)}
-                                >
-                                  {link.label}
-                                </Button>
-                              ))}
-                            </div>
+                            <>
+                              <p className={styles.cardEyebrow}>Review changes</p>
+                              <div className={styles.sourceButtonGrid}>
+                                {entry.viewLinks.map(link => (
+                                  <Button
+                                    key={link.label}
+                                    priority="secondary"
+                                    size="medium"
+                                    onClick={() => runAgentViewLink(link)}
+                                  >
+                                    {link.label}
+                                  </Button>
+                                ))}
+                              </div>
+                            </>
                           )}
                         </div>
                       </div>
@@ -531,6 +777,7 @@ export default function AgentDiagnosticsPanel() {
 
             {showCompletion && (
               <div className={styles.completionCard}>
+                <IntelligenceBrand meta="Review complete" />
                 <div className={styles.completionHeader}>
                   <Badge
                     status="success"
@@ -544,30 +791,18 @@ export default function AgentDiagnosticsPanel() {
                   Every diagnostic has been resolved. Review the changes on source documents,
                   input fields, or the output forms.
                 </p>
-                <div className={styles.cardActions}>
-                  <Button
-                    priority="secondary"
-                    size="medium"
-                    onClick={() => openSourceDocumentReviewPopout()}
-                  >
-                    View source documents
-                  </Button>
-                  <Button
-                    priority="secondary"
-                    size="medium"
-                    onClick={() => {
-                      window.location.assign(buildHashRouteUrl(PREPARER_DATA_REVIEW_PATH))
-                    }}
-                  >
-                    View inputs
-                  </Button>
-                  <Button
-                    priority="secondary"
-                    size="medium"
-                    onClick={() => openReviewReturnPopout('1040')}
-                  >
-                    View 1040
-                  </Button>
+                <p className={styles.cardEyebrow}>Review changes</p>
+                <div className={styles.sourceButtonGrid}>
+                  {standardSourceLinks.map(link => (
+                    <Button
+                      key={`done-${link.label}`}
+                      priority="secondary"
+                      size="medium"
+                      onClick={() => runAgentViewLink(link)}
+                    >
+                      {link.label}
+                    </Button>
+                  ))}
                 </div>
               </div>
             )}
@@ -595,6 +830,7 @@ export default function AgentDiagnosticsPanel() {
                   })
                 }}
               >
+                <List size="small" aria-hidden />
                 What&apos;s pending?
               </button>
               <button
@@ -602,14 +838,23 @@ export default function AgentDiagnosticsPanel() {
                 className={styles.quickChip}
                 onClick={() => openSourceDocumentReviewPopout()}
               >
+                <Upload size="small" aria-hidden />
                 View source documents
               </button>
               <button
                 type="button"
                 className={styles.quickChip}
-                onClick={() => openReviewReturnPopout('1040')}
+                onClick={() => {
+                  appendThread({ kind: 'user', text: 'Show me all review sources' })
+                  appendThread({
+                    kind: 'agent',
+                    showSources: true,
+                    text: 'Open any source below to inspect documents, inputs, or the 1040.',
+                  })
+                }}
               >
-                View 1040
+                <Comment size="small" aria-hidden />
+                Review sources
               </button>
             </div>
             <div className={styles.composerBox}>
@@ -667,6 +912,7 @@ export default function AgentDiagnosticsPanel() {
         </div>
 
         <ProgressRail
+          ctx={syncCtx}
           plan={fixPlan}
           completedCount={progressValue}
           activeIndex={activeFixIndex}

@@ -13,12 +13,17 @@
 }
 
 .panel {
+  /* Intuit Intelligence super blue (#236CFF) */
+  --color-action-standard: #236cff;
+  --color-action-standard-hover: #1b56cc;
+  --color-action-standard-active: #1748aa;
+
   display: flex;
   flex-direction: column;
   flex: 1;
   min-height: 0;
   height: 100%;
-  background: var(--color-page-background-primary, #ffffff);
+  background: var(--color-page-background-secondary, #f4f5f8);
   box-sizing: border-box;
 }
 
@@ -43,6 +48,7 @@
   overflow-y: auto;
   padding: var(--space-container-padding-large, 24px);
   padding-bottom: var(--space-container-padding-small, 8px);
+  background: var(--color-page-background-secondary, #f4f5f8);
 }
 
 .thread {
@@ -169,6 +175,132 @@
   gap: var(--space-component-gap-medium, 12px);
 }
 
+.responsePills {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-component-gap-medium, 12px);
+}
+
+.sourceButtonGrid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-component-gap-medium, 12px);
+}
+
+.statusList {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-component-gap-medium, 12px);
+}
+
+.statusRow {
+  display: flex;
+  align-items: center;
+  gap: var(--space-component-gap-medium, 12px);
+}
+
+.statusIcon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 20px;
+  flex-shrink: 0;
+}
+
+.statusDot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  border: 2px solid var(--color-divider-tertiary, #d4d7dc);
+  background: var(--color-container-background-primary, #ffffff);
+}
+
+.statusCopy {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.statusLabel {
+  font-family: var(--font-family-component);
+  font-size: var(--font-size-component-small, 14px);
+  font-weight: var(--font-weight-component-semibold, 600);
+  color: var(--color-text-primary, #393a3d);
+}
+
+.statusMeta {
+  font-family: var(--font-family-body);
+  font-size: var(--font-size-body-4, 12px);
+  color: var(--color-text-secondary, #6b6c72);
+}
+
+.stillNeededBlock {
+  padding-top: var(--space-component-gap-small, 8px);
+  border-top: 1px solid var(--color-divider-tertiary, #d4d7dc);
+}
+
+.stillNeededLabel {
+  margin: 0 0 var(--space-component-gap-x-small, 4px);
+  font-family: var(--font-family-component);
+  font-size: var(--font-size-component-x-small, 12px);
+  font-weight: var(--font-weight-component-semibold, 600);
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--color-text-secondary, #6b6c72);
+}
+
+.stillNeededList {
+  margin: 0;
+  padding-left: var(--space-container-padding-medium, 20px);
+  font-family: var(--font-family-body);
+  font-size: var(--font-size-body-3, 14px);
+  line-height: 1.5;
+  color: var(--color-text-primary, #393a3d);
+}
+
+.planList {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-component-gap-medium, 12px);
+}
+
+.planRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-component-gap-medium, 12px);
+  padding: var(--space-component-gap-small, 8px) 0;
+  border-bottom: 1px solid var(--color-divider-tertiary, #d4d7dc);
+}
+
+.planRow:last-child {
+  border-bottom: none;
+  padding-bottom: 0;
+}
+
+.planRowMain {
+  display: flex;
+  align-items: center;
+  gap: var(--space-component-gap-small, 8px);
+  flex: 1;
+  min-width: 0;
+}
+
+.planRowTitle {
+  font-family: var(--font-family-component);
+  font-size: var(--font-size-component-small, 14px);
+  font-weight: var(--font-weight-component, 400);
+  color: var(--color-text-primary, #393a3d);
+}
+
 /* ── User bubble (right-aligned, blue) ── */
 .userRow {
   display: flex;
@@ -189,18 +321,46 @@
   line-height: 1.3;
 }
 
-/* ── Welcome greeting (Intuit Intelligence logo + 20px title) ── */
-.welcomeHeader {
+/* ── Intuit Intelligence branding ── */
+.brandRow {
   display: flex;
   align-items: center;
+  justify-content: space-between;
   gap: var(--space-component-gap-medium, 12px);
-  margin-bottom: var(--space-component-gap-x-small, 4px);
+  width: 100%;
 }
 
-.welcomeLogo {
+.logoGroup {
+  display: flex;
+  align-items: center;
+  gap: var(--space-component-gap-small, 8px);
+}
+
+.brandLogo {
   width: 20px;
   height: 20px;
   flex-shrink: 0;
+}
+
+.wordmark {
+  font-family: var(--font-family-component);
+  font-size: var(--font-size-component-small, 14px);
+  font-weight: var(--font-weight-component-semibold, 600);
+  line-height: 1.4;
+  color: var(--color-text-primary, #393a3d);
+}
+
+.brandMeta {
+  font-family: var(--font-family-body);
+  font-size: var(--font-size-body-4, 12px);
+  color: var(--color-text-secondary, #6b6c72);
+  white-space: nowrap;
+}
+
+.titleRow {
+  display: flex;
+  align-items: center;
+  gap: var(--space-component-gap-medium, 12px);
 }
 
 .welcomeTitle {
@@ -209,6 +369,15 @@
   font-size: var(--font-size-component-large, 20px);
   font-weight: var(--font-weight-component-semibold, 600);
   line-height: 1.4;
+  color: var(--color-text-primary, #393a3d);
+}
+
+.cardTitle {
+  margin: 0;
+  font-family: var(--font-family-component);
+  font-size: var(--font-size-component-medium, 16px);
+  font-weight: var(--font-weight-component-semibold, 600);
+  line-height: 1.35;
   color: var(--color-text-primary, #393a3d);
 }
 
@@ -784,6 +953,47 @@
   color: var(--color-text-primary, #393a3d);
 }
 
+.taxProfileCard {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-container-gap-medium, 16px);
+  padding: var(--space-container-padding-medium, 16px);
+  border: 1px solid var(--color-divider-tertiary, #d4d7dc);
+  border-radius: var(--radius-large, 12px);
+  background: var(--color-container-background-primary, #ffffff);
+}
+
+.taxProfileGrid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--space-component-gap-medium, 12px);
+  margin: 0;
+}
+
+.taxProfileItem {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.taxProfileItem dt {
+  margin: 0;
+  font-family: var(--font-family-component);
+  font-size: var(--font-size-component-x-small, 12px);
+  font-weight: var(--font-weight-component-semibold, 600);
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--color-text-secondary, #6b6c72);
+}
+
+.taxProfileItem dd {
+  margin: 0;
+  font-family: var(--font-family-component);
+  font-size: var(--font-size-component-small, 14px);
+  font-weight: var(--font-weight-component, 400);
+  color: var(--color-text-primary, #393a3d);
+}
+
 /* ── Quick action chips above composer ── */
 .quickActions {
   display: flex;
@@ -797,6 +1007,7 @@
 .quickChip {
   display: inline-flex;
   align-items: center;
+  gap: var(--space-component-gap-x-small, 4px);
   padding: var(--space-component-stack-padding-x-small, 4px)
     var(--space-component-inline-padding-large, 12px);
   border: 1px solid var(--color-divider-tertiary, #d4d7dc);

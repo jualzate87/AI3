@@ -49,9 +49,9 @@ export default function CheckReturnAgentPage() {
     const el = document.documentElement
     const prev = el.getAttribute('data-theme')
     el.setAttribute('data-theme', 'intuit')
-    el.style.setProperty('--color-action-standard', '#205ea3')
-    el.style.setProperty('--color-action-standard-hover', '#174d87')
-    el.style.setProperty('--color-action-standard-active', '#174d87')
+    el.style.setProperty('--color-action-standard', '#236cff')
+    el.style.setProperty('--color-action-standard-hover', '#1b56cc')
+    el.style.setProperty('--color-action-standard-active', '#1748aa')
     return () => {
       if (prev) el.setAttribute('data-theme', prev)
       el.style.removeProperty('--color-action-standard')
