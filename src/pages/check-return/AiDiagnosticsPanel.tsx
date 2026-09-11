@@ -556,7 +556,7 @@ export default function AiDiagnosticsPanel({
                   className={`${styles.summaryDot} ${DOT_CLASS_BY_STATUS[category.badgeStatus]}`}
                   aria-hidden
                 />
-                {count} {category.metricLabel} item{count === 1 ? '' : 's'}
+                {count} {category.metricLabel}
               </span>
             )
           })}
@@ -603,7 +603,11 @@ export default function AiDiagnosticsPanel({
 
               {isExpanded && (
                 <>
-                  <p className={styles.findingDescription}>{category.description}</p>
+                  <p className={styles.findingDescription}>
+                    {category.id === 'import-mismatches'
+                      ? `${itemCount} field${itemCount === 1 ? '' : 's'} don\u2019t match source documents. Some were marked correct during import without fixing amounts, and I found gaps the import missed.`
+                      : category.description}
+                  </p>
                   <div className={styles.findingActions}>
                     <Button
                       priority="primary"
