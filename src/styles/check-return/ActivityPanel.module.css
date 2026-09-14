@@ -90,6 +90,62 @@
   flex-shrink: 0;
 }
 
+/* Updated IDS Segmented Button — medium track with elevated selected segment (Figma 34505:125036) */
+.segmentControl {
+  width: 100%;
+}
+
+.segmentRow :global(br) {
+  display: none;
+}
+
+.segmentRow :global([class*='segPosition_']) {
+  width: 100%;
+  display: flex;
+  justify-content: center;
+}
+
+.segmentRow :global([class*='standardWrapper']),
+.segmentRow :global([class*='miniWrapper']) {
+  position: relative;
+  display: inline-flex;
+  gap: var(--space-component-gap-x-small, 2px);
+  padding: 2px;
+  background: var(--color-container-background-quaternary, #e3e5e8);
+  border-radius: var(--radius-action, 4px);
+}
+
+.segmentRow :global([class*='standardWrapper'] button),
+.segmentRow :global([class*='miniWrapper'] button) {
+  margin: 0 !important;
+  border: none !important;
+  border-radius: var(--radius-action, 4px) !important;
+  background: var(--color-action-passive-subtle, transparent) !important;
+  color: var(--color-text-secondary, #6b6c72) !important;
+  box-shadow: none !important;
+  font-weight: var(--font-weight-component, 400) !important;
+  min-width: auto !important;
+}
+
+.segmentRow :global([class*='standardWrapper'] button:first-child),
+.segmentRow :global([class*='standardWrapper'] button:last-child),
+.segmentRow :global([class*='miniWrapper'] button:first-child),
+.segmentRow :global([class*='miniWrapper'] button:last-child) {
+  border-radius: var(--radius-action, 4px) !important;
+  margin-left: 0 !important;
+  margin-right: 0 !important;
+}
+
+.segmentRow :global([class*='selected']),
+.segmentRow :global([class*='selected']:hover) {
+  background: var(--color-container-background-primary, #ffffff) !important;
+  color: var(--color-text-primary, #393a3d) !important;
+  box-shadow:
+    0 var(--elevation-level-1-offset-y, 1px)
+    calc(var(--elevation-level-1-blur, 4px) / 2)
+    var(--color-shadow, rgba(0, 0, 0, 0.2)) !important;
+}
+
 .toolbar {
   display: flex;
   align-items: center;
@@ -228,12 +284,23 @@
   border-bottom: none;
 }
 
+.badgeVerification {
+  --activity-dot-color: var(--color-green-200, #2ca01c);
+  --activity-badge-bg: var(--color-green-100, #108000);
+}
+
+.badgeModification {
+  --activity-dot-color: var(--color-yellow-100, #ffad00);
+  --activity-badge-bg: var(--color-yellow-100, #ffad00);
+}
+
 .statusDot {
   width: 8px;
   height: 8px;
   margin-top: 5px;
   border-radius: 50%;
   flex-shrink: 0;
+  background: var(--activity-dot-color, var(--color-text-tertiary));
   transition: transform 0.15s ease;
 }
 
@@ -319,12 +386,12 @@
 }
 
 .entryDetail {
-  margin: 5px 0 0;
+  margin: 4px 0 0;
   font-family: var(--font-family-component);
   font-size: var(--font-size-component-small, 14px);
   font-weight: var(--font-weight-component, 400);
   line-height: 1.4;
-  color: var(--color-text-primary);
+  color: var(--color-text-secondary, #6b6c72);
 }
 
 .valueChange {
@@ -358,30 +425,27 @@
   display: flex;
   align-items: center;
   flex-wrap: wrap;
-  gap: 5px;
-  margin-top: 4px;
+  gap: 4px;
+  margin-top: 6px;
   font-family: var(--font-family-component);
   font-size: var(--font-size-component-x-small, 12px);
   line-height: 16px;
-  color: var(--color-text-secondary);
+  color: var(--color-text-secondary, #6b6c72);
 }
 
 .entryTypeBadge {
   display: inline-flex;
   align-items: center;
   font-size: inherit;
-  font-weight: 700;
-  letter-spacing: 0.3px;
-  padding: 2px 7px;
-  border-radius: 8px;
+  font-weight: var(--font-weight-component-bold, 600);
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+  padding: 2px 8px;
+  border-radius: var(--radius-medium, 8px);
   border: 1px solid transparent;
   white-space: nowrap;
-}
-
-.entryLocation {
-  font-size: inherit;
-  font-weight: var(--font-weight-component, 400);
-  color: inherit;
+  color: var(--color-text-inverse, #ffffff);
+  background: var(--activity-badge-bg, var(--color-text-tertiary));
 }
 
 .entryAuthor {

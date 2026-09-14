@@ -111,13 +111,16 @@ function ActivityEntryRow({
   onNavigate?: (link: ActivityDeepLink) => void
 }) {
   const badge = ACTIVITY_ENTRY_BADGE[entry.entryType]
+  const badgeCategoryClass =
+    badge.category === 'verification'
+      ? styles.badgeVerification
+      : styles.badgeModification
   const linkLabel = defaultLinkLabel(entry)
 
   return (
     <li className={styles.entry}>
       <span
-        className={styles.statusDot}
-        style={{ background: badge.pillBackground }}
+        className={`${styles.statusDot} ${badgeCategoryClass}`}
         aria-hidden
       />
       <div className={styles.entryBody}>
@@ -136,17 +139,9 @@ function ActivityEntryRow({
           <ValueChange before={entry.before} after={entry.after} />
         ) : null}
         <div className={styles.entryMeta}>
-          <span
-            className={styles.entryTypeBadge}
-            style={{
-              background: badge.pillBackground,
-              color: '#ffffff',
-              borderColor: 'transparent',
-            }}
-          >
+          <span className={`${styles.entryTypeBadge} ${badgeCategoryClass}`}>
             {badge.label}
           </span>
-          <span className={styles.entryLocation}>{entry.location}</span>
           <span className={styles.entrySep} aria-hidden>
             ·
           </span>
@@ -267,7 +262,8 @@ export default function ActivityPanel({ isOpen, onToggle, onNavigate }: Activity
         <SegmentedButton
           ariaLabel="Activity segment"
           buttonPosition="center"
-          buttonType="mini"
+          buttonType="standard"
+          className={styles.segmentControl}
           buttonInfos={[
             {
               label: 'Data entry',

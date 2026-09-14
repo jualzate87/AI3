@@ -51,54 +51,21 @@ export function entryTypeToReviewLogKind(entryType: ActivityEntryType): ReviewLo
   return 'diagnostic'
 }
 
+/** Visual family for activity feed badges — matches Review activity legend. */
+export type ActivityBadgeCategory = 'verification' | 'modification'
+
 export const ACTIVITY_ENTRY_BADGE: Record<
   ActivityEntryType,
   {
     label: string
-    status: 'warning' | 'info' | 'success' | 'pending'
-    /** Solid pill + dot color (matches audit log entry-type-badge). */
-    pillBackground: string
+    category: ActivityBadgeCategory
   }
 > = {
-  'field-edited': { label: 'Field edited', status: 'warning', pillBackground: '#c2600a' },
-  'form-line-checked': {
-    label: 'Form line checked',
-    status: 'pending',
-    pillBackground: '#5d686f',
-  },
-  'document-verified': {
-    label: 'Document verified',
-    status: 'info',
-    pillBackground: '#0077c5',
-  },
-  'import-diagnostic-fixed': {
-    label: 'Import mismatch fixed',
-    status: 'warning',
-    pillBackground: '#c2600a',
-  },
-  'compliance-diagnostic-fixed': {
-    label: 'Compliance fixed',
-    status: 'success',
-    pillBackground: '#00856d',
-  },
-  'planning-diagnostic-fixed': {
-    label: 'Planning reviewed',
-    status: 'info',
-    pillBackground: '#0077c5',
-  },
-  'return-sign-off': {
-    label: 'Return sign-off',
-    status: 'success',
-    pillBackground: '#00856d',
-  },
-}
-
-export const ACTIVITY_ENTRY_DOT_CLASS: Record<ActivityEntryType, string> = {
-  'field-edited': 'dotAttention',
-  'form-line-checked': 'dotNeutral',
-  'document-verified': 'dotInfo',
-  'import-diagnostic-fixed': 'dotAttention',
-  'compliance-diagnostic-fixed': 'dotPositive',
-  'planning-diagnostic-fixed': 'dotInfo',
-  'return-sign-off': 'dotPositive',
+  'field-edited': { label: 'Field edited', category: 'modification' },
+  'form-line-checked': { label: 'Form line checked', category: 'verification' },
+  'document-verified': { label: 'Document verified', category: 'verification' },
+  'import-diagnostic-fixed': { label: 'Import mismatch fixed', category: 'modification' },
+  'compliance-diagnostic-fixed': { label: 'Compliance fixed', category: 'verification' },
+  'planning-diagnostic-fixed': { label: 'Planning reviewed', category: 'modification' },
+  'return-sign-off': { label: 'Return sign-off', category: 'verification' },
 }

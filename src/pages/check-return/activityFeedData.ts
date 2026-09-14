@@ -8,7 +8,6 @@ import {
 } from './reviewLogData'
 import {
   ACTIVITY_ENTRY_BADGE,
-  ACTIVITY_ENTRY_DOT_CLASS,
   entryTypeToFilterCategory,
   type ActivityDeepLink,
   type ActivityEntryType,
@@ -74,7 +73,7 @@ export const ACTIVITY_FEED_ENTRIES: readonly ActivityFeedEntry[] = REVIEW_LOG_DA
   })),
 )
 
-export { ACTIVITY_ENTRY_BADGE, ACTIVITY_ENTRY_DOT_CLASS }
+export { ACTIVITY_ENTRY_BADGE }
 
 export function defaultLinkLabel(entry: ActivityFeedEntry): string | null {
   if (!entry.deepLink) return null
