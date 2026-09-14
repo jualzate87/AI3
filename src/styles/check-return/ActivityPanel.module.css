@@ -247,9 +247,9 @@
   margin: 0;
   padding: 16px 16px 12px;
   font-family: var(--font-family-component);
-  font-size: var(--font-size-component-small, 14px);
+  font-size: var(--font-size-component-medium, 16px);
   font-weight: var(--font-weight-component-semibold, 600);
-  line-height: 1.4;
+  line-height: 1.3;
   color: var(--color-text-primary);
   background: var(--color-container-background-primary, #ffffff);
 }
