@@ -5,6 +5,10 @@ import type { TopTab } from '../pages/data-review/ReviewTab'
 import type { DivPayer } from '../pages/data-review/DetailFieldsDiv'
 import type { IntPayer } from '../pages/data-review/DetailFields1099'
 import { PHASE1_TO_PHASE2_ISSUES } from '../pages/data-review/phase2FlagSync'
+import {
+  AGENT_LINKED_PHASE1_REVIEW_KEYS,
+  AGENT_SCOPED_ISSUE_KEYS,
+} from '../pages/check-return/aiDiagnosticCategories'
 import { canVerifyDoc } from '../pages/data-review/docReviewStatus'
 import { normalizeVerifiedDocEntries, normalizeVerifiedDocKey } from '../data/verifiedDocKeys'
 import type { MilestoneCompletion } from '../data/reviewMilestones'
@@ -555,6 +559,37 @@ export function createDefaultReviewState(): SyncedState {
   return sanitizeSyncedState({ ...DEFAULT_STATE })
 }
 
+/**
+ * Restore demo seed amounts and clear agent-scoped reviewed flags so agent mode
+ * always opens with the full four-card diagnosis (import, div class, withholding, itemize).
+ */
+export function resetAgentDemoReviewState(): SyncedState {
+  const raw = readPersistedRaw()
+  const current = raw ? hydrateSyncedState(raw) : createDefaultReviewState()
+  const keysToClear = new Set<string>([
+    ...AGENT_SCOPED_ISSUE_KEYS,
+    ...AGENT_LINKED_PHASE1_REVIEW_KEYS,
+  ])
+  const nextReviewed = current.reviewedFieldsList.filter(([key]) => !keysToClear.has(key))
+  const next = sanitizeSyncedState({
+    ...current,
+    amounts: {
+      ...SEED_AMOUNTS,
+      box12Rows: { ...SEED_AMOUNTS.box12Rows },
+    },
+    reviewedFieldsList: nextReviewed,
+  })
+  writePersisted(next)
+  try {
+    const channel = new BroadcastChannel(CHANNEL_NAME)
+    channel.postMessage({ tabId: 'agent-demo-reset', state: next })
+    channel.close()
+  } catch {
+    // ignore - other tabs pick up via storage event
+  }
+  return next
+}
+
 /** Clear persisted review state (localStorage + in-memory). Reviewer handoff uses the same store. */
 export function resetPersistedReviewState(): SyncedState {
   const fresh = createDefaultReviewState()
@@ -624,6 +659,13 @@ export function useSyncedReviewState() {
     stateRef.current = fresh
     setState(fresh)
     channelRef.current?.postMessage({ tabId: tabIdRef.current, state: fresh })
+  }, [])
+
+  const resetAgentDemo = useCallback(() => {
+    const next = resetAgentDemoReviewState()
+    stateRef.current = next
+    setState(next)
+    channelRef.current?.postMessage({ tabId: tabIdRef.current, state: next })
   }, [])
 
   const publish = (next: SyncedState) => {
@@ -1183,6 +1225,7 @@ export function useSyncedReviewState() {
     reviewerSignedOffFormsMeta: reviewerSignedOffForms,
     toggleReviewerFormSignOff,
     resetReviewState,
+    resetAgentDemo,
     getSyncedSnapshot,
     restoreSyncedSnapshot,
   }

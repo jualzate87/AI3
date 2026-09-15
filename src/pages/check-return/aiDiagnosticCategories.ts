@@ -55,6 +55,13 @@ export const AI_DIAGNOSTIC_CATEGORIES: readonly AiDiagnosticCategory[] = [
   },
 ] as const
 
+/** Issue keys shown in agent mode diagnosis (Import / Compliance / Optimization). */
+export const AGENT_SCOPED_ISSUE_KEYS: readonly Phase2IssueKey[] =
+  AI_DIAGNOSTIC_CATEGORIES.flatMap(category => category.issueKeys)
+
+/** Phase 1 flag keys that auto-dismiss agent-scoped diagnostics when marked reviewed. */
+export const AGENT_LINKED_PHASE1_REVIEW_KEYS = ['fedTaxWithheld'] as const
+
 /** Active Phase 2 keys that belong to the AI diagnostics overview (excludes study-only cards). */
 export function getCategoryScopedActiveKeys(ctx: DiagnosticSyncContext): Phase2IssueKey[] {
   const activeKeys = getActiveDiagnosticKeys(ctx)

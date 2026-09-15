@@ -417,7 +417,7 @@ function ThinkingBlock({
 }
 
 export default function AgentDiagnosticsPanel() {
-  const { amounts, reviewedFields, updateAmounts, markReviewedBulk, clearReviewedForKeys } =
+  const { amounts, reviewedFields, updateAmounts, markReviewedBulk, resetAgentDemo } =
     useSyncedReviewState()
   const live = useMemo(() => computeLiveReturn(amounts), [amounts])
   const syncCtx = useMemo(
@@ -442,12 +442,8 @@ export default function AgentDiagnosticsPanel() {
   useLayoutEffect(() => {
     if (sessionStorage.getItem(AGENT_VISIT_SESSION_KEY)) return
     sessionStorage.setItem(AGENT_VISIT_SESSION_KEY, '1')
-    const scopedKeys = getCategoryScopedActiveKeys(getAgentFixContext(amounts, reviewedFields))
-    const staleReviewed = scopedKeys.filter(key => reviewedFields.has(key))
-    if (staleReviewed.length > 0) {
-      clearReviewedForKeys(staleReviewed)
-    }
-  }, [amounts, reviewedFields, clearReviewedForKeys])
+    resetAgentDemo()
+  }, [resetAgentDemo])
 
   const scrollToBottom = useCallback(() => {
     const el = chatScrollRef.current
@@ -727,8 +723,12 @@ export default function AgentDiagnosticsPanel() {
                           collapseCards={collapseDiagnosisCards}
                           onFixIssueKey={handleFixByIssueKey}
                         />
-                        {openCount > 0 && phase === 'ready' && (
-                          <div className={`${styles.responsePills} ${styles.responsePillsEnd}`}>
+                        {phase === 'ready' && diagnosisIssueCount > 0 && openCount > 0 && (
+                          <div
+                            className={`${styles.responsePills} ${styles.responsePillsEnd}`}
+                            role="group"
+                            aria-label="How would you like to proceed?"
+                          >
                             <ActionChip onClick={handleFixAll}>Accept all fixes</ActionChip>
                             <ActionChip onClick={() => handleFixOne()}>
                               Fix each issue individually

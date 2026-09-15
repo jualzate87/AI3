@@ -5,7 +5,10 @@ import { Badge } from '@ids-ts/badge'
 import '@ids-ts/badge/dist/main.css'
 import SegmentedButton from '@ids-ts/segmented-button'
 import '@ids-ts/segmented-button/dist/main.css'
-import { resetPersistedReviewState } from '../../hooks/useSyncedReviewState'
+import {
+  resetAgentDemoReviewState,
+  resetPersistedReviewState,
+} from '../../hooks/useSyncedReviewState'
 import {
   AGENT_MODE_SESSION_KEY,
   buildHashRouteUrl,
@@ -38,6 +41,7 @@ function prepareDiagnosticsLaunch(): void {
 }
 
 function prepareAgentLaunch(): void {
+  resetAgentDemoReviewState()
   sessionStorage.setItem(AGENT_MODE_SESSION_KEY, '1')
   sessionStorage.setItem('protoc3-session-started', '1')
   sessionStorage.setItem('protoc3-imports-started', '1')
