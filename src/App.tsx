@@ -7,6 +7,7 @@ import FusionShell from './components/FusionShell'
 import { FUSION_CONFIG } from './navigation'
 import { repairIncomingRoute, resolveCatchAllRoute } from './lib/prototypeRoutes'
 import LaunchPointsFab from './components/LaunchPointsFab/LaunchPointsFab'
+import PrototypeToastHost from './components/PrototypeToastHost/PrototypeToastHost'
 import DataReviewRoute from './pages/DataReviewRoute'
 import DataReviewPopout from './pages/DataReviewPopout'
 import SmartReturnPage from './pages/SmartReturnPage'
@@ -59,6 +60,7 @@ export default function App() {
       <HashRouter basename={ROUTER_BASENAME}>
         <FusionProvider pathPrefix={FUSION_CONFIG.pathPrefix || ''}>
           <HashRouteNormalizer />
+          <PrototypeToastHost />
           <LaunchPointsFab />
           <Routes>
             {/* SmartReview prototype - outside the QBO Fusion shell */}

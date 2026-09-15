@@ -11,6 +11,7 @@ import {
 } from '../../hooks/useSyncedReviewState'
 import {
   AGENT_MODE_SESSION_KEY,
+  DEMO_RESET_TOAST_KEY,
   buildHashRouteUrl,
   getStoredDemoRole,
   openReviewReturnPopout,
@@ -125,6 +126,11 @@ export default function LaunchPointsFab() {
     sessionStorage.removeItem(AGENT_MODE_SESSION_KEY)
     setStoredDemoRole('preparer')
     setOpen(false)
+    try {
+      sessionStorage.setItem(DEMO_RESET_TOAST_KEY, '1')
+    } catch {
+      // ignore
+    }
     window.location.assign(buildHashRouteUrl('/smart-return'))
   }, [])
 

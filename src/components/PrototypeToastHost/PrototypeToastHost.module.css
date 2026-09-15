@@ -1,0 +1,13 @@
+/* Fixed host so IDS toast stays top-center across routes (not over audit log rail). */
+.host {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  z-index: 10000;
+  pointer-events: none;
+}
+
+.host :global([class*='toastMessageWrapper']) {
+  pointer-events: auto;
+}
