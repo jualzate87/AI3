@@ -1,7 +1,14 @@
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import {
+  useCallback,
+  useEffect,
+  useLayoutEffect,
+  useMemo,
+  useRef,
+  useState,
+  type ReactNode,
+} from 'react'
 import {
   ChevronDown,
-  ChevronRight,
   ChevronUp,
   CircleCheck,
   Close,
@@ -25,15 +32,22 @@ import {
   getAgentFixContext,
   openAgentViewLinkInWindow,
   type AgentFixPlanItem,
+  type AgentThinkingStep,
   type AgentViewLink,
 } from '../../lib/agentAutoFix'
 import { buildAgentReviewModels } from '../../lib/agentDiagnosisReview'
+import { getCategoryScopedActiveKeys } from './aiDiagnosticCategories'
 import { buildAllDiagnosticIssues } from '../data-review/AgentReportPane'
 import { openReviewReturnPopout, openSourceDocumentReviewPopout } from '../../lib/prototypeRoutes'
 import AgentDiagnosticExpandableCard from './AgentDiagnosticExpandableCard'
 import styles from '../../styles/check-return/AgentDiagnosticsPanel.module.css'
 
 type AgentPhase = 'ready' | 'running' | 'complete' | 'awaiting-next'
+
+type FixedItemSummary = {
+  outcomeLabel: string
+  viewLinks: AgentViewLink[]
+}
 
 type ThreadEntry =
   | {
@@ -45,16 +59,25 @@ type ThreadEntry =
       heading?: string
       text: string
     }
-  | { id: string; kind: 'user'; text: string }
-  | { id: string; kind: 'milestone'; text: string }
-  | { id: string; kind: 'thinking'; issueTitle: string; steps: string[]; activeStep: number }
+  | { id: string; kind: 'user'; text: string; asChip?: boolean }
+  | { id: string; kind: 'milestone'; text: string; variant?: 'default' | 'fixes-started' }
+  | { id: string; kind: 'thinking'; issueTitle: string; steps: AgentThinkingStep[]; activeStep: number }
   | {
       id: string
       kind: 'fixed'
-      title: string
+      outcomeLabel: string
       summary: string
       viewLinks: AgentViewLink[]
     }
+  | {
+      id: string
+      kind: 'complete-summary'
+      introText: string
+      fixedItems: FixedItemSummary[]
+      totalCount: number
+    }
+
+const AGENT_VISIT_SESSION_KEY = 'protoc3-agent-visit-active'
 
 const STEP_MS = 900
 const ISSUE_GAP_MS = 400
@@ -110,31 +133,140 @@ function AgentAvatar() {
   )
 }
 
+function ActionChip({
+  children,
+  active = false,
+  onClick,
+}: {
+  children: ReactNode
+  active?: boolean
+  onClick?: () => void
+}) {
+  return (
+    <button
+      type="button"
+      className={`${styles.actionChip} ${active ? styles.actionChipActive : ''}`}
+      onClick={onClick}
+      disabled={!onClick}
+    >
+      {children}
+    </button>
+  )
+}
+
+function SourceLinkChip({
+  link,
+  onOpen,
+}: {
+  link: AgentViewLink
+  onOpen: (link: AgentViewLink) => void
+}) {
+  return (
+    <button type="button" className={styles.sourceLinkChip} onClick={() => onOpen(link)}>
+      {link.label}
+    </button>
+  )
+}
+
+function FixProgressSummaryCard({
+  fixedItems,
+  totalCount,
+  onOpenEvidence,
+}: {
+  fixedItems: FixedItemSummary[]
+  totalCount: number
+  onOpenEvidence: (link: AgentViewLink) => void
+}) {
+  const doneCount = fixedItems.length
+  const pct = totalCount > 0 ? Math.round((doneCount / totalCount) * 100) : 100
+
+  return (
+    <div className={styles.fixProgressCard}>
+      <div className={styles.fixProgressHeader}>
+        <span className={styles.fixProgressTitle}>Fixes progress</span>
+        <span className={styles.fixProgressCount}>
+          {doneCount} of {totalCount} fixed
+        </span>
+      </div>
+      <div className={styles.fixProgressTrack} aria-hidden>
+        <div className={styles.fixProgressFill} style={{ width: `${pct}%` }} />
+      </div>
+      <ul className={styles.fixProgressList}>
+        {fixedItems.map(item => (
+          <li key={item.outcomeLabel} className={styles.fixProgressItem}>
+            <div className={styles.fixProgressItemHeader}>
+              <span className={styles.fixProgressItemLabel}>{item.outcomeLabel}</span>
+              <Badge
+                status="success"
+                label="Fixed"
+                capitalization="sentence"
+                priority="secondary"
+              />
+            </div>
+            {item.viewLinks.length > 0 && (
+              <div className={styles.sourceLinkRow}>
+                {item.viewLinks.map(link => (
+                  <SourceLinkChip key={link.label} link={link} onOpen={onOpenEvidence} />
+                ))}
+              </div>
+            )}
+          </li>
+        ))}
+      </ul>
+    </div>
+  )
+}
+
+function ReminderCard() {
+  return (
+    <div className={styles.reminderCard}>
+      <div className={styles.reminderHeader}>
+        <img src={intuitIntelligenceLogo} alt="" className={styles.reminderIcon} aria-hidden />
+        <span className={styles.reminderTitle}>Reminder</span>
+      </div>
+      <p className={styles.reminderBody}>
+        Before we finalize, please confirm the{' '}
+        <strong>estimated Form 1098 mortgage interest</strong> amount with the client and upload the
+        actual form when available.
+      </p>
+    </div>
+  )
+}
+
 function InitialDiagnosisFeed({
   syncCtx,
   phase,
   fixPlan,
+  collapseCards,
   onFixIssueKey,
   onOpenEvidence,
 }: {
   syncCtx: ReturnType<typeof getAgentFixContext>
   phase: AgentPhase
   fixPlan: AgentFixPlanItem[]
+  collapseCards: boolean
   onFixIssueKey: (issueKey: AgentFixPlanItem['issueKey']) => void
   onOpenEvidence: (link: AgentViewLink) => void
 }) {
-  const canFix = phase === 'ready' || phase === 'awaiting-next'
+  const canFixActions = phase === 'ready' || phase === 'awaiting-next'
+  const fixableKeys = useMemo(() => new Set(fixPlan.map(item => item.issueKey)), [fixPlan])
+  const activeIssueKeys = useMemo(() => getCategoryScopedActiveKeys(syncCtx), [syncCtx])
   const reviewCards = useMemo(() => {
     const issues = buildAllDiagnosticIssues(syncCtx.live, syncCtx.amounts)
-    return buildAgentReviewModels(syncCtx, issues)
+    return buildAgentReviewModels(syncCtx, issues, { forDisplay: true })
   }, [syncCtx])
 
-  if (fixPlan.length === 0 && reviewCards.every(c => c.variant !== 'issue')) {
+  const showClearOnly =
+    phase === 'complete' &&
+    activeIssueKeys.length === 0 &&
+    fixPlan.length === 0
+
+  if (showClearOnly) {
     return (
       <div className={styles.diagnosisCard}>
         <Badge status="success" label="Clear" capitalization="sentence" priority="secondary" />
         <p className={styles.diagnosisEmpty}>
-          No open diagnostics on this return — you are ready to sign off.
+          No open diagnostics on this return. You are ready to sign off.
         </p>
       </div>
     )
@@ -151,8 +283,14 @@ function InitialDiagnosisFeed({
           <AgentDiagnosticExpandableCard
             key={card.id}
             card={card}
-            defaultExpanded={card.variant !== 'verified'}
-            canFix={canFix && card.variant === 'issue'}
+            defaultExpanded={card.variant === 'issue' && !collapseCards}
+            forceCollapsed={collapseCards}
+            canFix={
+              canFixActions &&
+              card.variant === 'issue' &&
+              !!card.issueKey &&
+              fixableKeys.has(card.issueKey)
+            }
             onFix={onFixIssueKey}
             onOpenEvidence={onOpenEvidence}
           />
@@ -169,7 +307,7 @@ function ThinkingBlock({
 }) {
   const isComplete = entry.activeStep >= entry.steps.length
   const doneCount = isComplete ? entry.steps.length : entry.activeStep
-  const [expanded, setExpanded] = useState(true)
+  const [expanded, setExpanded] = useState(!isComplete)
 
   return (
     <div
@@ -182,12 +320,17 @@ function ThinkingBlock({
         aria-expanded={expanded}
       >
         <img src={intuitIntelligenceLogo} alt="" className={styles.generationIcon} aria-hidden />
-        <span className={styles.generationTitle}>
-          {isComplete ? 'Reasoning complete' : 'Reasoning in progress'}
+        <span
+          className={`${styles.generationTitle} ${isComplete && !expanded ? styles.generationTitleMuted : ''}`}
+        >
+          {isComplete && !expanded ? 'Show thinking' : 'Response generation'}
         </span>
-        <span className={styles.generationSubtitle}>
-          {entry.issueTitle} · {doneCount}/{entry.steps.length} steps
-        </span>
+        {(expanded || !isComplete) && (
+          <span className={styles.generationSubtitle}>
+            {entry.issueTitle} · Step {Math.min(doneCount, entry.steps.length)} of{' '}
+            {entry.steps.length}
+          </span>
+        )}
         <span className={styles.generationChevron} aria-hidden>
           {expanded ? <ChevronUp size="small" /> : <ChevronDown size="small" />}
         </span>
@@ -211,11 +354,9 @@ function ThinkingBlock({
                   {si < entry.steps.length - 1 && <span className={styles.stepperLine} />}
                 </span>
                 <div className={styles.stepperContent}>
-                  <p className={styles.stepperTitle}>{step}</p>
-                  {(isActive || isDone) && (
-                    <p className={styles.stepperBody}>
-                      {isDone ? 'Complete' : 'Analyzing return data and source documents…'}
-                    </p>
+                  <p className={styles.stepperTitle}>{step.title}</p>
+                  {(isActive || isDone) && step.description && (
+                    <p className={styles.stepperBody}>{step.description}</p>
                   )}
                 </div>
               </li>
@@ -227,74 +368,9 @@ function ThinkingBlock({
   )
 }
 
-function ProgressRail({
-  plan,
-  completedCount,
-  activeIndex,
-  phase,
-}: {
-  plan: AgentFixPlanItem[]
-  completedCount: number
-  activeIndex: number
-  phase: AgentPhase
-}) {
-  if (plan.length === 0 && phase !== 'complete') return null
-
-  const total = plan.length || completedCount
-  const readinessPct =
-    phase === 'complete' || total === 0
-      ? 100
-      : Math.round((completedCount / total) * 100)
-
-  return (
-    <aside className={styles.progressRail} aria-label="Fix progress">
-      <div className={styles.progressCard}>
-        <div className={styles.progressCardHeader}>
-          <span className={styles.progressLabel}>Progress</span>
-          <span className={styles.progressCount}>
-            {phase === 'complete' ? total : completedCount}/{total || 1}
-          </span>
-        </div>
-        <ol className={styles.progressTimeline}>
-          {plan.map((item, index) => {
-            const isDone = index < completedCount || phase === 'complete'
-            const isActive = phase === 'running' && index === activeIndex
-            return (
-              <li
-                key={item.issueKey}
-                className={`${styles.progressStep} ${isDone ? styles.progressStepDone : ''} ${isActive ? styles.progressStepActive : ''}`}
-              >
-                <span className={styles.progressStepMarker} aria-hidden>
-                  {isDone ? <CircleCheck size="small" /> : null}
-                </span>
-                <div className={styles.progressStepBody}>
-                  <p className={styles.progressStepTitle}>{item.title}</p>
-                  {isActive && <p className={styles.progressStepMeta}>Reasoning…</p>}
-                  {isDone && !isActive && <p className={styles.progressStepMeta}>Fixed</p>}
-                </div>
-              </li>
-            )
-          })}
-        </ol>
-      </div>
-
-      <button
-        type="button"
-        className={styles.readinessCard}
-        onClick={() => openSourceDocumentReviewPopout()}
-      >
-        <span className={styles.readinessLabel}>Document readiness</span>
-        <span className={styles.readinessValue}>
-          {readinessPct}%
-          <ChevronRight size="small" aria-hidden />
-        </span>
-      </button>
-    </aside>
-  )
-}
-
 export default function AgentDiagnosticsPanel() {
-  const { amounts, reviewedFields, updateAmounts, markReviewedBulk } = useSyncedReviewState()
+  const { amounts, reviewedFields, updateAmounts, markReviewedBulk, clearReviewedForKeys } =
+    useSyncedReviewState()
   const live = useMemo(() => computeLiveReturn(amounts), [amounts])
   const syncCtx = useMemo(
     () => ({ reviewedFields, live, amounts }),
@@ -305,8 +381,6 @@ export default function AgentDiagnosticsPanel() {
   const [phase, setPhase] = useState<AgentPhase>('ready')
   const [thread, setThread] = useState<ThreadEntry[]>([])
   const [progressValue, setProgressValue] = useState(0)
-  const [sessionPlan, setSessionPlan] = useState<AgentFixPlanItem[]>([])
-  const [activeFixIndex, setActiveFixIndex] = useState(-1)
   const [chatInput, setChatInput] = useState('')
   const [evidenceLink, setEvidenceLink] = useState<AgentViewLink | null>(null)
   const runRef = useRef(false)
@@ -314,6 +388,19 @@ export default function AgentDiagnosticsPanel() {
   const chatScrollRef = useRef<HTMLDivElement>(null)
 
   const openCount = fixPlan.length
+  const diagnosisIssueCount = useMemo(
+    () => getCategoryScopedActiveKeys(syncCtx).length,
+    [syncCtx],
+  )
+  useLayoutEffect(() => {
+    if (sessionStorage.getItem(AGENT_VISIT_SESSION_KEY)) return
+    sessionStorage.setItem(AGENT_VISIT_SESSION_KEY, '1')
+    const scopedKeys = getCategoryScopedActiveKeys(getAgentFixContext(amounts, reviewedFields))
+    const staleReviewed = scopedKeys.filter(key => reviewedFields.has(key))
+    if (staleReviewed.length > 0) {
+      clearReviewedForKeys(staleReviewed)
+    }
+  }, [amounts, reviewedFields, clearReviewedForKeys])
 
   const scrollToBottom = useCallback(() => {
     const el = chatScrollRef.current
@@ -351,21 +438,20 @@ export default function AgentDiagnosticsPanel() {
       if (runRef.current || items.length === 0) return
       runRef.current = true
       setPhase('running')
-      setSessionPlan(items)
-
       const openBefore = buildAgentFixPlan(getAgentFixContext(amounts, reviewedFields)).length
       const progressStart = opts?.progressOffset ?? 0
+      const isBatch = !opts?.single && items.length > 1
+
+      appendThread({
+        kind: 'milestone',
+        variant: 'fixes-started',
+        text: 'Fixes started by Intuit Intelligence',
+      })
+
+      const batchFixed: FixedItemSummary[] = []
 
       for (let i = 0; i < items.length; i++) {
         const item = items[i]
-        setActiveFixIndex(i)
-
-        appendThread({
-          kind: 'agent',
-          heading: opts?.single ? 'Working on this issue' : `Issue ${i + 1} of ${items.length}`,
-          text: `Reviewing source documents and return inputs before applying a fix.`,
-        })
-
         const thinkingId = nextThreadEntryId()
         appendThread({
           id: thinkingId,
@@ -389,18 +475,24 @@ export default function AgentDiagnosticsPanel() {
         applyFixForIssue(item)
         setProgressValue(progressStart + i + 1)
 
-        appendThread({ kind: 'milestone', text: `Fixed: ${item.title}` })
-        appendThread({
-          kind: 'fixed',
-          title: item.title,
-          summary: item.fixSummary,
+        const fixedSummary: FixedItemSummary = {
+          outcomeLabel: item.outcomeLabel,
           viewLinks: item.viewLinks,
-        })
+        }
+        batchFixed.push(fixedSummary)
+
+        if (!isBatch && openBefore > 1) {
+          appendThread({
+            kind: 'fixed',
+            outcomeLabel: item.outcomeLabel,
+            summary: item.fixSummary,
+            viewLinks: item.viewLinks,
+          })
+        }
 
         await new Promise(r => setTimeout(r, ISSUE_GAP_MS))
       }
 
-      setActiveFixIndex(-1)
       runRef.current = false
 
       const remainingAfter = Math.max(0, openBefore - items.length)
@@ -417,11 +509,11 @@ export default function AgentDiagnosticsPanel() {
       }
 
       setPhase('complete')
-      appendThread({ kind: 'milestone', text: 'All diagnostics resolved' })
       appendThread({
-        kind: 'agent',
-        heading: 'Review complete',
-        text: 'Every open item has been corrected. Expand any reasoning block above to see how each fix was derived.',
+        kind: 'complete-summary',
+        introText: `I've resolved all ${batchFixed.length} diagnostic${batchFixed.length === 1 ? '' : 's'}. Here's the progress summary.`,
+        fixedItems: batchFixed,
+        totalCount: batchFixed.length,
       })
     },
     [appendThread, applyFixForIssue, amounts, reviewedFields],
@@ -430,7 +522,7 @@ export default function AgentDiagnosticsPanel() {
   const handleFixAll = useCallback(() => {
     const plan = buildAgentFixPlan(getAgentFixContext(amounts, reviewedFields))
     if (plan.length === 0) return
-    appendThread({ kind: 'user', text: 'Fix all issues' })
+    appendThread({ kind: 'user', text: 'Accept all fixes', asChip: true })
     setProgressValue(0)
     void runFixForItems(plan)
   }, [amounts, reviewedFields, runFixForItems, appendThread])
@@ -440,7 +532,7 @@ export default function AgentDiagnosticsPanel() {
       const plan = buildAgentFixPlan(getAgentFixContext(amounts, reviewedFields))
       const target = item ?? plan[0]
       if (!target) return
-      appendThread({ kind: 'user', text: `Fix: ${target.title}` })
+      appendThread({ kind: 'user', text: `Fix: ${target.title}`, asChip: true })
       void runFixForItems([target], { single: true, progressOffset: progressValue })
     },
     [amounts, reviewedFields, runFixForItems, appendThread, progressValue],
@@ -458,7 +550,7 @@ export default function AgentDiagnosticsPanel() {
   const handleFixNext = useCallback(() => {
     const plan = buildAgentFixPlan(getAgentFixContext(amounts, reviewedFields))
     if (plan.length === 0) return
-    appendThread({ kind: 'user', text: 'Fix next issue' })
+    appendThread({ kind: 'user', text: 'Fix next issue', asChip: true })
     void runFixForItems([plan[0]], { single: true, progressOffset: progressValue })
   }, [amounts, reviewedFields, runFixForItems, appendThread, progressValue])
 
@@ -491,16 +583,15 @@ export default function AgentDiagnosticsPanel() {
     appendThread({
       kind: 'agent',
       isWelcome: true,
-      heading: 'Return review by Intuit Intelligence',
       text:
-        openCount > 0
-          ? `I've analyzed Jordan's 2025 return and found ${openCount} issue${openCount === 1 ? '' : 's'} to resolve. I compared source documents, questionnaire answers, and return inputs.\nReview each diagnostic below, then tell me how you'd like to proceed.`
-          : `I've analyzed Jordan's 2025 return — no open diagnostics remain.`,
+        diagnosisIssueCount > 0
+          ? `I've analyzed Jordan's 2025 return and found ${diagnosisIssueCount} issue${diagnosisIssueCount === 1 ? '' : 's'} to resolve. I compared source documents, questionnaire answers, and return inputs.\nReview each diagnostic below, then tell me how you'd like to proceed.`
+          : `I've analyzed Jordan's 2025 return. No diagnostics need a fix right now — review the verified checks and your checklist below before sign-off.`,
     })
-  }, [appendThread, openCount])
+  }, [appendThread, diagnosisIssueCount])
 
-  const railPlan = sessionPlan.length > 0 ? sessionPlan : fixPlan
-  const showCompletion = phase === 'complete'
+  const collapseDiagnosisCards = phase !== 'ready'
+  const showCompletionActions = phase === 'complete'
 
   return (
     <div className={styles.panel}>
@@ -510,6 +601,13 @@ export default function AgentDiagnosticsPanel() {
             <div className={styles.thread}>
               {thread.map(entry => {
                 if (entry.kind === 'user') {
+                  if (entry.asChip) {
+                    return (
+                      <div key={entry.id} className={styles.userChipRow}>
+                        <ActionChip active>{entry.text}</ActionChip>
+                      </div>
+                    )
+                  }
                   return (
                     <div key={entry.id} className={styles.userRow}>
                       <div className={styles.userBubble}>{entry.text}</div>
@@ -517,10 +615,14 @@ export default function AgentDiagnosticsPanel() {
                   )
                 }
                 if (entry.kind === 'milestone') {
+                  const pillClass =
+                    entry.variant === 'fixes-started'
+                      ? styles.milestonePillAccent
+                      : styles.milestonePill
                   return (
                     <div key={entry.id} className={styles.milestoneRow} role="separator">
                       <span className={styles.milestoneLine} aria-hidden />
-                      <span className={styles.milestonePill}>{entry.text}</span>
+                      <span className={pillClass}>{entry.text}</span>
                       <span className={styles.milestoneLine} aria-hidden />
                     </div>
                   )
@@ -531,27 +633,20 @@ export default function AgentDiagnosticsPanel() {
                       <AgentAvatar />
                       <div className={styles.messageColumn}>
                         {entry.isWelcome && (
-                          <header className={styles.welcomeHeader}>
-                            <div className={styles.logoGroup}>
-                              <img
-                                src={intuitIntelligenceLogo}
-                                alt=""
-                                className={styles.brandLogo}
-                                aria-hidden
-                              />
-                              <span className={styles.wordmark}>Intuit Intelligence</span>
-                            </div>
-                            <span className={styles.brandMeta}>Analyzed just now</span>
+                          <header className={styles.welcomeBrandRow}>
+                            <img
+                              src={intuitIntelligenceLogo}
+                              alt=""
+                              className={styles.brandLogo}
+                              aria-hidden
+                            />
+                            <span className={styles.welcomeBrandTitle}>
+                              Return review by Intuit Intelligence
+                            </span>
                           </header>
                         )}
-                        {entry.heading && (
-                          <h2
-                            className={
-                              entry.isWelcome ? styles.welcomeTitle : styles.agentHeading
-                            }
-                          >
-                            {entry.heading}
-                          </h2>
+                        {entry.heading && !entry.isWelcome && (
+                          <h2 className={styles.agentHeading}>{entry.heading}</h2>
                         )}
                         <p className={`${styles.agentBody} ${entry.isWelcome ? styles.agentBodyPreWrap : ''}`}>
                           {entry.text}
@@ -563,30 +658,27 @@ export default function AgentDiagnosticsPanel() {
                               syncCtx={syncCtx}
                               phase={phase}
                               fixPlan={fixPlan}
+                              collapseCards={collapseDiagnosisCards}
                               onFixIssueKey={handleFixByIssueKey}
                               onOpenEvidence={openEvidence}
                             />
                             {openCount > 0 && phase === 'ready' && (
                               <div className={`${styles.responsePills} ${styles.responsePillsEnd}`}>
-                                <Button priority="primary" onClick={handleFixAll}>
-                                  Accept all fixes
-                                </Button>
-                                <Button priority="secondary" onClick={() => handleFixOne()}>
+                                <ActionChip onClick={handleFixAll}>Accept all fixes</ActionChip>
+                                <ActionChip onClick={() => handleFixOne()}>
                                   Fix each issue individually
-                                </Button>
+                                </ActionChip>
                               </div>
                             )}
                           </>
                         )}
 
                         {entry.showNextActions && entry.remainingCount != null && (
-                          <div className={styles.responsePills}>
-                            <Button priority="primary" onClick={handleFixNext}>
-                              Fix next issue
-                            </Button>
-                            <Button priority="secondary" onClick={handleFixAll}>
+                          <div className={`${styles.responsePills} ${styles.responsePillsEnd}`}>
+                            <ActionChip onClick={handleFixNext}>Fix next issue</ActionChip>
+                            <ActionChip onClick={handleFixAll}>
                               Fix all remaining ({entry.remainingCount})
-                            </Button>
+                            </ActionChip>
                           </div>
                         )}
                       </div>
@@ -616,24 +708,18 @@ export default function AgentDiagnosticsPanel() {
                               capitalization="sentence"
                               priority="secondary"
                             />
-                            <h3 className={styles.fixedTitle}>{entry.title}</h3>
+                            <h3 className={styles.fixedTitle}>{entry.outcomeLabel}</h3>
                           </div>
                           <p className={styles.cardBody}>{entry.summary}</p>
                           {entry.viewLinks.length > 0 && (
-                            <div className={styles.showWorkBlock}>
-                              <p className={styles.showWorkLabel}>See what changed</p>
-                              <div className={styles.viewLinkRow}>
-                                {entry.viewLinks.map(link => (
-                                  <Button
-                                    key={link.label}
-                                    priority="secondary"
-                                    size="medium"
-                                    onClick={() => openEvidence(link)}
-                                  >
-                                    {link.label}
-                                  </Button>
-                                ))}
-                              </div>
+                            <div className={styles.sourceLinkRow}>
+                              {entry.viewLinks.map(link => (
+                                <SourceLinkChip
+                                  key={link.label}
+                                  link={link}
+                                  onOpen={openEvidence}
+                                />
+                              ))}
                             </div>
                           )}
                         </div>
@@ -641,49 +727,73 @@ export default function AgentDiagnosticsPanel() {
                     </div>
                   )
                 }
+                if (entry.kind === 'complete-summary') {
+                  return (
+                    <div key={entry.id} className={styles.agentRow}>
+                      <AgentAvatar />
+                      <div className={styles.messageColumn}>
+                        <p className={styles.agentBody}>{entry.introText}</p>
+                        <FixProgressSummaryCard
+                          fixedItems={entry.fixedItems}
+                          totalCount={entry.totalCount}
+                          onOpenEvidence={openEvidence}
+                        />
+                        <ReminderCard />
+                        <div className={`${styles.responsePills} ${styles.responsePillsEnd}`}>
+                          <ActionChip
+                            onClick={() =>
+                              openEvidence({ label: 'Updated return', formId: '1040' })
+                            }
+                          >
+                            View updated return
+                          </ActionChip>
+                          <ActionChip
+                            onClick={() =>
+                              openEvidence({ label: 'Source documents', tab: 'w2s', field: 'wages' })
+                            }
+                          >
+                            View source documents
+                          </ActionChip>
+                          <ActionChip
+                            onClick={() =>
+                              openReviewReturnPopout({ form: '1040' })
+                            }
+                          >
+                            View summary
+                          </ActionChip>
+                        </div>
+                      </div>
+                    </div>
+                  )
+                }
                 return null
               })}
-
-              {showCompletion && (
-                <div className={styles.completionCard}>
-                  <Badge
-                    status="success"
-                    label="Complete"
-                    capitalization="sentence"
-                    priority="secondary"
-                  />
-                  <h2 className={styles.completionTitle}>All issues fixed</h2>
-                  <p className={styles.completionBody}>
-                    Review source documents or the 1040 to verify changes.
-                  </p>
-                  <div className={styles.responsePills}>
-                    <Button
-                      priority="secondary"
-                      size="medium"
-                      onClick={() =>
-                        openEvidence({ label: 'Source documents', tab: 'w2s', field: 'wages' })
-                      }
-                    >
-                      View source documents
-                    </Button>
-                    <Button
-                      priority="secondary"
-                      size="medium"
-                      onClick={() =>
-                        openEvidence({ label: 'Form 1040', formId: '1040' })
-                      }
-                    >
-                      View 1040
-                    </Button>
-                  </div>
-                </div>
-              )}
             </div>
           </div>
 
           <div className={styles.composerArea}>
             <div className={styles.composerInner}>
               <div className={styles.quickActions} role="toolbar" aria-label="Quick actions">
+                {showCompletionActions && (
+                  <>
+                    <button
+                      type="button"
+                      className={styles.quickChip}
+                      onClick={() => openEvidence({ label: 'Updated return', formId: '1040' })}
+                    >
+                      View updated return
+                    </button>
+                    <button
+                      type="button"
+                      className={styles.quickChip}
+                      onClick={() =>
+                        openEvidence({ label: 'Source documents', tab: 'w2s', field: 'wages' })
+                      }
+                    >
+                      View source documents
+                    </button>
+                  </>
+                )}
                 {phase === 'awaiting-next' && openCount > 0 && (
                   <button type="button" className={styles.quickChip} onClick={handleFixNext}>
                     Fix next issue
@@ -692,14 +802,14 @@ export default function AgentDiagnosticsPanel() {
                 {(phase === 'ready' || phase === 'awaiting-next') && openCount > 0 && (
                   <>
                     <button type="button" className={styles.quickChip} onClick={handleFixAll}>
-                      Fix all issues
+                      Accept all fixes
                     </button>
                     <button
                       type="button"
                       className={styles.quickChip}
                       onClick={() => handleFixOne()}
                     >
-                      Fix one at a time
+                      Fix each issue individually
                     </button>
                   </>
                 )}
@@ -716,7 +826,7 @@ export default function AgentDiagnosticsPanel() {
                 <textarea
                   className={styles.composerInput}
                   rows={1}
-                  placeholder="Ask or attach anything"
+                  placeholder="Type or ask something"
                   value={chatInput}
                   onChange={e => setChatInput(e.target.value)}
                   onKeyDown={e => {
@@ -766,13 +876,6 @@ export default function AgentDiagnosticsPanel() {
         {evidenceLink && (
           <AgentEvidencePanel link={evidenceLink} onClose={() => setEvidenceLink(null)} />
         )}
-
-        <ProgressRail
-          plan={railPlan}
-          completedCount={progressValue}
-          activeIndex={activeFixIndex}
-          phase={phase}
-        />
       </div>
     </div>
   )

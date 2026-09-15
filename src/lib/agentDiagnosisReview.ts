@@ -100,7 +100,7 @@ export function issueCardToReviewModel(issue: DiagnosticIssueCard): AgentReviewC
     id: issue.issueKey,
     variant: 'issue',
     title: stripTaxImpactFromTitle(issue.title),
-    metaSubtitle: buildIssueMetaSubtitle(issue),
+    metaSubtitle: undefined,
     badgeLabel,
     badgeStatus,
     summary: issue.summary,
@@ -270,9 +270,22 @@ export function buildNeedsUserReviewCard(_ctx: DiagnosticSyncContext): AgentRevi
   }
 }
 
-export function buildAgentReviewModels(ctx: DiagnosticSyncContext, issues: DiagnosticIssueCard[]): AgentReviewCardModel[] {
-  const activeKeys = getCategoryScopedActiveKeys(ctx).filter(key => !ctx.reviewedFields.has(key))
-  const openKeys = new Set(activeKeys)
+export type BuildAgentReviewModelsOptions = {
+  /** When true, show all active agent-scoped issues regardless of reviewed state (initial diagnosis feed). */
+  forDisplay?: boolean
+}
+
+export function buildAgentReviewModels(
+  ctx: DiagnosticSyncContext,
+  issues: DiagnosticIssueCard[],
+  options?: BuildAgentReviewModelsOptions,
+): AgentReviewCardModel[] {
+  const activeKeys = getCategoryScopedActiveKeys(ctx)
+  const openKeys = new Set(
+    options?.forDisplay
+      ? activeKeys
+      : activeKeys.filter(key => !ctx.reviewedFields.has(key)),
+  )
 
   const issueModels = issues
     .filter(i => openKeys.has(i.issueKey))

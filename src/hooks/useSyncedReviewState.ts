@@ -767,6 +767,18 @@ export function useSyncedReviewState() {
     update({ reviewedFieldsList: Array.from(next.entries()) })
   }
 
+  const clearReviewedForKeys = (fieldNames: string[]) => {
+    if (fieldNames.length === 0) return
+    const toRemove = new Set(fieldNames)
+    const next = new Map(stateRef.current.reviewedFieldsList)
+    let changed = false
+    for (const key of toRemove) {
+      if (next.delete(key)) changed = true
+    }
+    if (!changed) return
+    update({ reviewedFieldsList: Array.from(next.entries()) })
+  }
+
   const verifiedDocs = new Map(state.verifiedDocsList)
   const verifiedDocKeys = new Set(state.verifiedDocsList.map(([k]) => k))
   const reviewerConfirmedDocs = new Map(state.reviewerConfirmedDocsList)
@@ -1134,6 +1146,7 @@ export function useSyncedReviewState() {
     setActiveIntPayer: (payer: IntPayer) => update({ activeIntPayer: payer }),
     markReviewed,
     markReviewedBulk,
+    clearReviewedForKeys,
     /** Set of verified doc keys (presence) - matches prior API */
     verifiedDocs: verifiedDocKeys,
     verifiedDocsMeta: verifiedDocs,

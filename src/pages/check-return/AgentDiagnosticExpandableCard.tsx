@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { ChevronDown, ChevronUp } from '@design-systems/icons'
 import { Badge } from '@ids-ts/badge'
 import '@ids-ts/badge/dist/main.css'
@@ -17,6 +17,8 @@ import styles from '../../styles/check-return/AgentDiagnosticExpandableCard.modu
 type Props = {
   card: AgentReviewCardModel
   defaultExpanded?: boolean
+  /** When true, collapse the card (e.g. after the user starts a fix run). */
+  forceCollapsed?: boolean
   canFix?: boolean
   onFix?: (issueKey: Phase2IssueKey) => void
   onOpenEvidence: (link: AgentViewLink) => void
@@ -38,11 +40,16 @@ function isImportLayout(headers: string[]): boolean {
 export default function AgentDiagnosticExpandableCard({
   card,
   defaultExpanded = true,
+  forceCollapsed = false,
   canFix = false,
   onFix,
   onOpenEvidence,
 }: Props) {
   const [expanded, setExpanded] = useState(defaultExpanded)
+
+  useEffect(() => {
+    if (forceCollapsed) setExpanded(false)
+  }, [forceCollapsed])
   const [checkedIds, setCheckedIds] = useState<Set<string>>(new Set())
 
   const importLayout = isImportLayout(card.tableHeaders)

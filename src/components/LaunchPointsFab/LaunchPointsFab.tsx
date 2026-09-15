@@ -42,6 +42,7 @@ function prepareAgentLaunch(): void {
   sessionStorage.setItem('protoc3-session-started', '1')
   sessionStorage.setItem('protoc3-imports-started', '1')
   sessionStorage.removeItem('protoc3-phase')
+  sessionStorage.removeItem('protoc3-agent-visit-active')
   sessionStorage.setItem('agentLoaded', '1')
   setStoredDemoRole('preparer')
 }

@@ -90,6 +90,11 @@ export function buildStandardSourceLinks(): AgentViewLink[] {
   ]
 }
 
+export type AgentThinkingStep = {
+  title: string
+  description: string
+}
+
 export type AgentFixPlanItem = {
   issueKey: Phase2IssueKey
   title: string
@@ -97,7 +102,8 @@ export type AgentFixPlanItem = {
   summary: string
   taxImpact: string
   dotColor: 'red' | 'orange' | 'blue'
-  thinkingSteps: string[]
+  thinkingSteps: AgentThinkingStep[]
+  outcomeLabel: string
   fixSummary: string
   amountPatch: Partial<LiveAmounts>
   viewLinks: AgentViewLink[]
@@ -252,6 +258,7 @@ export function buildAgentFixPlan(ctx: DiagnosticSyncContext): AgentFixPlanItem[
       taxImpact: issue?.taxImpact ?? '',
       dotColor: issue?.dotColor ?? 'orange',
       thinkingSteps,
+      outcomeLabel: getFixOutcomeLabel(key),
       fixSummary: issue?.suggestedActions[0] ?? `Resolved ${title.toLowerCase()}.`,
       amountPatch,
       viewLinks: issue ? buildViewLinksForIssue(issue, amounts) : [],
@@ -259,37 +266,114 @@ export function buildAgentFixPlan(ctx: DiagnosticSyncContext): AgentFixPlanItem[
   })
 }
 
-function buildThinkingSteps(issueKey: Phase2IssueKey, summary?: string): string[] {
-  const base = summary ? [`Reviewing: ${summary}`] : ['Scanning return inputs and source documents…']
+function getFixOutcomeLabel(issueKey: Phase2IssueKey): string {
+  switch (issueKey) {
+    case 'importMismatches':
+      return 'Import mismatches fixed'
+    case 'qualifiedDivClassification':
+      return 'Dividend classification corrected'
+    case 'underpaymentRisk':
+      return 'Withholding gap corrected'
+    case 'necScheduleC':
+      return 'Schedule C income entered'
+    case 'optItemize':
+      return 'Form 1098 mortgage interest entered'
+    case 'schCExpenses':
+      return 'Schedule C expenses updated'
+    case 'w2Box12Missing':
+      return 'W-2 Box 12 amounts restored'
+    default:
+      return 'Diagnostic resolved'
+  }
+}
+
+function buildThinkingSteps(issueKey: Phase2IssueKey, summary?: string): AgentThinkingStep[] {
+  const contextDescription =
+    summary ??
+    'Reviewing return inputs, source documents, and questionnaire answers to confirm scope.'
+
   switch (issueKey) {
     case 'importMismatches':
       return [
-        ...base,
-        'Comparing W-2, 1099-DIV, and 1099-R amounts against source PDFs…',
-        'Calculating tax impact for each mismatch…',
-        'Applying corrected values to the return…',
+        {
+          title: 'Context assessment',
+          description: contextDescription,
+        },
+        {
+          title: 'Source comparison',
+          description:
+            'Comparing W-2, 1099-DIV, and 1099-R amounts against imported PDFs to find fields that disagree with source documents.',
+        },
+        {
+          title: 'Apply corrections',
+          description:
+            'Updating return inputs with source-document values and recalculating tax impact for each corrected field.',
+        },
       ]
     case 'qualifiedDivClassification':
       return [
-        ...base,
-        'Checking Box 1b on Token 1099-DIV against return classification…',
-        'Reclassifying ordinary vs qualified dividends…',
+        {
+          title: 'Context assessment',
+          description: contextDescription,
+        },
+        {
+          title: 'Classification check',
+          description:
+            'Checking Box 1b on the Token 1099-DIV against how ordinary and qualified dividends are reported on the return.',
+        },
+        {
+          title: 'Apply corrections',
+          description: 'Reclassifying dividends to match the source document and updating downstream totals.',
+        },
       ]
     case 'underpaymentRisk':
       return [
-        ...base,
-        'Running safe-harbor withholding check for 2024…',
-        'Restoring missing withholding from source documents…',
+        {
+          title: 'Context assessment',
+          description: contextDescription,
+        },
+        {
+          title: 'Safe harbor review',
+          description:
+            'Running the 2024 safe-harbor withholding check and identifying missing federal withholding from source documents.',
+        },
+        {
+          title: 'Apply corrections',
+          description: 'Restoring dropped withholding amounts and updating estimated tax calculations on the return.',
+        },
       ]
     case 'optItemize':
       return [
-        ...base,
-        'Reading questionnaire mortgage interest confirmation…',
-        'Projecting Schedule A vs standard deduction…',
-        'Entering estimated Form 1098 mortgage interest…',
+        {
+          title: 'Context assessment',
+          description: contextDescription,
+        },
+        {
+          title: 'Deduction projection',
+          description:
+            'Reading the mortgage interest questionnaire response and comparing Schedule A against the standard deduction.',
+        },
+        {
+          title: 'Apply corrections',
+          description:
+            'Entering estimated Form 1098 mortgage interest on Schedule A and updating the deduction strategy.',
+        },
       ]
     default:
-      return [...base, 'Validating fix against compliance rules…', 'Updating return amounts…']
+      return [
+        {
+          title: 'Context assessment',
+          description: contextDescription,
+        },
+        {
+          title: 'Validation',
+          description: 'Checking the proposed fix against compliance rules and return dependencies.',
+        },
+        {
+          title: 'Apply corrections',
+          description: 'Updating return amounts and linked forms with the corrected values.',
+        },
+      ]
   }
 }
 
