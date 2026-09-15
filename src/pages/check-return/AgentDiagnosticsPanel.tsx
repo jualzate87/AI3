@@ -25,6 +25,7 @@ import { computeLiveReturn } from '../../data/liveReturn'
 import { useSyncedReviewState } from '../../hooks/useSyncedReviewState'
 import {
   buildAgentFixPlan,
+  buildAgentViewLinkUrl,
   buildBatchThinkingSteps,
   getAgentFixContext,
   openAgentViewLinkInWindow,
@@ -38,7 +39,10 @@ import {
 } from '../../lib/agentDiagnosisReview'
 import { getCategoryScopedActiveKeys } from './aiDiagnosticCategories'
 import { buildAllDiagnosticIssues } from '../data-review/AgentReportPane'
-import { openReviewReturnPopout } from '../../lib/prototypeRoutes'
+import {
+  buildHashRouteUrl,
+  buildReviewReturnPopoutRoute,
+} from '../../lib/prototypeRoutes'
 import AgentDiagnosticExpandableCard from './AgentDiagnosticExpandableCard'
 import styles from '../../styles/check-return/AgentDiagnosticsPanel.module.css'
 
@@ -146,6 +150,35 @@ function SourceLinkChip({ link }: { link: AgentViewLink }) {
       {link.label}
       <NewWindow size="small" className={styles.sourceLinkChipIcon} aria-hidden />
     </button>
+  )
+}
+
+/** Standalone text links for the final outcome (not chip-style actions). */
+function OutcomeLink({
+  href,
+  children,
+  showNewWindowIcon = false,
+}: {
+  href: string
+  children: ReactNode
+  showNewWindowIcon?: boolean
+}) {
+  return (
+    <Link
+      href={href}
+      target="_blank"
+      rel="noopener noreferrer"
+      size="body-3"
+      className={styles.outcomeLink}
+      aria-label={
+        showNewWindowIcon ? `${String(children)} (opens in a new window)` : undefined
+      }
+    >
+      {children}
+      {showNewWindowIcon && (
+        <NewWindow size="small" className={styles.outcomeLinkIcon} aria-hidden />
+      )}
+    </Link>
   )
 }
 
@@ -798,27 +831,33 @@ export default function AgentDiagnosticsPanel() {
                         collapseCards
                         ariaLabel="Sign-off reminders after fixes"
                       />
-                      <div className={`${styles.responsePills} ${styles.responsePillsEnd}`}>
-                        <ActionChip
-                          onClick={() =>
-                            openAgentViewLinkInWindow({
-                              label: 'Updated return',
-                              formId: '1040',
-                            })
-                          }
+                      <nav
+                        className={`${styles.completionLinks} ${styles.completionLinksEnd}`}
+                        aria-label="Next steps after fixes"
+                      >
+                        <OutcomeLink
+                          href={buildAgentViewLinkUrl({
+                            label: 'Updated return',
+                            formId: '1040',
+                          })}
+                          showNewWindowIcon
                         >
                           Updated return
-                          <NewWindow size="small" className={styles.actionChipIcon} aria-hidden />
-                        </ActionChip>
-                        <SourceLinkChip link={SOURCE_DOCUMENTS_VIEW_LINK} />
-                        <ActionChip
-                          onClick={() =>
-                            openReviewReturnPopout({ form: '1040' })
-                          }
+                        </OutcomeLink>
+                        <OutcomeLink
+                          href={buildAgentViewLinkUrl(SOURCE_DOCUMENTS_VIEW_LINK)}
+                          showNewWindowIcon
+                        >
+                          Source documents
+                        </OutcomeLink>
+                        <OutcomeLink
+                          href={buildHashRouteUrl(
+                            buildReviewReturnPopoutRoute({ form: '1040' }),
+                          )}
                         >
                           View summary
-                        </ActionChip>
-                      </div>
+                        </OutcomeLink>
+                      </nav>
                     </AgentSparkleRow>
                   )
                 }

@@ -152,6 +152,29 @@
   justify-content: flex-end;
 }
 
+.completionLinks {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-component-gap-medium, 12px);
+  margin-top: var(--space-component-gap-medium, 12px);
+}
+
+.completionLinksEnd {
+  justify-content: flex-end;
+}
+
+.outcomeLink {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-component-gap-x-small, 4px);
+}
+
+.outcomeLinkIcon {
+  flex-shrink: 0;
+  width: 1em;
+  height: 1em;
+}
+
 /* ── Agent row with avatar ── */
 .agentRow {
   display: flex;
