@@ -108,7 +108,8 @@
 .segmentRow :global([class*='standardWrapper']),
 .segmentRow :global([class*='miniWrapper']) {
   position: relative;
-  display: inline-flex;
+  display: flex;
+  width: 100%;
   gap: var(--space-component-gap-x-small, 2px);
   padding: 2px;
   background: var(--color-container-background-quaternary, #e3e5e8);
@@ -117,14 +118,15 @@
 
 .segmentRow :global([class*='standardWrapper'] button),
 .segmentRow :global([class*='miniWrapper'] button) {
+  flex: 1;
   margin: 0 !important;
   border: none !important;
   border-radius: var(--radius-action, 4px) !important;
-  background: var(--color-action-passive-subtle, transparent) !important;
+  background: transparent !important;
   color: var(--color-text-secondary, #6b6c72) !important;
   box-shadow: none !important;
   font-weight: var(--font-weight-component, 400) !important;
-  min-width: auto !important;
+  min-width: 0 !important;
 }
 
 .segmentRow :global([class*='standardWrapper'] button:first-child),
@@ -136,10 +138,14 @@
   margin-right: 0 !important;
 }
 
-.segmentRow :global([class*='selected']),
-.segmentRow :global([class*='selected']:hover) {
+/* Match SegmentedButton-selected-* only (not leftOfSelected/rightOfSelected); beat the button rule above */
+.segmentRow :global([class*='standardWrapper'] button[class*='-selected-']),
+.segmentRow :global([class*='miniWrapper'] button[class*='-selected-']),
+.segmentRow :global([class*='standardWrapper'] button[class*='-selected-']:hover),
+.segmentRow :global([class*='miniWrapper'] button[class*='-selected-']:hover) {
   background: var(--color-container-background-primary, #ffffff) !important;
   color: var(--color-text-primary, #393a3d) !important;
+  font-weight: var(--font-weight-component-semibold, 600) !important;
   box-shadow:
     0 var(--elevation-level-1-offset-y, 1px)
     calc(var(--elevation-level-1-blur, 4px) / 2)
