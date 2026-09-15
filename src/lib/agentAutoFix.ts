@@ -77,15 +77,6 @@ export type AgentViewLink = {
   diagnostic?: Phase2IssueKey
 }
 
-const IMPORT_MISMATCH_VIEW_LABELS: Record<string, string> = {
-  wages: 'W-2 wages · Tech Circle',
-  qualifiedDivs: '1099-DIV · Token',
-  divWithholding: '1099-DIV withholding · Token',
-  taxablePension: '1099-R taxable · Meridian',
-  rWithholding: '1099-R withholding · Meridian',
-  necIncome: '1099-NEC · Summit',
-}
-
 const FORM_VIEW_LABELS: Record<string, string> = {
   '1040': 'Form 1040',
   schA: 'Schedule A',
@@ -113,8 +104,13 @@ export function stripViewLinkPrefix(label: string): string {
     .trim()
 }
 
-export function formatImportMismatchViewLabel(gap: { id: string; label: string }): string {
-  return IMPORT_MISMATCH_VIEW_LABELS[gap.id] ?? stripViewLinkPrefix(gap.label)
+export function formatImportMismatchViewLabel(gap: {
+  id: string
+  label: string
+  tab?: string
+}): string {
+  if (gap.tab) return formatSourceTabViewLabel(gap.tab)
+  return stripViewLinkPrefix(gap.label)
 }
 
 export function formatFormViewLabel(formId: OutputFormId | string): string {
@@ -175,6 +171,13 @@ export function buildStandardSourceLinks(): AgentViewLink[] {
 export type AgentThinkingStep = {
   title: string
   description: string
+}
+
+/** Slice of a batch fix-all stepper — one subsection per diagnostic. */
+export type AgentThinkingSection = {
+  title: string
+  startStep: number
+  endStep: number
 }
 
 export type AgentFixPlanItem = {
@@ -410,6 +413,33 @@ export function buildBatchThinkingSteps(items: AgentFixPlanItem[]): AgentThinkin
   })
 
   return steps
+}
+
+/** Section boundaries for progressive disclosure during fix-all. */
+export function buildBatchThinkingSections(items: AgentFixPlanItem[]): AgentThinkingSection[] {
+  if (items.length <= 1) return []
+
+  const sections: AgentThinkingSection[] = [
+    { title: 'Review all diagnostics', startStep: 0, endStep: 1 },
+  ]
+
+  let idx = 1
+  for (const item of items) {
+    sections.push({
+      title: item.title,
+      startStep: idx,
+      endStep: idx + 2,
+    })
+    idx += 2
+  }
+
+  sections.push({
+    title: 'Recalculate and verify',
+    startStep: idx,
+    endStep: idx + 1,
+  })
+
+  return sections
 }
 
 function buildThinkingSteps(issueKey: Phase2IssueKey, summary?: string): AgentThinkingStep[] {

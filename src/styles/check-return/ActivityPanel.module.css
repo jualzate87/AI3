@@ -195,14 +195,17 @@
   min-width: 0;
 }
 
-/* Approximate audit log filter-pill weight on IDS dropdown triggers */
-.filterField :global([class*='dropdown']) button,
-.filterField :global([class*='Dropdown']) button {
-  font-weight: var(--font-weight-component-semibold, 600);
-}
-
 .searchRow :global(input) {
   min-height: 36px;
+}
+
+/* Filter dropdown triggers (read-only) — match search placeholder color */
+.searchRow :global(input::placeholder),
+.filterField :global(input::placeholder) {
+  color: var(--color-input-placeholder, #babec5) !important;
+  -webkit-text-fill-color: var(--color-input-placeholder, #babec5) !important;
+  opacity: 1 !important;
+  font-weight: var(--font-weight-component, 400) !important;
 }
 
 .refreshButton {

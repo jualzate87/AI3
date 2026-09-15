@@ -26,10 +26,12 @@ import { useSyncedReviewState } from '../../hooks/useSyncedReviewState'
 import {
   buildAgentFixPlan,
   buildAgentViewLinkUrl,
+  buildBatchThinkingSections,
   buildBatchThinkingSteps,
   getAgentFixContext,
   openAgentViewLinkInWindow,
   type AgentFixPlanItem,
+  type AgentThinkingSection,
   type AgentThinkingStep,
   type AgentViewLink,
 } from '../../lib/agentAutoFix'
@@ -71,7 +73,14 @@ type ThreadEntry =
     }
   | { id: string; kind: 'user'; text: string; asChip?: boolean }
   | { id: string; kind: 'milestone'; text: string; variant?: 'default' | 'fixes-started' }
-  | { id: string; kind: 'thinking'; issueTitle: string; steps: AgentThinkingStep[]; activeStep: number }
+  | {
+      id: string
+      kind: 'thinking'
+      issueTitle: string
+      steps: AgentThinkingStep[]
+      sections?: AgentThinkingSection[]
+      activeStep: number
+    }
   | {
       id: string
       kind: 'fixed'
@@ -376,6 +385,50 @@ function InitialDiagnosisFeed({
   )
 }
 
+function StepperSteps({
+  steps,
+  startIndex,
+  activeStep,
+  isComplete,
+}: {
+  steps: AgentThinkingStep[]
+  startIndex: number
+  activeStep: number
+  isComplete: boolean
+}) {
+  return (
+    <ol className={styles.stepper}>
+      {steps.map((step, localIndex) => {
+        const stepIndex = startIndex + localIndex
+        const isActive = stepIndex === activeStep && !isComplete
+        const isDone = stepIndex < activeStep || isComplete
+        const isLastInSlice = localIndex === steps.length - 1
+        return (
+          <li
+            key={stepIndex}
+            className={`${styles.stepperItem} ${isDone ? styles.stepperItemDone : ''} ${isActive ? styles.stepperItemActive : ''}`}
+          >
+            <span className={styles.stepperRail} aria-hidden>
+              {isDone ? (
+                <AgentSparkleIcon size="inline" className={styles.stepperSparkle} />
+              ) : (
+                <span className={styles.stepperDot} />
+              )}
+              {!isLastInSlice && <span className={styles.stepperLine} />}
+            </span>
+            <div className={styles.stepperContent}>
+              <p className={styles.stepperTitle}>{step.title}</p>
+              {(isActive || isDone) && step.description && (
+                <p className={styles.stepperBody}>{step.description}</p>
+              )}
+            </div>
+          </li>
+        )
+      })}
+    </ol>
+  )
+}
+
 function ThinkingBlock({
   entry,
 }: {
@@ -384,23 +437,18 @@ function ThinkingBlock({
   const isComplete = entry.activeStep >= entry.steps.length
   const doneCount = isComplete ? entry.steps.length : entry.activeStep
   const [expanded, setExpanded] = useState(!isComplete)
+  const sections = entry.sections ?? []
+  const useProgressiveSections =
+    sections.length > 0 && !isComplete
 
   return (
-    <div
-      className={`${styles.generationBlock} ${isComplete ? styles.generationBlockDone : ''}`}
-    >
+    <div className={styles.generationBlock}>
       <button
         type="button"
         className={styles.generationHeader}
         onClick={() => setExpanded(open => !open)}
         aria-expanded={expanded}
       >
-        {!isComplete && (
-          <img src={intuitIntelligenceLogo} alt="" className={styles.generationIcon} aria-hidden />
-        )}
-        {isComplete && expanded && (
-          <AgentSparkleIcon size="inline" className={styles.generationSparkle} />
-        )}
         <span
           className={`${styles.generationTitle} ${isComplete && !expanded ? styles.generationTitleMuted : ''}`}
         >
@@ -417,33 +465,44 @@ function ThinkingBlock({
         </span>
       </button>
       {expanded && (
-        <ol className={styles.stepper} aria-label={`Reasoning for ${entry.issueTitle}`}>
-          {entry.steps.map((step, si) => {
-            const isActive = si === entry.activeStep && !isComplete
-            const isDone = si < entry.activeStep || isComplete
-            return (
-              <li
-                key={si}
-                className={`${styles.stepperItem} ${isDone ? styles.stepperItemDone : ''} ${isActive ? styles.stepperItemActive : ''}`}
-              >
-                <span className={styles.stepperRail} aria-hidden>
-                  {isDone ? (
-                    <AgentSparkleIcon size="inline" className={styles.stepperSparkle} />
-                  ) : (
-                    <span className={styles.stepperDot} />
-                  )}
-                  {si < entry.steps.length - 1 && <span className={styles.stepperLine} />}
-                </span>
-                <div className={styles.stepperContent}>
-                  <p className={styles.stepperTitle}>{step.title}</p>
-                  {(isActive || isDone) && step.description && (
-                    <p className={styles.stepperBody}>{step.description}</p>
-                  )}
-                </div>
-              </li>
-            )
-          })}
-        </ol>
+        <div aria-label={`Reasoning for ${entry.issueTitle}`}>
+          {useProgressiveSections ? (
+            <div className={styles.thinkingSections}>
+              {sections.map(section => {
+                if (entry.activeStep < section.startStep) return null
+
+                const sectionComplete = entry.activeStep >= section.endStep
+                if (sectionComplete) {
+                  return (
+                    <div key={section.title} className={styles.thinkingSectionDone}>
+                      <AgentSparkleIcon size="inline" className={styles.thinkingSectionDoneIcon} />
+                      <span className={styles.thinkingSectionDoneTitle}>{section.title}</span>
+                    </div>
+                  )
+                }
+
+                return (
+                  <div key={section.title} className={styles.thinkingSectionActive}>
+                    <p className={styles.thinkingSectionLabel}>{section.title}</p>
+                    <StepperSteps
+                      steps={entry.steps.slice(section.startStep, section.endStep)}
+                      startIndex={section.startStep}
+                      activeStep={entry.activeStep}
+                      isComplete={isComplete}
+                    />
+                  </div>
+                )
+              })}
+            </div>
+          ) : (
+            <StepperSteps
+              steps={entry.steps}
+              startIndex={0}
+              activeStep={entry.activeStep}
+              isComplete={isComplete}
+            />
+          )}
+        </div>
       )}
     </div>
   )
@@ -530,6 +589,7 @@ export default function AgentDiagnosticsPanel() {
           kind: 'thinking',
           issueTitle: `${items.length} diagnostics`,
           steps: batchSteps,
+          sections: buildBatchThinkingSections(items),
           activeStep: 0,
         })
 
@@ -690,7 +750,7 @@ export default function AgentDiagnosticsPanel() {
       isWelcome: true,
       text:
         diagnosisIssueCount > 0
-          ? `I've analyzed Jordan's 2025 return and found ${diagnosisIssueCount} issue${diagnosisIssueCount === 1 ? '' : 's'} to resolve. I compared source documents, questionnaire answers, and return inputs.\nReview each diagnostic below, then tell me how you'd like to proceed.`
+          ? `I've analyzed Jordan's 2025 return and found ${diagnosisIssueCount} issue${diagnosisIssueCount === 1 ? '' : 's'} to resolve by comparing source documents, questionnaire answers, and inputs on the return. Review each diagnostic below, then tell me how you'd like to proceed.`
           : `I've analyzed Jordan's 2025 return. No diagnostics need a fix right now — review the verified checks and your checklist below before sign-off.`,
     })
   }, [appendThread, diagnosisIssueCount])
@@ -746,9 +806,7 @@ export default function AgentDiagnosticsPanel() {
                             Return review by Intuit Intelligence
                           </span>
                         </header>
-                        <p className={`${styles.agentBody} ${styles.agentBodyPreWrap}`}>
-                          {entry.text}
-                        </p>
+                        <p className={styles.agentBody}>{entry.text}</p>
                         <InitialDiagnosisFeed
                           syncCtx={syncCtx}
                           phase={phase}
@@ -790,9 +848,9 @@ export default function AgentDiagnosticsPanel() {
                 }
                 if (entry.kind === 'thinking') {
                   return (
-                    <div key={entry.id} className={styles.thinkingRow}>
+                    <AgentSparkleRow key={entry.id}>
                       <ThinkingBlock entry={entry} />
-                    </div>
+                    </AgentSparkleRow>
                   )
                 }
                 if (entry.kind === 'fixed') {
