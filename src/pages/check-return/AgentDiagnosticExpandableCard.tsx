@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { ChevronDown, ChevronUp, NewWindow } from '@design-systems/icons'
+import { ChevronDown, ChevronUp, CircleCheck, NewWindow } from '@design-systems/icons'
 import { Badge, InfoBadgeIcon } from '@ids-ts/badge'
 import '@ids-ts/badge/dist/main.css'
 import { Button } from '@ids-ts/button'
@@ -53,8 +53,13 @@ export default function AgentDiagnosticExpandableCard({
   const [checkedIds, setCheckedIds] = useState<Set<string>>(new Set())
 
   const importLayout = isImportLayout(card.tableHeaders)
+  const verifiedLayout = card.variant === 'verified'
   const visibleHeaders = card.tableHeaders.map(h => (h.length > 0 ? h : 'Action'))
-  const tableLayoutClass = importLayout ? styles.tableLayoutImport : styles.tableLayoutStandard
+  const tableLayoutClass = importLayout
+    ? styles.tableLayoutImport
+    : verifiedLayout
+      ? styles.tableLayoutVerified
+      : styles.tableLayoutStandard
 
   const accordionPosClass =
     inAccordionList && accordionPosition === 'first'
@@ -147,7 +152,11 @@ export default function AgentDiagnosticExpandableCard({
                 ))}
               </div>
               {card.tableRows.map(row => {
-                const dataCols = importLayout ? row.cols.slice(0, 3) : row.cols.filter(c => c.length > 0)
+                const dataCols = importLayout
+                  ? row.cols.slice(0, 3)
+                  : verifiedLayout
+                    ? row.cols.filter(c => c.length > 0).slice(0, 1)
+                    : row.cols.filter(c => c.length > 0)
 
                 return (
                   <div
@@ -164,6 +173,11 @@ export default function AgentDiagnosticExpandableCard({
                           {row.label}
                         </Checkbox>
                       </div>
+                    ) : verifiedLayout ? (
+                      <div className={styles.verifiedCheckCell}>
+                        <CircleCheck size="small" className={styles.verifiedCheckIcon} aria-hidden />
+                        <span className={styles.verifiedCheckLabel}>{row.label}</span>
+                      </div>
                     ) : (
                       <span className={styles.rowLabelLink}>{row.label}</span>
                     )}
@@ -171,7 +185,7 @@ export default function AgentDiagnosticExpandableCard({
                     {dataCols.map((col, ci) => (
                       <span
                         key={ci}
-                        className={`${styles.tableCell} ${importLayout && ci === 1 ? styles.tableCellEmphasis : ''} ${!importLayout && ci === 1 ? styles.tableCellMuted : ''}`}
+                        className={`${styles.tableCell} ${importLayout && ci === 1 ? styles.tableCellEmphasis : ''} ${verifiedLayout || (!importLayout && ci === 1) ? styles.tableCellMuted : ''}`}
                       >
                         {col}
                       </span>

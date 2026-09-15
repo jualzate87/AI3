@@ -10,6 +10,7 @@ import {
 import {
   ChevronDown,
   ChevronUp,
+  CircleCheck,
   NewWindow,
   Plus,
   Send,
@@ -28,8 +29,10 @@ import {
   buildAgentViewLinkUrl,
   buildBatchThinkingSections,
   buildBatchThinkingSteps,
+  formatFixResultLinkLabel,
   getAgentFixContext,
   openAgentViewLinkInWindow,
+  type AgentFixDetailLine,
   type AgentFixPlanItem,
   type AgentThinkingSection,
   type AgentThinkingStep,
@@ -53,6 +56,7 @@ type AgentPhase = 'ready' | 'running' | 'complete' | 'awaiting-next'
 type FixedItemSummary = {
   outcomeLabel: string
   viewLinks: AgentViewLink[]
+  detailLines: AgentFixDetailLine[]
 }
 
 const SOURCE_DOCUMENTS_VIEW_LINK: AgentViewLink = {
@@ -191,6 +195,20 @@ function OutcomeLink({
   )
 }
 
+function FixResultLinkChip({ link }: { link: AgentViewLink }) {
+  return (
+    <button
+      type="button"
+      className={styles.fixResultLinkChip}
+      onClick={() => openAgentViewLinkInWindow(link)}
+      aria-label={`${formatFixResultLinkLabel(link)} (opens in a new window)`}
+    >
+      {formatFixResultLinkLabel(link)}
+      <NewWindow size="small" className={styles.fixResultLinkChipIcon} aria-hidden />
+    </button>
+  )
+}
+
 function FixProgressSummaryCard({
   fixedItems,
   totalCount,
@@ -199,7 +217,6 @@ function FixProgressSummaryCard({
   totalCount: number
 }) {
   const doneCount = fixedItems.length
-  const pct = totalCount > 0 ? Math.round((doneCount / totalCount) * 100) : 100
 
   return (
     <div className={styles.fixProgressCard}>
@@ -209,24 +226,23 @@ function FixProgressSummaryCard({
           {doneCount} of {totalCount} fixed
         </span>
       </div>
-      <div className={styles.fixProgressTrack} aria-hidden>
-        <div className={styles.fixProgressFill} style={{ width: `${pct}%` }} />
-      </div>
+      <hr className={styles.fixProgressDivider} aria-hidden />
       <ul className={styles.fixProgressList}>
         {fixedItems.map(item => (
           <li key={item.outcomeLabel} className={styles.fixProgressItem}>
             <div className={styles.fixProgressItemHeader}>
+              <CircleCheck size="small" className={styles.fixProgressCheckIcon} aria-hidden />
               <span className={styles.fixProgressItemLabel}>{item.outcomeLabel}</span>
-              <Badge status="success" label="Fixed" shape="round" aria-label="Fixed">
-                <SuccessBadgeIcon />
-              </Badge>
             </div>
-            {item.viewLinks.length > 0 && (
-              <div className={styles.sourceLinkRow}>
-                {item.viewLinks.map(link => (
-                  <SourceLinkChip key={link.label} link={link} />
+            {item.detailLines.length > 0 && (
+              <ul className={styles.fixProgressDetailList}>
+                {item.detailLines.map(line => (
+                  <li key={`${line.link.label}-${line.detail}`} className={styles.fixProgressDetailRow}>
+                    <FixResultLinkChip link={line.link} />
+                    <span className={styles.fixProgressDetailText}>– {line.detail}</span>
+                  </li>
                 ))}
-              </div>
+              </ul>
             )}
           </li>
         ))}
@@ -238,10 +254,9 @@ function FixProgressSummaryCard({
 function ReminderCard() {
   return (
     <div className={styles.reminderCard}>
-      <div className={styles.reminderHeader}>
-        <AgentSparkleIcon size="inline" className={styles.reminderIcon} />
-        <span className={styles.reminderTitle}>Reminder</span>
-      </div>
+      <Badge status="warning" capitalization="sentence">
+        Reminder
+      </Badge>
       <p className={styles.reminderBody}>
         Before we finalize, please confirm the{' '}
         <strong>estimated Form 1098 mortgage interest</strong> amount with the client and upload the
@@ -251,18 +266,32 @@ function ReminderCard() {
   )
 }
 
-/** Verified + needs-review callouts — persist after fixes; independent expand from issue accordion. */
+type PreparerCalloutFilter = 'all' | 'verified' | 'needs-review'
+
+/** Verified and/or needs-review callouts — independent expand from issue accordion. */
 function PreparerReviewCallouts({
   syncCtx,
   collapseCards = false,
+  calloutFilter = 'all',
+  defaultExpandedIds = [],
   ariaLabel = 'Preparer review callouts',
 }: {
   syncCtx: ReturnType<typeof getAgentFixContext>
   collapseCards?: boolean
+  calloutFilter?: PreparerCalloutFilter
+  defaultExpandedIds?: string[]
   ariaLabel?: string
 }) {
-  const callouts = useMemo(() => buildPersistentReviewCallouts(syncCtx), [syncCtx])
-  const [expandedIds, setExpandedIds] = useState<Set<string>>(() => new Set())
+  const callouts = useMemo(() => {
+    const all = buildPersistentReviewCallouts(syncCtx)
+    if (calloutFilter === 'verified') return all.filter(card => card.variant === 'verified')
+    if (calloutFilter === 'needs-review') return all.filter(card => card.variant === 'needs-review')
+    return all
+  }, [syncCtx, calloutFilter])
+
+  const [expandedIds, setExpandedIds] = useState<Set<string>>(
+    () => new Set(defaultExpandedIds),
+  )
 
   useEffect(() => {
     if (collapseCards) setExpandedIds(new Set())
@@ -276,6 +305,8 @@ function PreparerReviewCallouts({
       return next
     })
   }
+
+  if (callouts.length === 0) return null
 
   return (
     <div className={styles.preparerCalloutStack} role="list" aria-label={ariaLabel}>
@@ -357,8 +388,8 @@ function InitialDiagnosisFeed({
             Clear
           </Badge>
           <p className={styles.diagnosisEmpty}>
-            No open diagnostics on this return. Review verified checks and your checklist below
-            before sign-off.
+            No open diagnostics on this return. Review verified checks below — your manual
+            checklist appears in the summary once fixes are complete.
           </p>
         </div>
       )}
@@ -380,9 +411,43 @@ function InitialDiagnosisFeed({
           ))}
         </div>
       )}
-      <PreparerReviewCallouts syncCtx={syncCtx} collapseCards={collapseCards} />
+      <PreparerReviewCallouts
+        syncCtx={syncCtx}
+        collapseCards={collapseCards}
+        calloutFilter="verified"
+        ariaLabel="Verified checks"
+      />
     </div>
   )
+}
+
+function formatOrdinal(n: number): string {
+  const mod100 = n % 100
+  const suffix =
+    mod100 >= 11 && mod100 <= 13
+      ? 'th'
+      : n % 10 === 1
+        ? 'st'
+        : n % 10 === 2
+          ? 'nd'
+          : n % 10 === 3
+            ? 'rd'
+            : 'th'
+  return `${n}${suffix}`
+}
+
+function getResolvedSectionLabel(
+  section: AgentThinkingSection,
+  sections: AgentThinkingSection[],
+): string {
+  const bookends = new Set(['Review all diagnostics', 'Recalculate and verify'])
+  if (bookends.has(section.title)) {
+    return `${section.title} complete`
+  }
+  const diagnosticSections = sections.filter(s => !bookends.has(s.title))
+  const idx = diagnosticSections.findIndex(s => s.title === section.title)
+  if (idx >= 0) return `${formatOrdinal(idx + 1)} diagnostic resolved`
+  return `${section.title} resolved`
 }
 
 function StepperSteps({
@@ -409,11 +474,7 @@ function StepperSteps({
             className={`${styles.stepperItem} ${isDone ? styles.stepperItemDone : ''} ${isActive ? styles.stepperItemActive : ''}`}
           >
             <span className={styles.stepperRail} aria-hidden>
-              {isDone ? (
-                <AgentSparkleIcon size="inline" className={styles.stepperSparkle} />
-              ) : (
-                <span className={styles.stepperDot} />
-              )}
+              <span className={styles.stepperDot} />
               {!isLastInSlice && <span className={styles.stepperLine} />}
             </span>
             <div className={styles.stepperContent}>
@@ -429,17 +490,150 @@ function StepperSteps({
   )
 }
 
+function ThinkingSectionRow({
+  section,
+  sections,
+  entry,
+  isComplete,
+  expanded,
+  onToggle,
+}: {
+  section: AgentThinkingSection
+  sections: AgentThinkingSection[]
+  entry: Extract<ThreadEntry, { kind: 'thinking' }>
+  isComplete: boolean
+  expanded: boolean
+  onToggle: () => void
+}) {
+  const sectionComplete = entry.activeStep >= section.endStep || isComplete
+  const sectionActive = !sectionComplete && entry.activeStep >= section.startStep
+  const resolvedLabel = getResolvedSectionLabel(section, sections)
+  const sectionSteps = entry.steps.slice(section.startStep, section.endStep)
+
+  if (sectionComplete) {
+    return (
+      <div className={styles.reasoningSection}>
+        <button
+          type="button"
+          className={styles.reasoningSectionHeaderCollapsed}
+          onClick={onToggle}
+          aria-expanded={expanded}
+        >
+          <span className={styles.reasoningSectionTitleResolved}>{resolvedLabel}</span>
+          <span className={styles.generationChevron} aria-hidden>
+            {expanded ? <ChevronUp size="small" /> : <ChevronDown size="small" />}
+          </span>
+        </button>
+        {expanded && (
+          <div className={styles.reasoningSectionBody}>
+            <StepperSteps
+              steps={sectionSteps}
+              startIndex={section.startStep}
+              activeStep={entry.activeStep}
+              isComplete
+            />
+          </div>
+        )}
+      </div>
+    )
+  }
+
+  if (!sectionActive) return null
+
+  return (
+    <div className={styles.reasoningSection}>
+      <button
+        type="button"
+        className={styles.reasoningSectionHeaderActive}
+        onClick={onToggle}
+        aria-expanded={expanded}
+      >
+        <img
+          src={intuitIntelligenceLogo}
+          alt=""
+          className={styles.reasoningAssistIcon}
+          aria-hidden
+        />
+        <span className={styles.reasoningSectionTitleActive}>{section.title}</span>
+        <span className={styles.generationChevron} aria-hidden>
+          {expanded ? <ChevronUp size="small" /> : <ChevronDown size="small" />}
+        </span>
+      </button>
+      {expanded && (
+        <div className={styles.reasoningSectionBody}>
+          <StepperSteps
+            steps={sectionSteps}
+            startIndex={section.startStep}
+            activeStep={entry.activeStep}
+            isComplete={false}
+          />
+        </div>
+      )}
+    </div>
+  )
+}
+
 function ThinkingBlock({
   entry,
 }: {
   entry: Extract<ThreadEntry, { kind: 'thinking' }>
 }) {
   const isComplete = entry.activeStep >= entry.steps.length
-  const doneCount = isComplete ? entry.steps.length : entry.activeStep
-  const [expanded, setExpanded] = useState(!isComplete)
   const sections = entry.sections ?? []
-  const useProgressiveSections =
-    sections.length > 0 && !isComplete
+  const useProgressiveSections = sections.length > 0
+  const [expanded, setExpanded] = useState(!isComplete)
+  const [expandedSections, setExpandedSections] = useState<Set<string>>(() => new Set())
+
+  useEffect(() => {
+    if (!useProgressiveSections) return
+    setExpandedSections(prev => {
+      const next = new Set(prev)
+      for (const section of sections) {
+        const sectionComplete = entry.activeStep >= section.endStep
+        const sectionActive =
+          !sectionComplete && entry.activeStep >= section.startStep
+        if (sectionActive) {
+          next.add(section.title)
+        } else if (sectionComplete) {
+          next.delete(section.title)
+        }
+      }
+      return next
+    })
+  }, [entry.activeStep, sections, useProgressiveSections])
+
+  const toggleSection = (title: string) => {
+    setExpandedSections(prev => {
+      const next = new Set(prev)
+      if (next.has(title)) next.delete(title)
+      else next.add(title)
+      return next
+    })
+  }
+
+  if (useProgressiveSections) {
+    return (
+      <div className={styles.generationBlock} aria-label={`Reasoning for ${entry.issueTitle}`}>
+        <div className={styles.thinkingSections}>
+          {sections.map(section => {
+            if (entry.activeStep < section.startStep) return null
+
+            return (
+              <ThinkingSectionRow
+                key={section.title}
+                section={section}
+                sections={sections}
+                entry={entry}
+                isComplete={isComplete}
+                expanded={expandedSections.has(section.title)}
+                onToggle={() => toggleSection(section.title)}
+              />
+            )
+          })}
+        </div>
+      </div>
+    )
+  }
 
   return (
     <div className={styles.generationBlock}>
@@ -449,63 +643,48 @@ function ThinkingBlock({
         onClick={() => setExpanded(open => !open)}
         aria-expanded={expanded}
       >
+        {!isComplete && expanded && (
+          <img
+            src={intuitIntelligenceLogo}
+            alt=""
+            className={styles.reasoningAssistIcon}
+            aria-hidden
+          />
+        )}
         <span
-          className={`${styles.generationTitle} ${isComplete && !expanded ? styles.generationTitleMuted : ''}`}
+          className={`${styles.generationTitle} ${isComplete && !expanded ? styles.generationTitleMuted : ''} ${!isComplete && expanded ? styles.reasoningSectionTitleActive : ''}`}
         >
           {isComplete && !expanded ? 'Show thinking' : 'Response generation'}
         </span>
-        {(expanded || !isComplete) && (
-          <span className={styles.generationSubtitle}>
-            {entry.issueTitle} · Step {Math.min(doneCount, entry.steps.length)} of{' '}
-            {entry.steps.length}
-          </span>
-        )}
         <span className={styles.generationChevron} aria-hidden>
           {expanded ? <ChevronUp size="small" /> : <ChevronDown size="small" />}
         </span>
       </button>
       {expanded && (
-        <div aria-label={`Reasoning for ${entry.issueTitle}`}>
-          {useProgressiveSections ? (
-            <div className={styles.thinkingSections}>
-              {sections.map(section => {
-                if (entry.activeStep < section.startStep) return null
-
-                const sectionComplete = entry.activeStep >= section.endStep
-                if (sectionComplete) {
-                  return (
-                    <div key={section.title} className={styles.thinkingSectionDone}>
-                      <AgentSparkleIcon size="inline" className={styles.thinkingSectionDoneIcon} />
-                      <span className={styles.thinkingSectionDoneTitle}>{section.title}</span>
-                    </div>
-                  )
-                }
-
-                return (
-                  <div key={section.title} className={styles.thinkingSectionActive}>
-                    <p className={styles.thinkingSectionLabel}>{section.title}</p>
-                    <StepperSteps
-                      steps={entry.steps.slice(section.startStep, section.endStep)}
-                      startIndex={section.startStep}
-                      activeStep={entry.activeStep}
-                      isComplete={isComplete}
-                    />
-                  </div>
-                )
-              })}
-            </div>
-          ) : (
-            <StepperSteps
-              steps={entry.steps}
-              startIndex={0}
-              activeStep={entry.activeStep}
-              isComplete={isComplete}
-            />
-          )}
+        <div className={styles.reasoningSectionBody} aria-label={`Reasoning for ${entry.issueTitle}`}>
+          <StepperSteps
+            steps={entry.steps}
+            startIndex={0}
+            activeStep={entry.activeStep}
+            isComplete={isComplete}
+          />
         </div>
       )}
     </div>
   )
+}
+
+function buildFixedItemSummary(item: AgentFixPlanItem): FixedItemSummary {
+  const detailLines = item.fixDetailLines
+  let outcomeLabel = item.outcomeLabel
+  if (item.issueKey === 'importMismatches' && detailLines.length > 1) {
+    outcomeLabel = `${detailLines.length} Import mismatches fixed`
+  }
+  return {
+    outcomeLabel,
+    viewLinks: item.viewLinks,
+    detailLines,
+  }
 }
 
 export default function AgentDiagnosticsPanel() {
@@ -608,10 +787,7 @@ export default function AgentDiagnosticsPanel() {
           const item = items[i]
           applyFixForIssue(item)
           setProgressValue(progressStart + i + 1)
-          batchFixed.push({
-            outcomeLabel: item.outcomeLabel,
-            viewLinks: item.viewLinks,
-          })
+          batchFixed.push(buildFixedItemSummary(item))
         }
       } else {
         for (let i = 0; i < items.length; i++) {
@@ -639,10 +815,7 @@ export default function AgentDiagnosticsPanel() {
           applyFixForIssue(item)
           setProgressValue(progressStart + i + 1)
 
-          const fixedSummary: FixedItemSummary = {
-            outcomeLabel: item.outcomeLabel,
-            viewLinks: item.viewLinks,
-          }
+          const fixedSummary = buildFixedItemSummary(item)
           batchFixed.push(fixedSummary)
 
           if (openBefore > 1) {
@@ -676,7 +849,7 @@ export default function AgentDiagnosticsPanel() {
       setPhase('complete')
       appendThread({
         kind: 'complete-summary',
-        introText: `I've resolved all ${batchFixed.length} diagnostic${batchFixed.length === 1 ? '' : 's'}. Here's the progress summary.`,
+        introText: `I've resolved all ${batchFixed.length} diagnostic${batchFixed.length === 1 ? '' : 's'}. Here's what was fixed.`,
         fixedItems: batchFixed,
         totalCount: batchFixed.length,
       })
@@ -886,8 +1059,9 @@ export default function AgentDiagnosticsPanel() {
                       <ReminderCard />
                       <PreparerReviewCallouts
                         syncCtx={syncCtx}
-                        collapseCards
-                        ariaLabel="Sign-off reminders after fixes"
+                        calloutFilter="needs-review"
+                        defaultExpandedIds={['needs-user-review']}
+                        ariaLabel="Manual review checklist after fixes"
                       />
                       <nav
                         className={`${styles.completionLinks} ${styles.completionLinksEnd}`}

@@ -160,6 +160,15 @@
   align-items: start;
 }
 
+.tableLayoutVerified,
+.tableHeader.tableLayoutVerified,
+.tableRow.tableLayoutVerified {
+  display: grid;
+  grid-template-columns: minmax(0, 1.5fr) minmax(0, 1.1fr) minmax(0, 0.85fr);
+  gap: var(--space-container-gap-medium, 16px);
+  align-items: start;
+}
+
 .tableLayoutImport,
 .tableHeader.tableLayoutImport,
 .tableRow.tableLayoutImport {
@@ -203,6 +212,25 @@
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
+}
+
+.verifiedCheckCell {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--space-component-gap-small, 8px);
+  min-width: 0;
+}
+
+.verifiedCheckIcon {
+  flex-shrink: 0;
+  margin-top: 1px;
+  color: var(--color-icon-positive, #00892e);
+}
+
+.verifiedCheckLabel {
+  font-weight: var(--font-weight-component-semibold, 500);
+  line-height: 1.4;
+  color: var(--color-text-primary, #393a3d);
 }
 
 .checklistCell {

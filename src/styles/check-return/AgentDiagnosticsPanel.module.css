@@ -144,10 +144,6 @@
   flex-shrink: 0;
 }
 
-.stepperSparkle {
-  flex-shrink: 0;
-}
-
 .responsePillsEnd {
   justify-content: flex-end;
 }
@@ -776,8 +772,9 @@
 .generationHeader {
   display: flex;
   align-items: center;
-  gap: var(--space-component-gap-medium, 12px);
+  gap: var(--space-container-padding-xx-small, 8px);
   width: 100%;
+  min-height: 32px;
   padding: 0;
   border: none;
   background: transparent;
@@ -787,6 +784,7 @@
 }
 
 .generationTitle {
+  flex: 1;
   font-family: var(--font-family-component);
   font-size: var(--font-size-component-medium, 16px);
   font-weight: var(--font-weight-component-semibold, 600);
@@ -818,41 +816,73 @@
 .thinkingSections {
   display: flex;
   flex-direction: column;
-  gap: var(--space-component-gap-medium, 12px);
+  gap: var(--space-medium, 16px);
+  width: 100%;
 }
 
-.thinkingSectionActive {
+.reasoningSection {
   display: flex;
   flex-direction: column;
-  gap: var(--space-component-gap-x-small, 4px);
+  gap: var(--space-component-gap-small, 8px);
+  width: 100%;
 }
 
-.thinkingSectionLabel {
-  margin: 0;
-  font-family: var(--font-family-component);
-  font-size: var(--font-size-component-small, 14px);
-  font-weight: var(--font-weight-component-semibold, 600);
-  line-height: 1.35;
-  color: var(--color-text-primary, #393a3d);
-}
-
-.thinkingSectionDone {
+.reasoningSectionHeaderCollapsed,
+.reasoningSectionHeaderActive {
   display: flex;
   align-items: center;
-  gap: var(--space-component-gap-small, 8px);
-  padding: var(--space-component-gap-x-small, 4px) 0;
+  gap: var(--space-component-gap-medium, 8px);
+  width: 100%;
+  min-height: 32px;
+  padding: 0;
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  text-align: left;
+  font-family: inherit;
 }
 
-.thinkingSectionDoneIcon {
+.reasoningSectionHeaderCollapsed {
+  justify-content: space-between;
+}
+
+.reasoningSectionHeaderActive {
+  gap: var(--space-container-padding-xx-small, 8px);
+}
+
+.reasoningAssistIcon {
+  width: 24px;
+  height: 24px;
   flex-shrink: 0;
 }
 
-.thinkingSectionDoneTitle {
-  font-family: var(--font-family-body);
-  font-size: var(--font-size-body-3, 14px);
-  font-weight: var(--font-weight-body-semibold, 500);
-  line-height: 1.4;
+.reasoningSectionTitleResolved {
+  flex: 1;
+  font-family: var(--font-family-component);
+  font-size: var(--font-size-component-medium, 16px);
+  font-weight: var(--font-weight-component-semibold, 500);
+  line-height: 1.3;
   color: var(--color-text-secondary, #6b6c72);
+}
+
+.reasoningSectionTitleActive {
+  flex: 1;
+  font-family: var(--font-family-component);
+  font-size: var(--font-size-component-medium, 16px);
+  font-weight: var(--font-weight-component-semibold, 500);
+  line-height: 1.3;
+  background: linear-gradient(
+    90deg,
+    var(--color-text-primary, #393a3d) 0%,
+    var(--color-text-secondary, #6b6c72) 100%
+  );
+  background-clip: text;
+  -webkit-background-clip: text;
+  color: transparent;
+}
+
+.reasoningSectionBody {
+  padding-left: var(--space-component-inline-padding-medium, 8px);
 }
 
 .stepper {
@@ -866,7 +896,7 @@
 
 .stepperItem {
   display: flex;
-  gap: var(--space-component-gap-medium, 12px);
+  gap: var(--space-component-inline-padding-xx-large, 16px);
   min-height: 48px;
 }
 
@@ -874,9 +904,9 @@
   display: flex;
   flex-direction: column;
   align-items: center;
-  width: 16px;
+  width: 8px;
   flex-shrink: 0;
-  padding-top: 2px;
+  padding-top: 6px;
 }
 
 .stepperDot {
@@ -891,20 +921,12 @@
   background: var(--color-action-standard, #205ea3);
 }
 
-.stepperItemDone .stepperDot {
-  background: var(--color-action-standard, #205ea3);
-}
-
 .stepperLine {
   flex: 1;
   width: 2px;
   min-height: 24px;
   margin-top: 4px;
   background: var(--color-divider-tertiary, #d4d7dc);
-}
-
-.stepperItemDone .stepperLine {
-  background: var(--color-action-standard, #205ea3);
 }
 
 .stepperContent {
@@ -964,24 +986,17 @@
 
 .fixProgressCount {
   font-family: var(--font-family-body);
-  font-size: var(--font-size-body-4, 13px);
-  line-height: 1.46;
+  font-size: var(--font-size-body-3, 14px);
+  line-height: 1.5;
   color: var(--color-text-secondary, #6b6c72);
 }
 
-.fixProgressTrack {
+.fixProgressDivider {
   width: 100%;
-  height: 5px;
-  border-radius: 9999px;
-  background: var(--color-container-background-secondary, #f4f5f8);
-  overflow: hidden;
-}
-
-.fixProgressFill {
-  height: 100%;
-  border-radius: 9999px;
-  background: var(--color-container-background-success, #108000);
-  transition: width 0.3s ease;
+  height: 0;
+  margin: 0;
+  border: none;
+  border-top: 1px solid var(--color-divider-tertiary, #d4d7dc);
 }
 
 .fixProgressList {
@@ -1007,8 +1022,14 @@
 .fixProgressItemHeader {
   display: flex;
   align-items: center;
-  justify-content: space-between;
-  gap: var(--space-component-gap-medium, 11px);
+  gap: var(--space-component-gap-small, 8px);
+}
+
+.fixProgressCheckIcon {
+  flex-shrink: 0;
+  width: 20px;
+  height: 20px;
+  color: var(--color-icon-positive, #00892e);
 }
 
 .fixProgressItemLabel {
@@ -1016,8 +1037,62 @@
   min-width: 0;
   font-family: var(--font-family-body);
   font-size: var(--font-size-body-3, 14px);
-  line-height: 1.57;
-  color: var(--color-text-secondary, #6b6c72);
+  line-height: 1.43;
+  color: var(--color-text-primary, #393a3d);
+}
+
+.fixProgressDetailList {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-row-gap-x-small, 8px);
+  width: 100%;
+}
+
+.fixProgressDetailRow {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--space-component-gap-small, 4px);
+  width: 100%;
+}
+
+.fixProgressDetailText {
+  flex: 1;
+  min-width: 0;
+  font-family: var(--font-family-body);
+  font-size: var(--font-size-body-3, 14px);
+  line-height: 1.43;
+  color: var(--color-text-primary, #393a3d);
+}
+
+.fixResultLinkChip {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-component-gap-x-small, 4px);
+  min-height: 20px;
+  padding: var(--space-container-padding-xxx-small, 4px);
+  border: none;
+  border-radius: var(--radius-small, 4px);
+  background: var(--color-container-background-info, #d9effb);
+  font-family: var(--font-family-component);
+  font-size: var(--font-size-component-small, 14px);
+  font-weight: var(--font-weight-component-bold, 600);
+  line-height: 1.3;
+  color: var(--color-link-text, #0365ac);
+  cursor: pointer;
+  flex-shrink: 0;
+}
+
+.fixResultLinkChipIcon {
+  flex-shrink: 0;
+  width: 12px;
+  height: 12px;
+}
+
+.fixResultLinkChip:hover {
+  background: var(--color-action-passive-subtle, rgba(3, 101, 172, 0.12));
 }
 
 .sourceLinkRow {
@@ -1062,26 +1137,6 @@
   border: 1px solid var(--color-divider-secondary, #e3e5e8);
   border-radius: var(--radius-large, 12px);
   background: var(--color-container-background-primary, #ffffff);
-}
-
-.reminderHeader {
-  display: flex;
-  align-items: center;
-  gap: var(--space-component-gap-small, 10px);
-}
-
-.reminderIcon {
-  width: 16px;
-  height: 16px;
-  flex-shrink: 0;
-}
-
-.reminderTitle {
-  font-family: var(--font-family-component);
-  font-size: var(--font-size-component-medium, 16px);
-  font-weight: var(--font-weight-component-semibold, 500);
-  line-height: 1.3;
-  color: var(--color-text-primary, #393a3d);
 }
 
 .reminderBody {

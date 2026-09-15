@@ -218,12 +218,12 @@ export function buildVerifiedReviewCard(ctx: DiagnosticSyncContext): AgentReview
       'These inputs matched source documents, prior-year patterns, or compliance rules. I did not flag them because nothing needs to change on the return.',
     rootCause:
       'What I verified: wage and withholding identity on Tech Circle W-2, Harborline 1099-INT interest, filing status consistency, SALT cap handling on Schedule A, and Form 8960 net investment income math against the 1040 totals.',
-    tableHeaders: ['Check', 'Result', 'Notes', 'Action'],
+    tableHeaders: ['Verified', 'Details', 'Action'],
     tableRows: [
       {
         id: 'v-w2-wh',
-        label: 'W-2 federal withholding (Tech Circle)',
-        cols: ['Matches source', 'Box 2 on return equals $34,840 on the PDF.', ''],
+        label: 'W-2 federal withholding matches Tech Circle source',
+        cols: ['Box 2 on return equals $34,840 on the PDF.', ''],
         viewLink: {
           label: formatSourceTabViewLabel('w2s'),
           tab: 'w2s',
@@ -232,8 +232,8 @@ export function buildVerifiedReviewCard(ctx: DiagnosticSyncContext): AgentReview
       },
       {
         id: 'v-int',
-        label: '1099-INT taxable interest (Harborline)',
-        cols: ['Matches source', `${fmtUsd(live.taxableInterest)} on return and on the 1099-INT.`, ''],
+        label: '1099-INT taxable interest matches Harborline source',
+        cols: [`${fmtUsd(live.taxableInterest)} on return and on the 1099-INT.`, ''],
         viewLink: {
           label: formatSourceTabViewLabel('1099-ints'),
           tab: '1099-ints',
@@ -242,26 +242,26 @@ export function buildVerifiedReviewCard(ctx: DiagnosticSyncContext): AgentReview
       },
       {
         id: 'v-status',
-        label: 'Filing status Single',
-        cols: ['Consistent', 'Form 1040, questionnaire, and W-2 all use Single.', ''],
+        label: 'Filing status is consistent across the return',
+        cols: ['Form 1040, questionnaire, and W-2 all use Single.', ''],
         viewLink: { label: formatFormViewLabel('1040'), formId: '1040' },
       },
       {
         id: 'v-salt',
-        label: 'SALT deduction cap (Schedule A)',
-        cols: ['Applied correctly', '$10,000 state and local tax limit enforced on Schedule A.', ''],
+        label: 'SALT cap applied correctly on Schedule A',
+        cols: ['$10,000 state and local tax limit enforced on Schedule A.', ''],
         viewLink: { label: formatFormViewLabel('schA'), formId: 'schA' },
       },
       {
         id: 'v-niit',
-        label: 'Net investment income tax (Form 8960)',
-        cols: ['Calculates correctly', `NIIT base ${fmtUsd(live.netInvestmentIncome)} at 3.8% = ${fmtUsd(live.niitTax)}.`, ''],
+        label: 'Net investment income tax calculates correctly on Form 8960',
+        cols: [`NIIT base ${fmtUsd(live.netInvestmentIncome)} at 3.8% = ${fmtUsd(live.niitTax)}.`, ''],
         viewLink: { label: formatFormViewLabel('f8960'), formId: 'f8960' },
       },
       {
         id: 'v-charity',
-        label: 'Charitable contributions input',
-        cols: ['Documented in packet', 'Cash gifts match organizer worksheet — no amount conflict.', ''],
+        label: 'Charitable contributions are documented in the packet',
+        cols: ['Cash gifts match organizer worksheet — no amount conflict.', ''],
         viewLink: {
           label: formatSourceTabViewLabel('questionnaire'),
           tab: 'questionnaire',
@@ -270,8 +270,8 @@ export function buildVerifiedReviewCard(ctx: DiagnosticSyncContext): AgentReview
       },
       {
         id: 'v-div-1a',
-        label: '1099-DIV Box 1a ordinary dividends (Token)',
-        cols: ['Matches source', 'Ordinary dividend total agrees with the imported PDF.', ''],
+        label: '1099-DIV ordinary dividends match Token source',
+        cols: ['Ordinary dividend total agrees with the imported PDF.', ''],
         viewLink: {
           label: formatSourceTabViewLabel('1099-divs'),
           tab: '1099-divs',
@@ -280,8 +280,8 @@ export function buildVerifiedReviewCard(ctx: DiagnosticSyncContext): AgentReview
       },
       {
         id: 'v-prior',
-        label: 'Prior-year AGI on Form 1040',
-        cols: ['Matches PY return', '2024 AGI on the rollover matches the archived return.', ''],
+        label: 'Prior-year AGI matches the archived return',
+        cols: ['2024 AGI on the rollover matches the archived return.', ''],
         viewLink: { label: formatFormViewLabel('1040'), formId: '1040' },
       },
     ],
@@ -395,5 +395,5 @@ export function buildAgentReviewModels(
       return model
     })
 
-  return [...issueModels, ...buildPersistentReviewCallouts(ctx)]
+  return [...issueModels, buildVerifiedReviewCard(ctx)]
 }

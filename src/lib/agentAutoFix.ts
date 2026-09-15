@@ -77,6 +77,105 @@ export type AgentViewLink = {
   diagnostic?: Phase2IssueKey
 }
 
+export type AgentFixDetailLine = {
+  link: AgentViewLink
+  detail: string
+}
+
+const PDF_TAB_LABELS: Record<string, string> = {
+  w2s: 'W-2 (PDF)',
+  '1099-divs': '1099-DIV (PDF)',
+  '1099-ints': '1099-INT (PDF)',
+  '1099-rs': '1099-R (PDF)',
+  '1099-necs': '1099-NEC (PDF)',
+  questionnaire: 'Questionnaire',
+}
+
+/** Rich-link chip label for fix-result rows (Figma "W-2 (PDF)" style). */
+export function formatFixResultLinkLabel(link: AgentViewLink): string {
+  if (link.tab && PDF_TAB_LABELS[link.tab]) return PDF_TAB_LABELS[link.tab]
+  if (link.formId === 'f2210') return 'Form 2210'
+  if (link.formId === '1040') return 'Form 1040'
+  if (link.schAInterest) return 'Form 1098 (PDF)'
+  if (link.formId) return formatFormViewLabel(link.formId)
+  return stripViewLinkPrefix(link.label)
+}
+
+function formatMismatchFixDetail(gap: ReturnType<typeof getOutstandingImportMismatches>[number]): string {
+  switch (gap.id) {
+    case 'wages':
+      return `Box 1 wages corrected (${gap.returnValue} → ${gap.sourceValue})`
+    case 'qualifiedDivs':
+      return 'Box 1b qualified dividends corrected to match source'
+    case 'divWithholding':
+      return 'Box 1b dividends and Box 4 withholding updated'
+    case 'taxablePension':
+      return 'Box 2a taxable amount and Box 4 withholding restored'
+    case 'rWithholding':
+      return `Box 4 federal withholding restored (${gap.sourceValue})`
+    case 'necIncome':
+      return `Box 1 nonemployee comp added (${gap.sourceValue})`
+    default:
+      return 'Corrected to match source document'
+  }
+}
+
+/** Per-source detail rows for the fixes progress card (built before applying the patch). */
+export function buildFixDetailLines(
+  issueKey: Phase2IssueKey,
+  amounts: LiveAmounts,
+): AgentFixDetailLine[] {
+  switch (issueKey) {
+    case 'importMismatches':
+      return getOutstandingImportMismatches(amounts).map(gap => ({
+        link: {
+          label: formatImportMismatchViewLabel(gap),
+          tab: gap.tab,
+          field: gap.field,
+        },
+        detail: formatMismatchFixDetail(gap),
+      }))
+    case 'underpaymentRisk':
+      return [
+        {
+          link: { label: '1099-R Meridian', tab: '1099-rs', field: 'withholding1099' },
+          detail: `Box 4 federal withholding restored ($${SOURCE_AMOUNTS.rWithholding.toLocaleString()})`,
+        },
+        {
+          link: { label: 'Form 2210', formId: 'f2210', diagnostic: 'underpaymentRisk' },
+          detail: 'Underpayment penalty calculated ($40,826 shortfall)',
+        },
+        {
+          link: { label: 'Form 1040', formId: '1040', diagnostic: 'underpaymentRisk' },
+          detail: 'Updated withholding on lines 25a/25b',
+        },
+      ]
+    case 'optItemize':
+      return [
+        {
+          link: { schAInterest: true, label: 'Schedule A inputs', field: 'mortgage1098' },
+          detail: 'Mortgage interest deduction applied',
+        },
+      ]
+    case 'qualifiedDivClassification':
+      return [
+        {
+          link: { label: '1099-DIV Token', tab: '1099-divs', field: 'qualifiedDivs' },
+          detail: 'Box 1b qualified dividends reclassified to match source',
+        },
+      ]
+    case 'necScheduleC':
+      return [
+        {
+          link: { label: '1099-NEC Summit', tab: '1099-necs', field: 'nec-box1' },
+          detail: `Box 1 nonemployee comp added ($${NEC_SOURCE_AMOUNT.toLocaleString()})`,
+        },
+      ]
+    default:
+      return []
+  }
+}
+
 const FORM_VIEW_LABELS: Record<string, string> = {
   '1040': 'Form 1040',
   schA: 'Schedule A',
@@ -192,6 +291,7 @@ export type AgentFixPlanItem = {
   fixSummary: string
   amountPatch: Partial<LiveAmounts>
   viewLinks: AgentViewLink[]
+  fixDetailLines: AgentFixDetailLine[]
 }
 
 /** Hash URL for embedding evidence in the in-app panel (iframe). */
@@ -353,6 +453,7 @@ export function buildAgentFixPlan(ctx: DiagnosticSyncContext): AgentFixPlanItem[
       fixSummary: issue?.suggestedActions[0] ?? `Resolved ${title.toLowerCase()}.`,
       amountPatch,
       viewLinks: issue ? buildViewLinksForIssue(issue, amounts) : [],
+      fixDetailLines: buildFixDetailLines(key, amounts),
     }
   })
 }
