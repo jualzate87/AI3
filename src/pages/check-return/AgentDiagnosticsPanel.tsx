@@ -667,7 +667,6 @@ export default function AgentDiagnosticsPanel() {
   }, [appendThread, diagnosisIssueCount])
 
   const collapseDiagnosisCards = phase !== 'ready'
-  const showCompletionActions = phase === 'complete'
 
   return (
     <div className={styles.panel}>
@@ -830,45 +829,6 @@ export default function AgentDiagnosticsPanel() {
 
           <div className={styles.composerArea}>
             <div className={styles.composerInner}>
-              <div className={styles.quickActions} role="toolbar" aria-label="Quick actions">
-                {showCompletionActions && (
-                  <>
-                    <button
-                      type="button"
-                      className={styles.quickChip}
-                      onClick={() =>
-                        openAgentViewLinkInWindow({
-                          label: 'Updated return',
-                          formId: '1040',
-                        })
-                      }
-                    >
-                      Updated return
-                      <NewWindow size="small" className={styles.quickChipIcon} aria-hidden />
-                    </button>
-                    <SourceLinkChip link={SOURCE_DOCUMENTS_VIEW_LINK} />
-                  </>
-                )}
-                {phase === 'awaiting-next' && openCount > 0 && (
-                  <button type="button" className={styles.quickChip} onClick={handleFixNext}>
-                    Fix next issue
-                  </button>
-                )}
-                {(phase === 'ready' || phase === 'awaiting-next') && openCount > 0 && (
-                  <>
-                    <button type="button" className={styles.quickChip} onClick={handleFixAll}>
-                      Accept all fixes
-                    </button>
-                    <button
-                      type="button"
-                      className={styles.quickChip}
-                      onClick={() => handleFixOne()}
-                    >
-                      Fix each issue individually
-                    </button>
-                  </>
-                )}
-              </div>
               <div className={styles.composerBox}>
                 <textarea
                   className={styles.composerInput}

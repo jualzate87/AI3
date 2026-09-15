@@ -1137,8 +1137,7 @@
   gap: var(--space-small, 12px);
 }
 
-.actionChipIcon,
-.quickChipIcon {
+.actionChipIcon {
   flex-shrink: 0;
   width: 1em;
   height: 1em;
@@ -1580,36 +1579,6 @@
   font-size: var(--font-size-component-small, 14px);
   font-weight: var(--font-weight-component, 400);
   color: var(--color-text-primary, #393a3d);
-}
-
-/* ── Quick action chips above composer ── */
-.quickActions {
-  display: flex;
-  flex-wrap: wrap;
-  gap: var(--space-component-gap-small, 8px);
-  width: 100%;
-}
-
-.quickChip {
-  display: inline-flex;
-  align-items: center;
-  gap: var(--space-component-gap-x-small, 4px);
-  padding: var(--space-component-stack-padding-x-small, 4px)
-    var(--space-component-inline-padding-large, 12px);
-  border: 1px solid var(--color-divider-tertiary, #d4d7dc);
-  border-radius: 9999px;
-  background: var(--color-container-background-primary, #ffffff);
-  font-family: var(--font-family-component);
-  font-size: var(--font-size-component-small, 14px);
-  font-weight: var(--font-weight-component, 400);
-  color: var(--color-text-primary, #393a3d);
-  cursor: pointer;
-  white-space: nowrap;
-}
-
-.quickChip:hover {
-  background: var(--color-action-passive-subtle, rgba(57, 58, 61, 0.05));
-  border-color: var(--color-container-border-secondary, #babec5);
 }
 
 @media (max-width: 960px) {
