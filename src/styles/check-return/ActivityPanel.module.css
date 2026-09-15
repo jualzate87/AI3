@@ -436,13 +436,11 @@
 .entryTypeBadge {
   display: inline-flex;
   align-items: center;
+  flex-shrink: 0;
   font-size: inherit;
-  font-weight: var(--font-weight-component-bold, 600);
-  letter-spacing: 0.02em;
-  text-transform: uppercase;
+  font-weight: var(--font-weight-component-semibold, 600);
   padding: 2px 8px;
   border-radius: var(--radius-medium, 8px);
-  border: 1px solid transparent;
   white-space: nowrap;
   color: var(--color-text-inverse, #ffffff);
   background: var(--activity-badge-bg, var(--color-text-tertiary));
