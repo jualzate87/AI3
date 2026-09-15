@@ -287,6 +287,43 @@ function getFixOutcomeLabel(issueKey: Phase2IssueKey): string {
   }
 }
 
+/** Combined stepper for fix-all — one Response generation block instead of one per issue. */
+export function buildBatchThinkingSteps(items: AgentFixPlanItem[]): AgentThinkingStep[] {
+  if (items.length === 0) return []
+  if (items.length === 1) return items[0].thinkingSteps
+
+  const steps: AgentThinkingStep[] = [
+    {
+      title: 'Review all diagnostics',
+      description: `Analyzing ${items.length} open issues across source documents, questionnaire answers, and return inputs before applying coordinated fixes.`,
+    },
+  ]
+
+  items.forEach((item, index) => {
+    const issueSteps = item.thinkingSteps.filter(step => step.title !== 'Context assessment')
+    issueSteps.forEach((step, stepIndex) => {
+      const isApply = step.title === 'Apply corrections'
+      steps.push({
+        title: isApply ? `Apply fix ${index + 1} of ${items.length}` : step.title,
+        description: isApply
+          ? `${step.description} (${item.title})`
+          : `${step.description} — ${item.title}`,
+      })
+      if (stepIndex === 0 && issueSteps.length > 1) {
+        steps[steps.length - 1].title = `Analyze: ${item.title}`
+      }
+    })
+  })
+
+  steps.push({
+    title: 'Recalculate and verify',
+    description:
+      'Updating linked forms, recalculating tax totals, and confirming all diagnostics are cleared on the return.',
+  })
+
+  return steps
+}
+
 function buildThinkingSteps(issueKey: Phase2IssueKey, summary?: string): AgentThinkingStep[] {
   const contextDescription =
     summary ??

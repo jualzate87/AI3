@@ -88,6 +88,59 @@
   width: 100%;
 }
 
+/* Accordion list container — Figma node 34556:29506 */
+.accordionList {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  border: 1px solid var(--color-container-border-primary, #d4d7dc);
+  border-radius: var(--radius-small, 4px);
+  overflow: hidden;
+  background: var(--color-container-background-primary, #ffffff);
+}
+
+.welcomeBlock {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-component-gap-medium, 12px);
+  width: 100%;
+}
+
+.sparkleRow {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--space-component-gap-medium, 12px);
+  width: 100%;
+}
+
+.sparkleAvatar {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  flex-shrink: 0;
+}
+
+.sparkleAvatarIcon {
+  width: 16px;
+  height: 16px;
+}
+
+.thinkingRow {
+  width: 100%;
+}
+
+.generationSparkle {
+  flex-shrink: 0;
+  color: var(--color-action-standard, #236cff);
+}
+
+.stepperSparkle {
+  flex-shrink: 0;
+  color: var(--color-action-standard, #236cff);
+}
+
 .responsePillsEnd {
   justify-content: flex-end;
 }
@@ -828,7 +881,6 @@
   flex-direction: column;
   gap: var(--space-component-gap-small, 10px);
   width: 100%;
-  max-width: 516px;
   padding: 18px var(--space-container-padding-medium, 20px);
   border: 1px solid var(--color-divider-tertiary, #d4d7dc);
   border-radius: var(--radius-large, 12px);
@@ -1175,17 +1227,30 @@
   height: 36px;
   border-radius: 9999px;
   border: none;
-  background: var(--color-action-passive, #e3e5e8);
+  background: var(--color-action-passive);
   cursor: default;
   flex-shrink: 0;
-  color: var(--color-text-disabled, #6b6c72);
+  color: var(--color-icon-disabled, var(--color-text-disabled));
   padding: 0;
+  transition:
+    background-color var(--duration-quick, 0.15s) ease,
+    color var(--duration-quick, 0.15s) ease;
 }
 
 .sendBtnActive {
-  background: var(--color-action-standard, #205ea3);
+  background: var(--color-container-background-inverse);
   cursor: pointer;
-  color: var(--color-text-inverse, #ffffff);
+  color: var(--color-text-inverse);
+}
+
+.sendBtnActive:hover:not(:disabled) {
+  background: var(--color-text-primary);
+}
+
+.sendBtn:focus-visible,
+.sendBtnActive:focus-visible {
+  outline: 2px solid var(--color-action-standard-focus, var(--color-action-standard));
+  outline-offset: 2px;
 }
 
 .sendBtn:disabled {

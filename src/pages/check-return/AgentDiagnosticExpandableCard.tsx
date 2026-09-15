@@ -1,6 +1,6 @@
-import { useEffect, useState } from 'react'
+import { useState } from 'react'
 import { ChevronDown, ChevronUp } from '@design-systems/icons'
-import { Badge } from '@ids-ts/badge'
+import { Badge, InfoBadgeIcon } from '@ids-ts/badge'
 import '@ids-ts/badge/dist/main.css'
 import { Button } from '@ids-ts/button'
 import '@ids-ts/button/dist/main.css'
@@ -8,7 +8,7 @@ import { Checkbox } from '@ids-ts/checkbox'
 import '@ids-ts/checkbox/dist/main.css'
 import { LinkActionButton } from '@ids-ts/link-action-button'
 import '@ids-ts/link-action-button/dist/main.css'
-import intuitIntelligenceLogo from '../../assets/icons/intuit-intelligence-logo-small.svg'
+import sparklesIcon from '../../assets/icons/sparkles.svg'
 import type { AgentReviewCardModel } from '../../lib/agentDiagnosisReview'
 import type { AgentViewLink } from '../../lib/agentAutoFix'
 import type { Phase2IssueKey } from '../data-review/phase2FlagSync'
@@ -16,20 +16,25 @@ import styles from '../../styles/check-return/AgentDiagnosticExpandableCard.modu
 
 type Props = {
   card: AgentReviewCardModel
-  defaultExpanded?: boolean
-  /** When true, collapse the card (e.g. after the user starts a fix run). */
-  forceCollapsed?: boolean
+  /** Controlled expanded state (accordion parent owns this). */
+  expanded: boolean
+  onExpandedChange: (expanded: boolean) => void
   canFix?: boolean
   onFix?: (issueKey: Phase2IssueKey) => void
   onOpenEvidence: (link: AgentViewLink) => void
+  /** When true, card is in a stacked accordion list (shared container styling). */
+  inAccordionList?: boolean
+  /** First/last item in accordion list for corner radius. */
+  accordionPosition?: 'first' | 'middle' | 'last' | 'only'
 }
 
 function badgeStatusForCard(
   card: AgentReviewCardModel,
-): 'warning' | 'success' | 'info' {
+): 'warning' | 'success' | 'info' | 'pending' {
   if (card.badgeStatus === 'success') return 'success'
   if (card.badgeStatus === 'info') return 'info'
-  if (card.variant === 'needs-review') return 'info'
+  if (card.badgeStatus === 'pending') return 'pending'
+  if (card.variant === 'needs-review') return 'pending'
   return 'warning'
 }
 
@@ -39,22 +44,28 @@ function isImportLayout(headers: string[]): boolean {
 
 export default function AgentDiagnosticExpandableCard({
   card,
-  defaultExpanded = true,
-  forceCollapsed = false,
+  expanded,
+  onExpandedChange,
   canFix = false,
   onFix,
   onOpenEvidence,
+  inAccordionList = false,
+  accordionPosition = 'only',
 }: Props) {
-  const [expanded, setExpanded] = useState(defaultExpanded)
-
-  useEffect(() => {
-    if (forceCollapsed) setExpanded(false)
-  }, [forceCollapsed])
   const [checkedIds, setCheckedIds] = useState<Set<string>>(new Set())
 
   const importLayout = isImportLayout(card.tableHeaders)
   const visibleHeaders = card.tableHeaders.map(h => (h.length > 0 ? h : 'Action'))
   const tableLayoutClass = importLayout ? styles.tableLayoutImport : styles.tableLayoutStandard
+
+  const accordionPosClass =
+    inAccordionList && accordionPosition === 'first'
+      ? styles.accordionItemFirst
+      : inAccordionList && accordionPosition === 'middle'
+        ? styles.accordionItemMiddle
+        : inAccordionList && accordionPosition === 'last'
+          ? styles.accordionItemLast
+          : ''
 
   const toggleCheck = (id: string) => {
     setCheckedIds(prev => {
@@ -66,11 +77,15 @@ export default function AgentDiagnosticExpandableCard({
   }
 
   return (
-    <article className={styles.card} data-variant={card.variant}>
+    <article
+      className={`${styles.card} ${inAccordionList ? styles.cardInList : ''} ${accordionPosClass}`}
+      data-variant={card.variant}
+      data-expanded={expanded ? 'true' : 'false'}
+    >
       <button
         type="button"
         className={styles.cardHeaderBtn}
-        onClick={() => setExpanded(open => !open)}
+        onClick={() => onExpandedChange(!expanded)}
         aria-expanded={expanded}
       >
         <div className={styles.cardHeaderMain}>
@@ -86,10 +101,12 @@ export default function AgentDiagnosticExpandableCard({
             )}
             <Badge
               status={badgeStatusForCard(card)}
-              label={card.badgeLabel}
-              capitalization="caps"
-              priority="primary"
-            />
+              priority={card.badgePriority}
+              capitalization={card.badgeCapitalization}
+              icon={card.showBadgeIcon ? InfoBadgeIcon : undefined}
+            >
+              {card.badgeLabel}
+            </Badge>
           </div>
           {!expanded && <p className={styles.cardSummary}>{card.summary}</p>}
         </div>
@@ -179,12 +196,7 @@ export default function AgentDiagnosticExpandableCard({
           {card.suggestedActions && card.suggestedActions.length > 0 && card.variant !== 'verified' && (
             <div className={styles.suggestedFix}>
               <div className={styles.suggestedFixHeader}>
-                <img
-                  src={intuitIntelligenceLogo}
-                  alt=""
-                  className={styles.suggestedFixIcon}
-                  aria-hidden
-                />
+                <img src={sparklesIcon} alt="" className={styles.suggestedFixIcon} aria-hidden />
                 <span className={styles.suggestedFixTitle}>
                   {card.variant === 'needs-review' ? 'Suggested next steps' : 'Suggested fix'}
                 </span>

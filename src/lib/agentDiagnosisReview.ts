@@ -19,13 +19,19 @@ export type AgentReviewTableRow = {
   checklist?: boolean
 }
 
+export type AgentReviewBadgePriority = 'primary' | 'secondary'
+
 export type AgentReviewCardModel = {
   id: string
   variant: 'issue' | 'verified' | 'needs-review'
   title: string
   metaSubtitle?: string
   badgeLabel: string
-  badgeStatus: 'warning' | 'success' | 'info' | 'neutral'
+  badgeStatus: 'warning' | 'success' | 'info' | 'pending' | 'neutral'
+  badgePriority: AgentReviewBadgePriority
+  badgeCapitalization: 'caps' | 'sentence'
+  /** When true, render InfoBadgeIcon alongside text badge (Figma issue severity badges). */
+  showBadgeIcon?: boolean
   summary: string
   rootCause?: string
   tableHeaders: string[]
@@ -33,6 +39,55 @@ export type AgentReviewCardModel = {
   suggestedActions?: string[]
   suggestedActionLinks?: AgentViewLink[]
   issueKey?: Phase2IssueKey
+}
+
+function badgeMetaForIssue(issue: DiagnosticIssueCard): Pick<
+  AgentReviewCardModel,
+  'badgeLabel' | 'badgeStatus' | 'badgePriority' | 'badgeCapitalization' | 'showBadgeIcon'
+> {
+  if (issue.issueKey === 'importMismatches' || issue.issueKey === 'qualifiedDivClassification') {
+    return {
+      badgeLabel: 'IMPORT MISMATCHES',
+      badgeStatus: 'warning',
+      badgePriority: 'primary',
+      badgeCapitalization: 'caps',
+      showBadgeIcon: true,
+    }
+  }
+  if (issue.issueKey === 'underpaymentRisk') {
+    return {
+      badgeLabel: 'DEDUCTIONS',
+      badgeStatus: 'info',
+      badgePriority: 'secondary',
+      badgeCapitalization: 'caps',
+      showBadgeIcon: true,
+    }
+  }
+  if (issue.category === 'Compliance') {
+    return {
+      badgeLabel: 'COMPLIANCE CHECK',
+      badgeStatus: 'warning',
+      badgePriority: 'primary',
+      badgeCapitalization: 'caps',
+      showBadgeIcon: true,
+    }
+  }
+  if (issue.category === 'Planning opportunities') {
+    return {
+      badgeLabel: 'OPTIMIZATION',
+      badgeStatus: 'info',
+      badgePriority: 'secondary',
+      badgeCapitalization: 'caps',
+      showBadgeIcon: true,
+    }
+  }
+  return {
+    badgeLabel: 'DIAGNOSTIC',
+    badgeStatus: 'warning',
+    badgePriority: 'primary',
+    badgeCapitalization: 'caps',
+    showBadgeIcon: true,
+  }
 }
 
 export function buildViewLinkFromDiagnosticRow(
@@ -83,26 +138,14 @@ export function issueCardToReviewModel(issue: DiagnosticIssueCard): AgentReviewC
     viewLink: buildViewLinkFromDiagnosticRow(issue, row) ?? undefined,
   }))
 
-  let badgeLabel = 'DIAGNOSTIC'
-  let badgeStatus: AgentReviewCardModel['badgeStatus'] = 'warning'
-  if (issue.category === 'Import accuracy') {
-    badgeLabel = 'IMPORT MISMATCHES'
-    badgeStatus = 'warning'
-  } else if (issue.category === 'Compliance') {
-    badgeLabel = 'COMPLIANCE CHECK'
-    badgeStatus = 'warning'
-  } else if (issue.category === 'Planning opportunities') {
-    badgeLabel = 'OPTIMIZATION'
-    badgeStatus = 'info'
-  }
+  const badge = badgeMetaForIssue(issue)
 
   return {
     id: issue.issueKey,
     variant: 'issue',
     title: stripTaxImpactFromTitle(issue.title),
     metaSubtitle: undefined,
-    badgeLabel,
-    badgeStatus,
+    ...badge,
     summary: issue.summary,
     rootCause: issue.rootCause,
     tableHeaders: issue.tableHeaders,
@@ -153,6 +196,9 @@ export function buildVerifiedReviewCard(ctx: DiagnosticSyncContext): AgentReview
     metaSubtitle: '8 areas verified',
     badgeLabel: 'VERIFIED',
     badgeStatus: 'success',
+    badgePriority: 'primary',
+    badgeCapitalization: 'caps',
+    showBadgeIcon: false,
     summary:
       'These inputs matched source documents, prior-year patterns, or compliance rules. I did not flag them because nothing needs to change on the return.',
     rootCause:
@@ -219,7 +265,10 @@ export function buildNeedsUserReviewCard(_ctx: DiagnosticSyncContext): AgentRevi
     title: 'Needs your review',
     metaSubtitle: '5 items · checklist',
     badgeLabel: 'YOUR REVIEW',
-    badgeStatus: 'neutral',
+    badgeStatus: 'pending',
+    badgePriority: 'secondary',
+    badgeCapitalization: 'caps',
+    showBadgeIcon: false,
     summary:
       'I could not confirm these from the packet alone. Work through the checklist with Jordan before sign-off — none of these will auto-fix.',
     rootCause:

@@ -8,27 +8,29 @@ import {
   type ReactNode,
 } from 'react'
 import {
+  AiSparkles,
   ChevronDown,
   ChevronUp,
-  CircleCheck,
   Close,
   Plus,
   Send,
   StopFill,
   Upload,
 } from '@design-systems/icons'
-import { Badge } from '@ids-ts/badge'
+import { Badge, SuccessBadgeIcon } from '@ids-ts/badge'
 import '@ids-ts/badge/dist/main.css'
 import { Button } from '@ids-ts/button'
 import '@ids-ts/button/dist/main.css'
 import { Link } from '@ids-ts/link'
 import '@ids-ts/link/dist/main.css'
 import intuitIntelligenceLogo from '../../assets/icons/intuit-intelligence-logo-small.svg'
+import sparklesIcon from '../../assets/icons/sparkles.svg'
 import { computeLiveReturn } from '../../data/liveReturn'
 import { useSyncedReviewState } from '../../hooks/useSyncedReviewState'
 import {
   buildAgentFixPlan,
   buildAgentViewLinkUrl,
+  buildBatchThinkingSteps,
   getAgentFixContext,
   openAgentViewLinkInWindow,
   type AgentFixPlanItem,
@@ -80,6 +82,7 @@ type ThreadEntry =
 const AGENT_VISIT_SESSION_KEY = 'protoc3-agent-visit-active'
 
 const STEP_MS = 900
+const BATCH_STEP_MS = 1300
 const ISSUE_GAP_MS = 400
 
 let threadEntryCounter = 0
@@ -127,9 +130,22 @@ function AgentEvidencePanel({
   )
 }
 
-function AgentAvatar() {
+/** Sparkle avatar — secondary agent attribution (Figma "Intuit AI Sparkle"). */
+function SparkleAvatar() {
   return (
-    <img src={intuitIntelligenceLogo} alt="" className={styles.agentAvatar} aria-hidden />
+    <span className={styles.sparkleAvatar} aria-hidden>
+      <img src={sparklesIcon} alt="" className={styles.sparkleAvatarIcon} />
+    </span>
+  )
+}
+
+/** Row with sparkle avatar for follow-up / completed agent messages. */
+function AgentSparkleRow({ children }: { children: ReactNode }) {
+  return (
+    <div className={styles.sparkleRow}>
+      <SparkleAvatar />
+      <div className={styles.messageColumn}>{children}</div>
+    </div>
   )
 }
 
@@ -196,12 +212,9 @@ function FixProgressSummaryCard({
           <li key={item.outcomeLabel} className={styles.fixProgressItem}>
             <div className={styles.fixProgressItemHeader}>
               <span className={styles.fixProgressItemLabel}>{item.outcomeLabel}</span>
-              <Badge
-                status="success"
-                label="Fixed"
-                capitalization="sentence"
-                priority="secondary"
-              />
+              <Badge status="success" label="Fixed" shape="round" aria-label="Fixed">
+                <SuccessBadgeIcon />
+              </Badge>
             </div>
             {item.viewLinks.length > 0 && (
               <div className={styles.sourceLinkRow}>
@@ -221,7 +234,7 @@ function ReminderCard() {
   return (
     <div className={styles.reminderCard}>
       <div className={styles.reminderHeader}>
-        <img src={intuitIntelligenceLogo} alt="" className={styles.reminderIcon} aria-hidden />
+        <img src={sparklesIcon} alt="" className={styles.reminderIcon} aria-hidden />
         <span className={styles.reminderTitle}>Reminder</span>
       </div>
       <p className={styles.reminderBody}>
@@ -256,6 +269,24 @@ function InitialDiagnosisFeed({
     return buildAgentReviewModels(syncCtx, issues, { forDisplay: true })
   }, [syncCtx])
 
+  const defaultExpandedId = useMemo(() => {
+    const firstIssue = reviewCards.find(c => c.variant === 'issue')
+    return firstIssue?.id ?? reviewCards[0]?.id ?? null
+  }, [reviewCards])
+
+  const [expandedCardId, setExpandedCardId] = useState<string | null>(defaultExpandedId)
+
+  useEffect(() => {
+    if (collapseCards) {
+      setExpandedCardId(null)
+      return
+    }
+    setExpandedCardId(prev => {
+      if (prev && reviewCards.some(c => c.id === prev)) return prev
+      return defaultExpandedId
+    })
+  }, [collapseCards, defaultExpandedId, reviewCards])
+
   const showClearOnly =
     phase === 'complete' &&
     activeIssueKeys.length === 0 &&
@@ -264,7 +295,9 @@ function InitialDiagnosisFeed({
   if (showClearOnly) {
     return (
       <div className={styles.diagnosisCard}>
-        <Badge status="success" label="Clear" capitalization="sentence" priority="secondary" />
+        <Badge status="success" capitalization="sentence" priority="secondary">
+          Clear
+        </Badge>
         <p className={styles.diagnosisEmpty}>
           No open diagnostics on this return. You are ready to sign off.
         </p>
@@ -272,28 +305,34 @@ function InitialDiagnosisFeed({
     )
   }
 
+  const handleToggle = (cardId: string, nextExpanded: boolean) => {
+    setExpandedCardId(nextExpanded ? cardId : null)
+  }
+
   return (
     <div className={styles.diagnosisFeed}>
       <div className={styles.diagnosticsFoundRow}>
-        <AgentAvatar />
+        <SparkleAvatar />
         <span className={styles.diagnosticsFoundLabel}>Diagnostics found</span>
       </div>
-      <div className={styles.diagnosisCardStack}>
+      <div className={styles.diagnosisCardStack} role="list" aria-label="Diagnostic accordion">
         {reviewCards.map(card => (
-          <AgentDiagnosticExpandableCard
-            key={card.id}
-            card={card}
-            defaultExpanded={card.variant === 'issue' && !collapseCards}
-            forceCollapsed={collapseCards}
-            canFix={
-              canFixActions &&
-              card.variant === 'issue' &&
-              !!card.issueKey &&
-              fixableKeys.has(card.issueKey)
-            }
-            onFix={onFixIssueKey}
-            onOpenEvidence={onOpenEvidence}
-          />
+            <AgentDiagnosticExpandableCard
+              key={card.id}
+              card={card}
+              expanded={!collapseCards && expandedCardId === card.id}
+              onExpandedChange={next =>
+                handleToggle(card.id, next)
+              }
+              canFix={
+                canFixActions &&
+                card.variant === 'issue' &&
+                !!card.issueKey &&
+                fixableKeys.has(card.issueKey)
+              }
+              onFix={onFixIssueKey}
+              onOpenEvidence={onOpenEvidence}
+            />
         ))}
       </div>
     </div>
@@ -319,7 +358,12 @@ function ThinkingBlock({
         onClick={() => setExpanded(open => !open)}
         aria-expanded={expanded}
       >
-        <img src={intuitIntelligenceLogo} alt="" className={styles.generationIcon} aria-hidden />
+        {!isComplete && (
+          <img src={intuitIntelligenceLogo} alt="" className={styles.generationIcon} aria-hidden />
+        )}
+        {isComplete && expanded && (
+          <AiSparkles size="small" className={styles.generationSparkle} aria-hidden />
+        )}
         <span
           className={`${styles.generationTitle} ${isComplete && !expanded ? styles.generationTitleMuted : ''}`}
         >
@@ -347,7 +391,7 @@ function ThinkingBlock({
               >
                 <span className={styles.stepperRail} aria-hidden>
                   {isDone ? (
-                    <CircleCheck size="small" color="var(--color-action-standard)" />
+                    <AiSparkles size="small" className={styles.stepperSparkle} />
                   ) : (
                     <span className={styles.stepperDot} />
                   )}
@@ -450,19 +494,19 @@ export default function AgentDiagnosticsPanel() {
 
       const batchFixed: FixedItemSummary[] = []
 
-      for (let i = 0; i < items.length; i++) {
-        const item = items[i]
+      if (isBatch) {
+        const batchSteps = buildBatchThinkingSteps(items)
         const thinkingId = nextThreadEntryId()
         appendThread({
           id: thinkingId,
           kind: 'thinking',
-          issueTitle: item.title,
-          steps: item.thinkingSteps,
+          issueTitle: `${items.length} diagnostics`,
+          steps: batchSteps,
           activeStep: 0,
         })
 
-        for (let s = 0; s < item.thinkingSteps.length; s++) {
-          await new Promise(r => setTimeout(r, STEP_MS))
+        for (let s = 0; s < batchSteps.length; s++) {
+          await new Promise(r => setTimeout(r, BATCH_STEP_MS))
           setThread(prev =>
             prev.map(entry =>
               entry.id === thinkingId && entry.kind === 'thinking'
@@ -472,25 +516,58 @@ export default function AgentDiagnosticsPanel() {
           )
         }
 
-        applyFixForIssue(item)
-        setProgressValue(progressStart + i + 1)
-
-        const fixedSummary: FixedItemSummary = {
-          outcomeLabel: item.outcomeLabel,
-          viewLinks: item.viewLinks,
-        }
-        batchFixed.push(fixedSummary)
-
-        if (!isBatch && openBefore > 1) {
-          appendThread({
-            kind: 'fixed',
+        for (let i = 0; i < items.length; i++) {
+          const item = items[i]
+          applyFixForIssue(item)
+          setProgressValue(progressStart + i + 1)
+          batchFixed.push({
             outcomeLabel: item.outcomeLabel,
-            summary: item.fixSummary,
             viewLinks: item.viewLinks,
           })
         }
+      } else {
+        for (let i = 0; i < items.length; i++) {
+          const item = items[i]
+          const thinkingId = nextThreadEntryId()
+          appendThread({
+            id: thinkingId,
+            kind: 'thinking',
+            issueTitle: item.title,
+            steps: item.thinkingSteps,
+            activeStep: 0,
+          })
 
-        await new Promise(r => setTimeout(r, ISSUE_GAP_MS))
+          for (let s = 0; s < item.thinkingSteps.length; s++) {
+            await new Promise(r => setTimeout(r, STEP_MS))
+            setThread(prev =>
+              prev.map(entry =>
+                entry.id === thinkingId && entry.kind === 'thinking'
+                  ? { ...entry, activeStep: s + 1 }
+                  : entry,
+              ),
+            )
+          }
+
+          applyFixForIssue(item)
+          setProgressValue(progressStart + i + 1)
+
+          const fixedSummary: FixedItemSummary = {
+            outcomeLabel: item.outcomeLabel,
+            viewLinks: item.viewLinks,
+          }
+          batchFixed.push(fixedSummary)
+
+          if (openBefore > 1) {
+            appendThread({
+              kind: 'fixed',
+              outcomeLabel: item.outcomeLabel,
+              summary: item.fixSummary,
+              viewLinks: item.viewLinks,
+            })
+          }
+
+          await new Promise(r => setTimeout(r, ISSUE_GAP_MS))
+        }
       }
 
       runRef.current = false
@@ -628,142 +705,126 @@ export default function AgentDiagnosticsPanel() {
                   )
                 }
                 if (entry.kind === 'agent') {
-                  return (
-                    <div key={entry.id} className={styles.agentRow}>
-                      <AgentAvatar />
-                      <div className={styles.messageColumn}>
-                        {entry.isWelcome && (
-                          <header className={styles.welcomeBrandRow}>
-                            <img
-                              src={intuitIntelligenceLogo}
-                              alt=""
-                              className={styles.brandLogo}
-                              aria-hidden
-                            />
-                            <span className={styles.welcomeBrandTitle}>
-                              Return review by Intuit Intelligence
-                            </span>
-                          </header>
-                        )}
-                        {entry.heading && !entry.isWelcome && (
-                          <h2 className={styles.agentHeading}>{entry.heading}</h2>
-                        )}
-                        <p className={`${styles.agentBody} ${entry.isWelcome ? styles.agentBodyPreWrap : ''}`}>
+                  if (entry.isWelcome) {
+                    return (
+                      <div key={entry.id} className={styles.welcomeBlock}>
+                        <header className={styles.welcomeBrandRow}>
+                          <img
+                            src={intuitIntelligenceLogo}
+                            alt=""
+                            className={styles.brandLogo}
+                            aria-hidden
+                          />
+                          <span className={styles.welcomeBrandTitle}>
+                            Return review by Intuit Intelligence
+                          </span>
+                        </header>
+                        <p className={`${styles.agentBody} ${styles.agentBodyPreWrap}`}>
                           {entry.text}
                         </p>
-
-                        {entry.isWelcome && (
-                          <>
-                            <InitialDiagnosisFeed
-                              syncCtx={syncCtx}
-                              phase={phase}
-                              fixPlan={fixPlan}
-                              collapseCards={collapseDiagnosisCards}
-                              onFixIssueKey={handleFixByIssueKey}
-                              onOpenEvidence={openEvidence}
-                            />
-                            {openCount > 0 && phase === 'ready' && (
-                              <div className={`${styles.responsePills} ${styles.responsePillsEnd}`}>
-                                <ActionChip onClick={handleFixAll}>Accept all fixes</ActionChip>
-                                <ActionChip onClick={() => handleFixOne()}>
-                                  Fix each issue individually
-                                </ActionChip>
-                              </div>
-                            )}
-                          </>
-                        )}
-
-                        {entry.showNextActions && entry.remainingCount != null && (
+                        <InitialDiagnosisFeed
+                          syncCtx={syncCtx}
+                          phase={phase}
+                          fixPlan={fixPlan}
+                          collapseCards={collapseDiagnosisCards}
+                          onFixIssueKey={handleFixByIssueKey}
+                          onOpenEvidence={openEvidence}
+                        />
+                        {openCount > 0 && phase === 'ready' && (
                           <div className={`${styles.responsePills} ${styles.responsePillsEnd}`}>
-                            <ActionChip onClick={handleFixNext}>Fix next issue</ActionChip>
-                            <ActionChip onClick={handleFixAll}>
-                              Fix all remaining ({entry.remainingCount})
+                            <ActionChip onClick={handleFixAll}>Accept all fixes</ActionChip>
+                            <ActionChip onClick={() => handleFixOne()}>
+                              Fix each issue individually
                             </ActionChip>
                           </div>
                         )}
                       </div>
-                    </div>
+                    )
+                  }
+                  return (
+                    <AgentSparkleRow key={entry.id}>
+                      {entry.heading && (
+                        <h2 className={styles.agentHeading}>{entry.heading}</h2>
+                      )}
+                      <p className={styles.agentBody}>{entry.text}</p>
+                      {entry.showNextActions && entry.remainingCount != null && (
+                        <div className={`${styles.responsePills} ${styles.responsePillsEnd}`}>
+                          <ActionChip onClick={handleFixNext}>Fix next issue</ActionChip>
+                          <ActionChip onClick={handleFixAll}>
+                            Fix all remaining ({entry.remainingCount})
+                          </ActionChip>
+                        </div>
+                      )}
+                    </AgentSparkleRow>
                   )
                 }
                 if (entry.kind === 'thinking') {
                   return (
-                    <div key={entry.id} className={styles.agentRow}>
-                      <AgentAvatar />
-                      <div className={styles.messageColumn}>
-                        <ThinkingBlock entry={entry} />
-                      </div>
+                    <div key={entry.id} className={styles.thinkingRow}>
+                      <ThinkingBlock entry={entry} />
                     </div>
                   )
                 }
                 if (entry.kind === 'fixed') {
                   return (
-                    <div key={entry.id} className={styles.agentRow}>
-                      <AgentAvatar />
-                      <div className={styles.messageColumn}>
-                        <div className={styles.fixedCard}>
-                          <div className={styles.fixedHeader}>
-                            <Badge
-                              status="success"
-                              label="Fixed"
-                              capitalization="sentence"
-                              priority="secondary"
-                            />
-                            <h3 className={styles.fixedTitle}>{entry.outcomeLabel}</h3>
-                          </div>
-                          <p className={styles.cardBody}>{entry.summary}</p>
-                          {entry.viewLinks.length > 0 && (
-                            <div className={styles.sourceLinkRow}>
-                              {entry.viewLinks.map(link => (
-                                <SourceLinkChip
-                                  key={link.label}
-                                  link={link}
-                                  onOpen={openEvidence}
-                                />
-                              ))}
-                            </div>
-                          )}
+                    <AgentSparkleRow key={entry.id}>
+                      <div className={styles.fixedCard}>
+                        <div className={styles.fixedHeader}>
+                          <Badge status="success" label="Fixed" shape="round" aria-label="Fixed">
+                            <SuccessBadgeIcon />
+                          </Badge>
+                          <h3 className={styles.fixedTitle}>{entry.outcomeLabel}</h3>
                         </div>
+                        <p className={styles.cardBody}>{entry.summary}</p>
+                        {entry.viewLinks.length > 0 && (
+                          <div className={styles.sourceLinkRow}>
+                            {entry.viewLinks.map(link => (
+                              <SourceLinkChip
+                                key={link.label}
+                                link={link}
+                                onOpen={openEvidence}
+                              />
+                            ))}
+                          </div>
+                        )}
                       </div>
-                    </div>
+                    </AgentSparkleRow>
                   )
                 }
                 if (entry.kind === 'complete-summary') {
                   return (
-                    <div key={entry.id} className={styles.agentRow}>
-                      <AgentAvatar />
-                      <div className={styles.messageColumn}>
-                        <p className={styles.agentBody}>{entry.introText}</p>
-                        <FixProgressSummaryCard
-                          fixedItems={entry.fixedItems}
-                          totalCount={entry.totalCount}
-                          onOpenEvidence={openEvidence}
-                        />
-                        <ReminderCard />
-                        <div className={`${styles.responsePills} ${styles.responsePillsEnd}`}>
-                          <ActionChip
-                            onClick={() =>
-                              openEvidence({ label: 'Updated return', formId: '1040' })
-                            }
-                          >
-                            View updated return
-                          </ActionChip>
-                          <ActionChip
-                            onClick={() =>
-                              openEvidence({ label: 'Source documents', tab: 'w2s', field: 'wages' })
-                            }
-                          >
-                            View source documents
-                          </ActionChip>
-                          <ActionChip
-                            onClick={() =>
-                              openReviewReturnPopout({ form: '1040' })
-                            }
-                          >
-                            View summary
-                          </ActionChip>
-                        </div>
+                    <AgentSparkleRow key={entry.id}>
+                      <p className={styles.agentBody}>{entry.introText}</p>
+                      <FixProgressSummaryCard
+                        fixedItems={entry.fixedItems}
+                        totalCount={entry.totalCount}
+                        onOpenEvidence={openEvidence}
+                      />
+                      <ReminderCard />
+                      <div className={`${styles.responsePills} ${styles.responsePillsEnd}`}>
+                        <ActionChip
+                          onClick={() =>
+                            openEvidence({ label: 'Updated return', formId: '1040' })
+                          }
+                        >
+                          View updated return
+                        </ActionChip>
+                        <ActionChip
+                          onClick={() =>
+                            openEvidence({ label: 'Source documents', tab: 'w2s', field: 'wages' })
+                          }
+                        >
+                          View source documents
+                        </ActionChip>
+                        <ActionChip
+                          onClick={() =>
+                            openReviewReturnPopout({ form: '1040' })
+                          }
+                        >
+                          View summary
+                        </ActionChip>
                       </div>
-                    </div>
+                    </AgentSparkleRow>
                   )
                 }
                 return null
