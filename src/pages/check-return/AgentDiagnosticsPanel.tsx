@@ -421,33 +421,8 @@ function InitialDiagnosisFeed({
   )
 }
 
-function formatOrdinal(n: number): string {
-  const mod100 = n % 100
-  const suffix =
-    mod100 >= 11 && mod100 <= 13
-      ? 'th'
-      : n % 10 === 1
-        ? 'st'
-        : n % 10 === 2
-          ? 'nd'
-          : n % 10 === 3
-            ? 'rd'
-            : 'th'
-  return `${n}${suffix}`
-}
-
-function getResolvedSectionLabel(
-  section: AgentThinkingSection,
-  sections: AgentThinkingSection[],
-): string {
-  const bookends = new Set(['Review all diagnostics', 'Recalculate and verify'])
-  if (bookends.has(section.title)) {
-    return `${section.title} complete`
-  }
-  const diagnosticSections = sections.filter(s => !bookends.has(s.title))
-  const idx = diagnosticSections.findIndex(s => s.title === section.title)
-  if (idx >= 0) return `${formatOrdinal(idx + 1)} diagnostic resolved`
-  return `${section.title} resolved`
+function getResolvedSectionLabel(section: AgentThinkingSection): string {
+  return section.resolvedLabel ?? `${section.title} fixed`
 }
 
 function StepperSteps({
@@ -492,14 +467,12 @@ function StepperSteps({
 
 function ThinkingSectionRow({
   section,
-  sections,
   entry,
   isComplete,
   expanded,
   onToggle,
 }: {
   section: AgentThinkingSection
-  sections: AgentThinkingSection[]
   entry: Extract<ThreadEntry, { kind: 'thinking' }>
   isComplete: boolean
   expanded: boolean
@@ -507,7 +480,7 @@ function ThinkingSectionRow({
 }) {
   const sectionComplete = entry.activeStep >= section.endStep || isComplete
   const sectionActive = !sectionComplete && entry.activeStep >= section.startStep
-  const resolvedLabel = getResolvedSectionLabel(section, sections)
+  const resolvedLabel = getResolvedSectionLabel(section)
   const sectionSteps = entry.steps.slice(section.startStep, section.endStep)
 
   if (sectionComplete) {
@@ -622,7 +595,6 @@ function ThinkingBlock({
               <ThinkingSectionRow
                 key={section.title}
                 section={section}
-                sections={sections}
                 entry={entry}
                 isComplete={isComplete}
                 expanded={expandedSections.has(section.title)}
@@ -1020,11 +992,7 @@ export default function AgentDiagnosticsPanel() {
                   )
                 }
                 if (entry.kind === 'thinking') {
-                  return (
-                    <AgentSparkleRow key={entry.id}>
-                      <ThinkingBlock entry={entry} />
-                    </AgentSparkleRow>
-                  )
+                  return <ThinkingBlock key={entry.id} entry={entry} />
                 }
                 if (entry.kind === 'fixed') {
                   return (
@@ -1050,8 +1018,8 @@ export default function AgentDiagnosticsPanel() {
                 }
                 if (entry.kind === 'complete-summary') {
                   return (
-                    <AgentSparkleRow key={entry.id}>
-                      <p className={styles.agentBody}>{entry.introText}</p>
+                    <div key={entry.id} className={styles.completionBlock}>
+                      <p className={styles.completionIntro}>{entry.introText}</p>
                       <FixProgressSummaryCard
                         fixedItems={entry.fixedItems}
                         totalCount={entry.totalCount}
@@ -1090,7 +1058,7 @@ export default function AgentDiagnosticsPanel() {
                           View summary
                         </OutcomeLink>
                       </nav>
-                    </AgentSparkleRow>
+                    </div>
                   )
                 }
                 return null

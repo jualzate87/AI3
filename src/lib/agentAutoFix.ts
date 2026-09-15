@@ -277,6 +277,14 @@ export type AgentThinkingSection = {
   title: string
   startStep: number
   endStep: number
+  /** Collapsed label once this sub-activity finishes (e.g. outcome label). */
+  resolvedLabel?: string
+}
+
+const MAX_STEPS_PER_SUBACTIVITY = 5
+
+function capThinkingSteps(steps: AgentThinkingStep[]): AgentThinkingStep[] {
+  return steps.slice(0, MAX_STEPS_PER_SUBACTIVITY)
 }
 
 export type AgentFixPlanItem = {
@@ -479,33 +487,15 @@ function getFixOutcomeLabel(issueKey: Phase2IssueKey): string {
   }
 }
 
-/** Combined stepper for fix-all — one Response generation block instead of one per issue. */
+/** Combined stepper for fix-all — one reasoning block with a sub-activity per diagnostic. */
 export function buildBatchThinkingSteps(items: AgentFixPlanItem[]): AgentThinkingStep[] {
   if (items.length === 0) return []
-  if (items.length === 1) return items[0].thinkingSteps
+  if (items.length === 1) return capThinkingSteps(items[0].thinkingSteps)
 
-  const steps: AgentThinkingStep[] = [
-    {
-      title: 'Review all diagnostics',
-      description: `Analyzing ${items.length} open issues across source documents, questionnaire answers, and return inputs before applying coordinated fixes.`,
-    },
-  ]
-
-  items.forEach((item, index) => {
-    const issueSteps = item.thinkingSteps.filter(step => step.title !== 'Context assessment')
-    issueSteps.forEach((step, stepIndex) => {
-      const isApply = step.title === 'Apply corrections'
-      steps.push({
-        title: isApply ? `Apply fix ${index + 1} of ${items.length}` : step.title,
-        description: isApply
-          ? `${step.description} (${item.title})`
-          : `${step.description} — ${item.title}`,
-      })
-      if (stepIndex === 0 && issueSteps.length > 1) {
-        steps[steps.length - 1].title = `Analyze: ${item.title}`
-      }
-    })
-  })
+  const steps: AgentThinkingStep[] = []
+  for (const item of items) {
+    steps.push(...capThinkingSteps(item.thinkingSteps))
+  }
 
   steps.push({
     title: 'Recalculate and verify',
@@ -520,22 +510,22 @@ export function buildBatchThinkingSteps(items: AgentFixPlanItem[]): AgentThinkin
 export function buildBatchThinkingSections(items: AgentFixPlanItem[]): AgentThinkingSection[] {
   if (items.length <= 1) return []
 
-  const sections: AgentThinkingSection[] = [
-    { title: 'Review all diagnostics', startStep: 0, endStep: 1 },
-  ]
-
-  let idx = 1
+  const sections: AgentThinkingSection[] = []
+  let idx = 0
   for (const item of items) {
+    const stepCount = capThinkingSteps(item.thinkingSteps).length
     sections.push({
       title: item.title,
+      resolvedLabel: item.outcomeLabel,
       startStep: idx,
-      endStep: idx + 2,
+      endStep: idx + stepCount,
     })
-    idx += 2
+    idx += stepCount
   }
 
   sections.push({
     title: 'Recalculate and verify',
+    resolvedLabel: 'Return recalculated and verified',
     startStep: idx,
     endStep: idx + 1,
   })
