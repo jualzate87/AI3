@@ -4,6 +4,7 @@ import {
   ChevronRight,
   ChevronUp,
   CircleCheck,
+  Close,
   Plus,
   Send,
   StopFill,
@@ -15,24 +16,21 @@ import { Button } from '@ids-ts/button'
 import '@ids-ts/button/dist/main.css'
 import { Link } from '@ids-ts/link'
 import '@ids-ts/link/dist/main.css'
-import { LinkActionButton } from '@ids-ts/link-action-button'
-import '@ids-ts/link-action-button/dist/main.css'
 import intuitIntelligenceLogo from '../../assets/icons/intuit-intelligence-logo-small.svg'
 import { computeLiveReturn } from '../../data/liveReturn'
 import { useSyncedReviewState } from '../../hooks/useSyncedReviewState'
-import { navigateToScheduleAInterestInput } from '../../lib/inputReturnNavigation'
 import {
   buildAgentFixPlan,
+  buildAgentViewLinkUrl,
   getAgentFixContext,
+  openAgentViewLinkInWindow,
   type AgentFixPlanItem,
   type AgentViewLink,
 } from '../../lib/agentAutoFix'
-import {
-  buildHashRouteUrl,
-  openReviewReturnPopout,
-  openSourceDocumentReviewPopout,
-  PREPARER_DATA_REVIEW_PATH,
-} from '../../lib/prototypeRoutes'
+import { buildAgentReviewModels } from '../../lib/agentDiagnosisReview'
+import { buildAllDiagnosticIssues } from '../data-review/AgentReportPane'
+import { openReviewReturnPopout, openSourceDocumentReviewPopout } from '../../lib/prototypeRoutes'
+import AgentDiagnosticExpandableCard from './AgentDiagnosticExpandableCard'
 import styles from '../../styles/check-return/AgentDiagnosticsPanel.module.css'
 
 type AgentPhase = 'ready' | 'running' | 'complete' | 'awaiting-next'
@@ -67,29 +65,43 @@ function nextThreadEntryId(): string {
   return `agent-thread-${threadEntryCounter}`
 }
 
-function runAgentViewLink(link: AgentViewLink): void {
-  if (link.inputScreens) {
-    window.location.assign(buildHashRouteUrl(PREPARER_DATA_REVIEW_PATH))
-    return
-  }
-  if (link.schAInterest) {
-    navigateToScheduleAInterestInput(link.field ?? 'mortgage1098')
-    return
-  }
-  if (link.formId) {
-    openReviewReturnPopout({ form: link.formId, diagnostic: link.diagnostic })
-    return
-  }
-  if (link.tab === 'questionnaire') {
-    openSourceDocumentReviewPopout({
-      tab: 'questionnaire',
-      field: link.field ?? link.questionnaireResponseId,
-    })
-    return
-  }
-  if (link.tab && link.field) {
-    openSourceDocumentReviewPopout({ tab: link.tab, field: link.field })
-  }
+function AgentEvidencePanel({
+  link,
+  onClose,
+}: {
+  link: AgentViewLink
+  onClose: () => void
+}) {
+  const src = useMemo(() => buildAgentViewLinkUrl(link), [link])
+
+  return (
+    <aside className={styles.evidencePanel} aria-label="Evidence preview">
+      <header className={styles.evidenceHeader}>
+        <div className={styles.evidenceHeaderCopy}>
+          <p className={styles.evidenceEyebrow}>Show your work</p>
+          <h3 className={styles.evidenceTitle}>{link.label}</h3>
+        </div>
+        <div className={styles.evidenceHeaderActions}>
+          <Button
+            priority="borderless"
+            size="small"
+            onClick={() => openAgentViewLinkInWindow(link)}
+          >
+            Open in window
+          </Button>
+          <button
+            type="button"
+            className={styles.evidenceCloseBtn}
+            onClick={onClose}
+            aria-label="Close evidence panel"
+          >
+            <Close aria-hidden />
+          </button>
+        </div>
+      </header>
+      <iframe title={link.label} src={src} className={styles.evidenceFrame} />
+    </aside>
+  )
 }
 
 function AgentAvatar() {
@@ -98,21 +110,26 @@ function AgentAvatar() {
   )
 }
 
-/** Single card listing open diagnostics — the initial diagnosis state. */
-function DiagnosisCard({
-  plan,
+function InitialDiagnosisFeed({
+  syncCtx,
   phase,
-  onFixItem,
-  onFixAll,
+  fixPlan,
+  onFixIssueKey,
+  onOpenEvidence,
 }: {
-  plan: AgentFixPlanItem[]
+  syncCtx: ReturnType<typeof getAgentFixContext>
   phase: AgentPhase
-  onFixItem: (item: AgentFixPlanItem) => void
-  onFixAll: () => void
+  fixPlan: AgentFixPlanItem[]
+  onFixIssueKey: (issueKey: AgentFixPlanItem['issueKey']) => void
+  onOpenEvidence: (link: AgentViewLink) => void
 }) {
   const canFix = phase === 'ready' || phase === 'awaiting-next'
+  const reviewCards = useMemo(() => {
+    const issues = buildAllDiagnosticIssues(syncCtx.live, syncCtx.amounts)
+    return buildAgentReviewModels(syncCtx, issues)
+  }, [syncCtx])
 
-  if (plan.length === 0) {
+  if (fixPlan.length === 0 && reviewCards.every(c => c.variant !== 'issue')) {
     return (
       <div className={styles.diagnosisCard}>
         <Badge status="success" label="Clear" capitalization="sentence" priority="secondary" />
@@ -124,55 +141,23 @@ function DiagnosisCard({
   }
 
   return (
-    <div className={styles.diagnosisCard}>
-      <div className={styles.diagnosisHeader}>
-        <p className={styles.cardEyebrow}>Diagnostics found</p>
-        <span className={styles.diagnosisCount}>
-          {plan.length} open
-        </span>
+    <div className={styles.diagnosisFeed}>
+      <div className={styles.diagnosticsFoundRow}>
+        <AgentAvatar />
+        <span className={styles.diagnosticsFoundLabel}>Diagnostics found</span>
       </div>
-      <ul className={styles.diagnosisList}>
-        {plan.map(item => (
-          <li key={item.issueKey} className={styles.diagnosisItem}>
-            <div className={styles.diagnosisItemMain}>
-              <Badge
-                status="warning"
-                label="Needs fix"
-                capitalization="sentence"
-                priority="secondary"
-              />
-              <div className={styles.diagnosisItemText}>
-                <p className={styles.diagnosisItemTitle}>{item.title}</p>
-                <p className={styles.diagnosisItemSummary}>{item.fixSummary}</p>
-              </div>
-            </div>
-            <div className={styles.diagnosisItemActions}>
-              {item.viewLinks[0] && (
-                <LinkActionButton
-                  size="small"
-                  weight="regular"
-                  alignment="left"
-                  onClick={() => runAgentViewLink(item.viewLinks[0])}
-                >
-                  {item.viewLinks[0].label}
-                </LinkActionButton>
-              )}
-              {canFix && (
-                <Button priority="secondary" size="medium" onClick={() => onFixItem(item)}>
-                  Fix this
-                </Button>
-              )}
-            </div>
-          </li>
+      <div className={styles.diagnosisCardStack}>
+        {reviewCards.map(card => (
+          <AgentDiagnosticExpandableCard
+            key={card.id}
+            card={card}
+            defaultExpanded={card.variant !== 'verified'}
+            canFix={canFix && card.variant === 'issue'}
+            onFix={onFixIssueKey}
+            onOpenEvidence={onOpenEvidence}
+          />
         ))}
-      </ul>
-      {canFix && plan.length > 1 && (
-        <div className={styles.diagnosisFooter}>
-          <Button priority="primary" onClick={onFixAll}>
-            Fix all {plan.length} issues
-          </Button>
-        </div>
-      )}
+      </div>
     </div>
   )
 }
@@ -323,6 +308,7 @@ export default function AgentDiagnosticsPanel() {
   const [sessionPlan, setSessionPlan] = useState<AgentFixPlanItem[]>([])
   const [activeFixIndex, setActiveFixIndex] = useState(-1)
   const [chatInput, setChatInput] = useState('')
+  const [evidenceLink, setEvidenceLink] = useState<AgentViewLink | null>(null)
   const runRef = useRef(false)
   const welcomeAddedRef = useRef(false)
   const chatScrollRef = useRef<HTMLDivElement>(null)
@@ -341,6 +327,10 @@ export default function AgentDiagnosticsPanel() {
   const appendThread = useCallback((entry: Omit<ThreadEntry, 'id'> & { id?: string }) => {
     const withId = { ...entry, id: entry.id ?? nextThreadEntryId() } as ThreadEntry
     setThread(prev => [...prev, withId])
+  }, [])
+
+  const openEvidence = useCallback((link: AgentViewLink) => {
+    setEvidenceLink(link)
   }, [])
 
   const applyFixForIssue = useCallback(
@@ -456,6 +446,15 @@ export default function AgentDiagnosticsPanel() {
     [amounts, reviewedFields, runFixForItems, appendThread, progressValue],
   )
 
+  const handleFixByIssueKey = useCallback(
+    (issueKey: AgentFixPlanItem['issueKey']) => {
+      const plan = buildAgentFixPlan(getAgentFixContext(amounts, reviewedFields))
+      const target = plan.find(item => item.issueKey === issueKey)
+      if (target) handleFixOne(target)
+    },
+    [amounts, reviewedFields, handleFixOne],
+  )
+
   const handleFixNext = useCallback(() => {
     const plan = buildAgentFixPlan(getAgentFixContext(amounts, reviewedFields))
     if (plan.length === 0) return
@@ -492,10 +491,10 @@ export default function AgentDiagnosticsPanel() {
     appendThread({
       kind: 'agent',
       isWelcome: true,
-      heading: 'Return review',
+      heading: 'Return review by Intuit Intelligence',
       text:
         openCount > 0
-          ? `I've analyzed Jordan's 2025 return and found ${openCount} issue${openCount === 1 ? '' : 's'} to resolve. Review each diagnostic below, then tell me how you'd like to proceed.`
+          ? `I've analyzed Jordan's 2025 return and found ${openCount} issue${openCount === 1 ? '' : 's'} to resolve. I compared source documents, questionnaire answers, and return inputs.\nReview each diagnostic below, then tell me how you'd like to proceed.`
           : `I've analyzed Jordan's 2025 return — no open diagnostics remain.`,
     })
   }, [appendThread, openCount])
@@ -554,23 +553,26 @@ export default function AgentDiagnosticsPanel() {
                             {entry.heading}
                           </h2>
                         )}
-                        <p className={styles.agentBody}>{entry.text}</p>
+                        <p className={`${styles.agentBody} ${entry.isWelcome ? styles.agentBodyPreWrap : ''}`}>
+                          {entry.text}
+                        </p>
 
                         {entry.isWelcome && (
                           <>
-                            <DiagnosisCard
-                              plan={fixPlan}
+                            <InitialDiagnosisFeed
+                              syncCtx={syncCtx}
                               phase={phase}
-                              onFixItem={handleFixOne}
-                              onFixAll={handleFixAll}
+                              fixPlan={fixPlan}
+                              onFixIssueKey={handleFixByIssueKey}
+                              onOpenEvidence={openEvidence}
                             />
                             {openCount > 0 && phase === 'ready' && (
-                              <div className={styles.responsePills}>
+                              <div className={`${styles.responsePills} ${styles.responsePillsEnd}`}>
                                 <Button priority="primary" onClick={handleFixAll}>
-                                  Fix all issues
+                                  Accept all fixes
                                 </Button>
                                 <Button priority="secondary" onClick={() => handleFixOne()}>
-                                  Fix one at a time
+                                  Fix each issue individually
                                 </Button>
                               </div>
                             )}
@@ -618,17 +620,20 @@ export default function AgentDiagnosticsPanel() {
                           </div>
                           <p className={styles.cardBody}>{entry.summary}</p>
                           {entry.viewLinks.length > 0 && (
-                            <div className={styles.viewLinkRow}>
-                              {entry.viewLinks.map(link => (
-                                <Button
-                                  key={link.label}
-                                  priority="secondary"
-                                  size="medium"
-                                  onClick={() => runAgentViewLink(link)}
-                                >
-                                  {link.label}
-                                </Button>
-                              ))}
+                            <div className={styles.showWorkBlock}>
+                              <p className={styles.showWorkLabel}>See what changed</p>
+                              <div className={styles.viewLinkRow}>
+                                {entry.viewLinks.map(link => (
+                                  <Button
+                                    key={link.label}
+                                    priority="secondary"
+                                    size="medium"
+                                    onClick={() => openEvidence(link)}
+                                  >
+                                    {link.label}
+                                  </Button>
+                                ))}
+                              </div>
                             </div>
                           )}
                         </div>
@@ -655,14 +660,18 @@ export default function AgentDiagnosticsPanel() {
                     <Button
                       priority="secondary"
                       size="medium"
-                      onClick={() => openSourceDocumentReviewPopout()}
+                      onClick={() =>
+                        openEvidence({ label: 'Source documents', tab: 'w2s', field: 'wages' })
+                      }
                     >
                       View source documents
                     </Button>
                     <Button
                       priority="secondary"
                       size="medium"
-                      onClick={() => openReviewReturnPopout('1040')}
+                      onClick={() =>
+                        openEvidence({ label: 'Form 1040', formId: '1040' })
+                      }
                     >
                       View 1040
                     </Button>
@@ -745,18 +754,18 @@ export default function AgentDiagnosticsPanel() {
                   )}
                 </div>
               </div>
-              <Link
-                href="#"
-                size="body-4"
-                inline
-                onClick={e => e.preventDefault()}
-                className={styles.legalLink}
-              >
-                Important information about how we use generative AI
-              </Link>
+              <span className={styles.legalLink}>
+                <Link href="#" size="body-4" inline onClick={e => e.preventDefault()}>
+                  Important information about how we use generative AI
+                </Link>
+              </span>
             </div>
           </div>
         </div>
+
+        {evidenceLink && (
+          <AgentEvidencePanel link={evidenceLink} onClose={() => setEvidenceLink(null)} />
+        )}
 
         <ProgressRail
           plan={railPlan}

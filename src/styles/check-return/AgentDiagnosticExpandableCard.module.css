@@ -1,0 +1,274 @@
+.card {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  border: 1px solid var(--color-container-border-primary, #d4d7dc);
+  border-radius: 16px;
+  background: var(--color-container-background-primary, #ffffff);
+  overflow: hidden;
+}
+
+.cardHeaderBtn {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--space-component-gap-medium, 12px);
+  width: 100%;
+  padding: var(--space-container-padding-large, 24px);
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  text-align: left;
+}
+
+.cardHeaderMain {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-component-gap-small, 8px);
+}
+
+.titleRow {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-component-gap-small, 8px);
+}
+
+.cardTitle {
+  margin: 0;
+  font-family: var(--font-family-component);
+  font-size: var(--font-size-component-medium, 16px);
+  font-weight: var(--font-weight-component-bold, 600);
+  line-height: 1.3;
+  color: var(--color-text-primary, #393a3d);
+}
+
+.titleDot {
+  color: var(--color-text-secondary, #6b6c72);
+  font-size: var(--font-size-body-3, 14px);
+}
+
+.cardMeta {
+  font-family: var(--font-family-body);
+  font-size: var(--font-size-body-3, 14px);
+  line-height: 1.43;
+  color: var(--color-text-secondary, #6b6c72);
+}
+
+.cardSummary {
+  margin: 0;
+  font-family: var(--font-family-body);
+  font-size: var(--font-size-body-3, 14px);
+  line-height: 1.43;
+  color: var(--color-text-primary, #393a3d);
+}
+
+.cardChevron {
+  flex-shrink: 0;
+  color: var(--color-text-secondary, #6b6c72);
+  margin-top: 2px;
+}
+
+.cardBody {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-container-gap-medium, 16px);
+  padding: 0 var(--space-container-padding-large, 24px)
+    var(--space-container-padding-large, 24px);
+}
+
+.whatHappened {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-component-gap-x-small, 4px);
+}
+
+.sectionLabel {
+  margin: 0;
+  font-family: var(--font-family-body);
+  font-size: var(--font-size-body-3, 14px);
+  font-weight: var(--font-weight-body-bold, 600);
+  line-height: 1.5;
+  color: var(--color-text-primary, #393a3d);
+}
+
+.sectionBody {
+  margin: 0;
+  font-family: var(--font-family-body);
+  font-size: var(--font-size-body-3, 14px);
+  line-height: 1.5;
+  color: var(--color-text-primary, #393a3d);
+}
+
+.tableCard {
+  border: 1px solid var(--color-container-border-primary, #d4d7dc);
+  border-radius: 12px;
+  overflow: hidden;
+  background: var(--color-container-background-primary, #ffffff);
+}
+
+.tableLayoutStandard,
+.tableHeader.tableLayoutStandard,
+.tableRow.tableLayoutStandard {
+  display: grid;
+  grid-template-columns: minmax(0, 1.3fr) minmax(0, 0.75fr) minmax(0, 1.2fr) minmax(0, 0.85fr);
+  gap: var(--space-container-gap-medium, 16px);
+  align-items: start;
+}
+
+.tableLayoutImport,
+.tableHeader.tableLayoutImport,
+.tableRow.tableLayoutImport {
+  display: grid;
+  grid-template-columns: minmax(0, 1.4fr) 130px 130px 100px 100px;
+  gap: var(--space-container-gap-medium, 16px);
+  align-items: center;
+}
+
+.tableHeader {
+  padding: var(--space-container-padding-medium, 16px);
+  background: var(--color-container-background-neutral, #eeeeef);
+  font-family: var(--font-family-component);
+  font-size: var(--font-size-component-small, 14px);
+  font-weight: var(--font-weight-component-bold, 600);
+  line-height: 1.3;
+  color: var(--color-text-secondary, #6b6c72);
+}
+
+.tableHeaderCell.alignEnd {
+  text-align: right;
+}
+
+.tableRow {
+  padding: var(--space-container-padding-medium, 16px);
+  border-top: 1px solid var(--color-container-border-primary, #d4d7dc);
+  font-family: var(--font-family-component);
+  font-size: var(--font-size-component-small, 14px);
+  line-height: 1.3;
+  color: var(--color-text-primary, #393a3d);
+}
+
+.tableRowTotal {
+  background: var(--color-container-background-neutral, #eeeeef);
+  font-weight: var(--font-weight-component-bold, 600);
+}
+
+.rowLabelLink {
+  color: var(--color-link-text, #0365ac);
+  font-weight: var(--font-weight-component-semibold, 500);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.checklistCell {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--space-component-gap-small, 8px);
+  min-width: 0;
+}
+
+.checklistCell .rowLabel {
+  font-weight: var(--font-weight-component, 400);
+  color: var(--color-text-primary, #393a3d);
+}
+
+.rowLabel {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.tableCell {
+  min-width: 0;
+}
+
+.tableCellEmphasis {
+  font-weight: var(--font-weight-component-bold, 600);
+}
+
+.tableCellMuted {
+  color: var(--color-text-secondary, #6b6c72);
+  line-height: 1.5;
+}
+
+.actionCell {
+  display: flex;
+  justify-content: flex-end;
+  min-width: 0;
+}
+
+.checklistHint {
+  font-family: var(--font-family-component);
+  font-size: var(--font-size-component-x-small, 12px);
+  color: var(--color-text-secondary, #6b6c72);
+}
+
+.suggestedFix {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-component-gap-small, 8px);
+  padding: var(--space-container-padding-medium, 20px);
+  border: 1px solid var(--color-container-border-primary, #d4d7dc);
+  border-radius: 12px;
+  background: var(--color-container-background-primary, #ffffff);
+}
+
+.suggestedFixHeader {
+  display: flex;
+  align-items: center;
+  gap: var(--space-component-gap-medium, 8px);
+}
+
+.suggestedFixIcon {
+  width: 20px;
+  height: 20px;
+  flex-shrink: 0;
+}
+
+.suggestedFixTitle {
+  font-family: var(--font-family-component);
+  font-size: var(--font-size-component-medium, 16px);
+  font-weight: var(--font-weight-component-bold, 600);
+  color: var(--color-text-primary, #393a3d);
+}
+
+.suggestedFixList {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-component-gap-x-small, 4px);
+}
+
+.suggestedFixItem {
+  position: relative;
+  padding-left: var(--space-container-padding-medium, 16px);
+  font-family: var(--font-family-body);
+  font-size: var(--font-size-body-3, 14px);
+  line-height: 1.5;
+  color: var(--color-text-primary, #393a3d);
+}
+
+.suggestedFixItem::before {
+  content: '•';
+  position: absolute;
+  left: 0;
+  color: var(--color-text-secondary, #6b6c72);
+}
+
+.cardFooter {
+  display: flex;
+  justify-content: flex-end;
+  padding-top: var(--space-component-gap-x-small, 4px);
+}
+
+.card[data-variant='verified'] .cardHeaderBtn {
+  cursor: pointer;
+}
+
+.card[data-variant='needs-review'] .tableRowFour .checklistCell {
+  grid-column: 1;
+}

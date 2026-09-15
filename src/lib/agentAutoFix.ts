@@ -17,6 +17,13 @@ import { computeLiveReturn } from '../data/liveReturn'
 import type { OutputFormId } from '../pages/data-review/outputForms'
 import type { QuestionnaireResponseId } from '../pages/data-review/questionnaireData'
 import { getCategoryScopedActiveKeys } from '../pages/check-return/aiDiagnosticCategories'
+import { INPUT_FIELD_PARAM, writeInputReturnParams } from '../data/inputDocTabs'
+import {
+  buildHashRouteUrl,
+  buildReviewReturnPopoutRoute,
+  buildSourceDocumentPopoutRoute,
+  PREPARER_DATA_REVIEW_PATH,
+} from './prototypeRoutes'
 
 /** Demo auto-fix patch per active diagnostic issue. */
 export function getAutoFixPatchForIssue(
@@ -86,10 +93,48 @@ export function buildStandardSourceLinks(): AgentViewLink[] {
 export type AgentFixPlanItem = {
   issueKey: Phase2IssueKey
   title: string
+  category: string
+  summary: string
+  taxImpact: string
+  dotColor: 'red' | 'orange' | 'blue'
   thinkingSteps: string[]
   fixSummary: string
   amountPatch: Partial<LiveAmounts>
   viewLinks: AgentViewLink[]
+}
+
+/** Hash URL for embedding evidence in the in-app panel (iframe). */
+export function buildAgentViewLinkUrl(link: AgentViewLink): string {
+  if (link.inputScreens) {
+    return buildHashRouteUrl(PREPARER_DATA_REVIEW_PATH)
+  }
+  if (link.schAInterest) {
+    const params = new URLSearchParams()
+    writeInputReturnParams(params, 'sch-a-interest')
+    params.set(INPUT_FIELD_PARAM, link.field ?? 'mortgage1098')
+    return buildHashRouteUrl(`/input-return?${params.toString()}`)
+  }
+  if (link.formId) {
+    return buildHashRouteUrl(
+      buildReviewReturnPopoutRoute({ form: link.formId, diagnostic: link.diagnostic }),
+    )
+  }
+  if (link.tab === 'questionnaire') {
+    return buildHashRouteUrl(
+      buildSourceDocumentPopoutRoute({
+        tab: 'questionnaire',
+        field: link.field ?? link.questionnaireResponseId,
+      }),
+    )
+  }
+  if (link.tab && link.field) {
+    return buildHashRouteUrl(buildSourceDocumentPopoutRoute({ tab: link.tab, field: link.field }))
+  }
+  return buildHashRouteUrl(buildSourceDocumentPopoutRoute())
+}
+
+export function openAgentViewLinkInWindow(link: AgentViewLink): void {
+  window.open(buildAgentViewLinkUrl(link), '_blank', 'noopener,noreferrer')
 }
 
 /** Deep links to review where each auto-fix landed (source doc, input, or 1040). */
@@ -202,6 +247,10 @@ export function buildAgentFixPlan(ctx: DiagnosticSyncContext): AgentFixPlanItem[
     return {
       issueKey: key,
       title,
+      category: issue?.category ?? 'Diagnostic',
+      summary: issue?.summary ?? title,
+      taxImpact: issue?.taxImpact ?? '',
+      dotColor: issue?.dotColor ?? 'orange',
       thinkingSteps,
       fixSummary: issue?.suggestedActions[0] ?? `Resolved ${title.toLowerCase()}.`,
       amountPatch,
