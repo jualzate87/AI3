@@ -77,6 +77,88 @@ export type AgentViewLink = {
   diagnostic?: Phase2IssueKey
 }
 
+const IMPORT_MISMATCH_VIEW_LABELS: Record<string, string> = {
+  wages: 'W-2 wages · Tech Circle',
+  qualifiedDivs: '1099-DIV · Token',
+  divWithholding: '1099-DIV withholding · Token',
+  taxablePension: '1099-R taxable · Meridian',
+  rWithholding: '1099-R withholding · Meridian',
+  necIncome: '1099-NEC · Summit',
+}
+
+const FORM_VIEW_LABELS: Record<string, string> = {
+  '1040': 'Form 1040',
+  schA: 'Schedule A',
+  schC: 'Schedule C',
+  sch1: 'Schedule 1',
+  f8960: 'Form 8960',
+  f2210: 'Form 2210',
+}
+
+const TAB_SOURCE_LABELS: Record<string, string> = {
+  w2s: 'W-2 · Tech Circle',
+  '1099-divs': '1099-DIV · Token',
+  '1099-ints': '1099-INT · Harborline',
+  '1099-rs': '1099-R · Meridian',
+  '1099-necs': '1099-NEC · Summit',
+  questionnaire: 'Questionnaire',
+}
+
+/** Strip "View"/"Open" prefixes — the new-window icon conveys the action. */
+export function stripViewLinkPrefix(label: string): string {
+  return label
+    .replace(/^View on /i, '')
+    .replace(/^View /i, '')
+    .replace(/^Open /i, '')
+    .trim()
+}
+
+export function formatImportMismatchViewLabel(gap: { id: string; label: string }): string {
+  return IMPORT_MISMATCH_VIEW_LABELS[gap.id] ?? stripViewLinkPrefix(gap.label)
+}
+
+export function formatFormViewLabel(formId: OutputFormId | string): string {
+  return FORM_VIEW_LABELS[formId] ?? stripViewLinkPrefix(String(formId))
+}
+
+export function formatSourceTabViewLabel(tab: string): string {
+  return TAB_SOURCE_LABELS[tab] ?? 'Source'
+}
+
+type ViewLinkLabelContext = {
+  tab?: string
+  formId?: OutputFormId | string
+  schAInterest?: boolean
+  inputScreens?: boolean
+}
+
+/** Resolve concise, scannable labels for agent view links. */
+export function resolveViewLinkLabel(
+  raw: string | undefined,
+  ctx?: ViewLinkLabelContext,
+): string {
+  if (ctx?.inputScreens) return 'Input screens'
+  if (ctx?.schAInterest) return 'Schedule A inputs'
+  if (ctx?.formId) {
+    const fromForm = formatFormViewLabel(ctx.formId)
+    if (raw) {
+      const stripped = stripViewLinkPrefix(raw)
+      if (stripped === fromForm || stripped.toLowerCase().includes('form')) return fromForm
+    }
+    return fromForm
+  }
+  if (raw) {
+    const stripped = stripViewLinkPrefix(raw)
+    if (stripped.toLowerCase() === 'source' && ctx?.tab) {
+      return formatSourceTabViewLabel(ctx.tab)
+    }
+    if (stripped.toLowerCase() === 'on input screen') return 'Schedule A inputs'
+    return stripped
+  }
+  if (ctx?.tab) return formatSourceTabViewLabel(ctx.tab)
+  return 'Source'
+}
+
 /** Common source destinations for agent-mode exploration (chat quick nav). */
 export function buildStandardSourceLinks(): AgentViewLink[] {
   return [
@@ -160,13 +242,13 @@ export function buildViewLinksForIssue(
   if (issue.issueKey === 'importMismatches') {
     for (const gap of getOutstandingImportMismatches(amounts)) {
       push({
-        label: `View ${gap.label}`,
+        label: formatImportMismatchViewLabel(gap),
         tab: gap.tab,
         field: gap.field,
       })
     }
     push({
-      label: 'View on Form 1040',
+      label: formatFormViewLabel('1040'),
       formId: '1040',
       diagnostic: 'importMismatches',
     })
@@ -176,27 +258,29 @@ export function buildViewLinksForIssue(
   for (const row of issue.tableRows) {
     if (row.fixTab === 'sch-a-interest' && row.fixField) {
       push({
-        label: row.actionLabel ?? 'View on input screen',
+        label: resolveViewLinkLabel(row.actionLabel, { schAInterest: true }),
         schAInterest: true,
         field: row.fixField,
       })
     } else if (row.fixTab === 'questionnaire') {
       push({
-        label: row.actionLabel ?? 'View source',
+        label: resolveViewLinkLabel(row.actionLabel, { tab: 'questionnaire' }),
         tab: 'questionnaire',
         field: row.fixField,
         questionnaireResponseId: row.questionnaireResponseId,
       })
     } else if (row.fixField && row.fixTab) {
       push({
-        label: row.actionLabel ?? `View ${row.label}`,
+        label: resolveViewLinkLabel(row.actionLabel, { tab: row.fixTab }),
         tab: row.fixTab,
         field: row.fixField,
       })
     }
     if (row.viewForm && row.viewFormLabel) {
       push({
-        label: row.actionLabel ?? `View ${row.viewFormLabel}`,
+        label: resolveViewLinkLabel(row.actionLabel, {
+          formId: row.viewForm as OutputFormId,
+        }),
         formId: row.viewForm as OutputFormId,
         diagnostic: issue.issueKey,
       })
@@ -207,12 +291,16 @@ export function buildViewLinksForIssue(
     if (action.type === 'goToInput' && action.menuItems) continue
     if (action.type === 'goToInput' && action.tab === 'sch-a-interest') {
       push({
-        label: action.label,
+        label: resolveViewLinkLabel(action.label, { schAInterest: true }),
         schAInterest: true,
         field: action.field,
       })
     } else if (action.type === 'goToInput' && action.tab && action.field) {
-      push({ label: action.label, tab: action.tab, field: action.field })
+      push({
+        label: resolveViewLinkLabel(action.label, { tab: action.tab }),
+        tab: action.tab,
+        field: action.field,
+      })
     } else if (action.type === 'openForm') {
       const formMap: Record<string, OutputFormId> = {
         'Open Form 8960': 'f8960',
@@ -224,7 +312,7 @@ export function buildViewLinksForIssue(
       const formId = formMap[action.label]
       if (formId) {
         push({
-          label: action.label.replace(/^Open /, 'View '),
+          label: formatFormViewLabel(formId),
           formId,
           diagnostic: issue.issueKey,
         })

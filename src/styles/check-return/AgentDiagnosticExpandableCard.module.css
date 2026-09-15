@@ -60,6 +60,24 @@
   gap: var(--space-component-gap-small, 8px);
 }
 
+/* IDS text badges inherit body line-height (1.5), which offsets label text inside the pill. */
+.categoryBadge {
+  display: inline-flex;
+  align-items: center;
+  flex-shrink: 0;
+  line-height: 0;
+}
+
+.categoryBadge :global([class*='Badge-badge']) {
+  display: inline-flex;
+  flex-shrink: 0;
+}
+
+.categoryBadge :global([class*='Badge-value']),
+.categoryBadge :global([class*='Badge-iconFix']) {
+  line-height: 20px;
+}
+
 .cardTitle {
   margin: 0;
   font-family: var(--font-family-component);
@@ -222,6 +240,18 @@
   display: flex;
   justify-content: flex-end;
   min-width: 0;
+}
+
+.viewLinkContent {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-component-gap-x-small, 4px);
+}
+
+.viewLinkIcon {
+  flex-shrink: 0;
+  width: 1em;
+  height: 1em;
 }
 
 .checklistHint {

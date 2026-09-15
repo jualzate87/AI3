@@ -5,7 +5,12 @@ import type { DiagnosticSyncContext } from '../pages/data-review/phase2FlagSync'
 import { getImportMismatchTaxImpact, getOutstandingImportMismatches } from '../pages/data-review/phase2FlagSync'
 import type { Phase2IssueKey } from '../pages/data-review/phase2FlagSync'
 import type { OutputFormId } from '../pages/data-review/outputForms'
-import type { AgentViewLink } from './agentAutoFix'
+import {
+  formatFormViewLabel,
+  formatSourceTabViewLabel,
+  resolveViewLinkLabel,
+  type AgentViewLink,
+} from './agentAutoFix'
 
 const fmtUsd = (n: number) => `$${n.toLocaleString()}`
 
@@ -94,22 +99,25 @@ export function buildViewLinkFromDiagnosticRow(
   issue: DiagnosticIssueCard,
   row: DiagnosticIssueCard['tableRows'][number],
 ): AgentViewLink | null {
-  const label =
-    row.actionLabel ??
-    (row.viewForm && row.viewFormLabel
-      ? `View on ${row.viewFormLabel}`
-      : row.fixTab
-        ? 'View source'
-        : null)
+  const hasDestination =
+    (row.fixTab === 'sch-a-interest' && row.fixField) ||
+    row.fixTab === 'questionnaire' ||
+    (row.fixField && row.fixTab) ||
+    row.viewForm
 
-  if (!label) return null
+  if (!hasDestination) return null
 
   if (row.fixTab === 'sch-a-interest' && row.fixField) {
-    return { label, schAInterest: true, field: row.fixField, diagnostic: issue.issueKey }
+    return {
+      label: resolveViewLinkLabel(row.actionLabel, { schAInterest: true }),
+      schAInterest: true,
+      field: row.fixField,
+      diagnostic: issue.issueKey,
+    }
   }
   if (row.fixTab === 'questionnaire') {
     return {
-      label,
+      label: resolveViewLinkLabel(row.actionLabel, { tab: 'questionnaire' }),
       tab: 'questionnaire',
       field: row.fixField,
       questionnaireResponseId: row.questionnaireResponseId,
@@ -117,11 +125,18 @@ export function buildViewLinkFromDiagnosticRow(
     }
   }
   if (row.fixField && row.fixTab) {
-    return { label, tab: row.fixTab, field: row.fixField, diagnostic: issue.issueKey }
+    return {
+      label: resolveViewLinkLabel(row.actionLabel, { tab: row.fixTab }),
+      tab: row.fixTab,
+      field: row.fixField,
+      diagnostic: issue.issueKey,
+    }
   }
   if (row.viewForm) {
     return {
-      label,
+      label: resolveViewLinkLabel(row.actionLabel, {
+        formId: row.viewForm as OutputFormId,
+      }),
       formId: row.viewForm as OutputFormId,
       diagnostic: issue.issueKey,
     }
@@ -209,52 +224,73 @@ export function buildVerifiedReviewCard(ctx: DiagnosticSyncContext): AgentReview
         id: 'v-w2-wh',
         label: 'W-2 federal withholding (Tech Circle)',
         cols: ['Matches source', 'Box 2 on return equals $34,840 on the PDF.', ''],
-        viewLink: { label: 'View source', tab: 'w2s', field: 'fedWithholding' },
+        viewLink: {
+          label: formatSourceTabViewLabel('w2s'),
+          tab: 'w2s',
+          field: 'fedWithholding',
+        },
       },
       {
         id: 'v-int',
         label: '1099-INT taxable interest (Harborline)',
         cols: ['Matches source', `${fmtUsd(live.taxableInterest)} on return and on the 1099-INT.`, ''],
-        viewLink: { label: 'View source', tab: '1099-ints', field: 'taxableInterest' },
+        viewLink: {
+          label: formatSourceTabViewLabel('1099-ints'),
+          tab: '1099-ints',
+          field: 'taxableInterest',
+        },
       },
       {
         id: 'v-status',
         label: 'Filing status Single',
         cols: ['Consistent', 'Form 1040, questionnaire, and W-2 all use Single.', ''],
-        viewLink: { label: 'View on Form 1040', formId: '1040' },
+        viewLink: { label: formatFormViewLabel('1040'), formId: '1040' },
       },
       {
         id: 'v-salt',
         label: 'SALT deduction cap (Schedule A)',
         cols: ['Applied correctly', '$10,000 state and local tax limit enforced on Schedule A.', ''],
-        viewLink: { label: 'View Schedule A', formId: 'schA' },
+        viewLink: { label: formatFormViewLabel('schA'), formId: 'schA' },
       },
       {
         id: 'v-niit',
         label: 'Net investment income tax (Form 8960)',
         cols: ['Calculates correctly', `NIIT base ${fmtUsd(live.netInvestmentIncome)} at 3.8% = ${fmtUsd(live.niitTax)}.`, ''],
-        viewLink: { label: 'View Form 8960', formId: 'f8960' },
+        viewLink: { label: formatFormViewLabel('f8960'), formId: 'f8960' },
       },
       {
         id: 'v-charity',
         label: 'Charitable contributions input',
         cols: ['Documented in packet', 'Cash gifts match organizer worksheet — no amount conflict.', ''],
-        viewLink: { label: 'View source', tab: 'questionnaire', field: 'charitable' },
+        viewLink: {
+          label: formatSourceTabViewLabel('questionnaire'),
+          tab: 'questionnaire',
+          field: 'charitable',
+        },
       },
       {
         id: 'v-div-1a',
         label: '1099-DIV Box 1a ordinary dividends (Token)',
         cols: ['Matches source', 'Ordinary dividend total agrees with the imported PDF.', ''],
-        viewLink: { label: 'View source', tab: '1099-divs', field: 'ordinaryDivs' },
+        viewLink: {
+          label: formatSourceTabViewLabel('1099-divs'),
+          tab: '1099-divs',
+          field: 'ordinaryDivs',
+        },
       },
       {
         id: 'v-prior',
         label: 'Prior-year AGI on Form 1040',
         cols: ['Matches PY return', '2024 AGI on the rollover matches the archived return.', ''],
-        viewLink: { label: 'View on Form 1040', formId: '1040' },
+        viewLink: { label: formatFormViewLabel('1040'), formId: '1040' },
       },
     ],
   }
+}
+
+/** Verified + needs-review cards — always shown for preparer/reviewer sign-off. */
+export function buildPersistentReviewCallouts(ctx: DiagnosticSyncContext): AgentReviewCardModel[] {
+  return [buildVerifiedReviewCard(ctx), buildNeedsUserReviewCard(ctx)]
 }
 
 /** Items the agent could not fully resolve — preparer checklist. */
@@ -279,35 +315,47 @@ export function buildNeedsUserReviewCard(_ctx: DiagnosticSyncContext): AgentRevi
         id: 'r-1098',
         label: 'Form 1098 mortgage interest',
         cols: ['Document missing', 'Jordan confirmed ~$28,400 interest but no 1098 is in the import packet.', ''],
-        viewLink: { label: 'View source', tab: 'questionnaire', field: 'mortgage' },
+        viewLink: {
+          label: formatSourceTabViewLabel('questionnaire'),
+          tab: 'questionnaire',
+          field: 'mortgage',
+        },
         checklist: true,
       },
       {
         id: 'r-schc-exp',
         label: 'Schedule C expense substantiation',
         cols: ['Needs receipts', 'Client mentioned software, home office, and travel — nothing posted yet.', ''],
-        viewLink: { label: 'View source', tab: 'questionnaire', field: 'necExpenses' },
+        viewLink: {
+          label: formatSourceTabViewLabel('questionnaire'),
+          tab: 'questionnaire',
+          field: 'necExpenses',
+        },
         checklist: true,
       },
       {
         id: 'r-charity',
         label: 'Charitable gift substantiation',
         cols: ['Review receipts', 'Gifts over $250 need written acknowledgment per IRS rules.', ''],
-        viewLink: { label: 'View source', tab: 'questionnaire', field: 'charitable' },
+        viewLink: {
+          label: formatSourceTabViewLabel('questionnaire'),
+          tab: 'questionnaire',
+          field: 'charitable',
+        },
         checklist: true,
       },
       {
         id: 'r-est-2026',
         label: '2026 estimated tax payments',
         cols: ['Planning conversation', 'Safe-harbor shortfall may require quarterly vouchers next year.', ''],
-        viewLink: { label: 'View on Form 2210', formId: 'f2210' },
+        viewLink: { label: formatFormViewLabel('f2210'), formId: 'f2210' },
         checklist: true,
       },
       {
         id: 'r-state',
         label: 'California residency / sourcing',
         cols: ['Not in scope', 'W-2 shows CA wages but I did not run a state return comparison.', ''],
-        viewLink: { label: 'View input screens', inputScreens: true },
+        viewLink: { label: 'Input screens', inputScreens: true },
         checklist: true,
       },
     ],
@@ -347,9 +395,5 @@ export function buildAgentReviewModels(
       return model
     })
 
-  return [
-    ...issueModels,
-    buildVerifiedReviewCard(ctx),
-    buildNeedsUserReviewCard(ctx),
-  ]
+  return [...issueModels, ...buildPersistentReviewCallouts(ctx)]
 }

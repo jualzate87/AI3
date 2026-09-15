@@ -1,0 +1,14 @@
+.icon {
+  flex-shrink: 0;
+  display: block;
+}
+
+.sizeInline {
+  width: 16px;
+  height: 16px;
+}
+
+.sizeMedium {
+  width: 20px;
+  height: 20px;
+}

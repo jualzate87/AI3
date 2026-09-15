@@ -8,28 +8,23 @@ import {
   type ReactNode,
 } from 'react'
 import {
-  AiSparkles,
   ChevronDown,
   ChevronUp,
-  Close,
+  NewWindow,
   Plus,
   Send,
   StopFill,
-  Upload,
 } from '@design-systems/icons'
 import { Badge, SuccessBadgeIcon } from '@ids-ts/badge'
 import '@ids-ts/badge/dist/main.css'
-import { Button } from '@ids-ts/button'
-import '@ids-ts/button/dist/main.css'
 import { Link } from '@ids-ts/link'
 import '@ids-ts/link/dist/main.css'
+import AgentSparkleIcon from '../../components/AgentSparkleIcon/AgentSparkleIcon'
 import intuitIntelligenceLogo from '../../assets/icons/intuit-intelligence-logo-small.svg'
-import sparklesIcon from '../../assets/icons/sparkles.svg'
 import { computeLiveReturn } from '../../data/liveReturn'
 import { useSyncedReviewState } from '../../hooks/useSyncedReviewState'
 import {
   buildAgentFixPlan,
-  buildAgentViewLinkUrl,
   buildBatchThinkingSteps,
   getAgentFixContext,
   openAgentViewLinkInWindow,
@@ -37,10 +32,13 @@ import {
   type AgentThinkingStep,
   type AgentViewLink,
 } from '../../lib/agentAutoFix'
-import { buildAgentReviewModels } from '../../lib/agentDiagnosisReview'
+import {
+  buildAgentReviewModels,
+  buildPersistentReviewCallouts,
+} from '../../lib/agentDiagnosisReview'
 import { getCategoryScopedActiveKeys } from './aiDiagnosticCategories'
 import { buildAllDiagnosticIssues } from '../data-review/AgentReportPane'
-import { openReviewReturnPopout, openSourceDocumentReviewPopout } from '../../lib/prototypeRoutes'
+import { openReviewReturnPopout } from '../../lib/prototypeRoutes'
 import AgentDiagnosticExpandableCard from './AgentDiagnosticExpandableCard'
 import styles from '../../styles/check-return/AgentDiagnosticsPanel.module.css'
 
@@ -49,6 +47,12 @@ type AgentPhase = 'ready' | 'running' | 'complete' | 'awaiting-next'
 type FixedItemSummary = {
   outcomeLabel: string
   viewLinks: AgentViewLink[]
+}
+
+const SOURCE_DOCUMENTS_VIEW_LINK: AgentViewLink = {
+  label: 'Source documents',
+  tab: 'w2s',
+  field: 'wages',
 }
 
 type ThreadEntry =
@@ -91,50 +95,11 @@ function nextThreadEntryId(): string {
   return `agent-thread-${threadEntryCounter}`
 }
 
-function AgentEvidencePanel({
-  link,
-  onClose,
-}: {
-  link: AgentViewLink
-  onClose: () => void
-}) {
-  const src = useMemo(() => buildAgentViewLinkUrl(link), [link])
-
-  return (
-    <aside className={styles.evidencePanel} aria-label="Evidence preview">
-      <header className={styles.evidenceHeader}>
-        <div className={styles.evidenceHeaderCopy}>
-          <p className={styles.evidenceEyebrow}>Show your work</p>
-          <h3 className={styles.evidenceTitle}>{link.label}</h3>
-        </div>
-        <div className={styles.evidenceHeaderActions}>
-          <Button
-            priority="borderless"
-            size="small"
-            onClick={() => openAgentViewLinkInWindow(link)}
-          >
-            Open in window
-          </Button>
-          <button
-            type="button"
-            className={styles.evidenceCloseBtn}
-            onClick={onClose}
-            aria-label="Close evidence panel"
-          >
-            <Close aria-hidden />
-          </button>
-        </div>
-      </header>
-      <iframe title={link.label} src={src} className={styles.evidenceFrame} />
-    </aside>
-  )
-}
-
 /** Sparkle avatar — secondary agent attribution (Figma "Intuit AI Sparkle"). */
 function SparkleAvatar() {
   return (
     <span className={styles.sparkleAvatar} aria-hidden>
-      <img src={sparklesIcon} alt="" className={styles.sparkleAvatarIcon} />
+      <AgentSparkleIcon size="inline" />
     </span>
   )
 }
@@ -170,16 +135,16 @@ function ActionChip({
   )
 }
 
-function SourceLinkChip({
-  link,
-  onOpen,
-}: {
-  link: AgentViewLink
-  onOpen: (link: AgentViewLink) => void
-}) {
+function SourceLinkChip({ link }: { link: AgentViewLink }) {
   return (
-    <button type="button" className={styles.sourceLinkChip} onClick={() => onOpen(link)}>
+    <button
+      type="button"
+      className={styles.sourceLinkChip}
+      onClick={() => openAgentViewLinkInWindow(link)}
+      aria-label={`${link.label} (opens in a new window)`}
+    >
       {link.label}
+      <NewWindow size="small" className={styles.sourceLinkChipIcon} aria-hidden />
     </button>
   )
 }
@@ -187,11 +152,9 @@ function SourceLinkChip({
 function FixProgressSummaryCard({
   fixedItems,
   totalCount,
-  onOpenEvidence,
 }: {
   fixedItems: FixedItemSummary[]
   totalCount: number
-  onOpenEvidence: (link: AgentViewLink) => void
 }) {
   const doneCount = fixedItems.length
   const pct = totalCount > 0 ? Math.round((doneCount / totalCount) * 100) : 100
@@ -219,7 +182,7 @@ function FixProgressSummaryCard({
             {item.viewLinks.length > 0 && (
               <div className={styles.sourceLinkRow}>
                 {item.viewLinks.map(link => (
-                  <SourceLinkChip key={link.label} link={link} onOpen={onOpenEvidence} />
+                  <SourceLinkChip key={link.label} link={link} />
                 ))}
               </div>
             )}
@@ -234,7 +197,7 @@ function ReminderCard() {
   return (
     <div className={styles.reminderCard}>
       <div className={styles.reminderHeader}>
-        <img src={sparklesIcon} alt="" className={styles.reminderIcon} aria-hidden />
+        <AgentSparkleIcon size="inline" className={styles.reminderIcon} />
         <span className={styles.reminderTitle}>Reminder</span>
       </div>
       <p className={styles.reminderBody}>
@@ -246,20 +209,58 @@ function ReminderCard() {
   )
 }
 
+/** Verified + needs-review callouts — persist after fixes; independent expand from issue accordion. */
+function PreparerReviewCallouts({
+  syncCtx,
+  collapseCards = false,
+  ariaLabel = 'Preparer review callouts',
+}: {
+  syncCtx: ReturnType<typeof getAgentFixContext>
+  collapseCards?: boolean
+  ariaLabel?: string
+}) {
+  const callouts = useMemo(() => buildPersistentReviewCallouts(syncCtx), [syncCtx])
+  const [expandedIds, setExpandedIds] = useState<Set<string>>(() => new Set())
+
+  useEffect(() => {
+    if (collapseCards) setExpandedIds(new Set())
+  }, [collapseCards])
+
+  const handleToggle = (cardId: string, nextExpanded: boolean) => {
+    setExpandedIds(prev => {
+      const next = new Set(prev)
+      if (nextExpanded) next.add(cardId)
+      else next.delete(cardId)
+      return next
+    })
+  }
+
+  return (
+    <div className={styles.preparerCalloutStack} role="list" aria-label={ariaLabel}>
+      {callouts.map(card => (
+        <AgentDiagnosticExpandableCard
+          key={card.id}
+          card={card}
+          expanded={!collapseCards && expandedIds.has(card.id)}
+          onExpandedChange={next => handleToggle(card.id, next)}
+        />
+      ))}
+    </div>
+  )
+}
+
 function InitialDiagnosisFeed({
   syncCtx,
   phase,
   fixPlan,
   collapseCards,
   onFixIssueKey,
-  onOpenEvidence,
 }: {
   syncCtx: ReturnType<typeof getAgentFixContext>
   phase: AgentPhase
   fixPlan: AgentFixPlanItem[]
   collapseCards: boolean
   onFixIssueKey: (issueKey: AgentFixPlanItem['issueKey']) => void
-  onOpenEvidence: (link: AgentViewLink) => void
 }) {
   const canFixActions = phase === 'ready' || phase === 'awaiting-next'
   const fixableKeys = useMemo(() => new Set(fixPlan.map(item => item.issueKey)), [fixPlan])
@@ -268,11 +269,15 @@ function InitialDiagnosisFeed({
     const issues = buildAllDiagnosticIssues(syncCtx.live, syncCtx.amounts)
     return buildAgentReviewModels(syncCtx, issues, { forDisplay: true })
   }, [syncCtx])
+  const issueCards = useMemo(
+    () => reviewCards.filter(card => card.variant === 'issue'),
+    [reviewCards],
+  )
 
   const defaultExpandedId = useMemo(() => {
-    const firstIssue = reviewCards.find(c => c.variant === 'issue')
-    return firstIssue?.id ?? reviewCards[0]?.id ?? null
-  }, [reviewCards])
+    const firstIssue = issueCards[0]
+    return firstIssue?.id ?? null
+  }, [issueCards])
 
   const [expandedCardId, setExpandedCardId] = useState<string | null>(defaultExpandedId)
 
@@ -282,28 +287,15 @@ function InitialDiagnosisFeed({
       return
     }
     setExpandedCardId(prev => {
-      if (prev && reviewCards.some(c => c.id === prev)) return prev
+      if (prev && issueCards.some(c => c.id === prev)) return prev
       return defaultExpandedId
     })
-  }, [collapseCards, defaultExpandedId, reviewCards])
+  }, [collapseCards, defaultExpandedId, issueCards])
 
-  const showClearOnly =
+  const allIssuesResolved =
     phase === 'complete' &&
     activeIssueKeys.length === 0 &&
     fixPlan.length === 0
-
-  if (showClearOnly) {
-    return (
-      <div className={styles.diagnosisCard}>
-        <Badge status="success" capitalization="sentence" priority="secondary">
-          Clear
-        </Badge>
-        <p className={styles.diagnosisEmpty}>
-          No open diagnostics on this return. You are ready to sign off.
-        </p>
-      </div>
-    )
-  }
 
   const handleToggle = (cardId: string, nextExpanded: boolean) => {
     setExpandedCardId(nextExpanded ? cardId : null)
@@ -313,28 +305,40 @@ function InitialDiagnosisFeed({
     <div className={styles.diagnosisFeed}>
       <div className={styles.diagnosticsFoundRow}>
         <SparkleAvatar />
-        <span className={styles.diagnosticsFoundLabel}>Diagnostics found</span>
+        <span className={styles.diagnosticsFoundLabel}>
+          {allIssuesResolved ? 'Diagnostics resolved' : 'Diagnostics found'}
+        </span>
       </div>
-      <div className={styles.diagnosisCardStack} role="list" aria-label="Diagnostic accordion">
-        {reviewCards.map(card => (
+      {allIssuesResolved && (
+        <div className={styles.diagnosisClearNote}>
+          <Badge status="success" capitalization="sentence" priority="secondary">
+            Clear
+          </Badge>
+          <p className={styles.diagnosisEmpty}>
+            No open diagnostics on this return. Review verified checks and your checklist below
+            before sign-off.
+          </p>
+        </div>
+      )}
+      {issueCards.length > 0 && (
+        <div className={styles.diagnosisCardStack} role="list" aria-label="Diagnostic accordion">
+          {issueCards.map(card => (
             <AgentDiagnosticExpandableCard
               key={card.id}
               card={card}
               expanded={!collapseCards && expandedCardId === card.id}
-              onExpandedChange={next =>
-                handleToggle(card.id, next)
-              }
+              onExpandedChange={next => handleToggle(card.id, next)}
               canFix={
                 canFixActions &&
-                card.variant === 'issue' &&
                 !!card.issueKey &&
                 fixableKeys.has(card.issueKey)
               }
               onFix={onFixIssueKey}
-              onOpenEvidence={onOpenEvidence}
             />
-        ))}
-      </div>
+          ))}
+        </div>
+      )}
+      <PreparerReviewCallouts syncCtx={syncCtx} collapseCards={collapseCards} />
     </div>
   )
 }
@@ -362,7 +366,7 @@ function ThinkingBlock({
           <img src={intuitIntelligenceLogo} alt="" className={styles.generationIcon} aria-hidden />
         )}
         {isComplete && expanded && (
-          <AiSparkles size="small" className={styles.generationSparkle} aria-hidden />
+          <AgentSparkleIcon size="inline" className={styles.generationSparkle} />
         )}
         <span
           className={`${styles.generationTitle} ${isComplete && !expanded ? styles.generationTitleMuted : ''}`}
@@ -391,7 +395,7 @@ function ThinkingBlock({
               >
                 <span className={styles.stepperRail} aria-hidden>
                   {isDone ? (
-                    <AiSparkles size="small" className={styles.stepperSparkle} />
+                    <AgentSparkleIcon size="inline" className={styles.stepperSparkle} />
                   ) : (
                     <span className={styles.stepperDot} />
                   )}
@@ -426,7 +430,6 @@ export default function AgentDiagnosticsPanel() {
   const [thread, setThread] = useState<ThreadEntry[]>([])
   const [progressValue, setProgressValue] = useState(0)
   const [chatInput, setChatInput] = useState('')
-  const [evidenceLink, setEvidenceLink] = useState<AgentViewLink | null>(null)
   const runRef = useRef(false)
   const welcomeAddedRef = useRef(false)
   const chatScrollRef = useRef<HTMLDivElement>(null)
@@ -458,10 +461,6 @@ export default function AgentDiagnosticsPanel() {
   const appendThread = useCallback((entry: Omit<ThreadEntry, 'id'> & { id?: string }) => {
     const withId = { ...entry, id: entry.id ?? nextThreadEntryId() } as ThreadEntry
     setThread(prev => [...prev, withId])
-  }, [])
-
-  const openEvidence = useCallback((link: AgentViewLink) => {
-    setEvidenceLink(link)
   }, [])
 
   const applyFixForIssue = useCallback(
@@ -728,7 +727,6 @@ export default function AgentDiagnosticsPanel() {
                           fixPlan={fixPlan}
                           collapseCards={collapseDiagnosisCards}
                           onFixIssueKey={handleFixByIssueKey}
-                          onOpenEvidence={openEvidence}
                         />
                         {openCount > 0 && phase === 'ready' && (
                           <div className={`${styles.responsePills} ${styles.responsePillsEnd}`}>
@@ -779,11 +777,7 @@ export default function AgentDiagnosticsPanel() {
                         {entry.viewLinks.length > 0 && (
                           <div className={styles.sourceLinkRow}>
                             {entry.viewLinks.map(link => (
-                              <SourceLinkChip
-                                key={link.label}
-                                link={link}
-                                onOpen={openEvidence}
-                              />
+                              <SourceLinkChip key={link.label} link={link} />
                             ))}
                           </div>
                         )}
@@ -798,24 +792,26 @@ export default function AgentDiagnosticsPanel() {
                       <FixProgressSummaryCard
                         fixedItems={entry.fixedItems}
                         totalCount={entry.totalCount}
-                        onOpenEvidence={openEvidence}
                       />
                       <ReminderCard />
+                      <PreparerReviewCallouts
+                        syncCtx={syncCtx}
+                        collapseCards
+                        ariaLabel="Sign-off reminders after fixes"
+                      />
                       <div className={`${styles.responsePills} ${styles.responsePillsEnd}`}>
                         <ActionChip
                           onClick={() =>
-                            openEvidence({ label: 'Updated return', formId: '1040' })
+                            openAgentViewLinkInWindow({
+                              label: 'Updated return',
+                              formId: '1040',
+                            })
                           }
                         >
-                          View updated return
+                          Updated return
+                          <NewWindow size="small" className={styles.actionChipIcon} aria-hidden />
                         </ActionChip>
-                        <ActionChip
-                          onClick={() =>
-                            openEvidence({ label: 'Source documents', tab: 'w2s', field: 'wages' })
-                          }
-                        >
-                          View source documents
-                        </ActionChip>
+                        <SourceLinkChip link={SOURCE_DOCUMENTS_VIEW_LINK} />
                         <ActionChip
                           onClick={() =>
                             openReviewReturnPopout({ form: '1040' })
@@ -840,19 +836,17 @@ export default function AgentDiagnosticsPanel() {
                     <button
                       type="button"
                       className={styles.quickChip}
-                      onClick={() => openEvidence({ label: 'Updated return', formId: '1040' })}
-                    >
-                      View updated return
-                    </button>
-                    <button
-                      type="button"
-                      className={styles.quickChip}
                       onClick={() =>
-                        openEvidence({ label: 'Source documents', tab: 'w2s', field: 'wages' })
+                        openAgentViewLinkInWindow({
+                          label: 'Updated return',
+                          formId: '1040',
+                        })
                       }
                     >
-                      View source documents
+                      Updated return
+                      <NewWindow size="small" className={styles.quickChipIcon} aria-hidden />
                     </button>
+                    <SourceLinkChip link={SOURCE_DOCUMENTS_VIEW_LINK} />
                   </>
                 )}
                 {phase === 'awaiting-next' && openCount > 0 && (
@@ -874,14 +868,6 @@ export default function AgentDiagnosticsPanel() {
                     </button>
                   </>
                 )}
-                <button
-                  type="button"
-                  className={styles.quickChip}
-                  onClick={() => openSourceDocumentReviewPopout()}
-                >
-                  <Upload size="small" aria-hidden />
-                  View source documents
-                </button>
               </div>
               <div className={styles.composerBox}>
                 <textarea
@@ -934,9 +920,6 @@ export default function AgentDiagnosticsPanel() {
           </div>
         </div>
 
-        {evidenceLink && (
-          <AgentEvidencePanel link={evidenceLink} onClose={() => setEvidenceLink(null)} />
-        )}
       </div>
     </div>
   )

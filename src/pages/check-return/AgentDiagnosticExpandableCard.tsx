@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { ChevronDown, ChevronUp } from '@design-systems/icons'
+import { ChevronDown, ChevronUp, NewWindow } from '@design-systems/icons'
 import { Badge, InfoBadgeIcon } from '@ids-ts/badge'
 import '@ids-ts/badge/dist/main.css'
 import { Button } from '@ids-ts/button'
@@ -8,9 +8,9 @@ import { Checkbox } from '@ids-ts/checkbox'
 import '@ids-ts/checkbox/dist/main.css'
 import { LinkActionButton } from '@ids-ts/link-action-button'
 import '@ids-ts/link-action-button/dist/main.css'
-import sparklesIcon from '../../assets/icons/sparkles.svg'
+import AgentSparkleIcon from '../../components/AgentSparkleIcon/AgentSparkleIcon'
 import type { AgentReviewCardModel } from '../../lib/agentDiagnosisReview'
-import type { AgentViewLink } from '../../lib/agentAutoFix'
+import { openAgentViewLinkInWindow } from '../../lib/agentAutoFix'
 import type { Phase2IssueKey } from '../data-review/phase2FlagSync'
 import styles from '../../styles/check-return/AgentDiagnosticExpandableCard.module.css'
 
@@ -21,7 +21,6 @@ type Props = {
   onExpandedChange: (expanded: boolean) => void
   canFix?: boolean
   onFix?: (issueKey: Phase2IssueKey) => void
-  onOpenEvidence: (link: AgentViewLink) => void
   /** When true, card is in a stacked accordion list (shared container styling). */
   inAccordionList?: boolean
   /** First/last item in accordion list for corner radius. */
@@ -48,7 +47,6 @@ export default function AgentDiagnosticExpandableCard({
   onExpandedChange,
   canFix = false,
   onFix,
-  onOpenEvidence,
   inAccordionList = false,
   accordionPosition = 'only',
 }: Props) {
@@ -99,14 +97,22 @@ export default function AgentDiagnosticExpandableCard({
                 <span className={styles.cardMeta}>{card.metaSubtitle}</span>
               </>
             )}
-            <Badge
-              status={badgeStatusForCard(card)}
-              priority={card.badgePriority}
-              capitalization={card.badgeCapitalization}
-              icon={card.showBadgeIcon ? InfoBadgeIcon : undefined}
-            >
-              {card.badgeLabel}
-            </Badge>
+            <span className={styles.categoryBadge}>
+              <Badge
+                status={badgeStatusForCard(card)}
+                priority={card.badgePriority}
+                capitalization={card.badgeCapitalization}
+                icon={
+                  card.showBadgeIcon &&
+                  card.badgePriority === 'secondary' &&
+                  card.badgeCapitalization === 'sentence'
+                    ? InfoBadgeIcon
+                    : undefined
+                }
+              >
+                {card.badgeLabel}
+              </Badge>
+            </span>
           </div>
           {!expanded && <p className={styles.cardSummary}>{card.summary}</p>}
         </div>
@@ -177,9 +183,13 @@ export default function AgentDiagnosticExpandableCard({
                           size="small"
                           weight="regular"
                           alignment="right"
-                          onClick={() => onOpenEvidence(row.viewLink!)}
+                          onClick={() => openAgentViewLinkInWindow(row.viewLink!)}
+                          aria-label={`${row.viewLink.label} (opens in a new window)`}
                         >
-                          {row.viewLink.label}
+                          <span className={styles.viewLinkContent}>
+                            {row.viewLink.label}
+                            <NewWindow size="small" className={styles.viewLinkIcon} aria-hidden />
+                          </span>
                         </LinkActionButton>
                       ) : card.variant === 'needs-review' && row.checklist ? (
                         <span className={styles.checklistHint}>
@@ -196,7 +206,7 @@ export default function AgentDiagnosticExpandableCard({
           {card.suggestedActions && card.suggestedActions.length > 0 && card.variant !== 'verified' && (
             <div className={styles.suggestedFix}>
               <div className={styles.suggestedFixHeader}>
-                <img src={sparklesIcon} alt="" className={styles.suggestedFixIcon} aria-hidden />
+                <AgentSparkleIcon size="medium" className={styles.suggestedFixIcon} />
                 <span className={styles.suggestedFixTitle}>
                   {card.variant === 'needs-review' ? 'Suggested next steps' : 'Suggested fix'}
                 </span>
