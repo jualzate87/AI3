@@ -16,8 +16,11 @@ Use `src/pages/data-review/AnnotationPopover.tsx` with `src/styles/data-review/A
 Use `src/pages/data-review/DocVerifyHeaderActions.tsx`.
 
 - Verification is additive across actors and displays attribution.
-- Place document Comment next to Verify.
-- Never replace one actor's verification with another actor's state.
+- Show each approval as a compact green check plus actor initials; put full name and timestamp in a tooltip.
+- A single document-tab check means one approval; a double check means preparer and reviewer approvals.
+- Place an IDS Comment IconControl next to the verification actions.
+- Show the current user's verification as removable; prior actors' marks are read-only.
+- Never replace or allow another actor to remove someone else's verification.
 
 ## L1/L2/L3 form checks
 

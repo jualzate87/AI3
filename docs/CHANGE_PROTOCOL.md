@@ -4,7 +4,7 @@ Most requests only need one sentence:
 
 > Change [surface/interaction] so [user outcome]. Preserve [anything especially sensitive]. Deploy when verified.
 
-You do not need to repeat IDS, token, accessibility, responsive, scope, or visual-QA instructions; the project rules and `/change` skill own them.
+You do not need to repeat IDS, token, accessibility, responsive, scope, visual-QA, or text-hierarchy instructions; the project rules and `/change` skill own them.
 
 ## Agent workflow
 
@@ -22,6 +22,7 @@ You do not need to repeat IDS, token, accessibility, responsive, scope, or visua
 
 - `/change [request]` — scoped implementation plus component discovery and visual QA.
 - `/visual-qa [surface]` — inspect and fix visual/component issues only on that surface.
+- `/text-hierarchy [surface]` — classify copy by importance and apply size, weight, color, and indent rules.
 - `/capture [correction]` — save durable feedback into decisions, patterns, or craft guidance.
 - `/deploy` — verify, commit, deploy, and confirm the live bundle.
 

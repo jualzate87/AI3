@@ -88,7 +88,7 @@ export default function SmartReturnHeader({
             style={{ background: currentUser.avatarColor }}
             title={currentUser.name}
           >
-            {currentUser.initials}
+            {currentUser.initial}
           </div>
         </div>
       </div>
@@ -124,7 +124,7 @@ export default function SmartReturnHeader({
               style={{ background: assignee.avatarColor }}
               title={assignee.name}
             >
-              {assignee.initials}
+              {assignee.initial}
             </div>
             {otherCollaborators.slice(0, 1).map(member => (
               <div
@@ -133,7 +133,7 @@ export default function SmartReturnHeader({
                 style={{ background: member.avatarColor }}
                 title={member.name}
               >
-                {member.initials}
+                {member.initial}
               </div>
             ))}
             {otherCollaborators.length > 1 ? (

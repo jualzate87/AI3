@@ -113,6 +113,30 @@
   flex-shrink: 0;
 }
 
+.approvalMark,
+.approvalMarkButton {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-component-gap-x-small, 4px);
+  min-height: var(--size-action-icon-medium, 24px);
+  font-family: var(--font-family-component);
+  font-size: var(--font-size-component-x-small, 12px);
+  font-weight: var(--font-weight-component);
+  line-height: var(--line-height-component);
+  color: var(--color-text-primary, #21262a);
+  white-space: nowrap;
+}
+
+.approvalMarkButton {
+  min-width: 0;
+  padding: 0 var(--space-component-inline-padding-x-small, 4px);
+}
+
+.approvalCheck {
+  color: var(--color-icon-positive, #00856d);
+  flex-shrink: 0;
+}
+
 .verifyHeaderActionsCol {
   display: flex;
   flex-direction: column;
@@ -130,7 +154,7 @@
   align-items: center;
   justify-content: flex-end;
   flex-shrink: 0;
-  gap: 8px;
+  gap: var(--space-component-gap-small, 8px);
 }
 
 .verifyBlockedBadge {

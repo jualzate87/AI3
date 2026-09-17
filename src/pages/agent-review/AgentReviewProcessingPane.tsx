@@ -31,10 +31,7 @@ import {
   intelligenceProcessingIntro,
   LABEL_NEED_ACTION,
 } from './agentIntelligenceCopy'
-import {
-  useAgentProcessingAnimation,
-  type ProcessingMode,
-} from './useAgentProcessingAnimation'
+import { useAgentProcessingAnimation, type ProcessingMode } from './useAgentProcessingAnimation'
 import {
   AgentIntelligenceReasoningLive,
   AgentIntelligenceShowThinking,
@@ -45,13 +42,13 @@ import styles from '../../styles/agent-review/AgentReviewProcessingPane.module.c
 interface AgentReviewProcessingPaneProps {
   mode?: ProcessingMode
   compact?: boolean
-  onViewUpdatedReturn: () => void
-  onViewSourceDocuments: () => void
   onViewReturnSummary: () => void
   onGetCaughtUp: () => void
   onFooterChipsChange?: (chips: ReactNode | null) => void
   /** Fired once when the fix animation finishes — use to persist demo amount corrections. */
   onFixesComplete?: () => void
+  /** Reopening an existing conversation — show the finished results without replaying them. */
+  resumed?: boolean
 }
 
 function openDocLink(link: { popoutTab?: string; popoutSubTab?: string }) {
@@ -65,12 +62,11 @@ function openDocLink(link: { popoutTab?: string; popoutSubTab?: string }) {
 export default function AgentReviewProcessingPane({
   mode = 'batch',
   compact = false,
-  onViewUpdatedReturn,
-  onViewSourceDocuments,
   onViewReturnSummary,
   onGetCaughtUp,
   onFooterChipsChange,
   onFixesComplete,
+  resumed = false,
 }: AgentReviewProcessingPaneProps) {
   const [thinkingExpanded, setThinkingExpanded] = useState(false)
   const fixSectionRefs = useRef<Record<number, HTMLElement | null>>({})
@@ -82,7 +78,7 @@ export default function AgentReviewProcessingPane({
 
   const reviewCards = useMemo(
     () =>
-      issues.map(issue =>
+      issues.map((issue) =>
         buildIntelligenceReviewModel(issue, live, SEED_AMOUNTS, totalWithholding),
       ),
     [issues, live, totalWithholding],
@@ -104,7 +100,7 @@ export default function AgentReviewProcessingPane({
     allFixesComplete,
     advanceToNextFix,
     fixSectionCount,
-  } = useAgentProcessingAnimation(mode)
+  } = useAgentProcessingAnimation(mode, resumed)
 
   useEffect(() => {
     if (allFixesComplete) onFixesComplete?.()
@@ -167,7 +163,7 @@ export default function AgentReviewProcessingPane({
           <div className={styles.cardsRow}>
             <div className={styles.cardsColumn}>
               <div className={styles.cardList} role="list" aria-label="Diagnostic issues">
-                {reviewCards.map(card => (
+                {reviewCards.map((card) => (
                   <AgentDiagnosticExpandableCard
                     key={card.id}
                     card={card}
@@ -204,7 +200,9 @@ export default function AgentReviewProcessingPane({
                       </span>
                       <div className={styles.progressItemBody}>
                         <div className={styles.progressItemMain}>
-                          <span className={done ? styles.progressItemDone : undefined}>
+                          <span
+                            className={`${styles.progressItemLabel} ${done ? styles.progressItemDone : ''}`}
+                          >
                             {item.label}
                           </span>
                           {item.subtitle && done && (
@@ -214,7 +212,9 @@ export default function AgentReviewProcessingPane({
                         {(done || index === fixSectionCount) && (
                           <Link
                             href="#"
-                            onClick={e => {
+                            size="component-x-small"
+                            className={styles.progressLink}
+                            onClick={(e) => {
                               e.preventDefault()
                               handleProgressView(index)
                             }}
@@ -238,6 +238,7 @@ export default function AgentReviewProcessingPane({
                 visibleSteps={visibleSteps}
                 headerVisible={reasoningHeaderVisible}
                 exiting={reasoningExiting}
+                working={!reasoningExiting}
               />
             )}
 
@@ -253,7 +254,7 @@ export default function AgentReviewProcessingPane({
 
                 <AgentIntelligenceShowThinking
                   expanded={thinkingExpanded}
-                  onToggle={() => setThinkingExpanded(v => !v)}
+                  onToggle={() => setThinkingExpanded((v) => !v)}
                   steps={INTELLIGENCE_REASONING_STEPS}
                 />
 
@@ -288,7 +289,7 @@ export default function AgentReviewProcessingPane({
                     <p className={styles.attentionIntro}>{INTELLIGENCE_ATTENTION_INTRO}</p>
 
                     <ul className={styles.attentionList}>
-                      {INTELLIGENCE_NEEDS_ATTENTION_ITEMS.map(item => (
+                      {INTELLIGENCE_NEEDS_ATTENTION_ITEMS.map((item) => (
                         <li key={item.id} className={styles.attentionItem}>
                           <CircleExclamationFill
                             size="small"
@@ -300,7 +301,7 @@ export default function AgentReviewProcessingPane({
                             <p className={styles.attentionItemDetail}>{item.detail}</p>
                             <Link
                               href="#"
-                              onClick={e => {
+                              onClick={(e) => {
                                 e.preventDefault()
                                 openDocLink(item)
                               }}
@@ -334,7 +335,7 @@ export default function AgentReviewProcessingPane({
                     return (
                       <div
                         key={section.title}
-                        ref={el => {
+                        ref={(el) => {
                           fixSectionRefs.current[sectionIndex + 1] = el
                         }}
                         className={`${styles.fixSection} ${styles.revealIn}`}
@@ -345,8 +346,11 @@ export default function AgentReviewProcessingPane({
                           <span className={styles.fixSectionTitle}>{section.title}</span>
                         </div>
                         <ul className={styles.fixLinkList}>
-                          {section.links.map(link => (
-                            <li key={`${section.title}-${link.docLabel}`} className={styles.fixLinkRow}>
+                          {section.links.map((link) => (
+                            <li
+                              key={`${section.title}-${link.docLabel}`}
+                              className={styles.fixLinkRow}
+                            >
                               <button
                                 type="button"
                                 className={styles.richDocLink}
@@ -366,11 +370,7 @@ export default function AgentReviewProcessingPane({
 
                 {showFooter && (
                   <div className={`${styles.revealIn}`}>
-                    <AgentReviewSummaryFooter
-                      onViewUpdatedReturn={onViewUpdatedReturn}
-                      onViewSourceDocuments={onViewSourceDocuments}
-                      onPrimaryAction={onGetCaughtUp}
-                    />
+                    <AgentReviewSummaryFooter onPrimaryAction={onGetCaughtUp} />
                   </div>
                 )}
               </div>
@@ -378,7 +378,6 @@ export default function AgentReviewProcessingPane({
           </div>
         </div>
       </div>
-
     </div>
   )
 }

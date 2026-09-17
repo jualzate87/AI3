@@ -7,14 +7,22 @@ import { LinkActionButton } from '@ids-ts/link-action-button'
 import '@ids-ts/link-action-button/dist/main.css'
 import { TextArea } from '@ids-ts/textarea'
 import '@ids-ts/textarea/dist/main.css'
-import { Badge } from '@ids-ts/badge'
+import { Badge, SuccessBadgeIcon, WarningBadgeIcon } from '@ids-ts/badge'
 import '@ids-ts/badge/dist/main.css'
+import {
+  Accordion,
+  AccordionItem,
+  AccordionItemHeader,
+  AccordionItemBody,
+} from '@ids-ts/accordion'
+import '@ids-ts/accordion/dist/main.css'
 import intuitIntelligenceLogo from '../../assets/icons/intuit-intelligence-logo-small.svg'
 import { useReturnWorkflow } from '../../contexts/ReturnWorkflowContext'
 import {
   buildDefaultHandoffNote,
   getReturnStatus,
   getTeamMember,
+  handoffConfirmLabel,
   type PendingHandoff,
 } from '../../lib/returnWorkflow'
 import styles from '../../styles/handoff/HandoffAssistModal.module.css'
@@ -38,16 +46,18 @@ export default function HandoffAssistModal({
   useEffect(() => {
     if (!open || !handoff) return
     const from = getTeamMember(handoff.fromAssigneeId)
-    const to = getTeamMember(handoff.toAssigneeId)
-    setNotes(buildDefaultHandoffNote(from.name, to.name))
+    const to = handoff.kind === 'assignee' ? getTeamMember(handoff.toAssigneeId) : null
+    setNotes(buildDefaultHandoffNote(from, to))
   }, [open, handoff])
 
   if (!handoff) return null
-  const to = getTeamMember(handoff.toAssigneeId)
+  const to = handoff.kind === 'assignee' ? getTeamMember(handoff.toAssigneeId) : null
   const currentStatus = getReturnStatus(workflow.statusId)
   const nextStatus = getReturnStatus(handoff.suggestedStatusId)
   const statusWillChange = workflow.statusId !== handoff.suggestedStatusId
   const sections = handoff.previewSections
+  const summaryLabel = to ? `Quick summary for ${to.name}` : 'Quick summary of this return'
+  const notesLabel = to ? `Leave notes for ${to.name}` : 'Leave a note on this return'
 
   return (
     <Modal open={open} onClose={onDismiss} size="large" dismissible>
@@ -57,67 +67,78 @@ export default function HandoffAssistModal({
       <ModalContent alignment="left" overflow maxHeight="70vh">
         <div className={styles.body}>
           <p className={styles.lead}>
-            We noticed you&apos;re changing the assignee to <strong>{to.name}</strong>.
-            {statusWillChange ? (
+            {to ? (
               <>
-                {' '}
-                We&apos;ll update the return status from{' '}
-                <strong>{currentStatus.label}</strong> to <strong>{nextStatus.label}</strong> to match
-                this handoff.
+                We noticed you&apos;re changing the assignee to <strong>{to.name}</strong>.
+                {statusWillChange ? (
+                  <>
+                    {' '}
+                    We&apos;ll update the return status from{' '}
+                    <strong>{currentStatus.label}</strong> to <strong>{nextStatus.label}</strong> to
+                    match this handoff.
+                  </>
+                ) : null}
               </>
-            ) : null}
+            ) : (
+              <>
+                We noticed you&apos;re moving this return from{' '}
+                <strong>{currentStatus.label}</strong> to <strong>{nextStatus.label}</strong>.
+              </>
+            )}
           </p>
 
-          <section className={styles.previewSection} aria-label="What the next reviewer will see">
-            <div className={styles.previewHeadingRow}>
-              <img src={intuitIntelligenceLogo} alt="" className={styles.sparkle} />
-              <h3 className={styles.previewHeading}>Quick summary for {to.name}</h3>
+          <div className={styles.panel}>
+            <div className={styles.notesField}>
+              <TextArea
+                id="handoff-notes"
+                label={notesLabel}
+                helperText="These notes appear in Comments and the reviewer summary."
+                value={notes}
+                onChange={e => setNotes(e.target.value)}
+                rows={5}
+                width="100%"
+              />
             </div>
 
-            <div className={styles.cards}>
-              {sections.map(section => (
-                <article
-                  key={section.id}
-                  className={
-                    section.id === 'heads-up' ? styles.headsUpCard : styles.checkedCard
-                  }
-                >
-                  <div className={styles.cardHeader}>
-                    <h4 className={styles.cardTitle}>{section.title}</h4>
-                    {section.id === 'heads-up' ? (
-                      <Badge status="warning" priority="secondary" capitalization="caps">
-                        Needs attention
-                      </Badge>
-                    ) : (
-                      <Badge status="success" priority="secondary" capitalization="caps">
-                        Ready
-                      </Badge>
-                    )}
-                  </div>
-                  <p className={styles.cardIntro}>{section.intro}</p>
-                  <ul className={styles.itemList}>
-                    {section.items.map(item => (
-                      <li key={item.title} className={styles.item}>
-                        <span className={styles.itemTitle}>{item.title}</span>
-                        <span className={styles.itemDetail}>{item.detail}</span>
-                      </li>
+            <Accordion variant="text" size="small" allowZeroExpanded chevronPosition="right">
+              <AccordionItem id="handoff-summary">
+                <AccordionItemHeader className={styles.summaryHeader}>
+                  <span className={styles.summaryHeaderLabel}>
+                    <img src={intuitIntelligenceLogo} alt="" className={styles.sparkle} />
+                    {summaryLabel}
+                  </span>
+                </AccordionItemHeader>
+                <AccordionItemBody>
+                  <div className={styles.sections}>
+                    {sections.map(section => (
+                      <section key={section.id} className={styles.section}>
+                        <div className={styles.sectionHeader}>
+                          {section.id === 'heads-up' ? (
+                            <Badge shape="round" status="warning" aria-label="Needs attention">
+                              <WarningBadgeIcon />
+                            </Badge>
+                          ) : (
+                            <Badge shape="round" status="success" aria-label="Ready">
+                              <SuccessBadgeIcon />
+                            </Badge>
+                          )}
+                          <h4 className={styles.sectionTitle}>{section.title}</h4>
+                        </div>
+                        <p className={styles.sectionIntro}>{section.intro}</p>
+                        <ul className={styles.itemList}>
+                          {section.items.map(item => (
+                            <li key={item.title} className={styles.item}>
+                              <span className={styles.itemTitle}>{item.title}</span>
+                              <span className={styles.itemDetail}>{item.detail}</span>
+                            </li>
+                          ))}
+                        </ul>
+                      </section>
                     ))}
-                  </ul>
-                </article>
-              ))}
-            </div>
-          </section>
-
-          <div className={styles.notesField}>
-            <TextArea
-              id="handoff-notes"
-              label={`Leave notes for ${to.name}`}
-              helperText="These notes appear in Comments and the reviewer summary."
-              value={notes}
-              onChange={e => setNotes(e.target.value)}
-              rows={5}
-              width="100%"
-            />
+                  </div>
+                </AccordionItemBody>
+              </AccordionItem>
+            </Accordion>
           </div>
         </div>
       </ModalContent>
@@ -129,10 +150,10 @@ export default function HandoffAssistModal({
             alignment="left"
             onClick={onDismiss}
           >
-            Change assignee only
+            {to ? 'Change assignee only' : 'Change status only'}
           </LinkActionButton>
           <Button priority="primary" onClick={() => onConfirm(notes.trim())}>
-            Sign off for review
+            {handoffConfirmLabel(handoff)}
           </Button>
         </div>
       </ModalActions>

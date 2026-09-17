@@ -83,7 +83,11 @@ import {
 } from './data-review/docReviewStatus'
 import { usePacketDocReviewControls } from '../hooks/usePacketDocReviewControls'
 import { buildUnreviewedSourceDocs } from './data-review/packetDocNavigation'
-import { isDocShownVerified, navigationForVerifiedDocKey } from '../data/verifiedDocKeys'
+import {
+  getVerifiedDocEntry,
+  isDocShownVerified,
+  navigationForVerifiedDocKey,
+} from '../data/verifiedDocKeys'
 import DetailFields1099R, { R_PAYER_TABS } from './data-review/DetailFields1099R'
 import DetailFieldsNec, { NEC_PAYER_TABS } from './data-review/DetailFieldsNec'
 import AttentionCountBadge from './data-review/AttentionCountBadge'
@@ -475,6 +479,29 @@ export default function DataReviewPage() {
     const status = getDocConfirmStatus(verifiedDocs, docKey, reviewerConfirmedDocs)
     if (status === 'unverified') return undefined
     return status
+  }
+
+  const docApprovalTooltip = (docKey: string, flagCount = 0) => {
+    const preparer = getVerifiedDocEntry(verifiedDocsMeta, docKey)
+    const reviewer = getVerifiedDocEntry(reviewerConfirmedDocsMeta, docKey)
+    const approvals = [
+      preparer ? `Verified by ${preparer.by} · ${preparer.at}` : '',
+      reviewer ? `Verified by ${reviewer.by} · ${reviewer.at}` : '',
+    ].filter(Boolean)
+
+    if (approvals.length > 0) {
+      const waitingForCurrentReviewer =
+        reviewRole === 'reviewer' && preparer && !reviewer
+          ? ' · Waiting for your verification'
+          : ''
+      return `${approvals.join(' · ')}${waitingForCurrentReviewer}`
+    }
+
+    if (flagCount > 0) {
+      return `${flagCount} import flag${flagCount === 1 ? '' : 's'} must be resolved before verification`
+    }
+
+    return 'Not verified yet'
   }
 
   const unreviewedSourceDocs = buildUnreviewedSourceDocs({
@@ -2280,6 +2307,10 @@ export default function DataReviewPage() {
                     flagCount: importFlagCountForDisplay(divPayerFieldCounts[t.key]),
                     showClearedCheck: isDocShownVerified(verifiedDocs, divVerifiedDocKey(t.key), reviewerConfirmedDocs),
                     confirmStatus: peelDocConfirmStatus(divVerifiedDocKey(t.key)),
+                    statusTooltip: docApprovalTooltip(
+                      divVerifiedDocKey(t.key),
+                      importFlagCountForDisplay(divPayerFieldCounts[t.key]),
+                    ),
                   }))}
                   activeKey={activeDivPayer}
                   onChange={handlePeelDocChange}
@@ -2293,6 +2324,10 @@ export default function DataReviewPage() {
                     flagCount: importFlagCountForDisplay(intPayerFieldCounts[t.key]),
                     showClearedCheck: isDocShownVerified(verifiedDocs, intVerifiedDocKey(t.key), reviewerConfirmedDocs),
                     confirmStatus: peelDocConfirmStatus(intVerifiedDocKey(t.key)),
+                    statusTooltip: docApprovalTooltip(
+                      intVerifiedDocKey(t.key),
+                      importFlagCountForDisplay(intPayerFieldCounts[t.key]),
+                    ),
                   }))}
                   activeKey={activeIntPayer}
                   onChange={handlePeelDocChange}
@@ -2306,6 +2341,10 @@ export default function DataReviewPage() {
                     flagCount: importFlagCountForDisplay(w2PayerFieldCounts[t.key]),
                     showClearedCheck: isDocShownVerified(verifiedDocs, t.key, reviewerConfirmedDocs),
                     confirmStatus: peelDocConfirmStatus(t.key),
+                    statusTooltip: docApprovalTooltip(
+                      t.key,
+                      importFlagCountForDisplay(w2PayerFieldCounts[t.key]),
+                    ),
                   }))}
                   activeKey={activeSubTab}
                   onChange={handlePeelDocChange}
@@ -2319,6 +2358,10 @@ export default function DataReviewPage() {
                     flagCount: importFlagCountForDisplay(countPhase1FlagsForRPayer(reviewedFields)),
                     showClearedCheck: isDocShownVerified(verifiedDocs, '1099-r', reviewerConfirmedDocs),
                     confirmStatus: peelDocConfirmStatus('1099-r'),
+                    statusTooltip: docApprovalTooltip(
+                      '1099-r',
+                      importFlagCountForDisplay(countPhase1FlagsForRPayer(reviewedFields)),
+                    ),
                   }))}
                   activeKey="meridian"
                   onChange={() => {}}
@@ -2332,6 +2375,10 @@ export default function DataReviewPage() {
                     flagCount: importFlagCountForDisplay(countPhase1FlagsForNecPayer(t.key, reviewedFields)),
                     showClearedCheck: isDocShownVerified(verifiedDocs, '1099-nec', reviewerConfirmedDocs),
                     confirmStatus: peelDocConfirmStatus('1099-nec'),
+                    statusTooltip: docApprovalTooltip(
+                      '1099-nec',
+                      importFlagCountForDisplay(countPhase1FlagsForNecPayer(t.key, reviewedFields)),
+                    ),
                   }))}
                   activeKey="summit"
                   onChange={() => {}}

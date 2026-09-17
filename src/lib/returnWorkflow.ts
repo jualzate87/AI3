@@ -3,7 +3,8 @@ export type TeamRole = 'preparer' | 'reviewer' | 'manager'
 export type TeamMember = {
   id: string
   name: string
-  initials: string
+  /** Single letter shown in the header avatars. */
+  initial: string
   role: TeamRole
   avatarColor: string
 }
@@ -16,9 +17,9 @@ export type ReturnStatus = {
 }
 
 export const TEAM_MEMBERS: TeamMember[] = [
-  { id: 'sarah', name: 'Sarah Chen', initials: 'SC', role: 'preparer', avatarColor: '#236cff' },
-  { id: 'jake', name: 'Jake Morrison', initials: 'JM', role: 'reviewer', avatarColor: '#7c00f6' },
-  { id: 'alex', name: 'Alex Rivera', initials: 'AR', role: 'manager', avatarColor: '#00856d' },
+  { id: 'sarah', name: 'Sarah Chen', initial: 'S', role: 'preparer', avatarColor: '#236cff' },
+  { id: 'jake', name: 'Jake Morrison', initial: 'J', role: 'reviewer', avatarColor: '#7c00f6' },
+  { id: 'alex', name: 'Alex Rivera', initial: 'A', role: 'manager', avatarColor: '#00856d' },
 ]
 
 export const RETURN_STATUSES: ReturnStatus[] = [
@@ -51,9 +52,15 @@ export type ReturnWorkflowState = {
   currentUserId: string
 }
 
+/** 'assignee' hands the return to someone else; 'status' moves it forward in place. */
+export type HandoffKind = 'assignee' | 'status'
+
 export type PendingHandoff = {
+  kind: HandoffKind
   fromAssigneeId: string
+  /** Equals fromAssigneeId for a status handoff — nobody is receiving the return. */
   toAssigneeId: string
+  fromStatusId: ReturnStatusId
   suggestedStatusId: ReturnStatusId
   previewBullets: HandoffPreviewBullet[]
   previewSections: HandoffSummarySection[]
@@ -128,7 +135,7 @@ export function seedHandoffNoteIfMissing(): void {
     const jake = getTeamMember('jake')
     const seeded = {
       id: 'handoff-seed',
-      text: buildDefaultHandoffNote(sarah.name, jake.name),
+      text: buildDefaultHandoffNote(sarah, jake),
       author: sarah.name,
       at: new Date().toLocaleString(undefined, {
         month: 'short',
@@ -146,7 +153,29 @@ export function seedHandoffNoteIfMissing(): void {
   }
 }
 
-/** Detect preparer → reviewer handoff and suggest status change. */
+function firstName(member: TeamMember): string {
+  return member.name.split(' ')[0]
+}
+
+function statusIndex(id: ReturnStatusId): number {
+  return RETURN_STATUSES.findIndex(status => status.id === id)
+}
+
+/** Where the return should land once someone else picks it up. */
+function suggestStatusForAssignee(
+  from: TeamMember,
+  to: TeamMember,
+  currentStatusId: ReturnStatusId,
+): ReturnStatusId {
+  if (to.role === 'preparer') return 'preparation'
+  if (from.role === 'preparer') return currentStatusId === 'preparation' ? 'review' : currentStatusId
+  if (from.role === 'reviewer' && to.role === 'manager') {
+    return currentStatusId === 'review' ? 'ready-to-file' : currentStatusId
+  }
+  return currentStatusId
+}
+
+/** Any assignee change is a handoff — the summary adapts to who is handing off. */
 export function detectHandoff(
   fromAssigneeId: string,
   toAssigneeId: string,
@@ -157,43 +186,86 @@ export function detectHandoff(
   const from = getTeamMember(fromAssigneeId)
   const to = getTeamMember(toAssigneeId)
 
-  const isPreparerToReviewer =
-    from.role === 'preparer' && (to.role === 'reviewer' || to.role === 'manager')
-  if (!isPreparerToReviewer) return null
-
-  const suggestedStatusId: ReturnStatusId =
-    currentStatusId === 'preparation' ? 'review' : currentStatusId
-
   return {
+    kind: 'assignee',
     fromAssigneeId,
     toAssigneeId,
-    suggestedStatusId,
-    previewSections: buildHandoffPreviewSections(from.name, to.name),
-    previewBullets: buildHandoffPreviewBullets(from.name, to.name),
+    fromStatusId: currentStatusId,
+    suggestedStatusId: suggestStatusForAssignee(from, to, currentStatusId),
+    previewSections: buildHandoffPreviewSections(from, to),
+    previewBullets: buildHandoffPreviewBullets(from, to),
   }
 }
 
+/**
+ * Moving the return forward is a sign-off and gets the same confirmation.
+ * Sending it backward applies immediately — there is nothing to hand over.
+ */
+export function detectStatusHandoff(
+  assigneeId: string,
+  currentStatusId: ReturnStatusId,
+  nextStatusId: ReturnStatusId,
+): PendingHandoff | null {
+  if (statusIndex(nextStatusId) <= statusIndex(currentStatusId)) return null
+
+  const actor = getTeamMember(assigneeId)
+
+  return {
+    kind: 'status',
+    fromAssigneeId: assigneeId,
+    toAssigneeId: assigneeId,
+    fromStatusId: currentStatusId,
+    suggestedStatusId: nextStatusId,
+    previewSections: buildHandoffPreviewSections(actor, null),
+    previewBullets: buildHandoffPreviewBullets(actor, null),
+  }
+}
+
+/**
+ * The summary is cumulative: a preparer reports their own prep, and anyone
+ * downstream reports the whole return so far. `to` is null on a status handoff.
+ */
 export function buildHandoffPreviewSections(
-  fromName: string,
-  toName: string,
+  from: TeamMember,
+  to: TeamMember | null,
+): HandoffSummarySection[] {
+  return from.role === 'preparer' ? preparerSections(from, to) : reviewerSections(from, to)
+}
+
+function headsUpTitle(to: TeamMember | null): string {
+  return to ? `Heads up for ${firstName(to)}` : 'Still open on this return'
+}
+
+function headsUpIntro(to: TeamMember | null): string {
+  return to
+    ? 'These are not fully proven. Call them out before you sign off — or leave them for the next person.'
+    : 'These are not fully proven. Call them out before you sign off — or leave them for whoever picks this up.'
+}
+
+function preparerSections(
+  from: TeamMember,
+  to: TeamMember | null,
 ): HandoffSummarySection[] {
   return [
     {
       id: 'checked',
       title: 'Checked and ready',
-      intro: `A concise version of the AI review ${fromName} already completed.`,
+      intro: `A concise version of the AI review ${from.name} already completed.`,
       items: [
         {
           title: 'W-2 income variance resolved',
-          detail: 'Tech Circle Box 1 differed from last year because of a mid-year raise — confirmed against the source PDF.',
+          detail:
+            'Tech Circle Box 1 differed from last year because of a mid-year raise — confirmed against the source PDF.',
         },
         {
           title: '1099-DIV classification corrected',
-          detail: 'Qualified vs. ordinary split was reclassified so the amounts match the broker statement.',
+          detail:
+            'Qualified vs. ordinary split was reclassified so the amounts match the broker statement.',
         },
         {
           title: 'Withholding reviewed',
-          detail: 'Federal withholding and state elections were checked against projected liability. No change needed.',
+          detail:
+            'Federal withholding and state elections were checked against projected liability. No change needed.',
         },
         {
           title: 'Source documents imported',
@@ -203,20 +275,76 @@ export function buildHandoffPreviewSections(
     },
     {
       id: 'heads-up',
-      title: `Heads up for ${toName.split(' ')[0]}`,
-      intro: 'These were not fully proven during prep. Call them out before you sign off — or leave them for the next person.',
+      title: headsUpTitle(to),
+      intro: headsUpIntro(to),
       items: [
         {
           title: '1099-DIV split still needs a second look',
-          detail: `${fromName} corrected the classification, but the broker formatting was unusual. Verify the split against the PDF.`,
+          detail: `${from.name} corrected the classification, but the broker formatting was unusual. Verify the split against the PDF.`,
         },
         {
           title: 'Form 1098 mortgage interest is an estimate',
-          detail: 'The deduction is based on an estimate. Confirm the amount with the client and upload the actual form when it arrives.',
+          detail:
+            'The deduction is based on an estimate. Confirm the amount with the client and upload the actual form when it arrives.',
         },
         {
           title: 'Form 2210 penalty is a judgment call',
-          detail: 'The underpayment shortfall is calculated, but whether to annualize income or accept the penalty is yours to decide.',
+          detail:
+            'The underpayment shortfall is calculated, but whether to annualize income or accept the penalty is yours to decide.',
+        },
+      ],
+    },
+  ]
+}
+
+function reviewerSections(
+  from: TeamMember,
+  to: TeamMember | null,
+): HandoffSummarySection[] {
+  const preparer = getTeamMember('sarah')
+
+  return [
+    {
+      id: 'checked',
+      title: 'Reviewed and ready',
+      intro: `Everything done on this return so far — ${firstName(preparer)}'s prep and ${firstName(from)}'s review in one place.`,
+      items: [
+        {
+          title: 'Prep and AI review hold up',
+          detail: `The W-2 variance, 1099-DIV classification, and withholding resolutions ${firstName(preparer)} recorded were spot-checked against the source documents.`,
+        },
+        {
+          title: '1099-DIV split verified against the broker PDF',
+          detail: `The one item ${firstName(preparer)} flagged for a second look. The qualified vs. ordinary split matches the broker statement.`,
+        },
+        {
+          title: 'Source documents carry two verifications',
+          detail: `W-2, 1099-INT, and 1099-DIV are verified by ${preparer.name} and confirmed by ${from.name}.`,
+        },
+        {
+          title: '1040 checks complete through L2',
+          detail: `${firstName(from)}'s review marks sit alongside ${firstName(preparer)}'s on every checked line.`,
+        },
+      ],
+    },
+    {
+      id: 'heads-up',
+      title: headsUpTitle(to),
+      intro: headsUpIntro(to),
+      items: [
+        {
+          title: 'Form 1098 mortgage interest is still an estimate',
+          detail:
+            'The deduction has not been confirmed with the client. Upload the actual form when it arrives and update the amount.',
+        },
+        {
+          title: 'Form 2210 penalty call is still open',
+          detail:
+            'The underpayment shortfall is calculated, but nobody has decided whether to annualize income or accept the penalty.',
+        },
+        {
+          title: 'Client e-file authorization is not signed',
+          detail: 'Form 8879 has to come back from the client before this return can be filed.',
         },
       ],
     },
@@ -224,10 +352,10 @@ export function buildHandoffPreviewSections(
 }
 
 export function buildHandoffPreviewBullets(
-  fromName: string,
-  toName: string,
+  from: TeamMember,
+  to: TeamMember | null,
 ): HandoffPreviewBullet[] {
-  return buildHandoffPreviewSections(fromName, toName).flatMap(section =>
+  return buildHandoffPreviewSections(from, to).flatMap(section =>
     section.items.map(item => ({
       text: `${item.title} — ${item.detail}`,
       emphasis: section.id === 'heads-up',
@@ -235,6 +363,21 @@ export function buildHandoffPreviewBullets(
   )
 }
 
-export function buildDefaultHandoffNote(fromName: string, toName: string): string {
-  return `${fromName} completed initial prep and AI review. @${toName.split(' ')[0]} — please verify the 1099-DIV qualified vs. ordinary split against the broker PDF. Everything else is reconciled and ready for your review.`
+export function buildDefaultHandoffNote(from: TeamMember, to: TeamMember | null): string {
+  if (from.role === 'preparer') {
+    const mention = to ? `@${firstName(to)} — please` : 'Next up:'
+    return `${from.name} completed initial prep and AI review. ${mention} verify the 1099-DIV qualified vs. ordinary split against the broker PDF. Everything else is reconciled and ready for review.`
+  }
+
+  const mention = to ? `@${firstName(to)} — two items are still open: ` : 'Two items are still open: '
+  return `${from.name} completed the detail review and every source document is verified. ${mention}Form 1098 mortgage interest is still an estimate, and the Form 2210 penalty call has not been made.`
+}
+
+/** Action label for the handoff modal's primary button. */
+export function handoffConfirmLabel(handoff: PendingHandoff): string {
+  if (handoff.kind === 'status') {
+    return `Sign off and move to ${getReturnStatus(handoff.suggestedStatusId).label}`
+  }
+  const to = getTeamMember(handoff.toAssigneeId)
+  return to.role === 'preparer' ? 'Send back with notes' : `Sign off and hand to ${firstName(to)}`
 }

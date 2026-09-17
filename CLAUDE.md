@@ -17,6 +17,7 @@ This is a prototyping playground for the **Intuit Design System (IDS)**. It's de
 
 - **Make a scoped change:** Use `/change` and describe the user outcome
 - **Review visual quality:** Use `/visual-qa` with a route or surface
+- **Check text hierarchy:** Use `/text-hierarchy` when styling copy, lists, or navigation
 - **Save a correction:** Use `/capture` so repeated feedback becomes durable guidance
 - **Publish:** Use `/deploy` to verify, commit, deploy, and confirm the live bundle
 - **Build something:** Use `/prototype` and describe what you want

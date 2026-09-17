@@ -1,5 +1,6 @@
 import { useCallback, useState } from 'react'
 import {
+  actorInitials,
   getReviewActor,
   isCurrentReviewerActor,
   REVIEWER_NAME,
@@ -10,10 +11,13 @@ import { useReturnWorkflow } from '../../contexts/ReturnWorkflowContext'
 import Tooltip from './Tooltip'
 import AnnotationPopover from './AnnotationPopover'
 import { formatAnnotationNote, isNoteLikeAnnotation, type AnnotationType } from './annotationTypes'
-import { Badge, SuccessBadgeIcon, WarningBadgeIcon } from '@ids-ts/badge'
+import { Badge } from '@ids-ts/badge'
 import '@ids-ts/badge/dist/main.css'
 import { Button } from '@ids-ts/button'
 import '@ids-ts/button/dist/main.css'
+import { IconControl } from '@ids-ts/icon-control'
+import '@ids-ts/icon-control/dist/main.css'
+import { ChevronDown, CircleCheckFill, Comment } from '@design-systems/icons'
 import { getVerifiedDocEntry, isVerifiedInSet, verifiedDocLabel } from '../../data/verifiedDocKeys'
 import type { LiveAmounts } from '../../data/liveReturn'
 import {
@@ -35,40 +39,47 @@ type Props = {
   onVerifyDoc?: (docKey: string) => void
 }
 
-function VerifiedBadge({
-  label,
+function ApprovalMark({
+  entry,
   tooltip,
-  clickable,
-  onClick,
+  own,
+  onRemove,
 }: {
-  label: string
+  entry: ActivityEntry
   tooltip: string
-  clickable: boolean
-  onClick?: () => void
+  own: boolean
+  onRemove?: () => void
 }) {
-  const badge = (
-    <Badge
-      shape="round"
-      status="success"
-      label={label}
-      aria-label={label}
-    >
-      <SuccessBadgeIcon />
-    </Badge>
+  const content = (
+    <>
+      <CircleCheckFill size="x-small" className={styles.approvalCheck} aria-hidden />
+      <span>{actorInitials(entry.by)}</span>
+      {own && <ChevronDown size="x-small" aria-hidden />}
+    </>
   )
 
-  if (!clickable) return badge
+  if (!own) {
+    return (
+      <Tooltip text={tooltip} placement="top">
+        <span className={styles.approvalMark} aria-label={tooltip} tabIndex={0}>
+          {content}
+        </span>
+      </Tooltip>
+    )
+  }
 
   return (
-    <Button
-      priority="borderless"
-      size="small"
-      className={styles.verifiedBadgeBtn}
-      onClick={onClick}
-      aria-label={tooltip}
-    >
-      {badge}
-    </Button>
+    <Tooltip text={tooltip} placement="top">
+      <Button
+        priority="borderless"
+        size="small"
+        className={styles.approvalMarkButton}
+        onClick={onRemove}
+        aria-label={`${tooltip}. Remove your verification`}
+      >
+        {content}
+      </Button>
+    </Tooltip>
   )
 }
 
@@ -94,15 +105,14 @@ export default function DocVerifyHeaderActions({
   const isReviewerActor = isCurrentReviewerActor()
   const preparerMeta = getVerifiedDocEntry(verifiedDocsMeta, docKey)
   const reviewerMeta = getVerifiedDocEntry(reviewerConfirmedDocsMeta, docKey)
-  const preparerName = preparerMeta?.by ?? 'preparer'
-  const reviewerName = reviewerMeta?.by ?? (isReviewerActor ? getReviewActor() : REVIEWER_NAME)
   const docLabel = verifiedDocLabel(docKey)
+  const reviewerName = reviewerMeta?.by ?? (isReviewerActor ? getReviewActor() : REVIEWER_NAME)
   const preparerTooltip = preparerMeta
     ? `Verified by ${preparerMeta.by} · ${preparerMeta.at}`
-    : 'Click to unmark verified'
+    : 'Verified by preparer'
   const reviewerTooltip = reviewerMeta
     ? `Verified by ${reviewerMeta.by} · ${reviewerMeta.at}`
-    : 'Click to remove your stamp'
+    : `Verified by ${isReviewerActor ? getReviewActor() : REVIEWER_NAME}`
 
   const verifyCheck = reviewedFields
     ? canVerifyDoc({
@@ -158,29 +168,13 @@ export default function DocVerifyHeaderActions({
   return (
     <div className={styles.verifyHeaderActionsCol}>
       <div className={styles.verifyStatusGroup}>
-        {needsReviewerConfirm && (
-          <Tooltip text="Needs your stamp" placement="top">
-            <span className={styles.needsConfirmIconWrap}>
-              <Badge
-                shape="round"
-                status="warning"
-                aria-label="Needs your stamp"
-              >
-                <WarningBadgeIcon />
-              </Badge>
-            </span>
-          </Tooltip>
-        )}
-
         {isPreparerVerified && (
-          <Tooltip text={preparerTooltip} placement="top">
-            <VerifiedBadge
-              label={`Verified by ${preparerName}`}
-              tooltip={preparerTooltip}
-              clickable={!isReviewerActor}
-              onClick={() => onVerifyDoc?.(docKey)}
-            />
-          </Tooltip>
+          <ApprovalMark
+            entry={preparerMeta ?? { by: 'Preparer', at: 'Earlier' }}
+            tooltip={preparerTooltip}
+            own={preparerMeta ? preparerMeta.by === getReviewActor() : !isReviewerActor}
+            onRemove={() => onVerifyDoc?.(docKey)}
+          />
         )}
 
         {!isPreparerVerified && !isReviewerActor && (
@@ -191,33 +185,38 @@ export default function DocVerifyHeaderActions({
 
         {needsReviewerConfirm && (
           <Button size="small" priority="secondary" onClick={() => onVerifyDoc?.(docKey)}>
-            Verify as {getReviewActor().split(' ')[0]}
+            Mark as verified
           </Button>
         )}
 
         {isReviewerConfirmed && (
-          <Tooltip text={reviewerTooltip} placement="top">
-            <VerifiedBadge
-              label={`Verified by ${reviewerName}`}
-              tooltip={reviewerTooltip}
-              clickable={isReviewerActor}
-              onClick={() => onVerifyDoc?.(docKey)}
-            />
-          </Tooltip>
+          <ApprovalMark
+            entry={reviewerMeta ?? { by: reviewerName, at: 'Earlier' }}
+            tooltip={reviewerTooltip}
+            own={reviewerMeta ? reviewerMeta.by === getReviewActor() : isReviewerActor}
+            onRemove={() => onVerifyDoc?.(docKey)}
+          />
         )}
 
-        <Button
-          size="small"
-          priority="tertiary"
-          onClick={e => {
-            e.stopPropagation()
-            if (commentOpen) closeComment()
-            else openComment(e.currentTarget)
-          }}
-          aria-label={`Add a comment on ${docLabel}`}
+        <Tooltip
+          text={commentOpen ? 'Close document comment' : `Comment on ${docLabel}`}
+          placement="top"
+          disabled={commentOpen}
         >
-          Comment
-        </Button>
+          <IconControl
+            size="x-small"
+            shape="square"
+            selected={commentOpen}
+            onClick={e => {
+              e.stopPropagation()
+              if (commentOpen) closeComment()
+              else openComment(e.currentTarget)
+            }}
+            aria-label={`${commentOpen ? 'Close' : 'Add'} comment on ${docLabel}`}
+          >
+            <Comment size="small" aria-hidden />
+          </IconControl>
+        </Tooltip>
       </div>
 
       {verifyBlocked && (

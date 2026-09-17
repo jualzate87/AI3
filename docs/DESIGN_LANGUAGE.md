@@ -19,6 +19,40 @@ This is the default visual direction when a request does not provide a Figma fra
 
 Use one dominant heading and one primary action per decision region. Avoid competing cards, oversized headings, repeated banners, and multiple blue actions at the same level.
 
+## Text hierarchy
+
+Decide importance first, then style. Scan the content and name each string as one of: **primary** (the thing the user must read to act), **supporting** (explains or qualifies the primary), or **meta** (timestamps, counts, legal, ownership). Never style a supporting or meta line more strongly than the primary line in the same region.
+
+Primary text:
+
+- Lives on the left of the reading line.
+- Uses a larger size and/or heavier weight than siblings.
+- Uses `--color-text-primary`.
+
+Supporting text:
+
+- Follows the primary, never competing with it.
+- Drops weight or size — not both unless it is truly meta.
+- Stays at least `--font-size-body-3` / `--font-size-component-small` (14px) in almost every case.
+
+Meta text:
+
+- May use 12px (`--font-size-body-4`, `--font-size-component-x-small`, `--font-size-action-x-small`) only for timestamps, badges, dense table chrome, legal disclaimers, and icon-adjacent counts.
+- Do not use 12px for titles, field labels, list items, checklist rows, body copy, or navigation labels.
+
+Size floor: default to 14px. 12px is an exception you can name, not a density shortcut.
+
+Color:
+
+- Default every readable string to `--color-text-primary`.
+- Use `--color-text-secondary` rarely — helper notes, timestamps, and de-emphasized meta on a page-primary background.
+- Never put secondary text on a colored, tinted, or low-contrast surface. If contrast would fail WCAG AA, keep primary color and de-emphasize with size or weight instead.
+
+Indentation:
+
+- Use indent for **sub-navigation** and nested tree items so child items read as children, not as a second top-level list.
+- Do not indent body copy, field labels, or cards to fake hierarchy. Size, weight, and left-edge alignment do that work.
+
 ## Spacing and alignment
 
 - Tight spacing: icon/label pairs, metadata, row content, related inline actions.

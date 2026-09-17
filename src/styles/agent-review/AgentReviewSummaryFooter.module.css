@@ -36,40 +36,6 @@
   background: var(--color-action-passive-subtle-hover, rgba(107, 108, 114, 0.08));
 }
 
-.docLinksRow {
-  display: flex;
-  flex-wrap: wrap;
-  justify-content: center;
-  align-items: center;
-  gap: var(--space-small, 12px);
-  width: 100%;
-}
-
-.docLinkPill {
-  display: inline-flex;
-  align-items: center;
-  gap: var(--space-component-gap-x-small, 4px);
-  min-height: 20px;
-  padding: var(--space-container-padding-xxx-small, 4px);
-  border: none;
-  border-radius: var(--radius-small, 4px);
-  background: var(--color-container-background-info, #d9effb);
-  font-family: var(--font-family-component);
-  font-size: var(--font-size-component-small, 14px);
-  font-weight: var(--font-weight-component-bold, 600);
-  line-height: 1.3;
-  color: var(--color-link-text, #0365ac);
-  cursor: pointer;
-}
-
-.docLinkPill:hover {
-  background: var(--color-container-background-info-hover, #c5e4f7);
-}
-
-.docLinkIcon {
-  flex-shrink: 0;
-}
-
 .ctaRow {
   display: flex;
   justify-content: flex-end;

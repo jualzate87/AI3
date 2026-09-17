@@ -36,6 +36,7 @@ Evaluate semantics, keyboard behavior, state model, density, responsive behavior
 - Do not perform adjacent cleanup or broad file copying.
 - Follow existing hooks for persistence and cross-tab state.
 - Use CSS Modules and semantic tokens.
+- For visible copy, follow `/text-hierarchy`: classify primary vs supporting vs meta, then apply size, weight, left alignment, 14px floor, and `--color-text-primary`.
 - Update `docs/PATTERNS.md` only when creating a genuinely reusable pattern.
 
 ## 4. Verify

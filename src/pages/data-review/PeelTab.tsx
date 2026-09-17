@@ -16,6 +16,8 @@ interface PeelTabProps {
     showClearedCheck?: boolean
     /** Reviewer doc confirm state (Pass 2) */
     confirmStatus?: DocConfirmStatus
+    /** Full approval or blocker explanation for the tab tooltip. */
+    statusTooltip?: string
   }[]
   activeKey: string
   onChange: (key: string) => void
@@ -29,8 +31,17 @@ export default function PeelTab({ tabs, activeKey, onChange }: PeelTabProps) {
         const confirmStatus = tab.confirmStatus
         const flagCount = tab.flagCount ?? 0
         const needsReview = tab.needsReview && !tab.showClearedCheck && confirmStatus !== 'confirmed'
-        const showNeedsReviewTip =
-          needsReview && !flagCount && confirmStatus !== 'needs-confirm'
+        const statusTooltip =
+          tab.statusTooltip ??
+          (confirmStatus === 'confirmed'
+            ? 'Verified by preparer and reviewer'
+            : confirmStatus === 'needs-confirm'
+              ? 'Verified by preparer · Waiting for reviewer verification'
+              : flagCount > 0
+                ? `${flagCount} import flag${flagCount === 1 ? '' : 's'} must be resolved before verification`
+                : needsReview
+                  ? 'Not verified yet'
+                  : 'Document verified')
 
         const tabButton = (
           <button
@@ -48,6 +59,8 @@ export default function PeelTab({ tabs, activeKey, onChange }: PeelTabProps) {
                 needsReview ? 'needs review' : '',
                 flagCount > 0 ? `${flagCount} import flag${flagCount === 1 ? '' : 's'}` : '',
                 tab.showClearedCheck ? 'reviewed' : '',
+                confirmStatus === 'needs-confirm' ? 'waiting for reviewer verification' : '',
+                confirmStatus === 'confirmed' ? 'verified by preparer and reviewer' : '',
               ].filter(Boolean).join(', ')
             }
           >
@@ -56,7 +69,6 @@ export default function PeelTab({ tabs, activeKey, onChange }: PeelTabProps) {
               <AttentionCountBadge
                 count={flagCount}
                 className={styles.flagBadge}
-                tooltip={`${flagCount} import flag${flagCount === 1 ? '' : 's'} on this document`}
                 aria-label={`${flagCount} import flag${flagCount === 1 ? '' : 's'}`}
               />
             )}
@@ -64,15 +76,15 @@ export default function PeelTab({ tabs, activeKey, onChange }: PeelTabProps) {
               <AttentionCountBadge
                 count={1}
                 className={styles.flagBadge}
-                tooltip="Waiting for reviewer confirmation"
                 aria-label="Needs reviewer confirmation"
               />
             )}
             {confirmStatus === 'confirmed' && (
               <span
-                className={`${styles.clearedCheck} ${isActive ? styles.clearedCheckActive : ''}`}
+                className={`${styles.clearedCheck} ${styles.clearedCheckConfirmed} ${isActive ? styles.clearedCheckActive : ''}`}
                 aria-hidden
               >
+                <CircleCheck size="small" />
                 <CircleCheck size="small" />
               </span>
             )}
@@ -87,14 +99,10 @@ export default function PeelTab({ tabs, activeKey, onChange }: PeelTabProps) {
           </button>
         )
 
-        return showNeedsReviewTip ? (
-          <Tooltip key={tab.key} text="Not yet marked reviewed" placement="top">
+        return (
+          <Tooltip key={tab.key} text={statusTooltip} placement="top">
             {tabButton}
           </Tooltip>
-        ) : (
-          <span key={tab.key} className={styles.tabWrap}>
-            {tabButton}
-          </span>
         )
       })}
     </div>

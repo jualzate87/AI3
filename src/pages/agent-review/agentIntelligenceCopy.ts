@@ -95,9 +95,6 @@ export const CTA_VIEW_UPDATED_RETURN = 'View updated return'
 export const CTA_VIEW_SOURCE_DOCUMENTS = 'View source documents'
 export const CTA_VIEW_RETURN_SUMMARY = 'View return summary'
 
-export const CTA_UPDATED_RETURN_SHORT = 'Updated return'
-export const CTA_SOURCE_DOCUMENTS_SHORT = 'Source documents'
-
 export const INTELLIGENCE_COMPLETION_FOOTER =
   'Jump to the documents directly, or ask me to help with your review.'
 
@@ -113,8 +110,22 @@ export const INTELLIGENCE_FIXES_PROGRESS_TITLE = 'Fixes Progress'
 /* ── Loading ── */
 
 export const INTELLIGENCE_LOADING_TITLE = 'Reviewing the return…'
-export const INTELLIGENCE_LOADING_SUBTEXT =
-  'Checking source documents, Tax Organizer answers, and return entries.'
+
+/** Reasoning stream shown while the diagnostics report is being assembled. */
+export const INTELLIGENCE_LOADING_STEPS = [
+  {
+    title: 'Reading source documents',
+    body: 'Pulling the W-2, 1099-INT, 1099-DIV, and 1098 imported into this return and matching each to its entries.',
+  },
+  {
+    title: 'Comparing against the Tax Organizer',
+    body: "Checking the client's answers and last year's return against what this year currently reports.",
+  },
+  {
+    title: 'Sorting what needs your attention',
+    body: 'Grouping compliance risks, year-over-year changes, and planning opportunities by how much they affect the return.',
+  },
+] as const
 
 /* ── Data helpers ── */
 
@@ -350,10 +361,6 @@ export function intelligenceResultsLead(fixedCount: number): string {
     : `${fixedCount} updates applied. Here's what changed on the return.`
 }
 
-export const CATCH_UP_LOADING_TITLE = 'Summarizing the return…'
-export const CATCH_UP_LOADING_SUBTEXT =
-  'Reviewing prior preparer notes, resolved AI review items, and what still needs your sign-off.'
-
 export const CATCH_UP_REASONING_TITLE = 'Building handoff summary'
 
 export const CATCH_UP_REASONING_STEPS = [
@@ -385,15 +392,24 @@ export type CatchUpListEntry = {
   emphasis?: boolean
 }
 
+/** Source-doc link shared by the catch-up summary lists — mirrors the review-process fix links. */
+export type CatchUpDocLink = {
+  docLabel: string
+  popoutTab?: string
+  popoutSubTab?: string
+}
+
 export type CatchUpDetailItem = {
   title: string
   detail: string
+  link?: CatchUpDocLink
 }
 
 export type CatchUpChecklistItem = {
   id: string
   title: string
   note?: string
+  link?: CatchUpDocLink
 }
 
 export const CATCH_UP_PRIOR_NOTES_DEFAULT =
@@ -428,15 +444,18 @@ export const CATCH_UP_AI_REVIEW_ITEMS: CatchUpDetailItem[] = [
     title: 'W-2 income variance — Resolved',
     detail:
       'Box 1 wages from Tech Circle Inc differed from prior year due to a mid-year raise; confirmed with source document',
+    link: { docLabel: 'W-2 (PDF)', popoutTab: 'w2' },
   },
   {
     title: '1099-DIV qualified dividend classification — Resolved',
     detail:
       'Qualified vs. ordinary split was reclassified and corrected; amounts now match broker statement',
+    link: { docLabel: '1099-DIV (PDF)', popoutTab: '1099-div' },
   },
   {
     title: 'State withholding adequacy — Resolved',
     detail: 'Withholding elections reviewed against projected liability; no adjustment needed',
+    link: { docLabel: 'W-2 (PDF)', popoutTab: 'w2' },
   },
 ]
 
@@ -461,22 +480,8 @@ export const CATCH_UP_CALCULATIONS_BULLETS: CatchUpListEntry[] = [
   { text: 'Return is ready for final review', emphasis: true },
 ]
 
-export const CATCH_UP_REVIEWER_FOCUS_INTRO = "Sarah's note calls out one area to double-check:"
-
-export const CATCH_UP_REVIEWER_FOCUS_BULLETS: CatchUpListEntry[] = [
-  {
-    text: '1099-DIV qualified vs. ordinary split — Sarah corrected the classification, but flagged the broker statement formatting as unusual. Verify the final amounts look right against the source PDF.',
-    emphasis: true,
-  },
-  {
-    text: 'Confirm all resolved AI review items look correct — spot-check that the W-2 variance explanation (mid-year raise) and withholding adequacy hold up.',
-    emphasis: true,
-  },
-  {
-    text: 'Review source documents in the Documents tab before approving.',
-    emphasis: true,
-  },
-]
+export const CATCH_UP_REVIEWER_FOCUS_INTRO =
+  "Sarah's note calls out the items below. Confirm each one before you sign off."
 
 export const CATCH_UP_RETURN_STATUS_ITEMS = [
   'AI review: Complete — all items resolved by Sarah Chen',
@@ -489,47 +494,24 @@ export const CATCH_UP_RETURN_STATUS_ITEMS = [
 export const CATCH_UP_RETURN_STATUS_CALLOUT =
   "This return has been through initial prep and AI-assisted review. As the final reviewer, confirm Sarah's work is accurate and approve for filing."
 
-export const CATCH_UP_CHECKLIST_INTRO =
-  'Sarah resolved the items below during prep. Confirm the open items before you sign off.'
-
-export const CATCH_UP_CONFIRMED_BY_PREPARER: CatchUpChecklistItem[] = [
-  {
-    id: 'w2-variance',
-    title: 'W-2 income variance resolved',
-    note: 'Mid-year raise confirmed with source document — Sarah Chen',
-  },
-  {
-    id: 'div-classification',
-    title: '1099-DIV classification corrected',
-    note: 'Qualified vs. ordinary split matches broker statement — Sarah Chen',
-  },
-  {
-    id: 'withholding',
-    title: 'State withholding reviewed',
-    note: 'No adjustment needed — Sarah Chen',
-  },
-  {
-    id: 'calculations',
-    title: 'Federal and state calculations tie out',
-    note: 'All lines reconciled — Sarah Chen',
-  },
-]
-
 export const CATCH_UP_REVIEWER_CHECKLIST: CatchUpChecklistItem[] = [
   {
     id: '1099-div-split',
     title: '1099-DIV split verified against broker PDF',
     note: 'Sarah flagged unusual broker formatting — double-check the split',
+    link: { docLabel: '1099-DIV (PDF)', popoutTab: '1099-div' },
   },
   {
     id: 'ai-resolutions',
     title: 'AI review resolutions spot-checked',
-    note: 'Confirm W-2 variance and withholding still look right',
+    note: 'Confirm the W-2 variance explanation and withholding adequacy still hold up',
+    link: { docLabel: 'W-2 (PDF)', popoutTab: 'w2' },
   },
   {
     id: 'source-docs',
     title: 'Source documents reviewed',
-    note: 'W-2, 1099-INT, and 1099-DIV in Documents tab',
+    note: 'W-2, 1099-INT, and 1099-DIV in the Documents tab',
+    link: { docLabel: 'Source documents' },
   },
 ]
 
@@ -628,9 +610,9 @@ export const INTELLIGENCE_SUMMARY_SECTIONS = INTELLIGENCE_FIX_PROGRESS_SECTIONS.
 }))
 
 export const INTELLIGENCE_PROGRESS_ITEMS = [
-  { id: 'import', label: 'Import mismatches', subtitle: 'Awaiting signature' },
-  { id: 'withholding', label: 'Withholding gap', subtitle: 'Awaiting signature' },
-  { id: 'mortgage', label: 'Mortgage interest added', subtitle: 'Awaiting signature' },
+  { id: 'import', label: 'Import mismatches', subtitle: '6 fields fixed across 4 docs' },
+  { id: 'withholding', label: 'Withholding gap', subtitle: '$30,000 restored on 1099-R' },
+  { id: 'mortgage', label: 'Mortgage interest added', subtitle: 'Form 1098 deduction applied' },
   { id: 'final', label: 'Final review items', subtitle: undefined },
 ] as const
 

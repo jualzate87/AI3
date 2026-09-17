@@ -13,42 +13,54 @@
 }
 
 .layout {
-  display: flex;
-  flex-direction: column;
-  gap: var(--space-medium, 16px);
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 240px;
+  align-items: start;
+  column-gap: var(--space-large, 24px);
+  row-gap: var(--space-medium, 16px);
   max-width: 960px;
   margin: 0 auto;
   width: 100%;
 }
 
 .layoutCompact {
+  grid-template-columns: minmax(0, 1fr);
   max-width: none;
 }
 
-.cardsRow {
-  display: flex;
-  align-items: flex-start;
-  gap: var(--space-large, 24px);
-  width: 100%;
+.lockup,
+.intro {
+  grid-column: 1 / -1;
 }
 
-.layoutCompact .cardsRow {
-  flex-direction: column;
+/* Wrapper is transparent to the grid so the rail can span the full content column. */
+.cardsRow {
+  display: contents;
 }
 
 .cardsColumn {
-  flex: 1;
+  grid-column: 1;
   min-width: 0;
 }
 
 .belowCards {
+  grid-column: 1;
   display: flex;
   flex-direction: column;
   gap: var(--space-medium, 16px);
   width: 100%;
+  min-width: 0;
+}
+
+.layoutCompact .cardsColumn,
+.layoutCompact .belowCards {
+  grid-column: 1;
 }
 
 .layoutCompact .progressRail {
+  grid-column: 1;
+  grid-row: auto;
+  position: static;
   width: 100%;
   max-width: none;
 }
@@ -133,9 +145,15 @@
 }
 
 .progressRail {
+  grid-column: 2;
+  grid-row: span 2;
+  position: sticky;
+  top: var(--space-medium, 16px);
+  z-index: 1;
   width: 240px;
   flex-shrink: 0;
-  align-self: stretch;
+  align-self: start;
+  height: fit-content;
   padding: var(--space-medium, 16px);
   border: 1px solid var(--color-container-border-primary, #d4d7dc);
   border-radius: var(--radius-x-large, 12px);
@@ -172,7 +190,7 @@
   padding: 0;
   display: flex;
   flex-direction: column;
-  gap: var(--space-medium, 16px);
+  gap: var(--space-small, 12px);
 }
 
 .progressItem {
@@ -188,10 +206,20 @@
 .progressItemBody {
   display: flex;
   flex: 1;
-  align-items: flex-start;
+  /* Baseline keeps "View" on the same line as the item title, even when the
+     title wraps to two lines or the link uses a smaller type size. */
+  align-items: baseline;
   justify-content: space-between;
   gap: var(--space-x-small, 8px);
   min-width: 0;
+}
+
+.progressItemLabel {
+  line-height: 20px;
+}
+
+.progressLink {
+  flex-shrink: 0;
 }
 
 .progressItemMain {
@@ -217,12 +245,11 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 22px;
-  height: 22px;
+  width: 20px;
+  height: 20px;
   border: 2px solid var(--color-container-border-primary, #d4d7dc);
   border-radius: var(--radius-full, 9999px);
   flex-shrink: 0;
-  margin-top: 1px;
 }
 
 .progressCheck {
@@ -269,8 +296,27 @@
 }
 
 .reasoningSparkle {
-  width: 20px;
-  height: 20px;
+  width: 24px;
+  height: 24px;
+}
+
+@keyframes reasoningSparkleSpin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.reasoningSparkleWorking {
+  animation: reasoningSparkleSpin 2.5s linear infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .reasoningSparkleWorking {
+    animation: none;
+  }
 }
 
 .reasoningTitle {
@@ -280,13 +326,71 @@
   color: var(--color-text-primary, #393a3d);
 }
 
+/* ── Vertical progress tracker: connector rail + one node per activity ── */
+
 .reasoningSteps {
   list-style: none;
   margin: 0;
-  padding: 0;
+  padding: 0 0 0 var(--space-component-inline-padding-medium, 8px);
   display: flex;
   flex-direction: column;
-  gap: var(--space-medium, 16px);
+  gap: 0;
+}
+
+.reasoningStep {
+  display: flex;
+  align-items: stretch;
+  gap: var(--space-component-inline-padding-xx-large, 16px);
+  will-change: opacity, transform;
+}
+
+.reasoningStepRail {
+  position: relative;
+  width: 8px;
+  flex-shrink: 0;
+}
+
+/* Connector line, centred on the node. */
+.reasoningStepRail::before {
+  content: '';
+  position: absolute;
+  left: 50%;
+  top: 0;
+  bottom: 0;
+  width: 1px;
+  margin-left: -0.5px;
+  background: var(--color-divider-tertiary, #d4d7dc);
+}
+
+/* First node starts the line; last node ends it. */
+.reasoningStep:first-child .reasoningStepRail::before {
+  top: 16px;
+}
+
+.reasoningStep:last-child .reasoningStepRail::before {
+  bottom: auto;
+  height: 16px;
+}
+
+.reasoningStep:first-child:last-child .reasoningStepRail::before {
+  display: none;
+}
+
+.reasoningStepRail::after {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 12px;
+  width: 8px;
+  height: 8px;
+  border-radius: var(--radius-full, 9999px);
+  background: var(--color-icon-disabled, #b8bbc1);
+}
+
+.reasoningStepContent {
+  flex: 1;
+  min-width: 0;
+  padding: var(--space-component-stack-padding-large, 8px) 0;
 }
 
 /* ── Motion: fade + gentle rise (IDS appear tokens) ── */
@@ -339,24 +443,21 @@
     var(--ease-disappear, cubic-bezier(0.35, 0, 0.25, 1)) both;
 }
 
-.reasoningStep {
-  will-change: opacity, transform;
-}
-
 .reasoningStepTitle {
   display: block;
-  font-family: var(--font-family-component);
-  font-size: var(--font-size-component-medium, 16px);
-  font-weight: var(--font-weight-component-bold, 600);
-  line-height: 1.3;
+  font-family: var(--font-family-body);
+  font-size: var(--font-size-body-2, 16px);
+  font-weight: var(--font-weight-body-semibold, 500);
+  line-height: 1.5;
   color: var(--color-text-primary, #393a3d);
-  margin-bottom: var(--space-component-gap-small, 4px);
+  margin-bottom: var(--space-component-stack-padding-small, 4px);
 }
 
 .reasoningStepBody {
   margin: 0;
   font-family: var(--font-family-body);
-  font-size: var(--font-size-body-3, 14px);
+  font-size: var(--font-size-body-2, 16px);
+  font-weight: var(--font-weight-body, 400);
   line-height: 1.5;
   color: var(--color-text-secondary, #6b6c72);
 }

@@ -14,7 +14,6 @@ import {
   INTELLIGENCE_CHAT_PLACEHOLDER,
   INTELLIGENCE_LEGAL_DISCLAIMER,
   INTELLIGENCE_CLOSE_ARIA,
-  INTELLIGENCE_LOADING_SUBTEXT,
   INTELLIGENCE_LOADING_TITLE,
   STARTER_PROMPT_CATCH_UP,
   STARTER_PROMPT_FULL_REVIEW,
@@ -31,22 +30,46 @@ import {
   type AgentReviewLayoutMode,
 } from './agent-review/agentReviewLayout'
 import type { ProcessingMode } from './agent-review/useAgentProcessingAnimation'
+import {
+  clearAgentSession,
+  isResumableStep,
+  loadAgentSession,
+  saveAgentSession,
+  type AgentStep,
+} from './agent-review/agentReviewSession'
 import AgentLoadingPane from './data-review/AgentLoadingPane'
 import ChatInput from './automated/ChatInput'
 import { useSyncedReviewState } from '../hooks/useSyncedReviewState'
-import { openSourceDocumentReviewPopout } from '../lib/prototypeRoutes'
 import styles from '../styles/AgentReviewPage.module.css'
 
-type AgentStep = 'welcome' | 'diagnostics' | 'processing' | 'catch-up' | 'workspace'
-
 const ASSESSING_MS = 3200
+
+/**
+ * Reopening the panel lands on the last conversation when there is one. An
+ * explicit "get caught up" request always starts that summary fresh.
+ */
+function resolveInitialSession() {
+  if (sessionStorage.getItem('protoc3-open-catch-up') === '1') {
+    return {
+      step: 'catch-up' as AgentStep,
+      processingMode: 'batch' as ProcessingMode,
+      resumed: false,
+    }
+  }
+  const saved = loadAgentSession()
+  if (saved) return { ...saved, resumed: true }
+  return { step: 'welcome' as AgentStep, processingMode: 'batch' as ProcessingMode, resumed: false }
+}
 
 export default function AgentReviewPage() {
   const navigate = useNavigate()
   const location = useLocation()
   const [searchParams] = useSearchParams()
-  const [step, setStep] = useState<AgentStep>(() =>
-    sessionStorage.getItem('protoc3-open-catch-up') === '1' ? 'catch-up' : 'welcome',
+  const [initialSession] = useState(resolveInitialSession)
+  const [step, setStep] = useState<AgentStep>(initialSession.step)
+  /** The step restored from a past session — it renders finished instead of replaying. */
+  const [resumedStep, setResumedStep] = useState<AgentStep | null>(
+    initialSession.resumed ? initialSession.step : null,
   )
   const [layoutMode, setLayoutMode] = useState<AgentReviewLayoutMode>(() =>
     resolveInitialLayoutMode({
@@ -54,7 +77,9 @@ export default function AgentReviewPage() {
       searchParams,
     }),
   )
-  const [processingMode, setProcessingMode] = useState<ProcessingMode>('batch')
+  const [processingMode, setProcessingMode] = useState<ProcessingMode>(
+    initialSession.processingMode,
+  )
   const [isAssessing, setIsAssessing] = useState(false)
   const [footerChips, setFooterChips] = useState<ReactNode>(null)
   const assessTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
@@ -95,6 +120,10 @@ export default function AgentReviewPage() {
     }
   }, [step])
 
+  useEffect(() => {
+    if (isResumableStep(step)) saveAgentSession({ step, processingMode })
+  }, [processingMode, step])
+
   const handleClose = () => {
     navigate('/check-return')
   }
@@ -113,15 +142,32 @@ export default function AgentReviewPage() {
     }, ASSESSING_MS)
   }
 
+  /** Any step the user starts here is generated live, so it is never a resumed one. */
+  const goToStep = (next: AgentStep) => {
+    setResumedStep(null)
+    setStep(next)
+  }
+
   const beginDiagnostics = () => {
-    setStep('diagnostics')
+    goToStep('diagnostics')
     startAssessing()
   }
 
   const beginProcessing = (mode: ProcessingMode = 'batch') => {
     agentFixesAppliedRef.current = false
     setProcessingMode(mode)
-    setStep('processing')
+    goToStep('processing')
+  }
+
+  const handleNewChat = () => {
+    clearAgentSession()
+    if (assessTimerRef.current) {
+      clearTimeout(assessTimerRef.current)
+      assessTimerRef.current = null
+    }
+    setIsAssessing(false)
+    setFooterChips(null)
+    goToStep('welcome')
   }
 
   const persistAgentFixes = () => {
@@ -141,12 +187,11 @@ export default function AgentReviewPage() {
       return
     }
     if (prompt === STARTER_PROMPT_CATCH_UP) {
-      setStep('catch-up')
+      goToStep('catch-up')
     }
   }
 
-  const showChatInput =
-    step !== 'workspace' && !(step === 'diagnostics' && isAssessing)
+  const showChatInput = step !== 'workspace' && !(step === 'diagnostics' && isAssessing)
 
   return (
     <>
@@ -219,7 +264,12 @@ export default function AgentReviewPage() {
               <button type="button" className={styles.railBtn} aria-label="Hide chat history">
                 <MenuExpand size="medium" />
               </button>
-              <button type="button" className={styles.railBtn} aria-label="New chat">
+              <button
+                type="button"
+                className={styles.railBtn}
+                aria-label="New chat"
+                onClick={handleNewChat}
+              >
                 <CommentPencil size="medium" />
               </button>
               <button type="button" className={styles.railBtn} aria-label="Recent chats">
@@ -237,7 +287,6 @@ export default function AgentReviewPage() {
                 <AgentLoadingPane
                   embedded
                   loadingTitle={INTELLIGENCE_LOADING_TITLE}
-                  loadingSubtext={INTELLIGENCE_LOADING_SUBTEXT}
                   isLoading={isAssessing}
                   showReport={!isAssessing}
                   reportContent={
@@ -250,21 +299,19 @@ export default function AgentReviewPage() {
               )}
               {step === 'catch-up' && (
                 <AgentCatchUpPane
-                  onViewUpdatedReturn={() => openWorkspace()}
-                  onViewDocuments={() => openSourceDocumentReviewPopout()}
                   onApproveReturn={() => openWorkspace()}
+                  resumed={resumedStep === 'catch-up'}
                 />
               )}
               {step === 'processing' && (
                 <AgentReviewProcessingPane
                   mode={processingMode}
                   compact={isSidebar}
-                  onViewUpdatedReturn={() => openWorkspace()}
-                  onViewSourceDocuments={() => openSourceDocumentReviewPopout()}
                   onViewReturnSummary={() => navigate('/check-return')}
-                  onGetCaughtUp={() => setStep('catch-up')}
+                  onGetCaughtUp={() => goToStep('catch-up')}
                   onFooterChipsChange={setFooterChips}
                   onFixesComplete={persistAgentFixes}
+                  resumed={resumedStep === 'processing'}
                 />
               )}
             </div>

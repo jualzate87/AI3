@@ -21,6 +21,21 @@
   flex-shrink: 0;
 }
 
+/* Opening the panel: the mark turns on its own until the greeting arrives. */
+@keyframes welcomeMarkSpin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+.logoWrapperSpinning {
+  animation: welcomeMarkSpin 2.5s linear infinite;
+}
+
+@keyframes welcomeRevealIn {
+  from { opacity: 0; transform: translateY(8px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
 .logoGif {
   position: absolute;
   left: -12.5%;
@@ -38,6 +53,7 @@
   align-items: center;
   gap: var(--space-x-small, 8px);
   width: 100%;
+  animation: welcomeRevealIn 320ms cubic-bezier(0, 0, 0.25, 1) both;
 }
 
 .greetingName {
@@ -62,27 +78,29 @@
   display: flex;
   flex-wrap: wrap;
   gap: var(--space-x-small, 8px);
-  align-items: flex-end;
+  align-items: center;
   justify-content: center;
   width: 100%;
+  animation: welcomeRevealIn 320ms cubic-bezier(0, 0, 0.25, 1) 60ms both;
 }
 
+/* Pills hug their label — they are suggestions, not full-width actions. */
 .prompt {
-  display: flex;
-  flex: 1 1 auto;
-  max-width: 308px;
-  min-height: 44px;
-  align-items: flex-start;
-  padding: var(--space-small, 12px) var(--space-component-inline-padding-xx-large, 16px);
+  display: inline-flex;
+  flex: 0 0 auto;
+  max-width: 100%;
+  align-items: center;
+  justify-content: center;
+  padding: var(--space-x-small, 8px) var(--space-component-inline-padding-xx-large, 16px);
   border: none;
-  border-radius: var(--radius-message, 24px);
+  border-radius: var(--radius-full, 9999px);
   background: var(--color-action-passive, #e3e5e8);
   font-family: var(--font-family-component);
-  font-size: var(--font-size-component-medium, 16px);
+  font-size: var(--font-size-component-small, 14px);
   font-weight: var(--font-weight-component-semibold, 500);
   line-height: 1.3;
   color: var(--color-text-primary, #393a3d);
-  text-align: left;
+  text-align: center;
   cursor: pointer;
 }
 
@@ -104,7 +122,10 @@
   font-size: var(--font-size-body-2, 16px);
 }
 
-.containerCompact .prompt {
-  flex: 1 1 calc(50% - var(--space-x-small, 8px));
-  max-width: none;
+@media (prefers-reduced-motion: reduce) {
+  .logoWrapperSpinning,
+  .greeting,
+  .promptsRow {
+    animation: none;
+  }
 }

@@ -1,9 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { CATCH_UP_REASONING_STEPS } from './agentIntelligenceCopy'
 
-const LOADING_SPIN_MS = 700
-const LOADING_GREETING_MS = 1500
-const LOADING_EXIT_MS = 400
 const REASONING_HEADER_DELAY_MS = 200
 const REASONING_STEP_GAP_MS = 900
 const REASONING_EXIT_MS = 500
@@ -12,20 +9,24 @@ const BLOCK_REVEAL_MS = 480
 const CONTROLS_DELAY_MS = 350
 
 /** Content blocks revealed top-to-bottom after reasoning completes. */
-export const CATCH_UP_CONTENT_BLOCK_COUNT = 8
+export const CATCH_UP_CONTENT_BLOCK_COUNT = 7
 
-export type CatchUpPhase = 'loading' | 'reasoning' | 'generating' | 'complete'
-export type CatchUpLoadingSubphase = 'spinning' | 'greeting' | 'exiting'
+export type CatchUpPhase = 'reasoning' | 'generating' | 'complete'
 
-export function useCatchUpAnimation() {
-  const [phase, setPhase] = useState<CatchUpPhase>('loading')
-  const [loadingSubphase, setLoadingSubphase] = useState<CatchUpLoadingSubphase>('spinning')
-  const [reasoningHeaderVisible, setReasoningHeaderVisible] = useState(false)
-  const [visibleReasoningSteps, setVisibleReasoningSteps] = useState(0)
+/**
+ * @param instant Skip the stream and land on the finished summary — used when
+ *   reopening a conversation that was already generated.
+ */
+export function useCatchUpAnimation(instant = false) {
+  const [phase, setPhase] = useState<CatchUpPhase>(instant ? 'complete' : 'reasoning')
+  const [reasoningHeaderVisible, setReasoningHeaderVisible] = useState(instant)
+  const [visibleReasoningSteps, setVisibleReasoningSteps] = useState(
+    instant ? CATCH_UP_REASONING_STEPS.length : 0,
+  )
   const [reasoningExiting, setReasoningExiting] = useState(false)
-  const [generatingVisible, setGeneratingVisible] = useState(false)
-  const [visibleBlocks, setVisibleBlocks] = useState(0)
-  const [showControls, setShowControls] = useState(false)
+  const [generatingVisible, setGeneratingVisible] = useState(instant)
+  const [visibleBlocks, setVisibleBlocks] = useState(instant ? CATCH_UP_CONTENT_BLOCK_COUNT : 0)
+  const [showControls, setShowControls] = useState(instant)
   const timersRef = useRef<number[]>([])
 
   const clearTimers = useCallback(() => {
@@ -40,19 +41,10 @@ export function useCatchUpAnimation() {
   }, [])
 
   useEffect(() => {
+    if (instant) return
     clearTimers()
-    let elapsed = 0
+    let elapsed = REASONING_HEADER_DELAY_MS
 
-    schedule(() => setLoadingSubphase('greeting'), LOADING_SPIN_MS)
-    elapsed = LOADING_SPIN_MS + LOADING_GREETING_MS
-    schedule(() => setLoadingSubphase('exiting'), elapsed)
-    elapsed += LOADING_EXIT_MS
-    schedule(() => {
-      setPhase('reasoning')
-      setLoadingSubphase('spinning')
-    }, elapsed)
-
-    elapsed += REASONING_HEADER_DELAY_MS
     schedule(() => setReasoningHeaderVisible(true), elapsed)
 
     for (let step = 1; step <= CATCH_UP_REASONING_STEPS.length; step += 1) {
@@ -84,16 +76,13 @@ export function useCatchUpAnimation() {
     }, elapsed + CONTROLS_DELAY_MS)
 
     return clearTimers
-  }, [clearTimers, schedule])
+  }, [clearTimers, instant, schedule])
 
-  const isLoading = phase === 'loading'
   const isReasoning = phase === 'reasoning'
   const showGenerating = phase === 'generating' || phase === 'complete'
 
   return {
     phase,
-    loadingSubphase,
-    isLoading,
     isReasoning,
     reasoningHeaderVisible,
     visibleReasoningSteps,

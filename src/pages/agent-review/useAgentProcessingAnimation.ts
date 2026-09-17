@@ -19,20 +19,24 @@ const RESULTS_TAIL_COUNT = 2
 export type ProcessingMode = 'batch' | 'sequential'
 export type ProcessingPhase = 'reasoning' | 'results'
 
-export function useAgentProcessingAnimation(mode: ProcessingMode = 'batch') {
-  const [phase, setPhase] = useState<ProcessingPhase>('reasoning')
-  const [reasoningHeaderVisible, setReasoningHeaderVisible] = useState(false)
-  const [visibleSteps, setVisibleSteps] = useState(0)
+/**
+ * @param instant Skip the stream and land on the finished results — used when
+ *   reopening a conversation whose fixes were already applied.
+ */
+export function useAgentProcessingAnimation(mode: ProcessingMode = 'batch', instant = false) {
+  const [phase, setPhase] = useState<ProcessingPhase>(instant ? 'results' : 'reasoning')
+  const [reasoningHeaderVisible, setReasoningHeaderVisible] = useState(instant)
+  const [visibleSteps, setVisibleSteps] = useState(instant ? REASONING_STEP_COUNT : 0)
   const [reasoningExiting, setReasoningExiting] = useState(false)
-  const [resultsVisible, setResultsVisible] = useState(false)
-  const [visibleFixSections, setVisibleFixSections] = useState(0)
-  const [showReminder, setShowReminder] = useState(false)
-  const [showFooter, setShowFooter] = useState(false)
+  const [resultsVisible, setResultsVisible] = useState(instant)
+  const [visibleFixSections, setVisibleFixSections] = useState(instant ? FIX_SECTION_COUNT : 0)
+  const [showReminder, setShowReminder] = useState(instant)
+  const [showFooter, setShowFooter] = useState(instant)
   const [activeProgressIndex, setActiveProgressIndex] = useState(-1)
-  const [completedProgress, setCompletedProgress] = useState(0)
-  const [showSuggestionChips, setShowSuggestionChips] = useState(false)
+  const [completedProgress, setCompletedProgress] = useState(instant ? FIX_SECTION_COUNT : 0)
+  const [showSuggestionChips, setShowSuggestionChips] = useState(instant)
   const [awaitingContinue, setAwaitingContinue] = useState(false)
-  const [allFixesComplete, setAllFixesComplete] = useState(false)
+  const [allFixesComplete, setAllFixesComplete] = useState(instant)
   const timersRef = useRef<number[]>([])
 
   const clearTimers = () => {
@@ -60,12 +64,15 @@ export function useAgentProcessingAnimation(mode: ProcessingMode = 'batch') {
           setCompletedProgress(FIX_SECTION_COUNT)
         }, FIX_SECTION_REVEAL_MS)
         schedule(() => setShowFooter(true), FIX_SECTION_REVEAL_MS * 2)
-        schedule(() => {
-          setShowSuggestionChips(true)
-          setAllFixesComplete(true)
-          setAwaitingContinue(false)
-          onDone?.()
-        }, FIX_SECTION_REVEAL_MS * 2 + SUGGESTION_CHIPS_DELAY_MS)
+        schedule(
+          () => {
+            setShowSuggestionChips(true)
+            setAllFixesComplete(true)
+            setAwaitingContinue(false)
+            onDone?.()
+          },
+          FIX_SECTION_REVEAL_MS * 2 + SUGGESTION_CHIPS_DELAY_MS,
+        )
         return
       }
 
@@ -97,6 +104,7 @@ export function useAgentProcessingAnimation(mode: ProcessingMode = 'batch') {
   }, [allFixesComplete, awaitingContinue, revealFixSection, visibleFixSections])
 
   useEffect(() => {
+    if (instant) return
     clearTimers()
 
     if (mode === 'sequential') {
@@ -150,7 +158,7 @@ export function useAgentProcessingAnimation(mode: ProcessingMode = 'batch') {
     }, elapsed + SUGGESTION_CHIPS_DELAY_MS)
 
     return clearTimers
-  }, [mode, schedule, startResults])
+  }, [instant, mode, schedule, startResults])
 
   return {
     phase,

@@ -1,7 +1,7 @@
 import HandoffAssistModal from '../pages/handoff/HandoffAssistModal'
 import { useReturnWorkflow } from '../contexts/ReturnWorkflowContext'
 import { useReturnNotes } from '../hooks/useReturnNotes'
-import { getTeamMember } from '../lib/returnWorkflow'
+import { getReturnStatus, getTeamMember } from '../lib/returnWorkflow'
 
 /** Global handoff modal wired to workflow + comments. */
 export default function ReturnHandoffHost() {
@@ -11,12 +11,15 @@ export default function ReturnHandoffHost() {
   const handleConfirm = (notes: string) => {
     if (!pendingHandoff) return
     const from = getTeamMember(pendingHandoff.fromAssigneeId)
-    const to = getTeamMember(pendingHandoff.toAssigneeId)
     const trimmed = notes.trim()
     confirmHandoff(trimmed)
-    if (trimmed) {
-      addHandoffNote(trimmed, from.name, to.name)
-    }
+    if (!trimmed) return
+
+    const context =
+      pendingHandoff.kind === 'assignee'
+        ? `Handoff note for ${getTeamMember(pendingHandoff.toAssigneeId).name}`
+        : `Sign-off note — ${getReturnStatus(pendingHandoff.suggestedStatusId).label}`
+    addHandoffNote(trimmed, from.name, context, from.role === 'preparer' ? 'preparer' : 'reviewer')
   }
 
   return (

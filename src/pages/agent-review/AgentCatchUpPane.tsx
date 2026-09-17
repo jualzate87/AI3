@@ -1,31 +1,30 @@
 import { useState, type ReactNode } from 'react'
-import intuitIntelligenceLogo from '../../assets/icons/intuit-intelligence-logo-small.svg'
+import { CircleCheck, CircleCheckFill, PopOut } from '@design-systems/icons'
+import { Link } from '@ids-ts/link'
+import '@ids-ts/link/dist/main.css'
 import {
   CATCH_UP_AI_REVIEW_CALLOUT,
   CATCH_UP_AI_REVIEW_INTRO,
   CATCH_UP_AI_REVIEW_ITEMS,
   CATCH_UP_CALCULATIONS_BULLETS,
   CATCH_UP_CALCULATIONS_INTRO,
-  CATCH_UP_CHECKLIST_INTRO,
-  CATCH_UP_CONFIRMED_BY_PREPARER,
   CATCH_UP_DOCUMENTS_BULLETS,
   CATCH_UP_DOCUMENTS_INTRO,
   CATCH_UP_FOOTER_QUESTION,
   CATCH_UP_HANDOFF_PARAGRAPH,
-  CATCH_UP_LOADING_SUBTEXT,
-  CATCH_UP_LOADING_TITLE,
   getCatchUpPriorNotes,
   CATCH_UP_REASONING_STEPS,
   CATCH_UP_REASONING_TITLE,
   CATCH_UP_RETURN_STATUS_CALLOUT,
   CATCH_UP_RETURN_STATUS_ITEMS,
   CATCH_UP_REVIEWER_CHECKLIST,
-  CATCH_UP_REVIEWER_FOCUS_BULLETS,
   CATCH_UP_REVIEWER_FOCUS_INTRO,
   CATCH_UP_APPROVE_RETURN,
   STARTER_PROMPT_CATCH_UP,
   catchUpReturnSummaryTitle,
+  type CatchUpChecklistItem,
   type CatchUpDetailItem,
+  type CatchUpDocLink,
   type CatchUpListEntry,
 } from './agentIntelligenceCopy'
 import {
@@ -33,25 +32,98 @@ import {
   AgentIntelligenceShowThinking,
 } from './AgentIntelligenceReasoning'
 import AgentReviewSummaryFooter from './AgentReviewSummaryFooter'
-import CatchUpReviewChecklist from './CatchUpReviewChecklist'
 import { useCatchUpAnimation } from './useCatchUpAnimation'
+import { openSourceDocumentReviewPopout } from '../../lib/prototypeRoutes'
 import styles from '../../styles/agent-review/AgentCatchUpPane.module.css'
 
 interface AgentCatchUpPaneProps {
-  onViewUpdatedReturn: () => void
-  onViewDocuments: () => void
   onApproveReturn: () => void
+  /** Reopening an existing conversation — show the finished summary without replaying it. */
+  resumed?: boolean
+}
+
+function openDocLink(link: CatchUpDocLink) {
+  if (link.popoutTab) {
+    openSourceDocumentReviewPopout({ tab: link.popoutTab, subTab: link.popoutSubTab })
+    return
+  }
+  openSourceDocumentReviewPopout()
+}
+
+function DocLink({ link }: { link: CatchUpDocLink }) {
+  return (
+    <Link
+      href="#"
+      size="component-small"
+      className={styles.docLink}
+      aria-label={`${link.docLabel} (opens in a new window)`}
+      onClick={(e) => {
+        e.preventDefault()
+        openDocLink(link)
+      }}
+    >
+      {link.docLabel}
+      <PopOut size="x-small" aria-hidden />
+    </Link>
+  )
 }
 
 function DetailList({ items }: { items: readonly CatchUpDetailItem[] }) {
   return (
     <ul className={styles.detailList}>
-      {items.map(item => (
+      {items.map((item) => (
         <li key={item.title} className={styles.detailItem}>
           <p className={styles.detailTitle}>{item.title}</p>
           <p className={styles.detailBody}>{item.detail}</p>
+          {item.link ? <DocLink link={item.link} /> : null}
         </li>
       ))}
+    </ul>
+  )
+}
+
+function ReviewCheckList({
+  items,
+  checkedIds,
+  onToggle,
+}: {
+  items: readonly CatchUpChecklistItem[]
+  checkedIds: Set<string>
+  onToggle: (id: string) => void
+}) {
+  return (
+    <ul className={styles.checkList}>
+      {items.map((item) => {
+        const checked = checkedIds.has(item.id)
+        return (
+          <li key={item.id} className={styles.checkItem}>
+            <button
+              type="button"
+              className={styles.checkToggle}
+              aria-pressed={checked}
+              aria-label={
+                checked
+                  ? `Mark "${item.title}" as not confirmed`
+                  : `Mark "${item.title}" as confirmed`
+              }
+              onClick={() => onToggle(item.id)}
+            >
+              {checked ? (
+                <CircleCheckFill size="small" className={styles.checkIconDone} aria-hidden />
+              ) : (
+                <CircleCheck size="small" className={styles.checkIcon} aria-hidden />
+              )}
+            </button>
+            <div className={styles.checkBody}>
+              <span className={`${styles.checkTitle} ${checked ? styles.checkTitleDone : ''}`}>
+                {item.title}
+              </span>
+              {item.note ? <p className={styles.checkNote}>{item.note}</p> : null}
+              {item.link ? <DocLink link={item.link} /> : null}
+            </div>
+          </li>
+        )
+      })}
     </ul>
   )
 }
@@ -59,7 +131,7 @@ function DetailList({ items }: { items: readonly CatchUpDetailItem[] }) {
 function SimpleBulletList({ items }: { items: readonly CatchUpListEntry[] }) {
   return (
     <ul className={styles.simpleBulletList}>
-      {items.map(item => (
+      {items.map((item) => (
         <li
           key={item.text}
           className={item.emphasis ? styles.simpleBulletEmphasis : styles.simpleBullet}
@@ -89,16 +161,13 @@ function RevealBlock({
 }
 
 export default function AgentCatchUpPane({
-  onViewUpdatedReturn,
-  onViewDocuments,
   onApproveReturn,
+  resumed = false,
 }: AgentCatchUpPaneProps) {
   const [thinkingExpanded, setThinkingExpanded] = useState(false)
   const [checkedIds, setCheckedIds] = useState<Set<string>>(new Set())
 
   const {
-    isLoading,
-    loadingSubphase,
     isReasoning,
     reasoningHeaderVisible,
     visibleReasoningSteps,
@@ -107,10 +176,10 @@ export default function AgentCatchUpPane({
     generatingVisible,
     visibleBlocks,
     showControls,
-  } = useCatchUpAnimation()
+  } = useCatchUpAnimation(resumed)
 
   const toggleCheck = (id: string) => {
-    setCheckedIds(prev => {
+    setCheckedIds((prev) => {
       const next = new Set(prev)
       if (next.has(id)) next.delete(id)
       else next.add(id)
@@ -127,35 +196,6 @@ export default function AgentCatchUpPane({
           </div>
 
           <div className={styles.agentResponse} aria-live="polite">
-            {isLoading && (
-              <div className={styles.loadingPane} aria-busy="true">
-                {loadingSubphase === 'spinning' && (
-                  <div className={styles.spinOnlyPhase}>
-                    <div className={styles.spinningIcon}>
-                      <img src={intuitIntelligenceLogo} alt="" className={styles.spinningLogo} />
-                    </div>
-                  </div>
-                )}
-                {(loadingSubphase === 'greeting' || loadingSubphase === 'exiting') && (
-                  <div
-                    className={
-                      loadingSubphase === 'exiting'
-                        ? styles.greetingExiting
-                        : styles.greetingPhase
-                    }
-                  >
-                    <div className={styles.spinningIcon}>
-                      <img src={intuitIntelligenceLogo} alt="" className={styles.spinningLogo} />
-                    </div>
-                    <div className={styles.loadingCopy}>
-                      <p className={styles.loadingTitle}>{CATCH_UP_LOADING_TITLE}</p>
-                      <p className={styles.loadingSubtext}>{CATCH_UP_LOADING_SUBTEXT}</p>
-                    </div>
-                  </div>
-                )}
-              </div>
-            )}
-
             {isReasoning && (
               <AgentIntelligenceReasoningLive
                 title={CATCH_UP_REASONING_TITLE}
@@ -163,6 +203,7 @@ export default function AgentCatchUpPane({
                 visibleSteps={visibleReasoningSteps}
                 headerVisible={reasoningHeaderVisible}
                 exiting={reasoningExiting}
+                working={!reasoningExiting}
               />
             )}
 
@@ -170,7 +211,7 @@ export default function AgentCatchUpPane({
               <>
                 <AgentIntelligenceShowThinking
                   expanded={thinkingExpanded}
-                  onToggle={() => setThinkingExpanded(v => !v)}
+                  onToggle={() => setThinkingExpanded((v) => !v)}
                   steps={CATCH_UP_REASONING_STEPS}
                 />
 
@@ -181,9 +222,13 @@ export default function AgentCatchUpPane({
 
                   <RevealBlock visible={visibleBlocks >= 2}>
                     <section className={styles.section}>
-                      <h2 className={styles.sectionHeading}>Notes from Sarah Chen (prior preparer)</h2>
+                      <h2 className={styles.sectionHeading}>
+                        Notes from Sarah Chen (prior preparer)
+                      </h2>
                       <div className={styles.textStack}>
-                        <blockquote className={styles.handoffQuote}>{getCatchUpPriorNotes()}</blockquote>
+                        <blockquote className={styles.handoffQuote}>
+                          {getCatchUpPriorNotes()}
+                        </blockquote>
                         <p className={styles.bodyText}>{CATCH_UP_HANDOFF_PARAGRAPH}</p>
                       </div>
                     </section>
@@ -196,7 +241,9 @@ export default function AgentCatchUpPane({
                       <div className={styles.listGroup}>
                         <p className={styles.bodyText}>{CATCH_UP_AI_REVIEW_INTRO}</p>
                         <DetailList items={CATCH_UP_AI_REVIEW_ITEMS} />
-                        <blockquote className={styles.callout}>{CATCH_UP_AI_REVIEW_CALLOUT}</blockquote>
+                        <blockquote className={styles.callout}>
+                          {CATCH_UP_AI_REVIEW_CALLOUT}
+                        </blockquote>
                       </div>
                     </section>
                   </RevealBlock>
@@ -224,7 +271,11 @@ export default function AgentCatchUpPane({
                       <h2 className={styles.sectionHeading}>3. Your focus as final reviewer</h2>
                       <div className={styles.listGroup}>
                         <p className={styles.bodyText}>{CATCH_UP_REVIEWER_FOCUS_INTRO}</p>
-                        <SimpleBulletList items={CATCH_UP_REVIEWER_FOCUS_BULLETS} />
+                        <ReviewCheckList
+                          items={CATCH_UP_REVIEWER_CHECKLIST}
+                          checkedIds={checkedIds}
+                          onToggle={toggleCheck}
+                        />
                       </div>
                     </section>
                   </RevealBlock>
@@ -235,7 +286,7 @@ export default function AgentCatchUpPane({
                       <h2 className={styles.sectionHeading}>4. Return status</h2>
                       <div className={styles.listGroup}>
                         <ol className={styles.numberedList}>
-                          {CATCH_UP_RETURN_STATUS_ITEMS.map(item => (
+                          {CATCH_UP_RETURN_STATUS_ITEMS.map((item) => (
                             <li key={item} className={styles.numberedItem}>
                               {item}
                             </li>
@@ -250,20 +301,6 @@ export default function AgentCatchUpPane({
 
                   <RevealBlock visible={visibleBlocks >= 7}>
                     <hr className={styles.divider} aria-hidden />
-                    <section className={styles.section}>
-                      <h2 className={styles.sectionHeading}>Review checklist</h2>
-                      <p className={styles.bodyText}>{CATCH_UP_CHECKLIST_INTRO}</p>
-                      <CatchUpReviewChecklist
-                        confirmedItems={CATCH_UP_CONFIRMED_BY_PREPARER}
-                        reviewItems={CATCH_UP_REVIEWER_CHECKLIST}
-                        checkedIds={checkedIds}
-                        onToggle={toggleCheck}
-                      />
-                    </section>
-                  </RevealBlock>
-
-                  <RevealBlock visible={visibleBlocks >= 8}>
-                    <hr className={styles.divider} aria-hidden />
                     <p className={styles.footerPrompt}>{CATCH_UP_FOOTER_QUESTION}</p>
                   </RevealBlock>
                 </article>
@@ -272,8 +309,6 @@ export default function AgentCatchUpPane({
                   <div className={styles.revealIn}>
                     <AgentReviewSummaryFooter
                       showPrompt={false}
-                      onViewUpdatedReturn={onViewUpdatedReturn}
-                      onViewSourceDocuments={onViewDocuments}
                       onPrimaryAction={onApproveReturn}
                       primaryLabel={CATCH_UP_APPROVE_RETURN}
                     />

@@ -10,10 +10,16 @@ Read `docs/DESIGN_LANGUAGE.md` before making visible UI changes.
 
 - Design for a dense, expert-facing tax workflow—not a consumer or marketing surface.
 - Establish hierarchy before styling: page purpose, section heading, task content, metadata, then secondary actions.
+- Style text by importance. Primary copy is larger and/or heavier, left-aligned, and `--color-text-primary`. Supporting copy is quieter. Default minimum size is 14px; 12px is only for timestamps, badges, dense table chrome, legal lines, and icon-adjacent counts.
+- Indent nested navigation. Do not indent body copy to fake hierarchy.
+- Use `--color-text-secondary` rarely and only where it still meets WCAG AA. If it would fail, keep primary color and reduce size or weight.
 - Use one clear primary action per decision region. Keep supporting actions visually quieter.
 - Use IDS components as the behavioral and accessibility foundation. Inspect the relevant component rule and existing in-product usage before composing a custom pattern.
 - Prefer the project's established patterns in `docs/PATTERNS.md`; do not create a parallel version of comments, verification, checks, banners, or handoff.
 - Use a consistent spacing rhythm: tight inside controls and rows, medium between related groups, large between major sections.
+- Reserve status color on borders for `PageMessage`. Every other container uses a neutral border; carry status through an icon badge, text, or an icon instead.
+- Prefer a round icon badge (`shape="round"` with `SuccessBadgeIcon` / `WarningBadgeIcon`) next to a title over a text badge when the status word only restates the title.
+- Dividers inside a container use `--color-divider-tertiary`. `--color-divider-primary` is a strong structural line and makes stacked rows read as clutter.
 - Containers must use available width intentionally. Avoid crushed columns, unexplained empty halves, narrow fields inside wide dialogs, and uneven alignment.
 - Preserve stable table/form columns. Labels may truncate; financial values and status/actions must remain readable.
 - Motion must clarify entry, exit, progress, or state change. Use IDS duration/easing tokens and honor reduced motion.

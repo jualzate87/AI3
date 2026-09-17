@@ -70,6 +70,9 @@
   color: #ffffff;
 }
 
+.clearedCheckConfirmed svg + svg {
+  margin-left: calc(var(--space-x-small, 4px) * -1);
+}
 
 .tabConfirmed:not(.tabActive) {
   border-color: var(--color-action-success, #00856d);

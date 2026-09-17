@@ -64,7 +64,7 @@ export function useReturnNotes() {
   }, [])
 
   const addHandoffNote = useCallback(
-    (text: string, author: string, toName: string) => {
+    (text: string, author: string, context: string, role: Note['role'] = 'preparer') => {
       const note: Note = {
         id: `handoff-${Date.now()}`,
         text,
@@ -75,8 +75,8 @@ export function useReturnNotes() {
           hour: 'numeric',
           minute: '2-digit',
         }),
-        context: `Handoff note for ${toName}`,
-        role: 'preparer',
+        context,
+        role,
         status: 'open',
       }
       setNotes(prev => {

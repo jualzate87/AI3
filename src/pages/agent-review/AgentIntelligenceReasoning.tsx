@@ -14,6 +14,40 @@ interface AgentIntelligenceReasoningLiveProps {
   visibleSteps: number
   headerVisible: boolean
   exiting?: boolean
+  /** Spins the Intuit Intelligence mark while activities are still streaming in. */
+  working?: boolean
+}
+
+/**
+ * Vertical progress tracker for the agent's reasoning stream — a connector rail
+ * with a node per activity, shared by the processing and catch-up panes.
+ */
+function ReasoningTimeline({
+  steps,
+  visibleSteps,
+  stagger,
+}: {
+  steps: readonly IntelligenceReasoningStep[]
+  visibleSteps: number
+  stagger: number
+}) {
+  return (
+    <ol className={styles.reasoningSteps}>
+      {steps.map((step, index) => (
+        <li
+          key={step.title}
+          className={`${styles.reasoningStep} ${index < visibleSteps ? styles.revealIn : styles.revealHidden}`}
+          style={{ animationDelay: `${index * stagger}ms` }}
+        >
+          <span className={styles.reasoningStepRail} aria-hidden />
+          <div className={styles.reasoningStepContent}>
+            <span className={styles.reasoningStepTitle}>{step.title}</span>
+            <p className={styles.reasoningStepBody}>{step.body}</p>
+          </div>
+        </li>
+      ))}
+    </ol>
+  )
 }
 
 /** Live reasoning stream — shared by processing and catch-up panes. */
@@ -23,27 +57,21 @@ export function AgentIntelligenceReasoningLive({
   visibleSteps,
   headerVisible,
   exiting = false,
+  working = false,
 }: AgentIntelligenceReasoningLiveProps) {
   return (
     <div className={`${styles.reasoningBlock} ${exiting ? styles.revealOut : ''}`}>
       <div
         className={`${styles.reasoningHeader} ${headerVisible ? styles.revealIn : styles.revealHidden}`}
       >
-        <img src={intuitIntelligenceLogo} alt="" className={styles.reasoningSparkle} />
+        <img
+          src={intuitIntelligenceLogo}
+          alt=""
+          className={`${styles.reasoningSparkle} ${working ? styles.reasoningSparkleWorking : ''}`}
+        />
         <span className={styles.reasoningTitle}>{title}</span>
       </div>
-      <ol className={styles.reasoningSteps}>
-        {steps.map((step, index) => (
-          <li
-            key={step.title}
-            className={`${styles.reasoningStep} ${index < visibleSteps ? styles.revealIn : styles.revealHidden}`}
-            style={{ animationDelay: `${index * 80}ms` }}
-          >
-            <span className={styles.reasoningStepTitle}>{step.title}</span>
-            <p className={styles.reasoningStepBody}>{step.body}</p>
-          </li>
-        ))}
-      </ol>
+      <ReasoningTimeline steps={steps} visibleSteps={visibleSteps} stagger={80} />
     </div>
   )
 }
@@ -77,18 +105,7 @@ export function AgentIntelligenceShowThinking({
         />
       </button>
       {expanded && (
-        <ol className={styles.reasoningSteps}>
-          {steps.map((step, index) => (
-            <li
-              key={step.title}
-              className={`${styles.reasoningStep} ${styles.revealIn}`}
-              style={{ animationDelay: `${index * 100}ms` }}
-            >
-              <span className={styles.reasoningStepTitle}>{step.title}</span>
-              <p className={styles.reasoningStepBody}>{step.body}</p>
-            </li>
-          ))}
-        </ol>
+        <ReasoningTimeline steps={steps} visibleSteps={steps.length} stagger={100} />
       )}
     </>
   )

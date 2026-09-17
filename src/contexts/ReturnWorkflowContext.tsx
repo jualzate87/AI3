@@ -10,6 +10,7 @@ import {
 import { setReviewActor } from '../hooks/useSyncedReviewState'
 import {
   detectHandoff,
+  detectStatusHandoff,
   getReturnStatus,
   getTeamMember,
   loadReturnWorkflow,
@@ -77,6 +78,13 @@ export function ReturnWorkflowProvider({ children }: { children: ReactNode }) {
   const requestStatusChange = useCallback(
     (statusId: ReturnStatusId) => {
       if (statusId === workflow.statusId) return
+
+      const handoff = detectStatusHandoff(workflow.assigneeId, workflow.statusId, statusId)
+      if (handoff) {
+        setPendingHandoff(handoff)
+        return
+      }
+
       persist({ ...workflow, statusId })
     },
     [persist, workflow],
@@ -96,7 +104,7 @@ export function ReturnWorkflowProvider({ children }: { children: ReactNode }) {
       persist(next)
       setPendingHandoff(null)
       const nextAssignee = getTeamMember(next.assigneeId)
-      if (nextAssignee.role === 'reviewer') {
+      if (pendingHandoff.kind === 'assignee' && nextAssignee.role === 'reviewer') {
         sessionStorage.setItem(REVIEWER_WELCOME_KEY, '1')
       }
       return {
@@ -108,9 +116,14 @@ export function ReturnWorkflowProvider({ children }: { children: ReactNode }) {
     [pendingHandoff, persist, workflow],
   )
 
+  /** Apply the move without a note — "change assignee only" / "change status only". */
   const dismissHandoff = useCallback(() => {
     if (!pendingHandoff) return
-    persist({ ...workflow, assigneeId: pendingHandoff.toAssigneeId })
+    persist(
+      pendingHandoff.kind === 'status'
+        ? { ...workflow, statusId: pendingHandoff.suggestedStatusId }
+        : { ...workflow, assigneeId: pendingHandoff.toAssigneeId },
+    )
     setPendingHandoff(null)
   }, [pendingHandoff, persist, workflow])
 

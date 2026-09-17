@@ -14,18 +14,30 @@
   color: var(--color-text-primary, #393a3d);
 }
 
-.previewSection {
-  display: flex;
-  flex-direction: column;
-  gap: var(--space-component-gap-medium, 12px);
+/* Single container holding the notes field and the collapsible summary. */
+.panel {
   width: 100%;
   min-width: 0;
+  box-sizing: border-box;
+  border: 1px solid var(--color-container-border-secondary, #babec5);
+  border-radius: var(--radius-large, 8px);
+  background: var(--color-container-background-primary, #ffffff);
+  overflow: hidden;
 }
 
-.previewHeadingRow {
-  display: flex;
+.summaryHeader {
+  justify-content: space-between;
+  border-top: 1px solid var(--color-divider-tertiary, #d4d7dc);
+}
+
+.summaryHeaderLabel {
+  display: inline-flex;
   align-items: center;
   gap: var(--space-column-gap-x-small, 8px);
+  font-family: var(--font-family-component);
+  font-size: var(--font-size-component-small, 14px);
+  font-weight: var(--font-weight-component-semibold, 500);
+  color: var(--color-text-primary, #393a3d);
 }
 
 .sparkle {
@@ -34,51 +46,41 @@
   flex-shrink: 0;
 }
 
-.previewHeading {
-  margin: 0;
-  font-family: var(--font-family-component);
-  font-size: var(--font-size-component-medium, 16px);
-  font-weight: var(--font-weight-component-semibold, 500);
-  color: var(--color-text-primary, #393a3d);
-}
-
-.cards {
+.sections {
   display: flex;
   flex-direction: column;
-  gap: var(--space-row-gap-small, 12px);
   width: 100%;
   min-width: 0;
 }
 
-.checkedCard,
-.headsUpCard {
+.section {
   display: flex;
   flex-direction: column;
   gap: var(--space-component-gap-small, 8px);
   width: 100%;
   min-width: 0;
-  box-sizing: border-box;
-  padding: var(--space-container-padding-small, 16px);
-  border-radius: var(--radius-large, 8px);
-  background: var(--color-container-background-primary, #ffffff);
+  padding: var(--space-container-padding-small, 16px) 0;
 }
 
-.checkedCard {
-  border: 1px solid var(--color-container-border-secondary, #e3e5e8);
+.section:first-child {
+  padding-top: 0;
 }
 
-.headsUpCard {
-  border: 1px solid var(--color-container-border-attention, #ffbb00);
+.section:last-child {
+  padding-bottom: 0;
 }
 
-.cardHeader {
+.section + .section {
+  border-top: 1px solid var(--color-divider-tertiary, #d4d7dc);
+}
+
+.sectionHeader {
   display: flex;
   align-items: center;
-  justify-content: space-between;
   gap: var(--space-column-gap-x-small, 8px);
 }
 
-.cardTitle {
+.sectionTitle {
   margin: 0;
   font-family: var(--font-family-component);
   font-size: var(--font-size-component-small, 14px);
@@ -86,7 +88,7 @@
   color: var(--color-text-primary, #393a3d);
 }
 
-.cardIntro {
+.sectionIntro {
   margin: 0;
   font-family: var(--font-family-body);
   font-size: var(--font-size-body-3, 14px);
@@ -107,7 +109,7 @@
   flex-direction: column;
   gap: var(--space-component-gap-x-small, 2px);
   padding: var(--space-component-padding-small, 8px) 0;
-  border-bottom: 1px solid var(--color-divider-primary, #d5dee3);
+  border-bottom: 1px solid var(--color-divider-tertiary, #d4d7dc);
 }
 
 .item:last-child {
@@ -133,6 +135,8 @@
 .notesField {
   width: 100%;
   min-width: 0;
+  box-sizing: border-box;
+  padding: var(--space-container-padding-small, 16px);
 }
 
 .notesField :global(div),

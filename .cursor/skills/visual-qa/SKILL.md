@@ -26,6 +26,7 @@ Capture before/after evidence when practical.
 - Task, status, and next action are clear within three seconds.
 - One dominant heading and one primary action per decision region.
 - Secondary actions do not compete with content.
+- Run `/text-hierarchy` on touched copy: the most important line is larger/heavier and on the left; supporting copy is quieter; titles/labels/nav are ≥ 14px; 12px is only meta; `--color-text-primary` unless secondary is rare and still AA; nested nav is indented.
 
 ### Spacing and layout
 
