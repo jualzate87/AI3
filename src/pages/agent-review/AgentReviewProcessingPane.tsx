@@ -43,6 +43,8 @@ interface AgentReviewProcessingPaneProps {
   onViewReturnSummary: () => void
   onGetCaughtUp: () => void
   onFooterChipsChange?: (chips: ReactNode | null) => void
+  /** Fired once when the fix animation finishes — use to persist demo amount corrections. */
+  onFixesComplete?: () => void
 }
 
 function openDocLink(link: IntelligenceFixLink) {
@@ -61,6 +63,7 @@ export default function AgentReviewProcessingPane({
   onViewReturnSummary,
   onGetCaughtUp,
   onFooterChipsChange,
+  onFixesComplete,
 }: AgentReviewProcessingPaneProps) {
   const [thinkingExpanded, setThinkingExpanded] = useState(false)
   const fixSectionRefs = useRef<Record<number, HTMLElement | null>>({})
@@ -87,6 +90,10 @@ export default function AgentReviewProcessingPane({
     advanceToNextFix,
     fixSectionCount,
   } = useAgentProcessingAnimation(mode)
+
+  useEffect(() => {
+    if (allFixesComplete) onFixesComplete?.()
+  }, [allFixesComplete, onFixesComplete])
 
   useEffect(() => {
     if (!onFooterChipsChange) return

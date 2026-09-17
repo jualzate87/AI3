@@ -13,6 +13,10 @@ import { canVerifyDoc } from '../pages/data-review/docReviewStatus'
 import { normalizeVerifiedDocEntries, normalizeVerifiedDocKey } from '../data/verifiedDocKeys'
 import type { MilestoneCompletion } from '../data/reviewMilestones'
 import {
+  AGENT_INTELLIGENCE_ACTOR,
+  buildAgentIntelligenceDemoFixes,
+} from '../lib/applyAgentIntelligenceFixes'
+import {
   coerceTimestamp,
   formatActivityTimestamp,
   sanitizeActivityEntry,
@@ -590,6 +594,46 @@ export function resetAgentDemoReviewState(): SyncedState {
   return next
 }
 
+/** Persist agent auto-fixes from the intelligence processing demo (W-2 wages, SSN, import gaps). */
+export function applyAgentIntelligenceFixesToState(state: SyncedState): SyncedState {
+  const { amounts: amountPatch, reviewedFieldKeys } = buildAgentIntelligenceDemoFixes()
+  const at = formatActivityTimestamp()
+  const agentEntry = { by: AGENT_INTELLIGENCE_ACTOR, at }
+
+  const nextAmounts = { ...state.amounts, ...amountPatch }
+  if (amountPatch.box12Rows) {
+    const rows = {
+      a: { ...state.amounts.box12Rows.a, ...amountPatch.box12Rows.a },
+      b: { ...state.amounts.box12Rows.b, ...amountPatch.box12Rows.b },
+      c: { ...state.amounts.box12Rows.c, ...amountPatch.box12Rows.c },
+      d: { ...state.amounts.box12Rows.d, ...amountPatch.box12Rows.d },
+    }
+    nextAmounts.box12Rows = rows
+    nextAmounts.box12 = rows.a.amount + rows.b.amount + rows.c.amount + rows.d.amount
+  }
+
+  const reviewed = new Map(state.reviewedFieldsList)
+  reviewedFieldKeys.forEach(key => {
+    if (!reviewed.has(key)) reviewed.set(key, agentEntry)
+    const linked = PHASE1_TO_PHASE2_ISSUES[key]
+    linked?.forEach(issueKey => {
+      if (!reviewed.has(issueKey)) reviewed.set(issueKey, agentEntry)
+    })
+  })
+
+  const edited = new Map(state.editedFieldsList)
+  if (amountPatch.wages !== undefined) {
+    edited.set('wages-techCircle', agentEntry)
+  }
+
+  return sanitizeSyncedState({
+    ...state,
+    amounts: nextAmounts,
+    reviewedFieldsList: Array.from(reviewed.entries()),
+    editedFieldsList: Array.from(edited.entries()),
+  })
+}
+
 /** Clear persisted review state (localStorage + in-memory). Reviewer handoff uses the same store. */
 export function resetPersistedReviewState(): SyncedState {
   const fresh = createDefaultReviewState()
@@ -665,6 +709,14 @@ export function useSyncedReviewState() {
     const next = resetAgentDemoReviewState()
     stateRef.current = next
     setState(next)
+    channelRef.current?.postMessage({ tabId: tabIdRef.current, state: next })
+  }, [])
+
+  const applyAgentIntelligenceFixes = useCallback(() => {
+    const next = applyAgentIntelligenceFixesToState(stateRef.current)
+    stateRef.current = next
+    setState(next)
+    writePersisted(next)
     channelRef.current?.postMessage({ tabId: tabIdRef.current, state: next })
   }, [])
 
@@ -1226,6 +1278,7 @@ export function useSyncedReviewState() {
     toggleReviewerFormSignOff,
     resetReviewState,
     resetAgentDemo,
+    applyAgentIntelligenceFixes,
     getSyncedSnapshot,
     restoreSyncedSnapshot,
   }

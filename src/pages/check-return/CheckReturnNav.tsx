@@ -73,6 +73,8 @@ interface CheckReturnNavProps {
   onSelectForm: (form: string) => void
   onSelectAiDiagnostics?: () => void
   onSelectAiDiagnosticSub?: (subId: string) => void
+  /** Left-nav AI review accordion — off by default; use header / Launch points instead. */
+  showAiReviewNav?: boolean
 }
 
 function NavCategoryHeader({
@@ -240,6 +242,7 @@ export default function CheckReturnNav({
   onSelectForm,
   onSelectAiDiagnostics,
   onSelectAiDiagnosticSub,
+  showAiReviewNav = false,
 }: CheckReturnNavProps) {
   const focused = variant === 'focused'
   const [expandedCategory, setExpandedCategory] = useState<ExpandedCategory | null>('forms')
@@ -426,32 +429,34 @@ export default function CheckReturnNav({
           </div>
         )}
 
+        {showAiReviewNav && (
+          <div className={styles.navSection}>
+            <NavAiDiagnosticsHeader
+              expanded={expandedCategory === 'ai-diagnostics'}
+              active={contentView === 'ai-diagnostics'}
+              count={aiDiagnosticCount}
+              onToggle={() => {
+                toggleCategory('ai-diagnostics')
+                onSelectAiDiagnostics?.()
+              }}
+            />
+
+            {expandedCategory === 'ai-diagnostics' &&
+              AI_DIAGNOSTIC_SUB_ITEMS.map(item => (
+                <NavAiDiagnosticSubItem
+                  key={item.id}
+                  label={item.label}
+                  active={
+                    contentView === 'ai-diagnostics' && selectedAiDiagnosticSubId === item.id
+                  }
+                  onClick={() => onSelectAiDiagnosticSub?.(item.id)}
+                />
+              ))}
+          </div>
+        )}
+
         {!focused && (
           <>
-            <div className={styles.navSection}>
-              <NavAiDiagnosticsHeader
-                expanded={expandedCategory === 'ai-diagnostics'}
-                active={contentView === 'ai-diagnostics'}
-                count={aiDiagnosticCount}
-                onToggle={() => {
-                  toggleCategory('ai-diagnostics')
-                  onSelectAiDiagnostics?.()
-                }}
-              />
-
-              {expandedCategory === 'ai-diagnostics' &&
-                AI_DIAGNOSTIC_SUB_ITEMS.map(item => (
-                  <NavAiDiagnosticSubItem
-                    key={item.id}
-                    label={item.label}
-                    active={
-                      contentView === 'ai-diagnostics' && selectedAiDiagnosticSubId === item.id
-                    }
-                    onClick={() => onSelectAiDiagnosticSub?.(item.id)}
-                  />
-                ))}
-            </div>
-
             {DIAGNOSTIC_CATEGORY_ITEMS.map(item => (
               <NavFlatRow key={item.label} label={item.label} badge={item.badge} />
             ))}

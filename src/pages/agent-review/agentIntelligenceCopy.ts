@@ -523,7 +523,7 @@ export const INTELLIGENCE_FIX_PROGRESS_SECTIONS: readonly IntelligenceFixSection
     links: [
       {
         docLabel: 'W-2 (PDF)',
-        detail: 'Box 1 wages corrected ($118,940 → $148,940)',
+        detail: 'Box 1 wages corrected ($118,940 → $148,940); employee SSN restored',
         popoutTab: 'w2',
       },
       {

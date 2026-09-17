@@ -37,6 +37,7 @@ import {
 import type { ProcessingMode } from './agent-review/useAgentProcessingAnimation'
 import AgentLoadingPane from './data-review/AgentLoadingPane'
 import ChatInput from './automated/ChatInput'
+import { useSyncedReviewState } from '../hooks/useSyncedReviewState'
 import { openSourceDocumentReviewPopout } from '../lib/prototypeRoutes'
 import chipStyles from '../styles/agent-review/AgentReviewFooterChips.module.css'
 import styles from '../styles/AgentReviewPage.module.css'
@@ -62,6 +63,8 @@ export default function AgentReviewPage() {
   const [isAssessing, setIsAssessing] = useState(false)
   const [footerChips, setFooterChips] = useState<ReactNode>(null)
   const assessTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+  const agentFixesAppliedRef = useRef(false)
+  const { applyAgentIntelligenceFixes } = useSyncedReviewState()
 
   const isSidebar = layoutMode === 'sidebar'
 
@@ -121,11 +124,19 @@ export default function AgentReviewPage() {
   }
 
   const beginProcessing = (mode: ProcessingMode = 'batch') => {
+    agentFixesAppliedRef.current = false
     setProcessingMode(mode)
     setStep('processing')
   }
 
+  const persistAgentFixes = () => {
+    if (agentFixesAppliedRef.current) return
+    agentFixesAppliedRef.current = true
+    applyAgentIntelligenceFixes()
+  }
+
   const openWorkspace = () => {
+    persistAgentFixes()
     navigate('/data-review?entry=review-return&startReview=true')
   }
 
@@ -178,7 +189,7 @@ export default function AgentReviewPage() {
                 </IconControl>
                 <AgentReviewLayoutMenu mode={layoutMode} onChange={handleLayoutChange} />
                 <IconControl
-                  label={INTELLIGENCE_CLOSE_ARIA}
+                  aria-label={INTELLIGENCE_CLOSE_ARIA}
                   size="medium"
                   shape="square"
                   onClick={handleClose}
@@ -204,7 +215,7 @@ export default function AgentReviewPage() {
                   <PanelArrowRight size="medium" />
                 </IconControl>
                 <IconControl
-                  label={INTELLIGENCE_CLOSE_ARIA}
+                  aria-label={INTELLIGENCE_CLOSE_ARIA}
                   size="medium"
                   shape="square"
                   onClick={handleClose}
@@ -262,6 +273,7 @@ export default function AgentReviewPage() {
                   onViewReturnSummary={() => navigate('/check-return')}
                   onGetCaughtUp={() => setStep('catch-up')}
                   onFooterChipsChange={setFooterChips}
+                  onFixesComplete={persistAgentFixes}
                 />
               )}
             </div>

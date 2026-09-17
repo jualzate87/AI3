@@ -145,6 +145,7 @@ export default function CheckReturnAgentPage() {
           />
           <div className={`${styles.contentArea} ${agentLayout.pageShell}`}>
             <CheckReturnNav
+              showAiReviewNav
               contentView={contentView}
               selectedForm={selectedForm}
               aiDiagnosticCount={diagnosticOverview.total}
