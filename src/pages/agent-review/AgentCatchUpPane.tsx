@@ -311,6 +311,7 @@ export default function AgentCatchUpPane({
                       showPrompt={false}
                       onPrimaryAction={onApproveReturn}
                       primaryLabel={CATCH_UP_APPROVE_RETURN}
+                      actionVariant="button"
                     />
                   </div>
                 ) : null}

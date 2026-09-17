@@ -1,9 +1,7 @@
-import { useEffect, useMemo, useRef, useState, type ReactNode } from 'react'
-import { CircleCheckFill, CircleExclamationFill, PopOut } from '@design-systems/icons'
+import { useEffect, useMemo, useState, type ReactNode } from 'react'
+import { CircleCheckFill, PopOut } from '@design-systems/icons'
 import Badge from '@ids-ts/badge'
 import '@ids-ts/badge/dist/main.css'
-import { Link } from '@ids-ts/link'
-import '@ids-ts/link/dist/main.css'
 import AgentDiagnosticExpandableCard from '../check-return/AgentDiagnosticExpandableCard'
 import AgentReviewSummaryFooter from './AgentReviewSummaryFooter'
 import intuitIntelligenceLogo from '../../assets/icons/intuit-intelligence-logo-small.svg'
@@ -12,11 +10,8 @@ import { openSourceDocumentReviewPopout } from '../../lib/prototypeRoutes'
 import {
   buildIntelligenceReviewModel,
   CTA_CONTINUE_NEXT_FIX,
-  CTA_VIEW,
   getActiveIntelligenceIssues,
   INTELLIGENCE_ATTENTION_INTRO,
-  INTELLIGENCE_ATTENTION_TITLE,
-  INTELLIGENCE_CHECKED_TITLE,
   INTELLIGENCE_FIX_PROGRESS_SECTIONS,
   INTELLIGENCE_FIXES_DIVIDER_LABEL,
   INTELLIGENCE_FIXES_PROGRESS_TITLE,
@@ -25,7 +20,8 @@ import {
   INTELLIGENCE_REASONING_STEPS,
   INTELLIGENCE_REASONING_TITLE,
   INTELLIGENCE_SHELL_TITLE,
-  intelligenceAttentionCountLabel,
+  intelligenceAttentionTitle,
+  intelligenceFinalStepSubtitle,
   intelligenceFixCompleteMessage,
   intelligenceFixProgressLabel,
   intelligenceProcessingIntro,
@@ -42,7 +38,6 @@ import styles from '../../styles/agent-review/AgentReviewProcessingPane.module.c
 interface AgentReviewProcessingPaneProps {
   mode?: ProcessingMode
   compact?: boolean
-  onViewReturnSummary: () => void
   onGetCaughtUp: () => void
   onFooterChipsChange?: (chips: ReactNode | null) => void
   /** Fired once when the fix animation finishes — use to persist demo amount corrections. */
@@ -62,14 +57,12 @@ function openDocLink(link: { popoutTab?: string; popoutSubTab?: string }) {
 export default function AgentReviewProcessingPane({
   mode = 'batch',
   compact = false,
-  onViewReturnSummary,
   onGetCaughtUp,
   onFooterChipsChange,
   onFixesComplete,
   resumed = false,
 }: AgentReviewProcessingPaneProps) {
   const [thinkingExpanded, setThinkingExpanded] = useState(false)
-  const fixSectionRefs = useRef<Record<number, HTMLElement | null>>({})
 
   const { issues, issueCount, totalWithholding, live } = useMemo(
     () => getActiveIntelligenceIssues(),
@@ -137,18 +130,6 @@ export default function AgentReviewProcessingPane({
     return () => onFooterChipsChange?.(null)
   }, [onFooterChipsChange])
 
-  const scrollToFixSection = (index: number) => {
-    fixSectionRefs.current[index]?.scrollIntoView({ behavior: 'smooth', block: 'nearest' })
-  }
-
-  const handleProgressView = (index: number) => {
-    if (index < fixSectionCount) {
-      scrollToFixSection(index + 1)
-      return
-    }
-    onViewReturnSummary()
-  }
-
   return (
     <div className={styles.container}>
       <div className={styles.scrollArea}>
@@ -183,44 +164,40 @@ export default function AgentReviewProcessingPane({
               </div>
               <ol className={styles.progressList}>
                 {INTELLIGENCE_PROGRESS_ITEMS.map((item, index) => {
+                  /* The closing step is not agent work — it is what the run hands back
+                     to the reviewer, so it never completes here. It opens instead, and
+                     reports how many items are waiting. */
+                  const isFinal = index === INTELLIGENCE_PROGRESS_ITEMS.length - 1
                   const done = index < completedProgress
-                  const active = index === activeProgressIndex
+                  const awaiting = isFinal && allFixesComplete
+                  const active = index === activeProgressIndex || awaiting
+                  const subtitle = awaiting
+                    ? intelligenceFinalStepSubtitle(INTELLIGENCE_NEEDS_ATTENTION_ITEMS.length)
+                    : done
+                      ? item.subtitle
+                      : undefined
+
                   return (
                     <li
                       key={item.id}
                       className={`${styles.progressItem} ${active ? styles.progressItemActive : ''}`}
                     >
                       <span
-                        className={`${styles.progressDot} ${done ? styles.progressDotDone : ''} ${active ? styles.progressDotActive : ''}`}
+                        className={`${styles.progressDot} ${done ? styles.progressDotDone : ''} ${awaiting ? styles.progressDotAwaiting : ''} ${active && !awaiting ? styles.progressDotActive : ''}`}
                         aria-hidden
                       >
                         {done && (
                           <CircleCheckFill size="x-small" className={styles.progressCheck} />
                         )}
                       </span>
-                      <div className={styles.progressItemBody}>
-                        <div className={styles.progressItemMain}>
-                          <span
-                            className={`${styles.progressItemLabel} ${done ? styles.progressItemDone : ''}`}
-                          >
-                            {item.label}
-                          </span>
-                          {item.subtitle && done && (
-                            <span className={styles.progressItemSubtitle}>{item.subtitle}</span>
-                          )}
-                        </div>
-                        {(done || index === fixSectionCount) && (
-                          <Link
-                            href="#"
-                            size="component-x-small"
-                            className={styles.progressLink}
-                            onClick={(e) => {
-                              e.preventDefault()
-                              handleProgressView(index)
-                            }}
-                          >
-                            {CTA_VIEW}
-                          </Link>
+                      <div className={styles.progressItemMain}>
+                        <span
+                          className={`${styles.progressItemLabel} ${done ? styles.progressItemDone : ''}`}
+                        >
+                          {item.label}
+                        </span>
+                        {subtitle && (
+                          <span className={styles.progressItemSubtitle}>{subtitle}</span>
                         )}
                       </div>
                     </li>
@@ -273,14 +250,11 @@ export default function AgentReviewProcessingPane({
                     <div className={styles.progressCardHeader}>
                       <span className={styles.attentionTitleGroup}>
                         <span id="ai-review-attention-title" className={styles.progressCardTitle}>
-                          {INTELLIGENCE_ATTENTION_TITLE}
+                          {intelligenceAttentionTitle(INTELLIGENCE_NEEDS_ATTENTION_ITEMS.length)}
                         </span>
                         <Badge status="warning" priority="secondary" capitalization="caps">
                           {LABEL_NEED_ACTION}
                         </Badge>
-                      </span>
-                      <span className={styles.progressCardCount}>
-                        {intelligenceAttentionCountLabel(INTELLIGENCE_NEEDS_ATTENTION_ITEMS.length)}
                       </span>
                     </div>
 
@@ -291,24 +265,16 @@ export default function AgentReviewProcessingPane({
                     <ul className={styles.attentionList}>
                       {INTELLIGENCE_NEEDS_ATTENTION_ITEMS.map((item) => (
                         <li key={item.id} className={styles.attentionItem}>
-                          <CircleExclamationFill
-                            size="small"
-                            className={styles.attentionIcon}
-                            aria-hidden
-                          />
-                          <div className={styles.attentionBody}>
-                            <span className={styles.attentionItemTitle}>{item.title}</span>
-                            <p className={styles.attentionItemDetail}>{item.detail}</p>
-                            <Link
-                              href="#"
-                              onClick={(e) => {
-                                e.preventDefault()
-                                openDocLink(item)
-                              }}
-                            >
-                              {item.linkLabel}
-                            </Link>
-                          </div>
+                          <span className={styles.attentionItemTitle}>{item.title}</span>
+                          <p className={styles.attentionItemDetail}>{item.detail}</p>
+                          <button
+                            type="button"
+                            className={styles.richDocLink}
+                            onClick={() => openDocLink(item)}
+                          >
+                            {item.linkLabel}
+                            <PopOut size="x-small" aria-hidden />
+                          </button>
                         </li>
                       ))}
                     </ul>
@@ -317,10 +283,10 @@ export default function AgentReviewProcessingPane({
 
                 <div className={styles.progressCard}>
                   <div className={styles.progressCardHeader}>
+                    {/* The card keeps its name once complete — the count beside it
+                        already reports the finished state. */}
                     <span className={styles.progressCardTitle}>
-                      {visibleFixSections >= fixSectionCount
-                        ? INTELLIGENCE_CHECKED_TITLE
-                        : INTELLIGENCE_FIXES_PROGRESS_TITLE}
+                      {INTELLIGENCE_FIXES_PROGRESS_TITLE}
                     </span>
                     <span className={styles.progressCardCount}>
                       {intelligenceFixProgressLabel(visibleFixSections, fixSectionCount)}
@@ -335,9 +301,6 @@ export default function AgentReviewProcessingPane({
                     return (
                       <div
                         key={section.title}
-                        ref={(el) => {
-                          fixSectionRefs.current[sectionIndex + 1] = el
-                        }}
                         className={`${styles.fixSection} ${styles.revealIn}`}
                         style={{ animationDelay: `${sectionIndex * 80}ms` }}
                       >

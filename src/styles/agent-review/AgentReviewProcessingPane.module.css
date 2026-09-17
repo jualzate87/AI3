@@ -203,27 +203,13 @@
   color: var(--color-text-primary, #393a3d);
 }
 
-.progressItemBody {
-  display: flex;
-  flex: 1;
-  /* Baseline keeps "View" on the same line as the item title, even when the
-     title wraps to two lines or the link uses a smaller type size. */
-  align-items: baseline;
-  justify-content: space-between;
-  gap: var(--space-x-small, 8px);
-  min-width: 0;
-}
-
 .progressItemLabel {
   line-height: 20px;
 }
 
-.progressLink {
-  flex-shrink: 0;
-}
-
 .progressItemMain {
   display: flex;
+  flex: 1;
   flex-direction: column;
   gap: 3px;
   min-width: 0;
@@ -279,6 +265,13 @@
   color: var(--color-text-primary, #393a3d);
   font-weight: var(--font-weight-component-semibold, 500);
   transition: color var(--duration-fade-moderate, 200ms) var(--ease-fade);
+}
+
+/* The closing step is open, not in progress — an attention ring says "waiting
+   on you" without claiming the agent is still working. */
+.progressDotAwaiting {
+  border-color: var(--color-ui-attention, #d68000);
+  background: var(--color-container-background-attention, #ffecd9);
 }
 
 .reasoningBlock,
@@ -563,7 +556,7 @@
 
 .progressCardDivider {
   height: 1px;
-  background: var(--color-divider-primary, #d5dee3);
+  background: var(--color-divider-tertiary, #eceef1);
 }
 
 .fixSection {
@@ -571,7 +564,7 @@
   flex-direction: column;
   gap: var(--space-small, 12px);
   padding: var(--space-medium, 16px) 0;
-  border-bottom: 1px solid var(--color-divider-primary, #d5dee3);
+  border-bottom: 1px solid var(--color-divider-tertiary, #eceef1);
 }
 
 .fixSection:last-of-type {
@@ -647,7 +640,8 @@
   gap: var(--space-x-small, 8px);
   width: 100%;
   padding: 18px 20px;
-  border: 1px solid var(--color-container-border-attention, #ffbb00);
+  /* Neutral border — the warning badge carries the status, not the container. */
+  border: 1px solid var(--color-container-border-primary, #d4d7dc);
   border-radius: var(--radius-x-large, 12px);
   background: var(--color-container-background-primary, #ffffff);
 }
@@ -668,20 +662,22 @@
   color: var(--color-text-secondary, #6b6c72);
 }
 
+/* Bulleted rows: the marker sits outside so the title, detail, and link all
+   share one left reading edge. */
 .attentionList {
-  list-style: none;
+  list-style: disc;
   margin: 0;
-  padding: 0;
-  display: flex;
-  flex-direction: column;
+  padding: 0 0 0 var(--space-medium, 16px);
 }
 
 .attentionItem {
-  display: flex;
-  align-items: flex-start;
-  gap: var(--space-x-small, 8px);
+  display: list-item;
   padding: var(--space-medium, 16px) 0;
-  border-bottom: 1px solid var(--color-divider-primary, #d5dee3);
+  border-bottom: 1px solid var(--color-divider-tertiary, #eceef1);
+}
+
+.attentionItem::marker {
+  color: var(--color-text-primary, #21262a);
 }
 
 .attentionItem:last-child {
@@ -689,21 +685,8 @@
   padding-bottom: 0;
 }
 
-.attentionIcon {
-  color: var(--color-ui-attention, #d68000);
-  flex-shrink: 0;
-  margin-top: 1px;
-}
-
-.attentionBody {
-  display: flex;
-  flex-direction: column;
-  align-items: flex-start;
-  gap: var(--space-component-gap-small, 4px);
-  min-width: 0;
-}
-
 .attentionItemTitle {
+  display: block;
   font-family: var(--font-family-body);
   font-size: var(--font-size-body-3, 14px);
   font-weight: var(--font-weight-body-semibold, 500);
@@ -712,11 +695,15 @@
 }
 
 .attentionItemDetail {
-  margin: 0;
+  margin: 3px 0 0;
   font-family: var(--font-family-body);
   font-size: var(--font-size-body-3, 14px);
   line-height: 1.43;
   color: var(--color-text-secondary, #6b6c72);
+}
+
+.attentionItem .richDocLink {
+  margin-top: var(--space-x-small, 8px);
 }
 
 .reminderCard {

@@ -100,6 +100,9 @@ export const INTELLIGENCE_COMPLETION_FOOTER =
 
 export const CATCH_UP_APPROVE_RETURN = 'Approve return'
 
+/** Follow-up chip shown after the fix run completes. */
+export const CTA_REVIEWER_SUMMARY = 'Get reviewer summary'
+
 export const CTA_SHOW_THINKING = 'Show thinking'
 
 export const LABEL_SUGGESTED_NEXT_STEPS = 'Recommended next steps'
@@ -671,6 +674,19 @@ export const INTELLIGENCE_NEEDS_ATTENTION_ITEMS: readonly IntelligenceAttentionI
 
 export function intelligenceAttentionCountLabel(count: number): string {
   return count === 1 ? '1 item' : `${count} items`
+}
+
+/** Card title carries the count, so the header needs no separate count on the right. */
+export function intelligenceAttentionTitle(count: number): string {
+  return count === 1 ? '1 item needs your attention' : `${count} items need your attention`
+}
+
+/**
+ * Progress-rail subtitle for the closing step. The first steps report what the
+ * agent fixed; this one reports what is now waiting on the reviewer.
+ */
+export function intelligenceFinalStepSubtitle(count: number): string {
+  return count === 1 ? '1 item needs your review' : `${count} items need your review`
 }
 
 export function intelligenceFixCompleteMessage(fixedCount: number, total: number): string {

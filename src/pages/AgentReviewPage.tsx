@@ -307,7 +307,6 @@ export default function AgentReviewPage() {
                 <AgentReviewProcessingPane
                   mode={processingMode}
                   compact={isSidebar}
-                  onViewReturnSummary={() => navigate('/check-return')}
                   onGetCaughtUp={() => goToStep('catch-up')}
                   onFooterChipsChange={setFooterChips}
                   onFixesComplete={persistAgentFixes}
