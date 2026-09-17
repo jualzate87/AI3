@@ -6,13 +6,16 @@ import ReviewerAiProactiveToast from './ReviewerAiProactiveToast'
 
 export type ReviewerPromptVariant = 'popover' | 'toast'
 
+/** Show proactive handoff nudge ~2s after Jake lands on Check return. */
+const REVIEWER_PROMPT_DELAY_MS = 2000
+
 interface ReviewerHandoffPromptProps {
   variant: ReviewerPromptVariant
   anchorRef: RefObject<HTMLButtonElement | null>
   onDismiss: () => void
 }
 
-/** Proactive Jake handoff nudge — Figma Dynamic Popover or Proactive toast. */
+/** Proactive Jake handoff nudge — Figma Proactive toast (default) or Dynamic popover. */
 export default function ReviewerHandoffPrompt({
   variant,
   anchorRef,
@@ -27,7 +30,7 @@ export default function ReviewerHandoffPrompt({
   }, [anchorRef])
 
   useEffect(() => {
-    const timer = window.setTimeout(() => setOpen(true), 600)
+    const timer = window.setTimeout(() => setOpen(true), REVIEWER_PROMPT_DELAY_MS)
     return () => window.clearTimeout(timer)
   }, [])
 
@@ -45,13 +48,13 @@ export default function ReviewerHandoffPrompt({
   const openCatchUp = useCallback(() => {
     sessionStorage.setItem(OPEN_CATCH_UP_KEY, '1')
     finish()
-    navigate('/ai-review', { state: { layoutMode: 'sidebar' } })
+    navigate('/ai-review', { state: { layoutMode: 'fullscreen' } })
   }, [finish, navigate])
 
   const openFullReview = useCallback(() => {
     sessionStorage.removeItem(OPEN_CATCH_UP_KEY)
     finish()
-    navigate('/ai-review', { state: { layoutMode: 'sidebar' } })
+    navigate('/ai-review', { state: { layoutMode: 'fullscreen' } })
   }, [finish, navigate])
 
   if (variant === 'toast') {
@@ -59,8 +62,7 @@ export default function ReviewerHandoffPrompt({
       <ReviewerAiProactiveToast
         open={open}
         onClose={handleClose}
-        onFullReview={openFullReview}
-        onGetCaughtUp={openCatchUp}
+        onViewSummary={openCatchUp}
       />
     )
   }

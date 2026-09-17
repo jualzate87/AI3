@@ -374,7 +374,7 @@ export const CATCH_UP_REASONING_STEPS = [
 export const CATCH_UP_PRIOR_PREPARER = 'Sarah Chen'
 
 /** Figma catch-up summary title uses this client name (Return Summary frame). */
-export const CATCH_UP_CLIENT_NAME = 'Jordan Wales'
+export const CATCH_UP_CLIENT_NAME = 'Jordan Wells'
 
 export function catchUpReturnSummaryTitle(clientName: string = CATCH_UP_CLIENT_NAME): string {
   return `Return Summary — ${clientName}`
@@ -383,6 +383,17 @@ export function catchUpReturnSummaryTitle(clientName: string = CATCH_UP_CLIENT_N
 export type CatchUpListEntry = {
   text: string
   emphasis?: boolean
+}
+
+export type CatchUpDetailItem = {
+  title: string
+  detail: string
+}
+
+export type CatchUpChecklistItem = {
+  id: string
+  title: string
+  note?: string
 }
 
 export const CATCH_UP_PRIOR_NOTES_DEFAULT =
@@ -412,18 +423,20 @@ export const CATCH_UP_HANDOFF_PARAGRAPH =
 export const CATCH_UP_AI_REVIEW_INTRO =
   `${CATCH_UP_PRIOR_PREPARER} ran the Intuit Intelligence review and resolved every flagged item:`
 
-export const CATCH_UP_AI_REVIEW_BULLETS: CatchUpListEntry[] = [
-  { text: 'W-2 income variance — Resolved', emphasis: true },
+export const CATCH_UP_AI_REVIEW_ITEMS: CatchUpDetailItem[] = [
   {
-    text: 'Box 1 wages from Tech Circle Inc differed from prior year due to a mid-year raise; confirmed with source document',
+    title: 'W-2 income variance — Resolved',
+    detail:
+      'Box 1 wages from Tech Circle Inc differed from prior year due to a mid-year raise; confirmed with source document',
   },
-  { text: '1099-DIV qualified dividend classification — Resolved', emphasis: true },
   {
-    text: 'Qualified vs. ordinary split was reclassified and corrected; amounts now match broker statement',
+    title: '1099-DIV qualified dividend classification — Resolved',
+    detail:
+      'Qualified vs. ordinary split was reclassified and corrected; amounts now match broker statement',
   },
-  { text: 'State withholding adequacy — Resolved', emphasis: true },
   {
-    text: 'Withholding elections reviewed against projected liability; no adjustment needed',
+    title: 'State withholding adequacy — Resolved',
+    detail: 'Withholding elections reviewed against projected liability; no adjustment needed',
   },
 ]
 
@@ -476,13 +489,49 @@ export const CATCH_UP_RETURN_STATUS_ITEMS = [
 export const CATCH_UP_RETURN_STATUS_CALLOUT =
   "This return has been through initial prep and AI-assisted review. As the final reviewer, confirm Sarah's work is accurate and approve for filing."
 
-export const CATCH_UP_CHECKLIST_INTRO = 'Confirm before approving:'
+export const CATCH_UP_CHECKLIST_INTRO =
+  'Sarah resolved the items below during prep. Confirm the open items before you sign off.'
 
-export const CATCH_UP_CHECKLIST_ITEMS = [
-  '1099-DIV split verified against broker PDF',
-  'AI review resolutions confirmed',
-  'Source documents reviewed',
-] as const
+export const CATCH_UP_CONFIRMED_BY_PREPARER: CatchUpChecklistItem[] = [
+  {
+    id: 'w2-variance',
+    title: 'W-2 income variance resolved',
+    note: 'Mid-year raise confirmed with source document — Sarah Chen',
+  },
+  {
+    id: 'div-classification',
+    title: '1099-DIV classification corrected',
+    note: 'Qualified vs. ordinary split matches broker statement — Sarah Chen',
+  },
+  {
+    id: 'withholding',
+    title: 'State withholding reviewed',
+    note: 'No adjustment needed — Sarah Chen',
+  },
+  {
+    id: 'calculations',
+    title: 'Federal and state calculations tie out',
+    note: 'All lines reconciled — Sarah Chen',
+  },
+]
+
+export const CATCH_UP_REVIEWER_CHECKLIST: CatchUpChecklistItem[] = [
+  {
+    id: '1099-div-split',
+    title: '1099-DIV split verified against broker PDF',
+    note: 'Sarah flagged unusual broker formatting — double-check the split',
+  },
+  {
+    id: 'ai-resolutions',
+    title: 'AI review resolutions spot-checked',
+    note: 'Confirm W-2 variance and withholding still look right',
+  },
+  {
+    id: 'source-docs',
+    title: 'Source documents reviewed',
+    note: 'W-2, 1099-INT, and 1099-DIV in Documents tab',
+  },
+]
 
 /** @deprecated Use INTELLIGENCE_COMPLETION_FOOTER */
 export const CATCH_UP_FOOTER_QUESTION = INTELLIGENCE_COMPLETION_FOOTER

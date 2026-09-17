@@ -1,0 +1,9 @@
+.wrapper {
+  display: flex;
+  justify-content: flex-end;
+  width: 100%;
+}
+
+.wrapper :global([class*='SuggestionChipGroup']) {
+  justify-content: flex-end;
+}

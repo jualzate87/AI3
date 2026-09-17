@@ -3,17 +3,28 @@ import intuitIntelligenceLogo from '../../assets/icons/intuit-intelligence-logo-
 import AgentDiagnosticExpandableCard from '../check-return/AgentDiagnosticExpandableCard'
 import {
   buildIntelligenceReviewModel,
+  CTA_ACCEPT_ALL_FIXES,
+  CTA_FIX_ONE_BY_ONE,
   getActiveIntelligenceIssues,
   INTELLIGENCE_SHELL_TITLE,
   intelligenceIntro,
 } from './agentIntelligenceCopy'
+import AgentReviewSuggestionChips, { SuggestionChip } from './AgentReviewSuggestionChips'
 import { SEED_AMOUNTS } from '../../data/liveReturn'
 import type { Phase2IssueKey } from '../data-review/phase2FlagSync'
 import styles from '../../styles/agent-review/AgentReviewDiagnosticsPane.module.css'
 
 export type DiagnosticCardId = Phase2IssueKey
 
-export default function AgentReviewDiagnosticsPane() {
+interface AgentReviewDiagnosticsPaneProps {
+  onAcceptAllFixes: () => void
+  onFixOneByOne: () => void
+}
+
+export default function AgentReviewDiagnosticsPane({
+  onAcceptAllFixes,
+  onFixOneByOne,
+}: AgentReviewDiagnosticsPaneProps) {
   const [expandedId, setExpandedId] = useState<DiagnosticCardId | null>(null)
 
   const { issues, issueCount, totalWithholding, live } = useMemo(
@@ -56,6 +67,13 @@ export default function AgentReviewDiagnosticsPane() {
               />
             ))}
           </div>
+
+          {issueCount > 0 ? (
+            <AgentReviewSuggestionChips className={styles.suggestionChips}>
+              <SuggestionChip onClick={onAcceptAllFixes}>{CTA_ACCEPT_ALL_FIXES}</SuggestionChip>
+              <SuggestionChip onClick={onFixOneByOne}>{CTA_FIX_ONE_BY_ONE}</SuggestionChip>
+            </AgentReviewSuggestionChips>
+          ) : null}
         </div>
       </div>
     </div>

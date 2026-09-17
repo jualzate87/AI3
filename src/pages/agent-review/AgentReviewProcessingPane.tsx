@@ -1,15 +1,17 @@
 import { useEffect, useMemo, useRef, useState, type ReactNode } from 'react'
-import { ChevronDown, CircleCheckFill, PopOut } from '@design-systems/icons'
+import { CircleCheckFill, PopOut } from '@design-systems/icons'
 import Badge from '@ids-ts/badge'
 import '@ids-ts/badge/dist/main.css'
 import { Link } from '@ids-ts/link'
 import '@ids-ts/link/dist/main.css'
+import AgentDiagnosticExpandableCard from '../check-return/AgentDiagnosticExpandableCard'
 import AgentReviewSummaryFooter from './AgentReviewSummaryFooter'
 import intuitIntelligenceLogo from '../../assets/icons/intuit-intelligence-logo-small.svg'
+import { SEED_AMOUNTS } from '../../data/liveReturn'
 import { openSourceDocumentReviewPopout } from '../../lib/prototypeRoutes'
 import {
+  buildIntelligenceReviewModel,
   CTA_CONTINUE_NEXT_FIX,
-  CTA_SHOW_THINKING,
   CTA_VIEW,
   getActiveIntelligenceIssues,
   INTELLIGENCE_FIX_PROGRESS_SECTIONS,
@@ -18,10 +20,9 @@ import {
   INTELLIGENCE_NEED_ACTION_COPY,
   INTELLIGENCE_PROGRESS_ITEMS,
   INTELLIGENCE_REASONING_STEPS,
+  INTELLIGENCE_REASONING_TITLE,
   INTELLIGENCE_REMINDER_TITLE,
   INTELLIGENCE_SHELL_TITLE,
-  intelligenceBadge,
-  intelligenceCardTitle,
   intelligenceFixCompleteMessage,
   intelligenceFixProgressLabel,
   intelligenceProcessingIntro,
@@ -32,7 +33,11 @@ import {
   useAgentProcessingAnimation,
   type ProcessingMode,
 } from './useAgentProcessingAnimation'
-import chipStyles from '../../styles/agent-review/AgentReviewFooterChips.module.css'
+import {
+  AgentIntelligenceReasoningLive,
+  AgentIntelligenceShowThinking,
+} from './AgentIntelligenceReasoning'
+import AgentReviewSuggestionChips, { SuggestionChip } from './AgentReviewSuggestionChips'
 import styles from '../../styles/agent-review/AgentReviewProcessingPane.module.css'
 
 interface AgentReviewProcessingPaneProps {
@@ -68,9 +73,17 @@ export default function AgentReviewProcessingPane({
   const [thinkingExpanded, setThinkingExpanded] = useState(false)
   const fixSectionRefs = useRef<Record<number, HTMLElement | null>>({})
 
-  const { issues, issueCount, totalWithholding } = useMemo(
+  const { issues, issueCount, totalWithholding, live } = useMemo(
     () => getActiveIntelligenceIssues(),
     [],
+  )
+
+  const reviewCards = useMemo(
+    () =>
+      issues.map(issue =>
+        buildIntelligenceReviewModel(issue, live, SEED_AMOUNTS, totalWithholding),
+      ),
+    [issues, live, totalWithholding],
   )
 
   const {
@@ -105,13 +118,9 @@ export default function AgentReviewProcessingPane({
 
     if (awaitingContinue && !allFixesComplete) {
       onFooterChipsChange(
-        <button
-          type="button"
-          className={chipStyles.chipPrimary}
-          onClick={advanceToNextFix}
-        >
-          {CTA_CONTINUE_NEXT_FIX}
-        </button>,
+        <AgentReviewSuggestionChips>
+          <SuggestionChip onClick={advanceToNextFix}>{CTA_CONTINUE_NEXT_FIX}</SuggestionChip>
+        </AgentReviewSuggestionChips>,
       )
       return
     }
@@ -146,55 +155,88 @@ export default function AgentReviewProcessingPane({
     <div className={styles.container}>
       <div className={styles.scrollArea}>
         <div className={`${styles.layout} ${compact ? styles.layoutCompact : ''}`}>
-          <div className={styles.mainColumn}>
-            <div className={styles.lockup}>
-              <img src={intuitIntelligenceLogo} alt="" className={styles.sparkleIcon} />
-              <h1 className={styles.title}>{INTELLIGENCE_SHELL_TITLE}</h1>
-            </div>
+          <div className={styles.lockup}>
+            <img src={intuitIntelligenceLogo} alt="" className={styles.sparkleIcon} />
+            <h1 className={styles.title}>{INTELLIGENCE_SHELL_TITLE}</h1>
+          </div>
 
-            <p className={styles.intro}>{intelligenceProcessingIntro(issueCount, mode)}</p>
+          <p className={styles.intro}>{intelligenceProcessingIntro(issueCount, mode)}</p>
 
-            <div className={styles.cardList}>
-              {issues.map(issue => {
-                const badge = intelligenceBadge(issue)
-                return (
-                  <article key={issue.issueKey} className={styles.card}>
-                    <div className={styles.cardHeaderStatic}>
-                      <span className={styles.cardTitle}>
-                        {intelligenceCardTitle(issue, totalWithholding)}
-                      </span>
-                      <span className={`${styles.badge} ${styles[`badge_${badge.tone}`]}`}>
-                        {badge.label}
-                      </span>
-                    </div>
-                  </article>
-                )
-              })}
-            </div>
-
-            {phase === 'reasoning' && (
-              <div
-                className={`${styles.reasoningBlock} ${reasoningExiting ? styles.revealOut : ''}`}
-              >
-                <div
-                  className={`${styles.reasoningHeader} ${reasoningHeaderVisible ? styles.revealIn : styles.revealHidden}`}
-                >
-                  <img src={intuitIntelligenceLogo} alt="" className={styles.reasoningSparkle} />
-                  <span className={styles.reasoningTitle}>Applying fixes</span>
-                </div>
-                <ol className={styles.reasoningSteps}>
-                  {INTELLIGENCE_REASONING_STEPS.map((step, index) => (
-                    <li
-                      key={step.title}
-                      className={`${styles.reasoningStep} ${index < visibleSteps ? styles.revealIn : styles.revealHidden}`}
-                      style={{ animationDelay: `${index * 80}ms` }}
-                    >
-                      <span className={styles.reasoningStepTitle}>{step.title}</span>
-                      <p className={styles.reasoningStepBody}>{step.body}</p>
-                    </li>
-                  ))}
-                </ol>
+          <div className={styles.cardsRow}>
+            <div className={styles.cardsColumn}>
+              <div className={styles.cardList} role="list" aria-label="Diagnostic issues">
+                {reviewCards.map(card => (
+                  <AgentDiagnosticExpandableCard
+                    key={card.id}
+                    card={card}
+                    expanded={false}
+                    onExpandedChange={() => undefined}
+                  />
+                ))}
               </div>
+            </div>
+
+            <aside className={styles.progressRail} aria-label="Run progress">
+              <div className={styles.progressRailHeader}>
+                <img src={intuitIntelligenceLogo} alt="" className={styles.progressRailLogo} />
+                <span className={styles.progressLabel}>
+                  PROGRESS {completedProgress}/{INTELLIGENCE_PROGRESS_ITEMS.length}
+                </span>
+              </div>
+              <ol className={styles.progressList}>
+                {INTELLIGENCE_PROGRESS_ITEMS.map((item, index) => {
+                  const done = index < completedProgress
+                  const active = index === activeProgressIndex
+                  return (
+                    <li
+                      key={item.id}
+                      className={`${styles.progressItem} ${active ? styles.progressItemActive : ''}`}
+                    >
+                      <span
+                        className={`${styles.progressDot} ${done ? styles.progressDotDone : ''} ${active ? styles.progressDotActive : ''}`}
+                        aria-hidden
+                      >
+                        {done && (
+                          <CircleCheckFill size="x-small" className={styles.progressCheck} />
+                        )}
+                      </span>
+                      <div className={styles.progressItemBody}>
+                        <div className={styles.progressItemMain}>
+                          <span className={done ? styles.progressItemDone : undefined}>
+                            {item.label}
+                          </span>
+                          {item.subtitle && done && (
+                            <span className={styles.progressItemSubtitle}>{item.subtitle}</span>
+                          )}
+                        </div>
+                        {(done || index === fixSectionCount) && (
+                          <Link
+                            href="#"
+                            onClick={e => {
+                              e.preventDefault()
+                              handleProgressView(index)
+                            }}
+                          >
+                            {CTA_VIEW}
+                          </Link>
+                        )}
+                      </div>
+                    </li>
+                  )
+                })}
+              </ol>
+            </aside>
+          </div>
+
+          <div className={styles.belowCards}>
+            {phase === 'reasoning' && (
+              <AgentIntelligenceReasoningLive
+                title={INTELLIGENCE_REASONING_TITLE}
+                steps={INTELLIGENCE_REASONING_STEPS}
+                visibleSteps={visibleSteps}
+                headerVisible={reasoningHeaderVisible}
+                exiting={reasoningExiting}
+              />
             )}
 
             {resultsVisible && (
@@ -207,33 +249,11 @@ export default function AgentReviewProcessingPane({
                   <span className={styles.fixesDividerLine} aria-hidden />
                 </div>
 
-                <button
-                  type="button"
-                  className={styles.showThinkingBtn}
-                  aria-expanded={thinkingExpanded}
-                  onClick={() => setThinkingExpanded(v => !v)}
-                >
-                  {CTA_SHOW_THINKING}
-                  <ChevronDown
-                    size="small"
-                    className={`${styles.chevron} ${thinkingExpanded ? styles.chevronUp : ''}`}
-                  />
-                </button>
-
-                {thinkingExpanded && (
-                  <ol className={styles.reasoningSteps}>
-                    {INTELLIGENCE_REASONING_STEPS.map((step, index) => (
-                      <li
-                        key={step.title}
-                        className={`${styles.reasoningStep} ${styles.revealIn}`}
-                        style={{ animationDelay: `${index * 100}ms` }}
-                      >
-                        <span className={styles.reasoningStepTitle}>{step.title}</span>
-                        <p className={styles.reasoningStepBody}>{step.body}</p>
-                      </li>
-                    ))}
-                  </ol>
-                )}
+                <AgentIntelligenceShowThinking
+                  expanded={thinkingExpanded}
+                  onToggle={() => setThinkingExpanded(v => !v)}
+                  steps={INTELLIGENCE_REASONING_STEPS}
+                />
 
                 <div className={styles.agentMessageRow}>
                   <img src={intuitIntelligenceLogo} alt="" className={styles.agentAvatar} />
@@ -319,55 +339,6 @@ export default function AgentReviewProcessingPane({
               </div>
             )}
           </div>
-
-          <aside className={styles.progressRail} aria-label="Run progress">
-            <div className={styles.progressRailHeader}>
-              <img src={intuitIntelligenceLogo} alt="" className={styles.progressRailLogo} />
-              <span className={styles.progressLabel}>
-                PROGRESS {completedProgress}/{INTELLIGENCE_PROGRESS_ITEMS.length}
-              </span>
-            </div>
-            <ol className={styles.progressList}>
-              {INTELLIGENCE_PROGRESS_ITEMS.map((item, index) => {
-                const done = index < completedProgress
-                const active = index === activeProgressIndex
-                return (
-                  <li
-                    key={item.id}
-                    className={`${styles.progressItem} ${active ? styles.progressItemActive : ''}`}
-                  >
-                    <span
-                      className={`${styles.progressDot} ${done ? styles.progressDotDone : ''} ${active ? styles.progressDotActive : ''}`}
-                      aria-hidden
-                    >
-                      {done && <CircleCheckFill size="x-small" className={styles.progressCheck} />}
-                    </span>
-                    <div className={styles.progressItemBody}>
-                      <div className={styles.progressItemMain}>
-                        <span className={done ? styles.progressItemDone : undefined}>
-                          {item.label}
-                        </span>
-                        {item.subtitle && done && (
-                          <span className={styles.progressItemSubtitle}>{item.subtitle}</span>
-                        )}
-                      </div>
-                      {(done || index === fixSectionCount) && (
-                        <Link
-                          href="#"
-                          onClick={e => {
-                            e.preventDefault()
-                            handleProgressView(index)
-                          }}
-                        >
-                          {CTA_VIEW}
-                        </Link>
-                      )}
-                    </div>
-                  </li>
-                )
-              })}
-            </ol>
-          </aside>
         </div>
       </div>
 

@@ -3,6 +3,8 @@ import { Modal, ModalHeader, ModalTitle, ModalContent, ModalActions } from '@ids
 import '@ids-ts/modal-dialog/dist/main.css'
 import { Button } from '@ids-ts/button'
 import '@ids-ts/button/dist/main.css'
+import { LinkActionButton } from '@ids-ts/link-action-button'
+import '@ids-ts/link-action-button/dist/main.css'
 import { TextArea } from '@ids-ts/textarea'
 import '@ids-ts/textarea/dist/main.css'
 import intuitIntelligenceLogo from '../../assets/icons/intuit-intelligence-logo-small.svg'
@@ -39,7 +41,6 @@ export default function HandoffAssistModal({
   }, [open, handoff])
 
   if (!handoff) return null
-  const from = getTeamMember(handoff.fromAssigneeId)
   const to = getTeamMember(handoff.toAssigneeId)
   const currentStatus = getReturnStatus(workflow.statusId)
   const nextStatus = getReturnStatus(handoff.suggestedStatusId)
@@ -48,10 +49,7 @@ export default function HandoffAssistModal({
   return (
     <Modal open={open} onClose={onDismiss} size="medium" dismissible>
       <ModalHeader alignment="left" transparentBackground onClose={onDismiss}>
-        <div className={styles.titleRow}>
-          <img src={intuitIntelligenceLogo} alt="" className={styles.sparkle} />
-          <ModalTitle title="Handoff assist" />
-        </div>
+        <ModalTitle title="Handoff assist" />
       </ModalHeader>
       <ModalContent alignment="left" overflow>
         <p className={styles.lead}>
@@ -67,17 +65,22 @@ export default function HandoffAssistModal({
         </p>
 
         <section className={styles.previewSection} aria-label="What the next reviewer will see">
-          <h3 className={styles.previewHeading}>Quick summary for {to.name}</h3>
-          <ul className={styles.previewList}>
-            {handoff.previewBullets.map(bullet => (
-              <li
-                key={bullet.text}
-                className={bullet.emphasis ? styles.previewItemEmphasis : styles.previewItem}
-              >
-                {bullet.text}
-              </li>
-            ))}
-          </ul>
+          <div className={styles.previewHeadingRow}>
+            <img src={intuitIntelligenceLogo} alt="" className={styles.sparkle} />
+            <h3 className={styles.previewHeading}>Quick summary for {to.name}</h3>
+          </div>
+          <div className={styles.previewCard}>
+            <ul className={styles.previewList}>
+              {handoff.previewBullets.map(bullet => (
+                <li
+                  key={bullet.text}
+                  className={bullet.emphasis ? styles.previewItemEmphasis : styles.previewItem}
+                >
+                  {bullet.text}
+                </li>
+              ))}
+            </ul>
+          </div>
         </section>
 
         <div className={styles.notesField}>
@@ -91,13 +94,20 @@ export default function HandoffAssistModal({
           />
         </div>
       </ModalContent>
-      <ModalActions alignment="right">
-        <Button priority="tertiary" onClick={onDismiss}>
-          Change assignee only
-        </Button>
-        <Button priority="primary" onClick={() => onConfirm(notes.trim())}>
-          Confirm handoff
-        </Button>
+      <ModalActions>
+        <div className={styles.actionsRow}>
+          <LinkActionButton
+            size="small"
+            weight="regular"
+            alignment="left"
+            onClick={onDismiss}
+          >
+            Change assignee only
+          </LinkActionButton>
+          <Button priority="primary" onClick={() => onConfirm(notes.trim())}>
+            Sign off for review
+          </Button>
+        </div>
       </ModalActions>
     </Modal>
   )

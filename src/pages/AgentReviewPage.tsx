@@ -6,15 +6,11 @@ import {
   CommentPencil,
   ClockCounterclockwise,
   PopOut,
-  PanelArrowRight,
-  OverflowWeb,
 } from '@design-systems/icons'
 import { IconControl } from '@ids-ts/icon-control'
 import '@ids-ts/icon-control/dist/main.css'
 import intuitWordmark from '../assets/intuit-wordmark.svg'
 import {
-  CTA_ACCEPT_ALL_FIXES,
-  CTA_FIX_ONE_BY_ONE,
   INTELLIGENCE_CHAT_PLACEHOLDER,
   INTELLIGENCE_LEGAL_DISCLAIMER,
   INTELLIGENCE_CLOSE_ARIA,
@@ -27,8 +23,8 @@ import AgentWelcomePane from './agent-review/AgentWelcomePane'
 import AgentReviewDiagnosticsPane from './agent-review/AgentReviewDiagnosticsPane'
 import AgentCatchUpPane from './agent-review/AgentCatchUpPane'
 import AgentReviewProcessingPane from './agent-review/AgentReviewProcessingPane'
-import AgentReviewBackdrop from './agent-review/AgentReviewBackdrop'
 import AgentReviewLayoutMenu from './agent-review/AgentReviewLayoutMenu'
+import CheckReturnPage from './CheckReturnPage'
 import {
   persistLayoutMode,
   resolveInitialLayoutMode,
@@ -39,7 +35,6 @@ import AgentLoadingPane from './data-review/AgentLoadingPane'
 import ChatInput from './automated/ChatInput'
 import { useSyncedReviewState } from '../hooks/useSyncedReviewState'
 import { openSourceDocumentReviewPopout } from '../lib/prototypeRoutes'
-import chipStyles from '../styles/agent-review/AgentReviewFooterChips.module.css'
 import styles from '../styles/AgentReviewPage.module.css'
 
 type AgentStep = 'welcome' | 'diagnostics' | 'processing' | 'catch-up' | 'workspace'
@@ -153,11 +148,13 @@ export default function AgentReviewPage() {
   const showChatInput =
     step !== 'workspace' && !(step === 'diagnostics' && isAssessing)
 
-  const showDiagnosticsChips = step === 'diagnostics' && !isAssessing
-
   return (
     <>
-      {isSidebar ? <AgentReviewBackdrop onDismiss={handleClose} /> : null}
+      {isSidebar ? (
+        <div className={styles.proConnectUnderlay}>
+          <CheckReturnPage embeddedUnderlay />
+        </div>
+      ) : null}
 
       <div
         className={`${styles.shell} ${isSidebar ? styles.shellSidebar : styles.shellFullscreen}`}
@@ -169,7 +166,7 @@ export default function AgentReviewPage() {
             <>
               <div className={styles.headerSidebarStart}>
                 <IconControl
-                  label="Menu"
+                  aria-label="Menu"
                   size="medium"
                   shape="square"
                   onClick={() => undefined}
@@ -180,7 +177,7 @@ export default function AgentReviewPage() {
               <img src={intuitWordmark} alt="Intuit" className={styles.wordmarkCenter} />
               <div className={styles.headerSidebarEnd}>
                 <IconControl
-                  label="Open full screen"
+                  aria-label="Open full screen"
                   size="medium"
                   shape="square"
                   onClick={() => setLayoutMode('fullscreen')}
@@ -202,18 +199,7 @@ export default function AgentReviewPage() {
             <>
               <img src={intuitWordmark} alt="Intuit" className={styles.wordmark} />
               <div className={styles.headerFullscreenEnd}>
-                <IconControl label="More options" size="medium" shape="square">
-                  <OverflowWeb size="medium" />
-                </IconControl>
                 <AgentReviewLayoutMenu mode={layoutMode} onChange={handleLayoutChange} />
-                <IconControl
-                  label="Sidebar layout"
-                  size="medium"
-                  shape="square"
-                  onClick={() => setLayoutMode('sidebar')}
-                >
-                  <PanelArrowRight size="medium" />
-                </IconControl>
                 <IconControl
                   aria-label={INTELLIGENCE_CLOSE_ARIA}
                   size="medium"
@@ -254,7 +240,12 @@ export default function AgentReviewPage() {
                   loadingSubtext={INTELLIGENCE_LOADING_SUBTEXT}
                   isLoading={isAssessing}
                   showReport={!isAssessing}
-                  reportContent={<AgentReviewDiagnosticsPane />}
+                  reportContent={
+                    <AgentReviewDiagnosticsPane
+                      onAcceptAllFixes={() => beginProcessing('batch')}
+                      onFixOneByOne={() => beginProcessing('sequential')}
+                    />
+                  }
                 />
               )}
               {step === 'catch-up' && (
@@ -279,30 +270,10 @@ export default function AgentReviewPage() {
             </div>
 
             {showChatInput && (
-              <div className={styles.pageFooter}>
-                {(showDiagnosticsChips || footerChips) && (
-                  <div className={styles.footerChips}>
-                    {showDiagnosticsChips && (
-                      <>
-                        <button
-                          type="button"
-                          className={chipStyles.chip}
-                          onClick={() => beginProcessing('batch')}
-                        >
-                          {CTA_ACCEPT_ALL_FIXES}
-                        </button>
-                        <button
-                          type="button"
-                          className={chipStyles.chip}
-                          onClick={() => beginProcessing('sequential')}
-                        >
-                          {CTA_FIX_ONE_BY_ONE}
-                        </button>
-                      </>
-                    )}
-                    {!showDiagnosticsChips && footerChips}
-                  </div>
-                )}
+              <div
+                className={`${styles.pageFooter} ${footerChips ? styles.pageFooterWithChips : ''}`}
+              >
+                {footerChips ? <div className={styles.footerChips}>{footerChips}</div> : null}
                 <ChatInput
                   variant="mini"
                   placeholder={INTELLIGENCE_CHAT_PLACEHOLDER}

@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react'
-import { Checkmark } from '@design-systems/icons'
+import { Checkmark, Fullscreen } from '@design-systems/icons'
 import {
   AGENT_LAYOUT_LABELS,
   type AgentReviewLayoutMode,
@@ -44,10 +44,7 @@ export default function AgentReviewLayoutMenu({
         aria-expanded={open}
         onClick={() => setOpen(prev => !prev)}
       >
-        <span className={styles.triggerBars} aria-hidden>
-          <span />
-          <span />
-        </span>
+        <Fullscreen size="medium" aria-hidden />
       </button>
 
       {open ? (

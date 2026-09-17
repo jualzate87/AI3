@@ -35,7 +35,7 @@ export const LAUNCH_POINTS: LaunchPoint[] = [
     title: 'Join as Jake — reviewer handoff',
     status: 'live',
     description:
-      'Sarah hands off to Jake — proactive AI popover on Check return; add ?prompt=toast for messaging variant',
+      'Sarah hands off to Jake — proactive AI toast on Check return after ~2s; add ?prompt=popover for anchored variant',
     route: '/check-return?handoff=reviewer',
   },
 ]

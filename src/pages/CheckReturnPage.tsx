@@ -39,7 +39,12 @@ function resolveInitialOutputForm(searchParams: URLSearchParams): OutputFormId {
   return '1040'
 }
 
-export default function CheckReturnPage() {
+interface CheckReturnPageProps {
+  /** Rendered behind AI review in sidebar layout — no handoff toast or AI entry. */
+  embeddedUnderlay?: boolean
+}
+
+export default function CheckReturnPage({ embeddedUnderlay = false }: CheckReturnPageProps) {
   const navigate = useNavigate()
   const [searchParams] = useSearchParams()
   const initialForm = useMemo(() => resolveInitialOutputForm(searchParams), [searchParams])
@@ -62,7 +67,7 @@ export default function CheckReturnPage() {
     () => sessionStorage.getItem(REVIEWER_WELCOME_KEY) === '1',
   )
   const reviewerPromptVariant: ReviewerPromptVariant =
-    searchParams.get('prompt') === 'toast' ? 'toast' : 'popover'
+    searchParams.get('prompt') === 'popover' ? 'popover' : 'toast'
 
   const { amounts, reviewedFields } = useSyncedReviewState()
   const live = useMemo(() => computeLiveReturn(amounts), [amounts])
@@ -180,13 +185,15 @@ export default function CheckReturnPage() {
           <SmartReturnHeader
             activeTab="checkreturns"
             showViewSourceDocuments
-            aiReviewButtonRef={aiReviewButtonRef}
+            aiReviewButtonRef={embeddedUnderlay ? undefined : aiReviewButtonRef}
             onViewSourceDocuments={() => openSourceDocumentReviewPopout()}
-            onAiReview={() =>
-              navigate('/ai-review', { state: { layoutMode: 'sidebar' } })
+            onAiReview={
+              embeddedUnderlay
+                ? undefined
+                : () => navigate('/ai-review', { state: { layoutMode: 'fullscreen' } })
             }
           />
-          {showReviewerWelcome ? (
+          {!embeddedUnderlay && showReviewerWelcome ? (
             <ReviewerHandoffPrompt
               variant={reviewerPromptVariant}
               anchorRef={aiReviewButtonRef}

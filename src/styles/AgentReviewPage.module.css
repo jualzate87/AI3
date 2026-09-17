@@ -11,14 +11,41 @@
   position: relative;
 }
 
+.proConnectUnderlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  z-index: 900;
+  width: 50vw;
+  height: 100vh;
+  overflow: auto;
+  background: var(--color-page-background-secondary, #f4f5f8);
+}
+
+.proConnectUnderlay > :global(*) {
+  min-height: 100%;
+}
+
 .shellSidebar {
   position: fixed;
   top: 0;
   right: 0;
   z-index: 1000;
-  width: clamp(480px, 50vw, 960px);
+  width: 50vw;
+  min-width: 360px;
   height: 100vh;
   box-shadow: -4px 0 24px rgba(33, 38, 42, 0.12);
+}
+
+@media (max-width: 900px) {
+  .proConnectUnderlay {
+    display: none;
+  }
+
+  .shellSidebar {
+    width: 100vw;
+    min-width: 0;
+  }
 }
 
 .header {
@@ -138,6 +165,11 @@
   background: var(--color-container-background-primary, #ffffff);
 }
 
+.pageFooterWithChips {
+  gap: var(--space-medium, 16px);
+  padding-top: var(--space-medium, 16px);
+}
+
 .shellSidebar .pageFooter {
   padding-left: var(--space-component-padding-large, 16px);
   padding-right: var(--space-component-padding-large, 16px);
@@ -145,9 +177,7 @@
 
 .footerChips {
   display: flex;
-  flex-wrap: wrap;
   justify-content: flex-end;
-  gap: var(--space-x-small, 8px);
   width: 100%;
   max-width: 768px;
   min-height: 0;
