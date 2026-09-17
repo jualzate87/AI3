@@ -6,6 +6,8 @@ import {
 } from '@design-systems/icons'
 import { Button } from '@ids-ts/button'
 import '@ids-ts/button/dist/main.css'
+import sparklesIcon from '../assets/icons/sparkles.svg'
+import { INTELLIGENCE_SUBHEADER_CTA } from './agent-review/agentIntelligenceCopy'
 import { openReviewReturnPopout } from '../lib/prototypeRoutes'
 import styles from '../styles/SmartReturnHeader.module.css'
 
@@ -21,6 +23,8 @@ interface SmartReturnHeaderProps {
   /** Show Source documents CTA in tab row (Check return) */
   showViewSourceDocuments?: boolean
   onViewSourceDocuments?: () => void
+  /** Intuit Intelligence review CTA (Check return tab) */
+  onAiReview?: () => void
 }
 
 export default function SmartReturnHeader({
@@ -30,6 +34,7 @@ export default function SmartReturnHeader({
   onReviewReturn,
   showViewSourceDocuments = false,
   onViewSourceDocuments,
+  onAiReview,
 }: SmartReturnHeaderProps) {
   const navigate = useNavigate()
 
@@ -163,6 +168,12 @@ export default function SmartReturnHeader({
               <PopOut size="small" aria-hidden />
               Source documents
             </Button>
+          )}
+          {activeTab === 'checkreturns' && onAiReview && (
+            <button type="button" className={styles.aiReviewBtn} onClick={onAiReview}>
+              <img src={sparklesIcon} alt="" className={styles.aiReviewIcon} />
+              {INTELLIGENCE_SUBHEADER_CTA}
+            </button>
           )}
         </div>
       </div>

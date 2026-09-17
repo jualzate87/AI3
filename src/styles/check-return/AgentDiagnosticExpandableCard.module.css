@@ -87,18 +87,6 @@
   color: var(--color-text-primary, #393a3d);
 }
 
-.titleDot {
-  color: var(--color-text-secondary, #6b6c72);
-  font-size: var(--font-size-body-3, 14px);
-}
-
-.cardMeta {
-  font-family: var(--font-family-body);
-  font-size: var(--font-size-body-3, 14px);
-  line-height: 1.43;
-  color: var(--color-text-secondary, #6b6c72);
-}
-
 .cardSummary {
   margin: 0;
   font-family: var(--font-family-body);

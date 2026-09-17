@@ -543,7 +543,8 @@ export default function LeftPanel1040({
         mode: 'source',
         items: docsToSummaryItems(docs),
         detailByDocId,
-        sumLabel: 'Total from sources',
+        sumLabel: 'Total on return',
+        sumValue: liveCurrent ?? origin.sources.reduce((sum, s) => sum + s.amount, 0),
       })
       setSummaryFlyoutRect(rect)
       return
@@ -892,7 +893,7 @@ export default function LeftPanel1040({
         { line: '3a',  label: 'Qualified dividends',     sub: 'Line 3a',                       field: 'qualifiedDivs',    curr: qualifiedDivs1040,   kind: 'source' as const },
         { line: '3b',  label: 'Ordinary dividends',      sub: 'Line 3b',                       field: 'ordinaryDivs',     curr: ordinaryDivs,    kind: 'source' as const },
         { line: '4b',  label: 'IRA distributions',       sub: '1099-R · Box 2a',               field: 'iraDistrib',       curr: taxablePension,    kind: 'source' as const },
-        { line: '7',   label: 'Capital gain or (loss)',  sub: 'Line 7',                        field: 'capitalGain',      curr: capitalGain,     kind: 'source' as const },
+        { line: '7',   label: 'Capital gain or (loss)',  sub: 'Line 7',                        field: 'capitalGain',      curr: capitalGain,     kind: (capitalGain !== 0 ? 'source' : 'calc') as 'source' | 'calc' },
         ...(necOnReturn
           ? [{ line: '8', label: 'Other income', sub: '1099-NEC · Box 1', field: 'otherIncome', curr: otherIncome, kind: 'source' as const }]
           : []),
@@ -1591,7 +1592,7 @@ export default function LeftPanel1040({
               <Row field="qualifiedDivs"   line="3a" label="Qualified dividends"                               kind="source" value={qualifiedDivs1040} />
               <Row field="ordinaryDivs"    line="3b" label="Ordinary dividends"                                kind="source" value={ordinaryDivs} />
               <Row field="iraDistrib"      line="4b" label="IRA distributions"                                 kind="source" value={taxablePension} />
-              <Row field="capitalGain"     line="7"  label="Capital gain or (loss)"                            kind="source" value={capitalGain} />
+              <Row field="capitalGain"     line="7"  label="Capital gain or (loss)"                            kind={capitalGain !== 0 ? 'source' : undefined} value={capitalGain} />
               {necOnReturn && (
                 <Row field="otherIncome"   line="8"  label="Other income from Schedule 1, line 10"            kind="source" value={otherIncome} />
               )}

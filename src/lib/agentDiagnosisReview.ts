@@ -1,13 +1,13 @@
-import type { LiveAmounts } from '../data/liveReturn'
 import type { DiagnosticIssueCard } from '../pages/data-review/AgentReportPane'
-import { getCategoryScopedActiveKeys } from '../pages/check-return/aiDiagnosticCategories'
+import {
+  badgeMetaForIssueKey,
+  getCategoryScopedActiveKeys,
+} from '../pages/check-return/aiDiagnosticCategories'
 import type { DiagnosticSyncContext } from '../pages/data-review/phase2FlagSync'
-import { getImportMismatchTaxImpact, getOutstandingImportMismatches } from '../pages/data-review/phase2FlagSync'
 import type { Phase2IssueKey } from '../pages/data-review/phase2FlagSync'
 import type { OutputFormId } from '../pages/data-review/outputForms'
 import {
-  formatFormViewLabel,
-  formatSourceTabViewLabel,
+  resolveTableActionLinkLabelFromLink,
   resolveViewLinkLabel,
   type AgentViewLink,
 } from './agentAutoFix'
@@ -30,7 +30,6 @@ export type AgentReviewCardModel = {
   id: string
   variant: 'issue' | 'verified' | 'needs-review'
   title: string
-  metaSubtitle?: string
   badgeLabel: string
   badgeStatus: 'warning' | 'success' | 'info' | 'pending' | 'neutral'
   badgePriority: AgentReviewBadgePriority
@@ -44,55 +43,6 @@ export type AgentReviewCardModel = {
   suggestedActions?: string[]
   suggestedActionLinks?: AgentViewLink[]
   issueKey?: Phase2IssueKey
-}
-
-function badgeMetaForIssue(issue: DiagnosticIssueCard): Pick<
-  AgentReviewCardModel,
-  'badgeLabel' | 'badgeStatus' | 'badgePriority' | 'badgeCapitalization' | 'showBadgeIcon'
-> {
-  if (issue.issueKey === 'importMismatches' || issue.issueKey === 'qualifiedDivClassification') {
-    return {
-      badgeLabel: 'IMPORT MISMATCHES',
-      badgeStatus: 'warning',
-      badgePriority: 'primary',
-      badgeCapitalization: 'caps',
-      showBadgeIcon: true,
-    }
-  }
-  if (issue.issueKey === 'underpaymentRisk') {
-    return {
-      badgeLabel: 'DEDUCTIONS',
-      badgeStatus: 'info',
-      badgePriority: 'secondary',
-      badgeCapitalization: 'caps',
-      showBadgeIcon: true,
-    }
-  }
-  if (issue.category === 'Compliance') {
-    return {
-      badgeLabel: 'COMPLIANCE CHECK',
-      badgeStatus: 'warning',
-      badgePriority: 'primary',
-      badgeCapitalization: 'caps',
-      showBadgeIcon: true,
-    }
-  }
-  if (issue.category === 'Planning opportunities') {
-    return {
-      badgeLabel: 'OPTIMIZATION',
-      badgeStatus: 'info',
-      badgePriority: 'secondary',
-      badgeCapitalization: 'caps',
-      showBadgeIcon: true,
-    }
-  }
-  return {
-    badgeLabel: 'DIAGNOSTIC',
-    badgeStatus: 'warning',
-    badgePriority: 'primary',
-    badgeCapitalization: 'caps',
-    showBadgeIcon: true,
-  }
 }
 
 export function buildViewLinkFromDiagnosticRow(
@@ -153,13 +103,12 @@ export function issueCardToReviewModel(issue: DiagnosticIssueCard): AgentReviewC
     viewLink: buildViewLinkFromDiagnosticRow(issue, row) ?? undefined,
   }))
 
-  const badge = badgeMetaForIssue(issue)
+  const badge = badgeMetaForIssueKey(issue.issueKey)
 
   return {
     id: issue.issueKey,
     variant: 'issue',
     title: stripTaxImpactFromTitle(issue.title),
-    metaSubtitle: undefined,
     ...badge,
     summary: issue.summary,
     rootCause: issue.rootCause,
@@ -175,31 +124,6 @@ function stripTaxImpactFromTitle(title: string): string {
   return title
 }
 
-export function buildIssueMetaSubtitleForIssue(
-  issue: DiagnosticIssueCard,
-  amounts: LiveAmounts,
-): string | undefined {
-  if (issue.issueKey === 'importMismatches') {
-    const gaps = getOutstandingImportMismatches(amounts)
-    const totalImpact = getImportMismatchTaxImpact(amounts)
-    if (gaps.length === 0) return undefined
-    return `${gaps.length} field${gaps.length === 1 ? '' : 's'} · ${fmtUsd(totalImpact)} tax impact`
-  }
-  if (issue.issueKey === 'qualifiedDivClassification') {
-    const taxCol = issue.tableRows.find(r => r.label.includes('Additional tax'))?.cols[0]
-    if (taxCol) return `1 field · ${taxCol} tax impact`
-  }
-  if (issue.issueKey === 'underpaymentRisk') {
-    const shortfallCol = issue.tableRows.find(r => r.label.includes('Shortfall'))?.cols[0]
-    if (shortfallCol) return `Safe harbor gap · ${shortfallCol} after corrections`
-  }
-  if (issue.issueKey === 'optItemize') {
-    const savedCol = issue.tableRows.find(r => r.label.includes('tax saved'))?.cols[0]
-    if (savedCol) return `Planning · ${savedCol} estimated savings`
-  }
-  return undefined
-}
-
 /** Checks the agent ran that passed — grouped for preparer confidence. */
 export function buildVerifiedReviewCard(ctx: DiagnosticSyncContext): AgentReviewCardModel {
   const live = ctx.live
@@ -208,7 +132,6 @@ export function buildVerifiedReviewCard(ctx: DiagnosticSyncContext): AgentReview
     id: 'verified-checks',
     variant: 'verified',
     title: 'Checks passed — no fixes needed',
-    metaSubtitle: '8 areas verified',
     badgeLabel: 'VERIFIED',
     badgeStatus: 'success',
     badgePriority: 'primary',
@@ -225,7 +148,7 @@ export function buildVerifiedReviewCard(ctx: DiagnosticSyncContext): AgentReview
         label: 'W-2 federal withholding matches Tech Circle source',
         cols: ['Box 2 on return equals $34,840 on the PDF.', ''],
         viewLink: {
-          label: formatSourceTabViewLabel('w2s'),
+          label: resolveTableActionLinkLabelFromLink({ tab: 'w2s' }),
           tab: 'w2s',
           field: 'fedWithholding',
         },
@@ -235,7 +158,7 @@ export function buildVerifiedReviewCard(ctx: DiagnosticSyncContext): AgentReview
         label: '1099-INT taxable interest matches Harborline source',
         cols: [`${fmtUsd(live.taxableInterest)} on return and on the 1099-INT.`, ''],
         viewLink: {
-          label: formatSourceTabViewLabel('1099-ints'),
+          label: resolveTableActionLinkLabelFromLink({ tab: '1099-ints' }),
           tab: '1099-ints',
           field: 'taxableInterest',
         },
@@ -244,26 +167,35 @@ export function buildVerifiedReviewCard(ctx: DiagnosticSyncContext): AgentReview
         id: 'v-status',
         label: 'Filing status is consistent across the return',
         cols: ['Form 1040, questionnaire, and W-2 all use Single.', ''],
-        viewLink: { label: formatFormViewLabel('1040'), formId: '1040' },
+        viewLink: {
+          label: resolveTableActionLinkLabelFromLink({ formId: '1040' }),
+          formId: '1040',
+        },
       },
       {
         id: 'v-salt',
         label: 'SALT cap applied correctly on Schedule A',
         cols: ['$10,000 state and local tax limit enforced on Schedule A.', ''],
-        viewLink: { label: formatFormViewLabel('schA'), formId: 'schA' },
+        viewLink: {
+          label: resolveTableActionLinkLabelFromLink({ formId: 'schA' }),
+          formId: 'schA',
+        },
       },
       {
         id: 'v-niit',
         label: 'Net investment income tax calculates correctly on Form 8960',
         cols: [`NIIT base ${fmtUsd(live.netInvestmentIncome)} at 3.8% = ${fmtUsd(live.niitTax)}.`, ''],
-        viewLink: { label: formatFormViewLabel('f8960'), formId: 'f8960' },
+        viewLink: {
+          label: resolveTableActionLinkLabelFromLink({ formId: 'f8960' }),
+          formId: 'f8960',
+        },
       },
       {
         id: 'v-charity',
         label: 'Charitable contributions are documented in the packet',
         cols: ['Cash gifts match organizer worksheet — no amount conflict.', ''],
         viewLink: {
-          label: formatSourceTabViewLabel('questionnaire'),
+          label: resolveTableActionLinkLabelFromLink({ tab: 'questionnaire' }),
           tab: 'questionnaire',
           field: 'charitable',
         },
@@ -273,7 +205,7 @@ export function buildVerifiedReviewCard(ctx: DiagnosticSyncContext): AgentReview
         label: '1099-DIV ordinary dividends match Token source',
         cols: ['Ordinary dividend total agrees with the imported PDF.', ''],
         viewLink: {
-          label: formatSourceTabViewLabel('1099-divs'),
+          label: resolveTableActionLinkLabelFromLink({ tab: '1099-divs' }),
           tab: '1099-divs',
           field: 'ordinaryDivs',
         },
@@ -282,7 +214,10 @@ export function buildVerifiedReviewCard(ctx: DiagnosticSyncContext): AgentReview
         id: 'v-prior',
         label: 'Prior-year AGI matches the archived return',
         cols: ['2024 AGI on the rollover matches the archived return.', ''],
-        viewLink: { label: formatFormViewLabel('1040'), formId: '1040' },
+        viewLink: {
+          label: resolveTableActionLinkLabelFromLink({ formId: '1040' }),
+          formId: '1040',
+        },
       },
     ],
   }
@@ -299,7 +234,6 @@ export function buildNeedsUserReviewCard(_ctx: DiagnosticSyncContext): AgentRevi
     id: 'needs-user-review',
     variant: 'needs-review',
     title: 'Needs your review',
-    metaSubtitle: '5 items · checklist',
     badgeLabel: 'YOUR REVIEW',
     badgeStatus: 'pending',
     badgePriority: 'secondary',
@@ -316,7 +250,7 @@ export function buildNeedsUserReviewCard(_ctx: DiagnosticSyncContext): AgentRevi
         label: 'Form 1098 mortgage interest',
         cols: ['Document missing', 'Jordan confirmed ~$28,400 interest but no 1098 is in the import packet.', ''],
         viewLink: {
-          label: formatSourceTabViewLabel('questionnaire'),
+          label: resolveTableActionLinkLabelFromLink({ tab: 'questionnaire' }),
           tab: 'questionnaire',
           field: 'mortgage',
         },
@@ -327,7 +261,7 @@ export function buildNeedsUserReviewCard(_ctx: DiagnosticSyncContext): AgentRevi
         label: 'Schedule C expense substantiation',
         cols: ['Needs receipts', 'Client mentioned software, home office, and travel — nothing posted yet.', ''],
         viewLink: {
-          label: formatSourceTabViewLabel('questionnaire'),
+          label: resolveTableActionLinkLabelFromLink({ tab: 'questionnaire' }),
           tab: 'questionnaire',
           field: 'necExpenses',
         },
@@ -338,7 +272,7 @@ export function buildNeedsUserReviewCard(_ctx: DiagnosticSyncContext): AgentRevi
         label: 'Charitable gift substantiation',
         cols: ['Review receipts', 'Gifts over $250 need written acknowledgment per IRS rules.', ''],
         viewLink: {
-          label: formatSourceTabViewLabel('questionnaire'),
+          label: resolveTableActionLinkLabelFromLink({ tab: 'questionnaire' }),
           tab: 'questionnaire',
           field: 'charitable',
         },
@@ -348,14 +282,20 @@ export function buildNeedsUserReviewCard(_ctx: DiagnosticSyncContext): AgentRevi
         id: 'r-est-2026',
         label: '2026 estimated tax payments',
         cols: ['Planning conversation', 'Safe-harbor shortfall may require quarterly vouchers next year.', ''],
-        viewLink: { label: formatFormViewLabel('f2210'), formId: 'f2210' },
+        viewLink: {
+          label: resolveTableActionLinkLabelFromLink({ formId: 'f2210' }),
+          formId: 'f2210',
+        },
         checklist: true,
       },
       {
         id: 'r-state',
         label: 'California residency / sourcing',
         cols: ['Not in scope', 'W-2 shows CA wages but I did not run a state return comparison.', ''],
-        viewLink: { label: 'Input screens', inputScreens: true },
+        viewLink: {
+          label: resolveTableActionLinkLabelFromLink({ inputScreens: true }),
+          inputScreens: true,
+        },
         checklist: true,
       },
     ],
@@ -388,7 +328,6 @@ export function buildAgentReviewModels(
     .filter(i => openKeys.has(i.issueKey))
     .map(issue => {
       const model = issueCardToReviewModel(issue)
-      model.metaSubtitle = buildIssueMetaSubtitleForIssue(issue, ctx.amounts)
       if (issue.issueKey === 'importMismatches') {
         model.title = 'Import mismatches detected'
       }

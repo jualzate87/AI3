@@ -14,6 +14,7 @@ import SmartReturnPage from './pages/SmartReturnPage'
 import ImportConfirmationPage from './pages/ImportConfirmationPage'
 import CheckReturnPage from './pages/CheckReturnPage'
 import CheckReturnAgentPage from './pages/CheckReturnAgentPage'
+import AgentReviewPage from './pages/AgentReviewPage'
 import CheckReturnPopoutPage from './pages/CheckReturnPopoutPage'
 import InputReturnPage from './pages/InputReturnPage'
 import ReturnInsightsPage from './pages/ReturnInsightsPage'
@@ -73,6 +74,7 @@ export default function App() {
             <Route path="/data-review-popout" element={<DataReviewPopout />} />
             <Route path="/check-return-popout" element={<CheckReturnPopoutPage />} />
             <Route path="/check-return/agent" element={<CheckReturnAgentPage />} />
+            <Route path="/ai-review" element={<AgentReviewPage />} />
             <Route path="/check-return" element={<CheckReturnPage />} />
             <Route path="/check-return/insights" element={<ReturnInsightsPage />} />
 

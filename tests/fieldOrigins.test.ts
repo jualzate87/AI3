@@ -15,6 +15,13 @@ describe('fieldOrigins', () => {
     expect(origin?.sources?.[0].docId).toBe('1099-int-unwavering')
   })
 
+  it('lists both W-2 sources for wages (Tech Circle on return + Bing in packet)', () => {
+    const origin = getFieldOrigin('wages', totals, SEED_AMOUNTS)
+    expect(origin?.kind).toBe('source')
+    expect(origin?.sources).toHaveLength(2)
+    expect(origin?.sources?.map(s => s.docId)).toEqual(['w2-techCircle', 'w2-bingEquipment'])
+  })
+
   it('lists three INT sources for taxable interest with live amounts', () => {
     const origin = getFieldOrigin('taxableInterest', totals, SEED_AMOUNTS)
     expect(origin?.kind).toBe('source')

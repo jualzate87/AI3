@@ -83,7 +83,10 @@ export const TAX_CONTROL_ROWS: TaxControlRowConfig[] = [
     box: '1',
     label: 'Wages',
     desc: 'Box 1 (wages, tips, other compensation) from all W-2s',
-    docs: [{ docId: 'w2-techCircle', label: 'Tech Circle Inc', hint: 148940 }],
+    docs: [
+      { docId: 'w2-techCircle', label: 'Tech Circle Inc', hint: 148940 },
+      { docId: 'w2-bingEquipment', label: 'Bing Equipment Co.', hint: 60000 },
+    ],
     sourceTab: 'wages',
   },
   {
@@ -170,7 +173,10 @@ export const TAX_CONTROL_ROWS: TaxControlRowConfig[] = [
     box: '2',
     label: 'W-2 withholding',
     desc: 'Box 2 (federal income tax withheld) from all W-2s',
-    docs: [{ docId: 'w2-techCircle', label: 'Tech Circle Inc', hint: 15840 }],
+    docs: [
+      { docId: 'w2-techCircle', label: 'Tech Circle Inc', hint: 15840 },
+      { docId: 'w2-bingEquipment', label: 'Bing Equipment Co.', hint: 10000 },
+    ],
     sourceTab: 'withholding',
   },
   {

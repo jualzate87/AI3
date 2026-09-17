@@ -10,7 +10,7 @@ import { LinkActionButton } from '@ids-ts/link-action-button'
 import '@ids-ts/link-action-button/dist/main.css'
 import AgentSparkleIcon from '../../components/AgentSparkleIcon/AgentSparkleIcon'
 import type { AgentReviewCardModel } from '../../lib/agentDiagnosisReview'
-import { openAgentViewLinkInWindow } from '../../lib/agentAutoFix'
+import { buildTableViewLinkAriaLabel, openAgentViewLinkInWindow } from '../../lib/agentAutoFix'
 import type { Phase2IssueKey } from '../data-review/phase2FlagSync'
 import styles from '../../styles/check-return/AgentDiagnosticExpandableCard.module.css'
 
@@ -94,14 +94,6 @@ export default function AgentDiagnosticExpandableCard({
         <div className={styles.cardHeaderMain}>
           <div className={styles.titleRow}>
             <h3 className={styles.cardTitle}>{card.title}</h3>
-            {card.metaSubtitle && (
-              <>
-                <span className={styles.titleDot} aria-hidden>
-                  ·
-                </span>
-                <span className={styles.cardMeta}>{card.metaSubtitle}</span>
-              </>
-            )}
             <span className={styles.categoryBadge}>
               <Badge
                 status={badgeStatusForCard(card)}
@@ -198,7 +190,7 @@ export default function AgentDiagnosticExpandableCard({
                           weight="regular"
                           alignment="right"
                           onClick={() => openAgentViewLinkInWindow(row.viewLink!)}
-                          aria-label={`${row.viewLink.label} (opens in a new window)`}
+                          aria-label={buildTableViewLinkAriaLabel(row.viewLink)}
                         >
                           <span className={styles.viewLinkContent}>
                             {row.viewLink.label}

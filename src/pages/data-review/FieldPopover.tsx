@@ -42,8 +42,10 @@ export const FIELD_META: Record<string, FieldMeta> = {
     prior: 136480,
     current: 118940,
     sources: [
-      { label: 'Tech Circle (W-2)', value: 118940 },
+      { label: 'Tech Circle Inc (W-2) · Box 1', value: 118940 },
+      { label: 'Bing Equipment Co. (W-2) · Box 1', value: 0 },
     ],
+    note: 'Bing Equipment W-2 is in the packet and verified in Inputs; only Tech Circle Box 1 flows to line 1a on this return.',
   },
   wagesTotal: {
     label: 'Total wages (1a–1h)',
@@ -133,11 +135,13 @@ export const FIELD_META: Record<string, FieldMeta> = {
     current: FROZEN_RETURN.totalIncome - FROZEN_RETURN.stdDeduction,
   },
   withholding: {
-    label: 'Federal income tax withheld',
+    label: 'Federal income tax withheld (1099)',
     prior: 18740,
     current: FROZEN_RETURN.divWithholding,
     sources: [
-      { label: 'Token Financial (1099-DIV)', value: FROZEN_RETURN.divWithholding },
+      { label: 'Token Financial (1099-DIV) · Box 4', value: FROZEN_RETURN.divWithholding },
+      { label: 'Meridian Retirement Trust (1099-R) · Box 4', value: 0 },
+      { label: 'Summit Advisory Partners (1099-NEC) · Box 4', value: 0 },
     ],
   },
   totalPayments: {
@@ -160,8 +164,10 @@ export const FIELD_META: Record<string, FieldMeta> = {
     prior: 22360,
     current: FROZEN_RETURN.w2Withholding,
     sources: [
-      { label: 'Tech Circle (W-2 Box 2)', value: FROZEN_RETURN.w2Withholding },
+      { label: 'Tech Circle Inc (W-2) · Box 2', value: FROZEN_RETURN.w2Withholding },
+      { label: 'Bing Equipment Co. (W-2) · Box 2', value: 0 },
     ],
+    note: 'Bing Equipment W-2 Box 2 is in the packet; only Tech Circle withholding flows to line 25a on this return.',
   },
   totalWithholding: {
     label: 'Total withholding',

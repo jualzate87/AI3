@@ -6,6 +6,7 @@ import {
   useRef,
   useState,
   type ReactNode,
+  type RefObject,
 } from 'react'
 import {
   ChevronDown,
@@ -32,6 +33,7 @@ import {
   formatFixResultLinkLabel,
   getAgentFixContext,
   openAgentViewLinkInWindow,
+  viewLinkDestKey,
   type AgentFixDetailLine,
   type AgentFixPlanItem,
   type AgentThinkingSection,
@@ -102,9 +104,9 @@ type ThreadEntry =
 
 const AGENT_VISIT_SESSION_KEY = 'protoc3-agent-visit-active'
 
-const STEP_MS = 900
-const BATCH_STEP_MS = 1300
-const ISSUE_GAP_MS = 400
+/** Aligned with IDS progress tokens — one step per `--duration-progress-moderate`. */
+const REASONING_STEP_MS = 1000
+const REASONING_SECTION_GAP_MS = 350
 
 let threadEntryCounter = 0
 function nextThreadEntryId(): string {
@@ -153,14 +155,15 @@ function ActionChip({
 }
 
 function SourceLinkChip({ link }: { link: AgentViewLink }) {
+  const label = formatFixResultLinkLabel(link)
   return (
     <button
       type="button"
       className={styles.sourceLinkChip}
       onClick={() => openAgentViewLinkInWindow(link)}
-      aria-label={`${link.label} (opens in a new window)`}
+      aria-label={`${label} (opens in a new window)`}
     >
-      {link.label}
+      {label}
       <NewWindow size="small" className={styles.sourceLinkChipIcon} aria-hidden />
     </button>
   )
@@ -221,7 +224,7 @@ function FixProgressSummaryCard({
   return (
     <div className={styles.fixProgressCard}>
       <div className={styles.fixProgressHeader}>
-        <span className={styles.fixProgressTitle}>Fixes progress</span>
+        <span className={styles.fixProgressTitle}>Fixes Progress</span>
         <span className={styles.fixProgressCount}>
           {doneCount} of {totalCount} fixed
         </span>
@@ -251,12 +254,68 @@ function FixProgressSummaryCard({
   )
 }
 
+function CompletionSummaryBlock({
+  entry,
+  syncCtx,
+  heroRef,
+}: {
+  entry: Extract<ThreadEntry, { kind: 'complete-summary' }>
+  syncCtx: ReturnType<typeof getAgentFixContext>
+  heroRef: RefObject<HTMLDivElement | null>
+}) {
+  return (
+    <div className={styles.completionBlock}>
+      <div className={styles.completionHero} ref={heroRef} tabIndex={-1}>
+        <AgentSparkleRow>
+          <p className={styles.agentBody}>{entry.introText}</p>
+        </AgentSparkleRow>
+      </div>
+      <div className={styles.completionDetails}>
+        <FixProgressSummaryCard fixedItems={entry.fixedItems} totalCount={entry.totalCount} />
+        <ReminderCard />
+        <PreparerReviewCallouts
+          syncCtx={syncCtx}
+          calloutFilter="needs-review"
+          ariaLabel="Manual review checklist after fixes"
+        />
+        <nav
+          className={`${styles.completionLinks} ${styles.completionLinksEnd}`}
+          aria-label="Next steps after fixes"
+        >
+          <OutcomeLink
+            href={buildAgentViewLinkUrl({
+              label: 'Updated return',
+              formId: '1040',
+            })}
+            showNewWindowIcon
+          >
+            Updated return
+          </OutcomeLink>
+          <OutcomeLink
+            href={buildAgentViewLinkUrl(SOURCE_DOCUMENTS_VIEW_LINK)}
+            showNewWindowIcon
+          >
+            Source documents
+          </OutcomeLink>
+          <OutcomeLink href={buildHashRouteUrl(buildReviewReturnPopoutRoute({ form: '1040' }))}>
+            View summary
+          </OutcomeLink>
+        </nav>
+      </div>
+    </div>
+  )
+}
+
 function ReminderCard() {
   return (
     <div className={styles.reminderCard}>
-      <Badge status="warning" capitalization="sentence">
-        Reminder
-      </Badge>
+      <div className={styles.reminderHeader}>
+        <AgentSparkleIcon size="inline" className={styles.reminderIcon} />
+        <span className={styles.reminderTitle}>Reminder</span>
+        <Badge status="warning" priority="primary" capitalization="caps">
+          NEEDS ACTION
+        </Badge>
+      </div>
       <p className={styles.reminderBody}>
         Before we finalize, please confirm the{' '}
         <strong>estimated Form 1098 mortgage interest</strong> amount with the client and upload the
@@ -347,23 +406,17 @@ function InitialDiagnosisFeed({
     [reviewCards],
   )
 
-  const defaultExpandedId = useMemo(() => {
-    const firstIssue = issueCards[0]
-    return firstIssue?.id ?? null
-  }, [issueCards])
-
-  const [expandedCardId, setExpandedCardId] = useState<string | null>(defaultExpandedId)
+  const [expandedCardId, setExpandedCardId] = useState<string | null>(null)
 
   useEffect(() => {
     if (collapseCards) {
       setExpandedCardId(null)
       return
     }
-    setExpandedCardId(prev => {
-      if (prev && issueCards.some(c => c.id === prev)) return prev
-      return defaultExpandedId
-    })
-  }, [collapseCards, defaultExpandedId, issueCards])
+    setExpandedCardId(prev =>
+      prev && issueCards.some(c => c.id === prev) ? prev : null,
+    )
+  }, [collapseCards, issueCards])
 
   const allIssuesResolved =
     phase === 'complete' &&
@@ -376,12 +429,6 @@ function InitialDiagnosisFeed({
 
   return (
     <div className={styles.diagnosisFeed}>
-      <div className={styles.diagnosticsFoundRow}>
-        <SparkleAvatar />
-        <span className={styles.diagnosticsFoundLabel}>
-          {allIssuesResolved ? 'Diagnostics resolved' : 'Diagnostics found'}
-        </span>
-      </div>
       {allIssuesResolved && (
         <div className={styles.diagnosisClearNote}>
           <Badge status="success" capitalization="sentence" priority="secondary">
@@ -446,7 +493,7 @@ function StepperSteps({
         return (
           <li
             key={stepIndex}
-            className={`${styles.stepperItem} ${isDone ? styles.stepperItemDone : ''} ${isActive ? styles.stepperItemActive : ''}`}
+            className={`${styles.stepperItem} ${isDone ? styles.stepperItemDone : ''} ${isActive ? styles.stepperItemActive : ''} ${isActive || isDone ? styles.stepperItemVisible : ''}`}
           >
             <span className={styles.stepperRail} aria-hidden>
               <span className={styles.stepperDot} />
@@ -485,7 +532,7 @@ function ThinkingSectionRow({
 
   if (sectionComplete) {
     return (
-      <div className={styles.reasoningSection}>
+      <div className={`${styles.reasoningSection} ${styles.reasoningSectionEnter}`}>
         <button
           type="button"
           className={styles.reasoningSectionHeaderCollapsed}
@@ -514,7 +561,7 @@ function ThinkingSectionRow({
   if (!sectionActive) return null
 
   return (
-    <div className={styles.reasoningSection}>
+    <div className={`${styles.reasoningSection} ${styles.reasoningSectionEnter}`}>
       <button
         type="button"
         className={styles.reasoningSectionHeaderActive}
@@ -555,7 +602,14 @@ function ThinkingBlock({
   const sections = entry.sections ?? []
   const useProgressiveSections = sections.length > 0
   const [expanded, setExpanded] = useState(!isComplete)
+  const [showThinkingExpanded, setShowThinkingExpanded] = useState(false)
   const [expandedSections, setExpandedSections] = useState<Set<string>>(() => new Set())
+
+  useEffect(() => {
+    if (isComplete && useProgressiveSections) {
+      setShowThinkingExpanded(false)
+    }
+  }, [isComplete, useProgressiveSections])
 
   useEffect(() => {
     if (!useProgressiveSections) return
@@ -587,22 +641,37 @@ function ThinkingBlock({
   if (useProgressiveSections) {
     return (
       <div className={styles.generationBlock} aria-label={`Reasoning for ${entry.issueTitle}`}>
-        <div className={styles.thinkingSections}>
-          {sections.map(section => {
-            if (entry.activeStep < section.startStep) return null
+        {isComplete && (
+          <button
+            type="button"
+            className={styles.generationHeader}
+            onClick={() => setShowThinkingExpanded(open => !open)}
+            aria-expanded={showThinkingExpanded}
+          >
+            <span className={styles.generationTitleMuted}>Show thinking</span>
+            <span className={styles.generationChevron} aria-hidden>
+              {showThinkingExpanded ? <ChevronUp size="small" /> : <ChevronDown size="small" />}
+            </span>
+          </button>
+        )}
+        {(!isComplete || showThinkingExpanded) && (
+          <div className={styles.thinkingSections}>
+            {sections.map(section => {
+              if (entry.activeStep < section.startStep) return null
 
-            return (
-              <ThinkingSectionRow
-                key={section.title}
-                section={section}
-                entry={entry}
-                isComplete={isComplete}
-                expanded={expandedSections.has(section.title)}
-                onToggle={() => toggleSection(section.title)}
-              />
-            )
-          })}
-        </div>
+              return (
+                <ThinkingSectionRow
+                  key={section.title}
+                  section={section}
+                  entry={entry}
+                  isComplete={isComplete}
+                  expanded={expandedSections.has(section.title)}
+                  onToggle={() => toggleSection(section.title)}
+                />
+              )
+            })}
+          </div>
+        )}
       </div>
     )
   }
@@ -676,6 +745,7 @@ export default function AgentDiagnosticsPanel() {
   const runRef = useRef(false)
   const welcomeAddedRef = useRef(false)
   const chatScrollRef = useRef<HTMLDivElement>(null)
+  const completionHeroRef = useRef<HTMLDivElement>(null)
 
   const openCount = fixPlan.length
   const diagnosisIssueCount = useMemo(
@@ -690,10 +760,18 @@ export default function AgentDiagnosticsPanel() {
 
   const scrollToBottom = useCallback(() => {
     const el = chatScrollRef.current
-    if (el) el.scrollTop = el.scrollHeight
+    if (el) el.scrollTo({ top: el.scrollHeight, behavior: 'smooth' })
   }, [])
 
   useEffect(() => {
+    const last = thread[thread.length - 1]
+    if (last?.kind === 'complete-summary') {
+      requestAnimationFrame(() => {
+        completionHeroRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' })
+        completionHeroRef.current?.focus({ preventScroll: true })
+      })
+      return
+    }
     scrollToBottom()
   }, [thread, scrollToBottom])
 
@@ -745,7 +823,7 @@ export default function AgentDiagnosticsPanel() {
         })
 
         for (let s = 0; s < batchSteps.length; s++) {
-          await new Promise(r => setTimeout(r, BATCH_STEP_MS))
+          await new Promise(r => setTimeout(r, REASONING_STEP_MS))
           setThread(prev =>
             prev.map(entry =>
               entry.id === thinkingId && entry.kind === 'thinking'
@@ -774,7 +852,7 @@ export default function AgentDiagnosticsPanel() {
           })
 
           for (let s = 0; s < item.thinkingSteps.length; s++) {
-            await new Promise(r => setTimeout(r, STEP_MS))
+            await new Promise(r => setTimeout(r, REASONING_STEP_MS))
             setThread(prev =>
               prev.map(entry =>
                 entry.id === thinkingId && entry.kind === 'thinking'
@@ -799,7 +877,7 @@ export default function AgentDiagnosticsPanel() {
             })
           }
 
-          await new Promise(r => setTimeout(r, ISSUE_GAP_MS))
+          await new Promise(r => setTimeout(r, REASONING_SECTION_GAP_MS))
         }
       }
 
@@ -821,7 +899,7 @@ export default function AgentDiagnosticsPanel() {
       setPhase('complete')
       appendThread({
         kind: 'complete-summary',
-        introText: `I've resolved all ${batchFixed.length} diagnostic${batchFixed.length === 1 ? '' : 's'}. Here's what was fixed.`,
+        introText: `I've resolved all ${batchFixed.length} diagnostic${batchFixed.length === 1 ? '' : 's'}. Here's the progress summary.`,
         fixedItems: batchFixed,
         totalCount: batchFixed.length,
       })
@@ -1008,7 +1086,7 @@ export default function AgentDiagnosticsPanel() {
                         {entry.viewLinks.length > 0 && (
                           <div className={styles.sourceLinkRow}>
                             {entry.viewLinks.map(link => (
-                              <SourceLinkChip key={link.label} link={link} />
+                              <SourceLinkChip key={viewLinkDestKey(link)} link={link} />
                             ))}
                           </div>
                         )}
@@ -1018,47 +1096,12 @@ export default function AgentDiagnosticsPanel() {
                 }
                 if (entry.kind === 'complete-summary') {
                   return (
-                    <div key={entry.id} className={styles.completionBlock}>
-                      <p className={styles.completionIntro}>{entry.introText}</p>
-                      <FixProgressSummaryCard
-                        fixedItems={entry.fixedItems}
-                        totalCount={entry.totalCount}
-                      />
-                      <ReminderCard />
-                      <PreparerReviewCallouts
-                        syncCtx={syncCtx}
-                        calloutFilter="needs-review"
-                        defaultExpandedIds={['needs-user-review']}
-                        ariaLabel="Manual review checklist after fixes"
-                      />
-                      <nav
-                        className={`${styles.completionLinks} ${styles.completionLinksEnd}`}
-                        aria-label="Next steps after fixes"
-                      >
-                        <OutcomeLink
-                          href={buildAgentViewLinkUrl({
-                            label: 'Updated return',
-                            formId: '1040',
-                          })}
-                          showNewWindowIcon
-                        >
-                          Updated return
-                        </OutcomeLink>
-                        <OutcomeLink
-                          href={buildAgentViewLinkUrl(SOURCE_DOCUMENTS_VIEW_LINK)}
-                          showNewWindowIcon
-                        >
-                          Source documents
-                        </OutcomeLink>
-                        <OutcomeLink
-                          href={buildHashRouteUrl(
-                            buildReviewReturnPopoutRoute({ form: '1040' }),
-                          )}
-                        >
-                          View summary
-                        </OutcomeLink>
-                      </nav>
-                    </div>
+                    <CompletionSummaryBlock
+                      key={entry.id}
+                      entry={entry}
+                      syncCtx={syncCtx}
+                      heroRef={completionHeroRef}
+                    />
                   )
                 }
                 return null

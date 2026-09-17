@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from 'react'
-import { useSearchParams } from 'react-router-dom'
+import { useNavigate, useSearchParams } from 'react-router-dom'
 import LeftNavPTO from './data-review/LeftNavPTO'
 import SmartReturnHeader from './SmartReturnHeader'
 import ReturnContextRail from '../components/ReturnContextRail'
@@ -35,6 +35,7 @@ function resolveInitialOutputForm(searchParams: URLSearchParams): OutputFormId {
 }
 
 export default function CheckReturnPage() {
+  const navigate = useNavigate()
   const [searchParams] = useSearchParams()
   const initialForm = useMemo(() => resolveInitialOutputForm(searchParams), [searchParams])
   const openFormFromUrl = searchParams.get('form') != null
@@ -158,6 +159,7 @@ export default function CheckReturnPage() {
             activeTab="checkreturns"
             showViewSourceDocuments
             onViewSourceDocuments={() => openSourceDocumentReviewPopout()}
+            onAiReview={() => navigate('/ai-review')}
           />
           <div className={styles.contentArea}>
             <CheckReturnNav

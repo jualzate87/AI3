@@ -879,6 +879,16 @@ export const ISSUE_FIELD: Partial<Record<IssueKey, string>> = {
   sepIra: 'nec-box1',
 }
 
+/** Alias for Intuit Intelligence shell — same shape as legacy Phase 2 cards. */
+export type IssueCard = DiagnosticIssueCard
+
+export function buildPhase2Issues(
+  live: LiveReturnTotals,
+  amounts: LiveAmounts,
+): IssueCard[] {
+  return buildAllDiagnosticIssues(live, amounts)
+}
+
 export function buildAllDiagnosticIssues(live: LiveReturnTotals, amounts: LiveAmounts): DiagnosticIssueCard[] {
   return [
     buildImportMismatchesIssue(amounts),

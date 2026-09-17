@@ -18,6 +18,7 @@ import '@ids-ts/link-action-button/dist/main.css'
 import intuitIntelligenceLogo from '../../assets/icons/intuit-intelligence-logo-small.svg'
 import { computeLiveReturn } from '../../data/liveReturn'
 import { useSyncedReviewState } from '../../hooks/useSyncedReviewState'
+import { resolveViewLinkLabel } from '../../lib/agentAutoFix'
 import { navigateToScheduleAInterestInput } from '../../lib/inputReturnNavigation'
 import { openReviewReturnPopout, openSourceDocumentReviewPopout } from '../../lib/prototypeRoutes'
 import {
@@ -71,7 +72,7 @@ function CategoryBadge({ category }: { category: AiDiagnosticCategory }) {
   return (
     <Badge
       status={categoryBadgeStatus(category.badgeStatus)}
-      priority="secondary"
+      priority={category.badgePriority}
       capitalization="caps"
     >
       {category.badgeLabel}
@@ -484,7 +485,10 @@ export default function AiDiagnosticsPanel({
                 <span className={styles.detailTableCellAction}>
                   {row.fixTab ? (
                     <RowActionLink
-                      label={row.actionLabel ?? 'View source'}
+                      label={resolveViewLinkLabel(row.actionLabel, {
+                        tab: row.fixTab,
+                        schAInterest: row.fixTab === 'sch-a-interest',
+                      })}
                       onClick={() =>
                         handleViewSourceForField(
                           row.fixField ?? row.questionnaireResponseId,
@@ -495,7 +499,9 @@ export default function AiDiagnosticsPanel({
                     />
                   ) : row.viewForm ? (
                     <RowActionLink
-                      label={row.actionLabel ?? `View on ${row.viewFormLabel ?? row.viewForm}`}
+                      label={resolveViewLinkLabel(row.actionLabel, {
+                        formId: row.viewForm,
+                      })}
                       onClick={() => handleViewForm(row.viewForm!, selectedIssue.issueKey)}
                     />
                   ) : null}

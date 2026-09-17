@@ -227,31 +227,61 @@ type ViewLinkLabelContext = {
   inputScreens?: boolean
 }
 
+export function isScheduleOutputForm(formId: OutputFormId | string): boolean {
+  return String(formId).startsWith('sch')
+}
+
+/** Two-word labels for diagnostic table Action column links. */
+export function resolveTableActionLinkLabel(ctx: ViewLinkLabelContext): string {
+  if (ctx.inputScreens || ctx.schAInterest || ctx.tab) return 'View source'
+  if (ctx.formId) {
+    return isScheduleOutputForm(ctx.formId) ? 'View schedule' : 'View form'
+  }
+  return 'View source'
+}
+
+export function resolveTableActionLinkLabelFromLink(
+  link: Pick<AgentViewLink, 'tab' | 'formId' | 'schAInterest' | 'inputScreens'>,
+): string {
+  return resolveTableActionLinkLabel(link)
+}
+
 /** Resolve concise, scannable labels for agent view links. */
 export function resolveViewLinkLabel(
-  raw: string | undefined,
+  _raw: string | undefined,
   ctx?: ViewLinkLabelContext,
 ): string {
-  if (ctx?.inputScreens) return 'Input screens'
-  if (ctx?.schAInterest) return 'Schedule A inputs'
-  if (ctx?.formId) {
-    const fromForm = formatFormViewLabel(ctx.formId)
-    if (raw) {
-      const stripped = stripViewLinkPrefix(raw)
-      if (stripped === fromForm || stripped.toLowerCase().includes('form')) return fromForm
-    }
-    return fromForm
+  return resolveTableActionLinkLabel(ctx ?? {})
+}
+
+/** Destination name for screen-reader labels (table links stay generic). */
+export function formatViewLinkDestination(link: AgentViewLink): string {
+  if (link.inputScreens) return 'Input screens'
+  if (link.schAInterest) return 'Schedule A inputs'
+  if (link.tab) return formatSourceTabViewLabel(link.tab)
+  if (link.formId) return formatFormViewLabel(link.formId)
+  return stripViewLinkPrefix(link.label)
+}
+
+export function buildTableViewLinkAriaLabel(link: AgentViewLink): string {
+  const action = resolveTableActionLinkLabelFromLink(link)
+  const dest = formatViewLinkDestination(link)
+  if (dest && dest !== action) {
+    return `${action} — ${dest} (opens in a new window)`
   }
-  if (raw) {
-    const stripped = stripViewLinkPrefix(raw)
-    if (stripped.toLowerCase() === 'source' && ctx?.tab) {
-      return formatSourceTabViewLabel(ctx.tab)
-    }
-    if (stripped.toLowerCase() === 'on input screen') return 'Schedule A inputs'
-    return stripped
-  }
-  if (ctx?.tab) return formatSourceTabViewLabel(ctx.tab)
-  return 'Source'
+  return `${action} (opens in a new window)`
+}
+
+export function viewLinkDestKey(link: AgentViewLink): string {
+  return [
+    link.tab ?? '',
+    link.field ?? '',
+    link.formId ?? '',
+    link.schAInterest ? 'schAInterest' : '',
+    link.inputScreens ? 'inputScreens' : '',
+    link.questionnaireResponseId ?? '',
+    link.diagnostic ?? '',
+  ].join('|')
 }
 
 /** Common source destinations for agent-mode exploration (chat quick nav). */
@@ -345,8 +375,9 @@ export function buildViewLinksForIssue(
   const seen = new Set<string>()
 
   const push = (link: AgentViewLink) => {
-    if (seen.has(link.label)) return
-    seen.add(link.label)
+    const key = viewLinkDestKey(link)
+    if (seen.has(key)) return
+    seen.add(key)
     links.push(link)
   }
 

@@ -64,8 +64,25 @@ export function getFieldOrigin(
         label: 'Wages',
         kind: 'source',
         sources: [
-          source('w2-techCircle', 'Tech Circle Inc (W-2)', 'Box 1', amounts.wages, 'wages'),
+          source(
+            'w2-techCircle',
+            'Tech Circle Inc (W-2)',
+            'Box 1',
+            amounts.wages,
+            'wages-techCircle',
+          ),
+          source(
+            'w2-bingEquipment',
+            'Bing Equipment Co. (W-2)',
+            'Box 1',
+            amounts.wagesBingEquipment,
+            'wages-bingEquipment',
+          ),
         ],
+        note:
+          amounts.wagesBingEquipment > 0
+            ? undefined
+            : 'Bing Equipment W-2 is in the packet and verified in Inputs; only Tech Circle Box 1 flows to line 1a on this return.',
       }
 
     case 'wagesTotal':
@@ -80,7 +97,8 @@ export function getFieldOrigin(
           ],
           total: totals.wages,
           totalLabel: 'Line 1z',
-          footnote: 'Lines 1b–1h are blank on this return.',
+          footnote:
+            'Lines 1b–1h are blank on this return. Bing Equipment W-2 is tracked separately in Inputs and is not added to line 1a here.',
         },
       }
 
@@ -141,7 +159,7 @@ export function getFieldOrigin(
             'Token Financial (1099-DIV)',
             'Box 1b',
             amounts.qualifiedDivsToken,
-            'qualifiedDivs',
+            'qualifiedDivs-tokenFinancial',
           ),
           source(
             '1099-div-northmark',
@@ -178,7 +196,7 @@ export function getFieldOrigin(
             'Northmark Index Funds (1099-DIV)',
             'Box 1a',
             amounts.ordinaryDivsNorthmark,
-            'ordinaryDivs',
+            'ordinaryDivs-northmarkIndex',
           ),
           source(
             '1099-div-beacon',
@@ -385,7 +403,18 @@ export function getFieldOrigin(
             amounts.w2Withholding,
             'withholding',
           ),
+          source(
+            'w2-bingEquipment',
+            'Bing Equipment Co. (W-2)',
+            'Box 2',
+            amounts.wagesBingEquipment > 0 ? 10_000 : 0,
+            'withholding-bingEquipment',
+          ),
         ],
+        note:
+          amounts.wagesBingEquipment > 0
+            ? undefined
+            : 'Bing Equipment W-2 Box 2 is in the packet; only Tech Circle withholding flows to line 25a on this return.',
       }
 
     case 'withholding':
@@ -408,6 +437,17 @@ export function getFieldOrigin(
             amounts.rWithholding,
             'withholding1099',
           ),
+          ...(amounts.necOnReturn
+            ? [
+                source(
+                  '1099-nec-summit',
+                  'Summit Advisory Partners (1099-NEC)',
+                  'Box 4',
+                  0,
+                  'nec-withholding',
+                ),
+              ]
+            : []),
         ],
       }
 

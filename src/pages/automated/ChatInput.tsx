@@ -6,9 +6,15 @@ import styles from '../../styles/automated/ChatInput.module.css'
 
 interface ChatInputProps {
   onSend: (text: string) => void
+  placeholder?: string
+  legalDisclaimer?: string
 }
 
-export default function ChatInput({ onSend }: ChatInputProps) {
+export default function ChatInput({
+  onSend,
+  placeholder = 'Ask {Agent / product name}',
+  legalDisclaimer = 'Important information about how we use generative AI',
+}: ChatInputProps) {
   const [value, setValue] = useState('')
 
   const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
@@ -35,7 +41,7 @@ export default function ChatInput({ onSend }: ChatInputProps) {
         <div className={styles.textArea}>
           <textarea
             className={styles.textAreaInput}
-            placeholder="Ask {Agent / product name}"
+            placeholder={placeholder}
             value={value}
             onChange={e => setValue(e.target.value)}
             onKeyDown={handleKeyDown}
@@ -73,9 +79,7 @@ export default function ChatInput({ onSend }: ChatInputProps) {
         </div>
       </div>
 
-      <span className={styles.legal}>
-        Important information about how we use generative AI
-      </span>
+      <span className={styles.legal}>{legalDisclaimer}</span>
     </div>
   )
 }
