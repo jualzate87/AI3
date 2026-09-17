@@ -1,7 +1,5 @@
 .wrap {
   position: fixed;
-  right: var(--space-container-padding-large, 24px);
-  bottom: var(--space-container-padding-large, 24px);
   z-index: 1000;
   width: min(335px, calc(100vw - 48px));
 }

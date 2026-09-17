@@ -642,6 +642,55 @@ export const INTELLIGENCE_NEED_ACTION_COPY = {
   after: ' amount with the client and upload the actual form when available.',
 } as const
 
+/* ── End-of-review summary: what still needs the reviewer vs. what's settled ── */
+
+export type IntelligenceAttentionItem = {
+  id: string
+  title: string
+  detail: string
+  /** Label for the review link on this item */
+  linkLabel: string
+  /** Source-doc popout tab hint */
+  popoutTab?: string
+  popoutSubTab?: string
+}
+
+export const INTELLIGENCE_ATTENTION_TITLE = 'Needs your attention'
+
+export const INTELLIGENCE_ATTENTION_INTRO =
+  "I couldn't confirm these on my own. Review each one before you sign off."
+
+export const INTELLIGENCE_CHECKED_TITLE = 'Checked and OK'
+
+export const INTELLIGENCE_NEEDS_ATTENTION_ITEMS: readonly IntelligenceAttentionItem[] = [
+  {
+    id: 'form-1098-estimate',
+    title: 'Form 1098 mortgage interest is an estimate',
+    detail:
+      'The deduction is based on an estimated amount. Confirm it with the client and upload the actual form before filing.',
+    linkLabel: 'Review Form 1098',
+  },
+  {
+    id: 'div-split',
+    title: '1099-DIV qualified vs. ordinary split needs a second look',
+    detail:
+      'The broker statement formatting was unusual, so the split is worth verifying against the source PDF.',
+    linkLabel: 'Review 1099-DIV',
+    popoutTab: '1099-div',
+  },
+  {
+    id: 'form-2210-penalty',
+    title: 'Form 2210 penalty treatment is your call',
+    detail:
+      'I calculated the $40,826 shortfall, but whether to annualize income or accept the penalty is a judgment call.',
+    linkLabel: 'Review Form 2210',
+  },
+]
+
+export function intelligenceAttentionCountLabel(count: number): string {
+  return count === 1 ? '1 item' : `${count} items`
+}
+
 export function intelligenceFixCompleteMessage(fixedCount: number, total: number): string {
   if (fixedCount >= total) {
     return `I've resolved all ${total} diagnostics. Here's the progress summary.`

@@ -1,4 +1,4 @@
-import { PopOut } from '@design-systems/icons'
+import { NewWindow } from '@design-systems/icons'
 import { Button } from '@ids-ts/button'
 import '@ids-ts/button/dist/main.css'
 
@@ -22,8 +22,8 @@ export default function ViewSourceDocumentsButton({
       onClick={onClick}
       automationId="view-source-documents-cta"
     >
-      <PopOut size="small" aria-hidden />
       Source documents
+      <NewWindow size="small" aria-hidden />
     </Button>
   )
 }

@@ -139,15 +139,6 @@ export default function InputReturnPage() {
     }
   }
 
-  const activeNavItem = inputNavItemById(activeItemId)
-  const activeDocKey = activeNavItem.topTab
-    ? readActiveDocKey(activeNavItem.topTab, {
-        activeSubTab,
-        activeDivPayer,
-        activeIntPayer,
-      })
-    : null
-
   return (
     <div className={`${layout.page} ${styles.page}`} data-theme="intuit">
       <div className={layout.body}>
@@ -162,9 +153,7 @@ export default function InputReturnPage() {
           <div className={styles.contentArea}>
             <InputMenuNav
               activeItemId={activeItemId}
-              activeDocKey={activeDocKey}
               onSelect={handleSelectItem}
-              onDocSelect={handleDocChange}
               searchQuery={searchQuery}
               onSearchChange={setSearchQuery}
               collapsed={navCollapsed}

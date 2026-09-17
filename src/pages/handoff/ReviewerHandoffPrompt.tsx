@@ -27,7 +27,7 @@ export default function ReviewerHandoffPrompt({
 
   useEffect(() => {
     setAnchor(anchorRef.current)
-  }, [anchorRef])
+  }, [anchorRef, open])
 
   useEffect(() => {
     const timer = window.setTimeout(() => setOpen(true), REVIEWER_PROMPT_DELAY_MS)
@@ -61,6 +61,7 @@ export default function ReviewerHandoffPrompt({
     return (
       <ReviewerAiProactiveToast
         open={open}
+        anchor={anchor}
         onClose={handleClose}
         onViewSummary={openCatchUp}
       />

@@ -3,7 +3,7 @@ import type { RefObject } from 'react'
 import {
   CircleQuestion, Notification, Settings, Lock, Person,
   ChevronDown, List, Edit, Checklist,
-  Send, CloudUpload, Rocket, PopOut,
+  Send, CloudUpload, Rocket, NewWindow,
 } from '@design-systems/icons'
 import { Button } from '@ids-ts/button'
 import '@ids-ts/button/dist/main.css'
@@ -201,8 +201,8 @@ export default function SmartReturnHeader({
               onClick={handleReviewReturnClick}
               automationId="review-return-header-cta"
             >
-              <PopOut size="small" aria-hidden />
               Review return
+              <NewWindow size="small" aria-hidden />
             </Button>
           )}
           {showViewSourceDocuments && (
@@ -212,8 +212,8 @@ export default function SmartReturnHeader({
               onClick={onViewSourceDocuments}
               automationId="view-source-documents-header-cta"
             >
-              <PopOut size="small" aria-hidden />
               Source documents
+              <NewWindow size="small" aria-hidden />
             </Button>
           )}
           {activeTab === 'checkreturns' && onAiReview && (

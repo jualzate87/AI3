@@ -1,16 +1,13 @@
-import { ChevronLeft, ChevronRight, Search } from '@design-systems/icons'
+import { ChevronLeft, Search } from '@design-systems/icons'
 import {
   INPUT_NAV_CATEGORIES,
   type InputNavItemId,
 } from '../../data/inputMenuNav'
-import { getInputDocTabs } from '../../data/inputDocTabs'
 import styles from '../../styles/InputReturnPage.module.css'
 
 interface InputMenuNavProps {
   activeItemId: InputNavItemId
-  activeDocKey: string | null
   onSelect: (id: InputNavItemId) => void
-  onDocSelect: (docKey: string) => void
   searchQuery: string
   onSearchChange: (query: string) => void
   collapsed: boolean
@@ -19,9 +16,7 @@ interface InputMenuNavProps {
 
 export default function InputMenuNav({
   activeItemId,
-  activeDocKey,
   onSelect,
-  onDocSelect,
   searchQuery,
   onSearchChange,
   collapsed,
@@ -99,9 +94,7 @@ export default function InputMenuNav({
               </div>
               {visibleItems.map((item, itemIndex) => {
                 const isActive = activeItemId === item.id
-                const docTabs = item.topTab ? getInputDocTabs(item.topTab) : []
-                const isLastItem =
-                  isLastCategory && itemIndex === visibleItems.length - 1 && docTabs.length === 0
+                const isLastItem = isLastCategory && itemIndex === visibleItems.length - 1
 
                 return (
                   <div key={item.id} className={styles.navItemGroup}>
@@ -117,32 +110,7 @@ export default function InputMenuNav({
                       onClick={() => onSelect(item.id)}
                     >
                       <span className={styles.navPrimaryLabel}>{item.label}</span>
-                      {isActive && docTabs.length > 0 && (
-                        <ChevronRight size="small" className={styles.navPrimaryChevron} aria-hidden />
-                      )}
                     </button>
-                    {isActive &&
-                      docTabs.length > 0 &&
-                      docTabs.map((doc, docIndex) => {
-                        const docActive = activeDocKey === doc.key
-                        const isLastDoc = isLastItem && docIndex === docTabs.length - 1
-                        return (
-                          <button
-                            key={doc.key}
-                            type="button"
-                            className={[
-                              styles.navSecondary,
-                              docActive ? styles.navSecondaryActive : '',
-                              isLastDoc ? styles.navRowLast : '',
-                            ]
-                              .filter(Boolean)
-                              .join(' ')}
-                            onClick={() => onDocSelect(doc.key)}
-                          >
-                            <span className={styles.navSecondaryLabel}>{doc.label}</span>
-                          </button>
-                        )
-                      })}
                   </div>
                 )
               })}

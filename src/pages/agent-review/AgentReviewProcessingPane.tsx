@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useRef, useState, type ReactNode } from 'react'
-import { CircleCheckFill, PopOut } from '@design-systems/icons'
+import { CircleCheckFill, CircleExclamationFill, PopOut } from '@design-systems/icons'
 import Badge from '@ids-ts/badge'
 import '@ids-ts/badge/dist/main.css'
 import { Link } from '@ids-ts/link'
@@ -14,20 +14,22 @@ import {
   CTA_CONTINUE_NEXT_FIX,
   CTA_VIEW,
   getActiveIntelligenceIssues,
+  INTELLIGENCE_ATTENTION_INTRO,
+  INTELLIGENCE_ATTENTION_TITLE,
+  INTELLIGENCE_CHECKED_TITLE,
   INTELLIGENCE_FIX_PROGRESS_SECTIONS,
   INTELLIGENCE_FIXES_DIVIDER_LABEL,
   INTELLIGENCE_FIXES_PROGRESS_TITLE,
-  INTELLIGENCE_NEED_ACTION_COPY,
+  INTELLIGENCE_NEEDS_ATTENTION_ITEMS,
   INTELLIGENCE_PROGRESS_ITEMS,
   INTELLIGENCE_REASONING_STEPS,
   INTELLIGENCE_REASONING_TITLE,
-  INTELLIGENCE_REMINDER_TITLE,
   INTELLIGENCE_SHELL_TITLE,
+  intelligenceAttentionCountLabel,
   intelligenceFixCompleteMessage,
   intelligenceFixProgressLabel,
   intelligenceProcessingIntro,
   LABEL_NEED_ACTION,
-  type IntelligenceFixLink,
 } from './agentIntelligenceCopy'
 import {
   useAgentProcessingAnimation,
@@ -52,7 +54,7 @@ interface AgentReviewProcessingPaneProps {
   onFixesComplete?: () => void
 }
 
-function openDocLink(link: IntelligenceFixLink) {
+function openDocLink(link: { popoutTab?: string; popoutSubTab?: string }) {
   if (link.popoutTab) {
     openSourceDocumentReviewPopout({ tab: link.popoutTab, subTab: link.popoutSubTab })
     return
@@ -262,10 +264,62 @@ export default function AgentReviewProcessingPane({
                   </p>
                 </div>
 
+                {showReminder && (
+                  <section
+                    className={`${styles.attentionCard} ${styles.revealIn}`}
+                    aria-labelledby="ai-review-attention-title"
+                  >
+                    <div className={styles.progressCardHeader}>
+                      <span className={styles.attentionTitleGroup}>
+                        <span id="ai-review-attention-title" className={styles.progressCardTitle}>
+                          {INTELLIGENCE_ATTENTION_TITLE}
+                        </span>
+                        <Badge status="warning" priority="secondary" capitalization="caps">
+                          {LABEL_NEED_ACTION}
+                        </Badge>
+                      </span>
+                      <span className={styles.progressCardCount}>
+                        {intelligenceAttentionCountLabel(INTELLIGENCE_NEEDS_ATTENTION_ITEMS.length)}
+                      </span>
+                    </div>
+
+                    <div className={styles.progressCardDivider} role="separator" />
+
+                    <p className={styles.attentionIntro}>{INTELLIGENCE_ATTENTION_INTRO}</p>
+
+                    <ul className={styles.attentionList}>
+                      {INTELLIGENCE_NEEDS_ATTENTION_ITEMS.map(item => (
+                        <li key={item.id} className={styles.attentionItem}>
+                          <CircleExclamationFill
+                            size="small"
+                            className={styles.attentionIcon}
+                            aria-hidden
+                          />
+                          <div className={styles.attentionBody}>
+                            <span className={styles.attentionItemTitle}>{item.title}</span>
+                            <p className={styles.attentionItemDetail}>{item.detail}</p>
+                            <Link
+                              href="#"
+                              onClick={e => {
+                                e.preventDefault()
+                                openDocLink(item)
+                              }}
+                            >
+                              {item.linkLabel}
+                            </Link>
+                          </div>
+                        </li>
+                      ))}
+                    </ul>
+                  </section>
+                )}
+
                 <div className={styles.progressCard}>
                   <div className={styles.progressCardHeader}>
                     <span className={styles.progressCardTitle}>
-                      {INTELLIGENCE_FIXES_PROGRESS_TITLE}
+                      {visibleFixSections >= fixSectionCount
+                        ? INTELLIGENCE_CHECKED_TITLE
+                        : INTELLIGENCE_FIXES_PROGRESS_TITLE}
                     </span>
                     <span className={styles.progressCardCount}>
                       {intelligenceFixProgressLabel(visibleFixSections, fixSectionCount)}
@@ -309,23 +363,6 @@ export default function AgentReviewProcessingPane({
                     )
                   })}
                 </div>
-
-                {showReminder && (
-                  <div className={`${styles.reminderCard} ${styles.revealIn}`}>
-                    <div className={styles.reminderHeader}>
-                      <img src={intuitIntelligenceLogo} alt="" className={styles.reminderIcon} />
-                      <span className={styles.reminderTitle}>{INTELLIGENCE_REMINDER_TITLE}</span>
-                      <Badge status="warning" priority="primary" capitalization="caps">
-                        {LABEL_NEED_ACTION}
-                      </Badge>
-                    </div>
-                    <p className={styles.reminderText}>
-                      {INTELLIGENCE_NEED_ACTION_COPY.before}
-                      <strong>{INTELLIGENCE_NEED_ACTION_COPY.emphasis}</strong>
-                      {INTELLIGENCE_NEED_ACTION_COPY.after}
-                    </p>
-                  </div>
-                )}
 
                 {showFooter && (
                   <div className={`${styles.revealIn}`}>

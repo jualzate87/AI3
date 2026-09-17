@@ -348,9 +348,13 @@
 }
 .tabMeta svg { color: var(--color-text-secondary); flex-shrink: 0; }
 
-/* Leading icon/img in tab-row secondary buttons — matches PopOut size="small" */
+/* Leading icon/img in tab-row secondary buttons.
+   Sparkle artwork fills ~83% of its 32px viewBox, so it needs the medium
+   action-icon size to read at the same weight as a 16px IDS icon. */
 .headerBtnIcon {
-  width: var(--size-action-icon-small, 16px);
-  height: var(--size-action-icon-small, 16px);
+  display: block;
+  align-self: center;
+  width: var(--size-action-icon-medium, 24px);
+  height: var(--size-action-icon-medium, 24px);
   flex-shrink: 0;
 }
