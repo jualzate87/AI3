@@ -33,14 +33,14 @@ export const DIAGNOSTIC_BADGE_BY_CATEGORY_ID: Record<AiDiagnosticCategoryId, Dia
     'import-mismatches': {
       badgeLabel: 'IMPORT MISMATCHES',
       badgeStatus: 'warning',
-      badgePriority: 'primary',
+      badgePriority: 'secondary',
       badgeCapitalization: 'caps',
       showBadgeIcon: true,
     },
     compliance: {
       badgeLabel: 'COMPLIANCE CHECK',
       badgeStatus: 'warning',
-      badgePriority: 'primary',
+      badgePriority: 'secondary',
       badgeCapitalization: 'caps',
       showBadgeIcon: true,
     },
@@ -99,7 +99,7 @@ export function badgeMetaForIssueKey(issueKey: Phase2IssueKey): DiagnosticBadgeM
   return {
     badgeLabel: 'DIAGNOSTIC',
     badgeStatus: 'warning',
-    badgePriority: 'primary',
+    badgePriority: 'secondary',
     badgeCapitalization: 'caps',
     showBadgeIcon: true,
   }

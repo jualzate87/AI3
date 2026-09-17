@@ -46,7 +46,7 @@ function linkStatusBadge(status: QuestionnaireFieldLinkStatus) {
     case 'applied':
       return <Badge status="success" label="Applied" capitalization="sentence" />
     case 'pending':
-      return <Badge status="warn" label="Pending" capitalization="sentence" />
+      return <Badge status="pending" label="Pending" capitalization="sentence" />
     case 'flagged':
       return <Badge status="error" label="Flagged" capitalization="sentence" />
     case 'planning':
@@ -134,7 +134,7 @@ export default function QuestionnaireResponsesPanel({
             <div className={styles.cardMeta}>
               <p className={styles.topic}>{qa.topic}</p>
               <Badge
-                status="neutral"
+                status="info"
                 label={getQuestionnaireSourceLabel(qa.sourceChannel)}
                 capitalization="sentence"
                 priority="secondary"

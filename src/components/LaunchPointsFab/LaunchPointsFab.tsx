@@ -30,9 +30,9 @@ export type DemoRole = 'preparer' | 'reviewer'
 
 function statusBadge(status: LaunchPoint['status']) {
   if (status === 'live') {
-    return <Badge status="success" label="LIVE" capitalization="uppercase" priority="secondary" />
+    return <Badge status="success" label="LIVE" capitalization="caps" priority="secondary" />
   }
-  return <Badge status="warn" label="STUB" capitalization="uppercase" priority="secondary" />
+  return <Badge status="draft" label="STUB" capitalization="caps" priority="secondary" />
 }
 
 function prepareDiagnosticsLaunch(): void {
