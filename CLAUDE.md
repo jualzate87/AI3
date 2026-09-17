@@ -15,6 +15,10 @@ This is a prototyping playground for the **Intuit Design System (IDS)**. It's de
 
 ## Quick Start
 
+- **Make a scoped change:** Use `/change` and describe the user outcome
+- **Review visual quality:** Use `/visual-qa` with a route or surface
+- **Save a correction:** Use `/capture` so repeated feedback becomes durable guidance
+- **Publish:** Use `/deploy` to verify, commit, deploy, and confirm the live bundle
 - **Build something:** Use `/prototype` and describe what you want
 - **Build from Figma:** Use `/figma` with a Figma URL or pasted design data
 - **Look up a component:** Use `/component` and name the component

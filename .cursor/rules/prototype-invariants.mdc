@@ -1,0 +1,20 @@
+---
+description: Product and interaction decisions that must remain true across SmartReview changes
+alwaysApply: true
+---
+
+# Prototype Invariants
+
+Read `docs/DECISIONS.md` and `docs/PATTERNS.md` when changing review, handoff, comments, verification, or forms.
+
+- The workflow separates import/data accuracy from AI diagnostics; do not reintroduce redundant findings across phases.
+- Phase 2 remains visibly explained and locked until Phase 1 completion requirements are met.
+- Document verification is additive and traceable across people. A later reviewer never erases an earlier person's stamp.
+- Document comments use the shared annotation criticality model and register in the shared comments tray.
+- Form checks use L1, L2, and L3. The first actor at a level becomes the displayed owner; preparer maps to L1, reviewer to L2, manager to L3.
+- Review state and notes persist and synchronize across tabs/windows using the established hooks and storage namespaces.
+- Handoff uses the large modal. Its AI summary and reviewer notes fill and align to the content width.
+- Handoff summaries are concise and structured, and include a heads-up section for unresolved, unchecked, or critical items.
+- Reopening diagnostics from a contextual entry point must not unexpectedly hide the user's Summary after first use.
+- Preserve existing routes, role switching, diagnostics entry, comments tray, form output views, and document review unless explicitly changed.
+- Prototype-specific ports, base paths, repositories, and storage prefixes come from `PROTO_C3_REQUIREMENTS.md`; do not infer them from sibling repos.

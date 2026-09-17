@@ -1,0 +1,16 @@
+---
+description: Keeps prototype changes within the requested scope and prevents unrelated regressions
+alwaysApply: true
+---
+
+# Surgical Changes
+
+- Translate each request into: intended outcome, touched surface, expected files, and explicit non-goals.
+- Before editing, inspect the current interaction and its direct dependencies. Preserve existing behavior unless the request requires changing it.
+- Touch the smallest practical file set. Do not rename, reorganize, restyle, or clean up adjacent code without permission.
+- Treat shared state, routing, persistence, layout containers, and cross-prototype copies as high-blast-radius areas. Trace consumers before changing them.
+- If implementation requires changing an additional surface or behavior, stop and explain why.
+- Never copy whole files between ProtoA/ProtoC variants. Port the smallest relevant change and preserve each prototype's documented differences.
+- After editing, review `git diff --stat` and the complete diff. Revert accidental formatting churn or unrelated edits.
+- Verify the requested path plus one adjacent regression path. A passing build is necessary, not sufficient.
+- Report exactly what changed, what was intentionally preserved, and any verification limitation.

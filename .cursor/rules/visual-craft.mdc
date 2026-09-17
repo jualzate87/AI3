@@ -1,0 +1,21 @@
+---
+description: Defines the visual quality bar for SmartReview's expert-facing ProConnect experience
+globs: src/**/*.{tsx,css}
+alwaysApply: false
+---
+
+# SmartReview Visual Craft
+
+Read `docs/DESIGN_LANGUAGE.md` before making visible UI changes.
+
+- Design for a dense, expert-facing tax workflow—not a consumer or marketing surface.
+- Establish hierarchy before styling: page purpose, section heading, task content, metadata, then secondary actions.
+- Use one clear primary action per decision region. Keep supporting actions visually quieter.
+- Use IDS components as the behavioral and accessibility foundation. Inspect the relevant component rule and existing in-product usage before composing a custom pattern.
+- Prefer the project's established patterns in `docs/PATTERNS.md`; do not create a parallel version of comments, verification, checks, banners, or handoff.
+- Use a consistent spacing rhythm: tight inside controls and rows, medium between related groups, large between major sections.
+- Containers must use available width intentionally. Avoid crushed columns, unexplained empty halves, narrow fields inside wide dialogs, and uneven alignment.
+- Preserve stable table/form columns. Labels may truncate; financial values and status/actions must remain readable.
+- Motion must clarify entry, exit, progress, or state change. Use IDS duration/easing tokens and honor reduced motion.
+- Review at narrow, typical, and wide viewport sizes. Check default, hover/focus, loading, empty, error, completed, and role-based states that the change affects.
+- A UI change is complete only after visual inspection, interaction testing, and regression comparison—not after compilation alone.
