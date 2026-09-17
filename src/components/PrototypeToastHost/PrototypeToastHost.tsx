@@ -30,7 +30,13 @@ export default function PrototypeToastHost() {
         showIcon
         duration={6000}
         actionLabel="Dismiss"
-        icon={<CircleCheckFill focusable={false} data-testid="circleCheckIcon" />}
+        icon={
+          <CircleCheckFill
+            focusable={false}
+            data-testid="circleCheckIcon"
+            className={styles.toastSuccessIcon}
+          />
+        }
         onClose={() => setOpen(false)}
         onActionClick={() => setOpen(false)}
       >

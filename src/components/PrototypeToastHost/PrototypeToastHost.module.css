@@ -11,3 +11,7 @@
 .host :global([class*='toastMessageWrapper']) {
   pointer-events: auto;
 }
+
+.toastSuccessIcon {
+  color: var(--color-ui-positive);
+}

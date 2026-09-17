@@ -61,7 +61,7 @@ export function intelligenceBannerProgressAriaLabel(
   return `Open ${INTELLIGENCE_PANEL_LABEL} — ${reviewed} of ${total} diagnostics reviewed, ${remaining} remaining`
 }
 
-export const INTELLIGENCE_SUBHEADER_CTA = 'Review return'
+export const INTELLIGENCE_SUBHEADER_CTA = 'AI review'
 
 export const INTELLIGENCE_CHAT_PLACEHOLDER = 'Ask about this return'
 
@@ -70,8 +70,8 @@ export const INTELLIGENCE_LEGAL_DISCLAIMER =
 
 /* ── Welcome ── */
 
-export const STARTER_PROMPT_FULL_REVIEW = 'Review this return'
-export const STARTER_PROMPT_CATCH_UP = 'Get me caught up on this return'
+export const STARTER_PROMPT_FULL_REVIEW = 'Run full review'
+export const STARTER_PROMPT_CATCH_UP = 'Get review summary'
 
 export const STARTER_PROMPTS = [
   STARTER_PROMPT_FULL_REVIEW,
@@ -87,7 +87,9 @@ export const WELCOME_GREETING_PROMPT = 'How can I help?'
 export const CTA_FIX_ISSUE = 'Fix issue'
 export const CTA_ACCEPT_ALL_FIXES = 'Accept all fixes'
 export const CTA_FIX_ONE_BY_ONE = 'Fix issues one by one'
+export const CTA_CONTINUE_NEXT_FIX = 'Continue to next fix'
 export const CTA_VIEW_SOURCE = 'View source'
+export const CTA_VIEW = 'View'
 
 export const CTA_VIEW_UPDATED_RETURN = 'View updated return'
 export const CTA_VIEW_SOURCE_DOCUMENTS = 'View source documents'
@@ -96,7 +98,9 @@ export const CTA_VIEW_RETURN_SUMMARY = 'View return summary'
 export const CTA_SHOW_THINKING = 'Show thinking'
 
 export const LABEL_SUGGESTED_NEXT_STEPS = 'Recommended next steps'
-export const LABEL_NEED_ACTION = 'NEED ACTION'
+export const LABEL_NEED_ACTION = 'NEEDS ACTION'
+export const INTELLIGENCE_FIXES_DIVIDER_LABEL = 'Fixes started by Intuit Intelligence'
+export const INTELLIGENCE_FIXES_PROGRESS_TITLE = 'Fixes Progress'
 
 /* ── Loading ── */
 
@@ -436,45 +440,122 @@ export const CATCH_UP_CHIP_VIEW_DOCUMENTS = 'View documents'
 export const CATCH_UP_CHIP_SHOW_REVIEW_LOG = 'Show review log'
 export const CATCH_UP_CHIP_APPROVE_RETURN = 'Approve return'
 
-export function intelligenceProcessingIntro(issueCount: number): string {
-  const issuePhrase =
-    issueCount === 1 ? '1 issue' : `${issueCount} issues`
+export function intelligenceProcessingIntro(
+  issueCount: number,
+  mode: 'batch' | 'sequential' = 'batch',
+): string {
+  const issuePhrase = issueCount === 1 ? '1 issue' : `${issueCount} issues`
+  if (mode === 'sequential') {
+    return (
+      `I'll work through ${issuePhrase} one at a time on ${CLIENT_NAME}'s ${TAX_YEAR} return. ` +
+      `I'll pause after each fix so you can review before we move on.`
+    )
+  }
   return (
     `You chose to accept all fixes. I'm working through ${issuePhrase} on ${CLIENT_NAME}'s ${TAX_YEAR} return now. ` +
     `Track progress on the right. I'll share a summary when I'm done.`
   )
 }
 
+export type IntelligenceFixLink = {
+  docLabel: string
+  detail: string
+  /** Source-doc popout tab hint */
+  popoutTab?: string
+  popoutSubTab?: string
+}
+
+export type IntelligenceFixSection = {
+  title: string
+  links: readonly IntelligenceFixLink[]
+}
+
+export const INTELLIGENCE_FIX_PROGRESS_SECTIONS: readonly IntelligenceFixSection[] = [
+  {
+    title: '6 Import mismatches fixed',
+    links: [
+      {
+        docLabel: 'W-2 (PDF)',
+        detail: 'Box 1 wages corrected ($118,940 → $148,940)',
+        popoutTab: 'w2',
+      },
+      {
+        docLabel: '1099-DIV (PDF)',
+        detail: 'Box 1b dividends and Box 4 withholding updated',
+        popoutTab: '1099-div',
+      },
+      {
+        docLabel: '1099-R (PDF)',
+        detail: 'Box 2a taxable amount and Box 4 withholding restored',
+        popoutTab: '1099-r',
+      },
+      {
+        docLabel: '1099-NEC (PDF)',
+        detail: 'Box 1 nonemployee comp added ($24,000)',
+        popoutTab: '1099-nec',
+      },
+    ],
+  },
+  {
+    title: 'Withholding gap corrected',
+    links: [
+      {
+        docLabel: '1099-R (PDF)',
+        detail: 'Box 4 federal withholding restored ($30,000)',
+        popoutTab: '1099-r',
+      },
+      {
+        docLabel: 'Form 2210',
+        detail: 'Underpayment penalty calculated ($40,826 shortfall)',
+      },
+      {
+        docLabel: 'Form 1040',
+        detail: 'Updated withholding on lines 25a/25b',
+      },
+    ],
+  },
+  {
+    title: 'Form 1098 mortgage interest entered',
+    links: [
+      {
+        docLabel: 'Form 1098 (PDF)',
+        detail: 'Mortgage interest deduction applied',
+      },
+    ],
+  },
+] as const
+
+/** @deprecated Use INTELLIGENCE_FIX_PROGRESS_SECTIONS */
+export const INTELLIGENCE_SUMMARY_SECTIONS = INTELLIGENCE_FIX_PROGRESS_SECTIONS.map(section => ({
+  title: section.title,
+  items: section.links.map(link => ({ doc: link.docLabel, detail: link.detail })),
+}))
+
 export const INTELLIGENCE_PROGRESS_ITEMS = [
-  { id: 'import', label: 'Match source documents' },
-  { id: 'withholding', label: 'Update withholding' },
-  { id: 'schedules', label: 'Update schedules' },
-  { id: 'final', label: 'Prepare summary' },
+  { id: 'import', label: 'Import mismatches', subtitle: 'Awaiting signature' },
+  { id: 'withholding', label: 'Withholding gap', subtitle: 'Awaiting signature' },
+  { id: 'mortgage', label: 'Mortgage interest added', subtitle: 'Awaiting signature' },
+  { id: 'final', label: 'Final review items', subtitle: undefined },
 ] as const
 
-export const INTELLIGENCE_SUMMARY_SECTIONS = [
-  {
-    title: 'Import mismatches fixed',
-    items: [
-      { doc: 'W-2 Tech Circle.pdf', detail: 'Wages updated to $148,940 to match source' },
-      { doc: '1099-DIV Token.pdf', detail: 'Qualified dividends aligned with source' },
-      { doc: '1099-R Meridian.pdf', detail: 'Federal withholding restored to $30,000' },
-    ],
-  },
-  {
-    title: 'Withholding updated',
-    items: [
-      { doc: '1099-R Meridian.pdf', detail: 'Withholding posted to Form 1040' },
-      { doc: 'Form 2210', detail: 'Safe harbor shortfall recalculated' },
-    ],
-  },
-  {
-    title: 'Schedule A mortgage interest (estimate)',
-    items: [
-      { doc: 'Form 1098 (pending)', detail: 'Estimated amount added pending client certificate' },
-    ],
-  },
-] as const
+export const INTELLIGENCE_REMINDER_TITLE = 'Reminder'
 
-export const INTELLIGENCE_NEED_ACTION_COPY =
-  `Upload or confirm ${CLIENT_NAME}'s Form 1098 before filing. The Schedule A amount is an estimate until the source certificate is on file.`
+export const INTELLIGENCE_NEED_ACTION_COPY = {
+  before: 'Before we finalize, please confirm the ',
+  emphasis: 'estimated Form 1098 mortgage interest',
+  after: ' amount with the client and upload the actual form when available.',
+} as const
+
+export function intelligenceFixCompleteMessage(fixedCount: number, total: number): string {
+  if (fixedCount >= total) {
+    return `I've resolved all ${total} diagnostics. Here's the progress summary.`
+  }
+  if (fixedCount === 1) {
+    return 'First diagnostic is fixed. Review the changes below, then continue when you\'re ready.'
+  }
+  return `${fixedCount} of ${total} diagnostics fixed. Review the latest changes below.`
+}
+
+export function intelligenceFixProgressLabel(fixedCount: number, total: number): string {
+  return `${fixedCount} of ${total} fixed`
+}

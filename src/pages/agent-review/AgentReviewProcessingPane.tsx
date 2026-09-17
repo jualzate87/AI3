@@ -1,42 +1,69 @@
-import { useMemo, useState } from 'react'
-import { ChevronDown, CircleCheck, Document } from '@design-systems/icons'
+import { useMemo, useRef, useState } from 'react'
+import { ChevronDown, CircleCheckFill, PopOut } from '@design-systems/icons'
+import Badge from '@ids-ts/badge'
+import '@ids-ts/badge/dist/main.css'
+import { Link } from '@ids-ts/link'
+import '@ids-ts/link/dist/main.css'
+import { LinkActionButton } from '@ids-ts/link-action-button'
+import '@ids-ts/link-action-button/dist/main.css'
 import intuitIntelligenceLogo from '../../assets/icons/intuit-intelligence-logo-small.svg'
+import { openSourceDocumentReviewPopout } from '../../lib/prototypeRoutes'
 import {
+  CTA_CONTINUE_NEXT_FIX,
   CTA_SHOW_THINKING,
+  CTA_VIEW,
   CTA_VIEW_RETURN_SUMMARY,
   CTA_VIEW_SOURCE_DOCUMENTS,
   CTA_VIEW_UPDATED_RETURN,
   getActiveIntelligenceIssues,
+  INTELLIGENCE_FIX_PROGRESS_SECTIONS,
+  INTELLIGENCE_FIXES_DIVIDER_LABEL,
+  INTELLIGENCE_FIXES_PROGRESS_TITLE,
   INTELLIGENCE_NEED_ACTION_COPY,
   INTELLIGENCE_PROGRESS_ITEMS,
   INTELLIGENCE_REASONING_STEPS,
-  INTELLIGENCE_REASONING_TITLE,
+  INTELLIGENCE_REMINDER_TITLE,
   INTELLIGENCE_SHELL_TITLE,
-  INTELLIGENCE_SUMMARY_SECTIONS,
   intelligenceBadge,
   intelligenceCardTitle,
+  intelligenceFixCompleteMessage,
+  intelligenceFixProgressLabel,
   intelligenceProcessingIntro,
-  intelligenceResultsLead,
   LABEL_NEED_ACTION,
   STARTER_PROMPT_CATCH_UP,
+  type IntelligenceFixLink,
 } from './agentIntelligenceCopy'
-import { useAgentProcessingAnimation } from './useAgentProcessingAnimation'
+import {
+  useAgentProcessingAnimation,
+  type ProcessingMode,
+} from './useAgentProcessingAnimation'
 import styles from '../../styles/agent-review/AgentReviewProcessingPane.module.css'
 
 interface AgentReviewProcessingPaneProps {
+  mode?: ProcessingMode
   onViewUpdatedReturn: () => void
   onViewSourceDocuments: () => void
   onViewReturnSummary: () => void
   onGetCaughtUp: () => void
 }
 
+function openDocLink(link: IntelligenceFixLink) {
+  if (link.popoutTab) {
+    openSourceDocumentReviewPopout({ tab: link.popoutTab, subTab: link.popoutSubTab })
+    return
+  }
+  openSourceDocumentReviewPopout()
+}
+
 export default function AgentReviewProcessingPane({
+  mode = 'batch',
   onViewUpdatedReturn,
   onViewSourceDocuments,
   onViewReturnSummary,
   onGetCaughtUp,
 }: AgentReviewProcessingPaneProps) {
   const [thinkingExpanded, setThinkingExpanded] = useState(false)
+  const fixSectionRefs = useRef<Record<number, HTMLElement | null>>({})
 
   const { issues, issueCount, totalWithholding } = useMemo(
     () => getActiveIntelligenceIssues(),
@@ -49,14 +76,28 @@ export default function AgentReviewProcessingPane({
     visibleSteps,
     reasoningExiting,
     resultsVisible,
-    resultsSectionsVisible,
+    visibleFixSections,
+    showReminder,
+    showFooter,
     activeProgressIndex,
     completedProgress,
     showSuggestionChips,
-  } = useAgentProcessingAnimation()
+    awaitingContinue,
+    allFixesComplete,
+    advanceToNextFix,
+    fixSectionCount,
+  } = useAgentProcessingAnimation(mode)
 
-  const handleGetCaughtUp = () => {
-    onGetCaughtUp()
+  const scrollToFixSection = (index: number) => {
+    fixSectionRefs.current[index]?.scrollIntoView({ behavior: 'smooth', block: 'nearest' })
+  }
+
+  const handleProgressView = (index: number) => {
+    if (index < fixSectionCount) {
+      scrollToFixSection(index + 1)
+      return
+    }
+    onViewReturnSummary()
   }
 
   return (
@@ -69,7 +110,7 @@ export default function AgentReviewProcessingPane({
               <h1 className={styles.title}>{INTELLIGENCE_SHELL_TITLE}</h1>
             </div>
 
-            <p className={styles.intro}>{intelligenceProcessingIntro(issueCount)}</p>
+            <p className={styles.intro}>{intelligenceProcessingIntro(issueCount, mode)}</p>
 
             <div className={styles.cardList}>
               {issues.map(issue => {
@@ -97,7 +138,7 @@ export default function AgentReviewProcessingPane({
                   className={`${styles.reasoningHeader} ${reasoningHeaderVisible ? styles.revealIn : styles.revealHidden}`}
                 >
                   <img src={intuitIntelligenceLogo} alt="" className={styles.reasoningSparkle} />
-                  <span className={styles.reasoningTitle}>{INTELLIGENCE_REASONING_TITLE}</span>
+                  <span className={styles.reasoningTitle}>Applying fixes</span>
                 </div>
                 <ol className={styles.reasoningSteps}>
                   {INTELLIGENCE_REASONING_STEPS.map((step, index) => (
@@ -116,6 +157,14 @@ export default function AgentReviewProcessingPane({
 
             {resultsVisible && (
               <div className={`${styles.resultsBlock} ${styles.revealIn}`}>
+                <div className={styles.fixesDivider} role="separator">
+                  <span className={styles.fixesDividerLine} aria-hidden />
+                  <span className={styles.fixesDividerLabel}>
+                    {INTELLIGENCE_FIXES_DIVIDER_LABEL}
+                  </span>
+                  <span className={styles.fixesDividerLine} aria-hidden />
+                </div>
+
                 <button
                   type="button"
                   className={styles.showThinkingBtn}
@@ -144,67 +193,120 @@ export default function AgentReviewProcessingPane({
                   </ol>
                 )}
 
-                {resultsSectionsVisible >= 1 && (
-                  <p className={`${styles.resultsLead} ${styles.revealIn}`}>
-                    {intelligenceResultsLead(INTELLIGENCE_SUMMARY_SECTIONS.length)}
+                <div className={styles.agentMessageRow}>
+                  <img src={intuitIntelligenceLogo} alt="" className={styles.agentAvatar} />
+                  <p className={styles.agentMessageText}>
+                    {intelligenceFixCompleteMessage(visibleFixSections, fixSectionCount)}
                   </p>
-                )}
+                </div>
 
-                <div className={styles.summaryBox}>
-                  {INTELLIGENCE_SUMMARY_SECTIONS.map((section, sectionIndex) => (
-                    resultsSectionsVisible >= sectionIndex + 2 ? (
+                <div className={styles.progressCard}>
+                  <div className={styles.progressCardHeader}>
+                    <span className={styles.progressCardTitle}>
+                      {INTELLIGENCE_FIXES_PROGRESS_TITLE}
+                    </span>
+                    <span className={styles.progressCardCount}>
+                      {intelligenceFixProgressLabel(visibleFixSections, fixSectionCount)}
+                    </span>
+                  </div>
+
+                  <div className={styles.progressCardDivider} role="separator" />
+
+                  {INTELLIGENCE_FIX_PROGRESS_SECTIONS.map((section, sectionIndex) => {
+                    const visible = sectionIndex < visibleFixSections
+                    if (!visible) return null
+                    return (
                       <div
                         key={section.title}
-                        className={`${styles.summarySection} ${styles.revealIn}`}
-                        style={{ animationDelay: `${sectionIndex * 100}ms` }}
+                        ref={el => {
+                          fixSectionRefs.current[sectionIndex + 1] = el
+                        }}
+                        className={`${styles.fixSection} ${styles.revealIn}`}
+                        style={{ animationDelay: `${sectionIndex * 80}ms` }}
                       >
-                        <div className={styles.summarySectionHeader}>
-                          <CircleCheck size="small" className={styles.summaryCheck} />
-                          <span className={styles.summarySectionTitle}>{section.title}</span>
+                        <div className={styles.fixSectionHeader}>
+                          <CircleCheckFill size="small" className={styles.summaryCheck} />
+                          <span className={styles.fixSectionTitle}>{section.title}</span>
                         </div>
-                        <ul className={styles.summaryList}>
-                          {section.items.map(item => (
-                            <li key={item.doc} className={styles.summaryItem}>
-                              <Document size="small" className={styles.docIcon} />
-                              <span className={styles.docLink}>{item.doc}</span>
-                              <span className={styles.docDetail}>{item.detail}</span>
+                        <ul className={styles.fixLinkList}>
+                          {section.links.map(link => (
+                            <li key={`${section.title}-${link.docLabel}`} className={styles.fixLinkRow}>
+                              <button
+                                type="button"
+                                className={styles.richDocLink}
+                                onClick={() => openDocLink(link)}
+                              >
+                                {link.docLabel}
+                                <PopOut size="x-small" aria-hidden />
+                              </button>
+                              <span className={styles.fixLinkDetail}>— {link.detail}</span>
                             </li>
                           ))}
                         </ul>
                       </div>
-                    ) : null
-                  ))}
-
-                  {resultsSectionsVisible >= 5 && (
-                    <div className={`${styles.needActionBox} ${styles.revealIn}`}>
-                      <span className={styles.needActionBadge}>{LABEL_NEED_ACTION}</span>
-                      <p className={styles.needActionText}>{INTELLIGENCE_NEED_ACTION_COPY}</p>
-                    </div>
-                  )}
-
-                  {resultsSectionsVisible >= 6 && (
-                    <div className={`${styles.footerLinks} ${styles.revealIn}`}>
-                      <button type="button" className={styles.footerLink} onClick={onViewUpdatedReturn}>
-                        {CTA_VIEW_UPDATED_RETURN}
-                      </button>
-                      <button type="button" className={styles.footerLink} onClick={onViewSourceDocuments}>
-                        {CTA_VIEW_SOURCE_DOCUMENTS}
-                      </button>
-                      <button type="button" className={styles.footerLink} onClick={onViewReturnSummary}>
-                        {CTA_VIEW_RETURN_SUMMARY}
-                      </button>
-                    </div>
-                  )}
+                    )
+                  })}
                 </div>
 
+                {showReminder && (
+                  <div className={`${styles.reminderCard} ${styles.revealIn}`}>
+                    <div className={styles.reminderHeader}>
+                      <img src={intuitIntelligenceLogo} alt="" className={styles.reminderIcon} />
+                      <span className={styles.reminderTitle}>{INTELLIGENCE_REMINDER_TITLE}</span>
+                      <Badge
+                        status="warn"
+                        priority="primary"
+                        capitalization="caps"
+                        label={LABEL_NEED_ACTION}
+                      />
+                    </div>
+                    <p className={styles.reminderText}>
+                      {INTELLIGENCE_NEED_ACTION_COPY.before}
+                      <strong>{INTELLIGENCE_NEED_ACTION_COPY.emphasis}</strong>
+                      {INTELLIGENCE_NEED_ACTION_COPY.after}
+                    </p>
+                  </div>
+                )}
+
+                {showFooter && (
+                  <div className={`${styles.footerActions} ${styles.revealIn}`}>
+                    <LinkActionButton
+                      size="small"
+                      weight="regular"
+                      alignment="right"
+                      onClick={onViewUpdatedReturn}
+                    >
+                      {CTA_VIEW_UPDATED_RETURN}
+                    </LinkActionButton>
+                    <LinkActionButton
+                      size="small"
+                      weight="regular"
+                      alignment="right"
+                      onClick={onViewSourceDocuments}
+                    >
+                      {CTA_VIEW_SOURCE_DOCUMENTS}
+                    </LinkActionButton>
+                    <LinkActionButton
+                      size="small"
+                      weight="regular"
+                      alignment="right"
+                      onClick={onViewReturnSummary}
+                    >
+                      {CTA_VIEW_RETURN_SUMMARY}
+                    </LinkActionButton>
+                  </div>
+                )}
               </div>
             )}
           </div>
 
           <aside className={styles.progressRail} aria-label="Run progress">
-            <span className={styles.progressLabel}>
-              PROGRESS {completedProgress}/{INTELLIGENCE_PROGRESS_ITEMS.length}
-            </span>
+            <div className={styles.progressRailHeader}>
+              <img src={intuitIntelligenceLogo} alt="" className={styles.progressRailLogo} />
+              <span className={styles.progressLabel}>
+                PROGRESS {completedProgress}/{INTELLIGENCE_PROGRESS_ITEMS.length}
+              </span>
+            </div>
             <ol className={styles.progressList}>
               {INTELLIGENCE_PROGRESS_ITEMS.map((item, index) => {
                 const done = index < completedProgress
@@ -218,9 +320,29 @@ export default function AgentReviewProcessingPane({
                       className={`${styles.progressDot} ${done ? styles.progressDotDone : ''} ${active ? styles.progressDotActive : ''}`}
                       aria-hidden
                     >
-                      {done && <CircleCheck size="x-small" />}
+                      {done && <CircleCheckFill size="x-small" className={styles.progressCheck} />}
                     </span>
-                    <span className={done ? styles.progressItemDone : undefined}>{item.label}</span>
+                    <div className={styles.progressItemBody}>
+                      <div className={styles.progressItemMain}>
+                        <span className={done ? styles.progressItemDone : undefined}>
+                          {item.label}
+                        </span>
+                        {item.subtitle && done && (
+                          <span className={styles.progressItemSubtitle}>{item.subtitle}</span>
+                        )}
+                      </div>
+                      {(done || index === fixSectionCount) && (
+                        <Link
+                          href="#"
+                          onClick={e => {
+                            e.preventDefault()
+                            handleProgressView(index)
+                          }}
+                        >
+                          {CTA_VIEW}
+                        </Link>
+                      )}
+                    </div>
                   </li>
                 )
               })}
@@ -229,11 +351,18 @@ export default function AgentReviewProcessingPane({
         </div>
       </div>
 
-      {showSuggestionChips && (
+      {(showSuggestionChips || awaitingContinue) && (
         <div className={`${styles.suggestionRow} ${styles.revealIn}`}>
-          <button type="button" className={styles.suggestionChip} onClick={handleGetCaughtUp}>
-            {STARTER_PROMPT_CATCH_UP}
-          </button>
+          {awaitingContinue && !allFixesComplete && (
+            <button type="button" className={styles.suggestionChipPrimary} onClick={advanceToNextFix}>
+              {CTA_CONTINUE_NEXT_FIX}
+            </button>
+          )}
+          {allFixesComplete && (
+            <button type="button" className={styles.suggestionChip} onClick={onGetCaughtUp}>
+              {STARTER_PROMPT_CATCH_UP}
+            </button>
+          )}
         </div>
       )}
     </div>

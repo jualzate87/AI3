@@ -937,7 +937,13 @@ export default function DataReviewPopout() {
           showIcon
           duration={6000}
           actionLabel="Dismiss"
-          icon={<CircleCheckFill focusable={false} data-testid="circleCheckIcon" />}
+          icon={
+            <CircleCheckFill
+              focusable={false}
+              data-testid="circleCheckIcon"
+              className={toastHostStyles.toastSuccessIcon}
+            />
+          }
           onClose={() => setSaveToastOpen(false)}
           onActionClick={() => setSaveToastOpen(false)}
         >

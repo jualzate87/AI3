@@ -38,6 +38,7 @@ export const DEMO_ROLE_STORAGE_KEY = 'protoc-demo-role'
 const KNOWN_HASH_ROUTES = [
   '/check-return/insights',
   '/check-return/agent',
+  '/ai-review',
   '/check-return-popout',
   '/check-return',
   '/import-confirmation',

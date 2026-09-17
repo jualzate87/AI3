@@ -17,9 +17,10 @@ export type LaunchPoint = {
 export const LAUNCH_POINTS: LaunchPoint[] = [
   {
     id: 1,
-    title: 'Manual AI diagnostics',
+    title: 'AI review',
     status: 'live',
-    description: 'Phase 2 — skip import and open the AI diagnostics panel on the check-return flow',
+    description:
+      'Input return — skip Phase 1 and open the Phase 2 intelligence panel with diagnostic cards',
     route: PREPARER_DIAGNOSTICS_PATH,
   },
   {

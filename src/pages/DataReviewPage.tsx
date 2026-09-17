@@ -47,11 +47,6 @@ import {
 import { openSourceDocumentById } from '../lib/sourceDocPopoutNavigation'
 import { navigateToInputFromFieldOrigin } from '../lib/inputReturnNavigation'
 import type { FieldOriginSource } from '../data/fieldOrigins'
-import intuitIntelligenceLogo from '../assets/icons/intuit-intelligence-logo-small.svg'
-import {
-  INTELLIGENCE_NAV_LABEL,
-  intelligenceToolbarAriaLabel,
-} from './agent-review/agentIntelligenceCopy'
 import LeftPanel1040 from './data-review/LeftPanel1040'
 import ReviewTab, { type TopTab } from './data-review/ReviewTab'
 import AddItemReviewPane, { type AddItemLinkResult } from './data-review/AddItemReviewPane'
@@ -1892,29 +1887,7 @@ export default function DataReviewPage() {
               )}
             </button>
             )}
-            {/* ProtoC: AI Review is Phase 2 only - hidden during Phase 1 (import accuracy) */}
-            {!inImportPhase && (
-              <button
-                className={`${styles.intuitIntelBtn} ${agentPanelActive ? styles.intuitIntelBtnActive : ''}`}
-                aria-label={
-                  !agentPanelActive && phase2Progress.remaining > 0
-                    ? intelligenceToolbarAriaLabel(
-                        phase2Progress.reviewed,
-                        phase2Progress.total,
-                        phase2Progress.remaining,
-                      )
-                    : INTELLIGENCE_NAV_LABEL
-                }
-                style={{ position: 'relative' }}
-                onClick={() => handleAgentOpen()}
-              >
-                <img src={intuitIntelligenceLogo} alt="" className={styles.intuitIntelIcon} />
-                <span className={styles.intuitIntelLabel}>{INTELLIGENCE_NAV_LABEL}</span>
-                {!agentPanelActive && phase2Progress.remaining > 0 && (
-                  <AttentionCountBadge count={phase2Progress.remaining} className={styles.toolbarBadge} aria-hidden />
-                )}
-              </button>
-            )}
+            {/* AI review toolbar entry hidden — use Launch points → AI review */}
           </div>
         </div>
       </div>

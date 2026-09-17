@@ -24,6 +24,7 @@ import AgentReviewDiagnosticsPane, {
 } from './agent-review/AgentReviewDiagnosticsPane'
 import AgentCatchUpPane from './agent-review/AgentCatchUpPane'
 import AgentReviewProcessingPane from './agent-review/AgentReviewProcessingPane'
+import type { ProcessingMode } from './agent-review/useAgentProcessingAnimation'
 import AgentLoadingPane from './data-review/AgentLoadingPane'
 import ChatInput from './automated/ChatInput'
 import { openSourceDocumentReviewPopout } from '../lib/prototypeRoutes'
@@ -36,6 +37,7 @@ const ASSESSING_MS = 3200
 export default function AgentReviewPage() {
   const navigate = useNavigate()
   const [step, setStep] = useState<AgentStep>('welcome')
+  const [processingMode, setProcessingMode] = useState<ProcessingMode>('batch')
   const [isAssessing, setIsAssessing] = useState(false)
   const assessTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
 
@@ -73,7 +75,8 @@ export default function AgentReviewPage() {
     startAssessing()
   }
 
-  const beginProcessing = () => {
+  const beginProcessing = (mode: ProcessingMode = 'batch') => {
+    setProcessingMode(mode)
     setStep('processing')
   }
 
@@ -135,8 +138,8 @@ export default function AgentReviewPage() {
                 showReport={!isAssessing}
                 reportContent={
                   <AgentReviewDiagnosticsPane
-                    onFixIndividually={() => openWorkspace()}
-                    onAcceptAll={beginProcessing}
+                    onFixIndividually={() => beginProcessing('sequential')}
+                    onAcceptAll={() => beginProcessing('batch')}
                   />
                 }
               />
@@ -150,6 +153,7 @@ export default function AgentReviewPage() {
             )}
             {step === 'processing' && (
               <AgentReviewProcessingPane
+                mode={processingMode}
                 onViewUpdatedReturn={() => openWorkspace()}
                 onViewSourceDocuments={() => openSourceDocumentReviewPopout()}
                 onViewReturnSummary={() => navigate('/check-return')}

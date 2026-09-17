@@ -6,7 +6,7 @@ import {
 } from '@design-systems/icons'
 import { Button } from '@ids-ts/button'
 import '@ids-ts/button/dist/main.css'
-import sparklesIcon from '../assets/icons/sparkles.svg'
+import intuitIntelligenceLogo from '../assets/icons/intuit-intelligence-logo-small.svg'
 import { INTELLIGENCE_SUBHEADER_CTA } from './agent-review/agentIntelligenceCopy'
 import { openReviewReturnPopout } from '../lib/prototypeRoutes'
 import styles from '../styles/SmartReturnHeader.module.css'
@@ -171,7 +171,7 @@ export default function SmartReturnHeader({
           )}
           {activeTab === 'checkreturns' && onAiReview && (
             <button type="button" className={styles.aiReviewBtn} onClick={onAiReview}>
-              <img src={sparklesIcon} alt="" className={styles.aiReviewIcon} />
+              <img src={intuitIntelligenceLogo} alt="" className={styles.aiReviewIcon} />
               {INTELLIGENCE_SUBHEADER_CTA}
             </button>
           )}
