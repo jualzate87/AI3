@@ -21,6 +21,16 @@
   width: 100%;
 }
 
+.layoutCompact {
+  flex-direction: column;
+  max-width: none;
+}
+
+.layoutCompact .progressRail {
+  width: 100%;
+  max-width: none;
+}
+
 .mainColumn {
   flex: 1;
   min-width: 0;

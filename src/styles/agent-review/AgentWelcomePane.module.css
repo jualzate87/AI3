@@ -89,3 +89,22 @@
 .prompt:hover {
   background: var(--color-action-passive-hover, #d5d9dc);
 }
+
+.containerCompact {
+  max-width: none;
+  padding-left: var(--space-component-padding-large, 16px);
+  padding-right: var(--space-component-padding-large, 16px);
+}
+
+.containerCompact .greetingName {
+  font-size: var(--font-size-heading-5, 24px);
+}
+
+.containerCompact .greetingSubtitle {
+  font-size: var(--font-size-body-2, 16px);
+}
+
+.containerCompact .prompt {
+  flex: 1 1 calc(50% - var(--space-x-small, 8px));
+  max-width: none;
+}

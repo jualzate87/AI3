@@ -1,4 +1,5 @@
 import { useNavigate } from 'react-router-dom'
+import type { RefObject } from 'react'
 import {
   CircleQuestion, Notification, Settings, Lock, Person,
   ChevronDown, List, Edit, Checklist,
@@ -7,6 +8,9 @@ import {
 import { Button } from '@ids-ts/button'
 import '@ids-ts/button/dist/main.css'
 import intuitIntelligenceLogo from '../assets/icons/intuit-intelligence-logo-small.svg'
+import HeaderSelectMenu from '../components/HeaderSelectMenu'
+import { useReturnWorkflow } from '../contexts/ReturnWorkflowContext'
+import { RETURN_STATUSES, TEAM_MEMBERS } from '../lib/returnWorkflow'
 import { INTELLIGENCE_SUBHEADER_CTA } from './agent-review/agentIntelligenceCopy'
 import { openReviewReturnPopout } from '../lib/prototypeRoutes'
 import styles from '../styles/SmartReturnHeader.module.css'
@@ -25,6 +29,8 @@ interface SmartReturnHeaderProps {
   onViewSourceDocuments?: () => void
   /** Intuit Intelligence review CTA (Check return tab) */
   onAiReview?: () => void
+  /** Anchor for proactive AI handoff popover */
+  aiReviewButtonRef?: RefObject<HTMLButtonElement | null>
 }
 
 export default function SmartReturnHeader({
@@ -35,8 +41,16 @@ export default function SmartReturnHeader({
   showViewSourceDocuments = false,
   onViewSourceDocuments,
   onAiReview,
+  aiReviewButtonRef,
 }: SmartReturnHeaderProps) {
   const navigate = useNavigate()
+  const {
+    assignee,
+    status,
+    currentUser,
+    requestAssigneeChange,
+    requestStatusChange,
+  } = useReturnWorkflow()
 
   const handleReviewReturnClick = () => {
     if (onReviewReturn) {
@@ -45,6 +59,10 @@ export default function SmartReturnHeader({
     }
     openReviewReturnPopout('1040')
   }
+
+  const otherCollaborators = TEAM_MEMBERS.filter(
+    member => member.id !== currentUser.id && member.id !== assignee.id,
+  )
 
   return (
     <div className={styles.header}>
@@ -65,7 +83,13 @@ export default function SmartReturnHeader({
             <span className={styles.navBtnLabel}>Settings</span>
           </button>
           <div className={styles.row1Divider} />
-          <div className={styles.oiaaAvatar}>Z</div>
+          <div
+            className={styles.oiaaAvatar}
+            style={{ background: currentUser.avatarColor }}
+            title={currentUser.name}
+          >
+            {currentUser.initials}
+          </div>
         </div>
       </div>
 
@@ -95,16 +119,39 @@ export default function SmartReturnHeader({
 
         <div className={styles.row2Right}>
           <div className={styles.avatarStack}>
-            <div className={styles.avatarD}>JH</div>
-            <div className={styles.avatarH}>H</div>
-            <div className={styles.avatarPlus}>+1</div>
+            <div
+              className={styles.avatarD}
+              style={{ background: assignee.avatarColor }}
+              title={assignee.name}
+            >
+              {assignee.initials}
+            </div>
+            {otherCollaborators.slice(0, 1).map(member => (
+              <div
+                key={member.id}
+                className={styles.avatarH}
+                style={{ background: member.avatarColor }}
+                title={member.name}
+              >
+                {member.initials}
+              </div>
+            ))}
+            {otherCollaborators.length > 1 ? (
+              <div className={styles.avatarPlus}>+{otherCollaborators.length - 1}</div>
+            ) : null}
           </div>
-          <button type="button" className={styles.ghostBtn}>
-            Select Asignee <ChevronDown size="small" />
-          </button>
-          <button type="button" className={styles.ghostBtn}>
-            Select Status <ChevronDown size="small" />
-          </button>
+          <HeaderSelectMenu
+            ariaLabel="Select assignee"
+            value={assignee.id}
+            options={TEAM_MEMBERS.map(member => ({ id: member.id, label: member.name }))}
+            onChange={requestAssigneeChange}
+          />
+          <HeaderSelectMenu
+            ariaLabel="Select status"
+            value={status.id}
+            options={RETURN_STATUSES.map(item => ({ id: item.id, label: item.label }))}
+            onChange={id => requestStatusChange(id as typeof status.id)}
+          />
           <Button priority="primary">
             Return actions <ChevronDown size="small" />
           </Button>
@@ -170,10 +217,16 @@ export default function SmartReturnHeader({
             </Button>
           )}
           {activeTab === 'checkreturns' && onAiReview && (
-            <button type="button" className={styles.aiReviewBtn} onClick={onAiReview}>
-              <img src={intuitIntelligenceLogo} alt="" className={styles.aiReviewIcon} />
+            <Button
+              innerRef={aiReviewButtonRef}
+              priority="secondary"
+              purpose="passive"
+              onClick={onAiReview}
+              automationId="ai-review-header-cta"
+            >
+              <img src={intuitIntelligenceLogo} alt="" className={styles.headerBtnIcon} aria-hidden />
               {INTELLIGENCE_SUBHEADER_CTA}
-            </button>
+            </Button>
           )}
         </div>
       </div>

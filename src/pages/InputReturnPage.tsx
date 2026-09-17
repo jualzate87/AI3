@@ -1,7 +1,9 @@
 import { useEffect, useState } from 'react'
 import { useSearchParams } from 'react-router-dom'
 import SmartReturnHeader from './SmartReturnHeader'
+import ReturnCommentsPanel from '../components/ReturnCommentsPanel'
 import ReturnContextRail from '../components/ReturnContextRail'
+import type { ReturnContextRailItemId } from '../components/ReturnContextRail'
 import LeftNavPTO from './data-review/LeftNavPTO'
 import InputMenuNav from './input-return/InputMenuNav'
 import { useNavigate } from 'react-router-dom'
@@ -38,6 +40,7 @@ export default function InputReturnPage() {
   )
   const [searchQuery, setSearchQuery] = useState('')
   const [navCollapsed, setNavCollapsed] = useState(false)
+  const [commentsOpen, setCommentsOpen] = useState(false)
 
   const {
     activeTopTab,
@@ -130,6 +133,12 @@ export default function InputReturnPage() {
     setSearchParams(next, { replace: true })
   }
 
+  const handleContextRailItem = (id: ReturnContextRailItemId) => {
+    if (id === 'comments') {
+      setCommentsOpen(open => !open)
+    }
+  }
+
   const activeNavItem = inputNavItemById(activeItemId)
   const activeDocKey = activeNavItem.topTab
     ? readActiveDocKey(activeNavItem.topTab, {
@@ -166,7 +175,14 @@ export default function InputReturnPage() {
               showMissingEinDiagnostic={diagnostic === 'missing-ein'}
               onDocChange={handleDocChange}
             />
-            <ReturnContextRail />
+            <ReturnContextRail
+              activeItem={commentsOpen ? 'comments' : undefined}
+              onItemClick={handleContextRailItem}
+            />
+            <ReturnCommentsPanel
+              isOpen={commentsOpen}
+              onToggle={() => setCommentsOpen(open => !open)}
+            />
           </div>
         </div>
       </div>

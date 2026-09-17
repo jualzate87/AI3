@@ -30,4 +30,12 @@ export const LAUNCH_POINTS: LaunchPoint[] = [
     description: 'AI agent fixes diagnostics automatically with full reasoning trail',
     route: PREPARER_AGENT_DIAGNOSTICS_PATH,
   },
+  {
+    id: 3,
+    title: 'Join as Jake — reviewer handoff',
+    status: 'live',
+    description:
+      'Sarah hands off to Jake — proactive AI popover on Check return; add ?prompt=toast for messaging variant',
+    route: '/check-return?handoff=reviewer',
+  },
 ]

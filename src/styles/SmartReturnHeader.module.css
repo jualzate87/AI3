@@ -348,30 +348,9 @@
 }
 .tabMeta svg { color: var(--color-text-secondary); flex-shrink: 0; }
 
-.aiReviewBtn {
-  display: inline-flex;
-  align-items: center;
-  gap: var(--space-component-gap-medium, 8px);
-  height: 36px;
-  padding: 0 var(--space-component-inline-padding-xx-large, 16px);
-  border: 1px solid var(--color-action-border-secondary, #393a3d);
-  border-radius: var(--radius-action, 4px);
-  background: var(--color-container-background-primary, #ffffff);
-  font-family: var(--font-family-component);
-  font-size: var(--font-size-action-small, 14px);
-  font-weight: var(--font-weight-component-semibold, 500);
-  line-height: 1.3;
-  color: var(--color-text-primary, #21262a);
-  cursor: pointer;
-  white-space: nowrap;
-}
-
-.aiReviewBtn:hover {
-  background: var(--color-action-passive-subtle-hover, #f0f4f6);
-}
-
-.aiReviewIcon {
-  width: 24px;
-  height: 24px;
+/* Leading icon/img in tab-row secondary buttons — matches PopOut size="small" */
+.headerBtnIcon {
+  width: var(--size-action-icon-small, 16px);
+  height: var(--size-action-icon-small, 16px);
   flex-shrink: 0;
 }

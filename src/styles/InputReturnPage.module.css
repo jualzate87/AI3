@@ -9,6 +9,7 @@
   gap: 0;
   padding: 0;
   overflow: hidden;
+  position: relative;
 }
 
 /* ── Left input nav (Figma 316px, #F4F5F8 shell) ── */

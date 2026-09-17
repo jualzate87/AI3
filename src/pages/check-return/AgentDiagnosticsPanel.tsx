@@ -30,7 +30,9 @@ import {
   buildAgentViewLinkUrl,
   buildBatchThinkingSections,
   buildBatchThinkingSteps,
+  buildFixedItemSummary,
   formatFixResultLinkLabel,
+  type FixedItemSummary,
   getAgentFixContext,
   openAgentViewLinkInWindow,
   viewLinkDestKey,
@@ -54,12 +56,6 @@ import AgentDiagnosticExpandableCard from './AgentDiagnosticExpandableCard'
 import styles from '../../styles/check-return/AgentDiagnosticsPanel.module.css'
 
 type AgentPhase = 'ready' | 'running' | 'complete' | 'awaiting-next'
-
-type FixedItemSummary = {
-  outcomeLabel: string
-  viewLinks: AgentViewLink[]
-  detailLines: AgentFixDetailLine[]
-}
 
 const SOURCE_DOCUMENTS_VIEW_LINK: AgentViewLink = {
   label: 'Source documents',
@@ -703,19 +699,6 @@ function ThinkingBlock({
       )}
     </div>
   )
-}
-
-function buildFixedItemSummary(item: AgentFixPlanItem): FixedItemSummary {
-  const detailLines = item.fixDetailLines
-  let outcomeLabel = item.outcomeLabel
-  if (item.issueKey === 'importMismatches' && detailLines.length > 1) {
-    outcomeLabel = `${detailLines.length} Import mismatches fixed`
-  }
-  return {
-    outcomeLabel,
-    viewLinks: item.viewLinks,
-    detailLines,
-  }
 }
 
 export default function AgentDiagnosticsPanel() {

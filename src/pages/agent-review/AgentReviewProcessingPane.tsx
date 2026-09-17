@@ -1,20 +1,16 @@
-import { useMemo, useRef, useState } from 'react'
+import { useEffect, useMemo, useRef, useState, type ReactNode } from 'react'
 import { ChevronDown, CircleCheckFill, PopOut } from '@design-systems/icons'
 import Badge from '@ids-ts/badge'
 import '@ids-ts/badge/dist/main.css'
 import { Link } from '@ids-ts/link'
 import '@ids-ts/link/dist/main.css'
-import { LinkActionButton } from '@ids-ts/link-action-button'
-import '@ids-ts/link-action-button/dist/main.css'
+import AgentReviewSummaryFooter from './AgentReviewSummaryFooter'
 import intuitIntelligenceLogo from '../../assets/icons/intuit-intelligence-logo-small.svg'
 import { openSourceDocumentReviewPopout } from '../../lib/prototypeRoutes'
 import {
   CTA_CONTINUE_NEXT_FIX,
   CTA_SHOW_THINKING,
   CTA_VIEW,
-  CTA_VIEW_RETURN_SUMMARY,
-  CTA_VIEW_SOURCE_DOCUMENTS,
-  CTA_VIEW_UPDATED_RETURN,
   getActiveIntelligenceIssues,
   INTELLIGENCE_FIX_PROGRESS_SECTIONS,
   INTELLIGENCE_FIXES_DIVIDER_LABEL,
@@ -30,21 +26,23 @@ import {
   intelligenceFixProgressLabel,
   intelligenceProcessingIntro,
   LABEL_NEED_ACTION,
-  STARTER_PROMPT_CATCH_UP,
   type IntelligenceFixLink,
 } from './agentIntelligenceCopy'
 import {
   useAgentProcessingAnimation,
   type ProcessingMode,
 } from './useAgentProcessingAnimation'
+import chipStyles from '../../styles/agent-review/AgentReviewFooterChips.module.css'
 import styles from '../../styles/agent-review/AgentReviewProcessingPane.module.css'
 
 interface AgentReviewProcessingPaneProps {
   mode?: ProcessingMode
+  compact?: boolean
   onViewUpdatedReturn: () => void
   onViewSourceDocuments: () => void
   onViewReturnSummary: () => void
   onGetCaughtUp: () => void
+  onFooterChipsChange?: (chips: ReactNode | null) => void
 }
 
 function openDocLink(link: IntelligenceFixLink) {
@@ -57,10 +55,12 @@ function openDocLink(link: IntelligenceFixLink) {
 
 export default function AgentReviewProcessingPane({
   mode = 'batch',
+  compact = false,
   onViewUpdatedReturn,
   onViewSourceDocuments,
   onViewReturnSummary,
   onGetCaughtUp,
+  onFooterChipsChange,
 }: AgentReviewProcessingPaneProps) {
   const [thinkingExpanded, setThinkingExpanded] = useState(false)
   const fixSectionRefs = useRef<Record<number, HTMLElement | null>>({})
@@ -88,6 +88,46 @@ export default function AgentReviewProcessingPane({
     fixSectionCount,
   } = useAgentProcessingAnimation(mode)
 
+  useEffect(() => {
+    if (!onFooterChipsChange) return
+
+    if (!showSuggestionChips && !awaitingContinue) {
+      onFooterChipsChange(null)
+      return
+    }
+
+    if (awaitingContinue && !allFixesComplete) {
+      onFooterChipsChange(
+        <button
+          type="button"
+          className={chipStyles.chipPrimary}
+          onClick={advanceToNextFix}
+        >
+          {CTA_CONTINUE_NEXT_FIX}
+        </button>,
+      )
+      return
+    }
+
+    if (allFixesComplete) {
+      onFooterChipsChange(null)
+      return
+    }
+
+    onFooterChipsChange(null)
+  }, [
+    advanceToNextFix,
+    allFixesComplete,
+    awaitingContinue,
+    onFooterChipsChange,
+    onGetCaughtUp,
+    showSuggestionChips,
+  ])
+
+  useEffect(() => {
+    return () => onFooterChipsChange?.(null)
+  }, [onFooterChipsChange])
+
   const scrollToFixSection = (index: number) => {
     fixSectionRefs.current[index]?.scrollIntoView({ behavior: 'smooth', block: 'nearest' })
   }
@@ -103,7 +143,7 @@ export default function AgentReviewProcessingPane({
   return (
     <div className={styles.container}>
       <div className={styles.scrollArea}>
-        <div className={styles.layout}>
+        <div className={`${styles.layout} ${compact ? styles.layoutCompact : ''}`}>
           <div className={styles.mainColumn}>
             <div className={styles.lockup}>
               <img src={intuitIntelligenceLogo} alt="" className={styles.sparkleIcon} />
@@ -253,12 +293,9 @@ export default function AgentReviewProcessingPane({
                     <div className={styles.reminderHeader}>
                       <img src={intuitIntelligenceLogo} alt="" className={styles.reminderIcon} />
                       <span className={styles.reminderTitle}>{INTELLIGENCE_REMINDER_TITLE}</span>
-                      <Badge
-                        status="warn"
-                        priority="primary"
-                        capitalization="caps"
-                        label={LABEL_NEED_ACTION}
-                      />
+                      <Badge status="warning" priority="primary" capitalization="caps">
+                        {LABEL_NEED_ACTION}
+                      </Badge>
                     </div>
                     <p className={styles.reminderText}>
                       {INTELLIGENCE_NEED_ACTION_COPY.before}
@@ -269,31 +306,12 @@ export default function AgentReviewProcessingPane({
                 )}
 
                 {showFooter && (
-                  <div className={`${styles.footerActions} ${styles.revealIn}`}>
-                    <LinkActionButton
-                      size="small"
-                      weight="regular"
-                      alignment="right"
-                      onClick={onViewUpdatedReturn}
-                    >
-                      {CTA_VIEW_UPDATED_RETURN}
-                    </LinkActionButton>
-                    <LinkActionButton
-                      size="small"
-                      weight="regular"
-                      alignment="right"
-                      onClick={onViewSourceDocuments}
-                    >
-                      {CTA_VIEW_SOURCE_DOCUMENTS}
-                    </LinkActionButton>
-                    <LinkActionButton
-                      size="small"
-                      weight="regular"
-                      alignment="right"
-                      onClick={onViewReturnSummary}
-                    >
-                      {CTA_VIEW_RETURN_SUMMARY}
-                    </LinkActionButton>
+                  <div className={`${styles.revealIn}`}>
+                    <AgentReviewSummaryFooter
+                      onViewUpdatedReturn={onViewUpdatedReturn}
+                      onViewSourceDocuments={onViewSourceDocuments}
+                      onPrimaryAction={onGetCaughtUp}
+                    />
                   </div>
                 )}
               </div>
@@ -351,20 +369,6 @@ export default function AgentReviewProcessingPane({
         </div>
       </div>
 
-      {(showSuggestionChips || awaitingContinue) && (
-        <div className={`${styles.suggestionRow} ${styles.revealIn}`}>
-          {awaitingContinue && !allFixesComplete && (
-            <button type="button" className={styles.suggestionChipPrimary} onClick={advanceToNextFix}>
-              {CTA_CONTINUE_NEXT_FIX}
-            </button>
-          )}
-          {allFixesComplete && (
-            <button type="button" className={styles.suggestionChip} onClick={onGetCaughtUp}>
-              {STARTER_PROMPT_CATCH_UP}
-            </button>
-          )}
-        </div>
-      )}
     </div>
   )
 }

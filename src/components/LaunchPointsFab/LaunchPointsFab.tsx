@@ -20,7 +20,10 @@ import {
   PREPARER_DIAGNOSTICS_PATH,
   setStoredDemoRole,
 } from '../../lib/prototypeRoutes'
+import { prepareReviewerHandoffLaunch, resetReturnWorkflow } from '../../lib/returnWorkflow'
 import { LAUNCH_POINTS, type LaunchPoint } from './launchPointsData'
+
+const REVIEWER_HANDOFF_PATH = '/check-return?handoff=reviewer'
 import styles from './LaunchPointsFab.module.css'
 
 export type DemoRole = 'preparer' | 'reviewer'
@@ -106,6 +109,11 @@ export default function LaunchPointsFab() {
         prepareDiagnosticsLaunch()
       } else if (point.route === PREPARER_AGENT_DIAGNOSTICS_PATH) {
         prepareAgentLaunch()
+      } else if (point.route === REVIEWER_HANDOFF_PATH) {
+        prepareReviewerHandoffLaunch()
+        setStoredDemoRole('reviewer')
+        navigate(REVIEWER_HANDOFF_PATH)
+        return
       }
       navigate(point.route)
     },
@@ -124,6 +132,7 @@ export default function LaunchPointsFab() {
     sessionStorage.removeItem('protoc3-phase')
     sessionStorage.removeItem('agentLoaded')
     sessionStorage.removeItem(AGENT_MODE_SESSION_KEY)
+    resetReturnWorkflow()
     setStoredDemoRole('preparer')
     setOpen(false)
     try {

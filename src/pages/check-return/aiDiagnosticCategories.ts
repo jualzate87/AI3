@@ -121,6 +121,62 @@ export function getCategoryScopedActiveKeys(ctx: DiagnosticSyncContext): Phase2I
   return activeKeys.filter(key => categoryKeySet.has(key))
 }
 
+/**
+ * Phase 2 keys rolled into the import-mismatches card when that row is still open.
+ * Keeps the Intuit Intelligence diagnosis from double-counting the same gap.
+ */
+const IMPORT_MISMATCH_COVERED_ISSUES: Partial<
+  Record<
+    ReturnType<typeof getOutstandingImportMismatches>[number]['id'],
+    readonly Phase2IssueKey[]
+  >
+> = {
+  qualifiedDivs: ['qualifiedDivClassification'],
+  divWithholding: ['underpaymentRisk'],
+  rWithholding: ['underpaymentRisk'],
+  necIncome: ['necScheduleC'],
+}
+
+/** Study-only cards omitted from the agent intelligence run (not part of the demo fix path). */
+const AGENT_INTELLIGENCE_EXCLUDED: ReadonlySet<Phase2IssueKey> = new Set(['sepIra'])
+
+/**
+ * Curated active keys for Intuit Intelligence welcome / diagnosis / fix flows.
+ * When import mismatches is open, suppress duplicate cards whose root cause is
+ * already listed as rows on that card (qualified div, withholding, NEC income).
+ */
+export function getAgentIntelligenceActiveKeys(
+  ctx: DiagnosticSyncContext,
+  options?: { includeReviewed?: boolean },
+): Phase2IssueKey[] {
+  let openKeys = getCategoryScopedActiveKeys(ctx)
+  if (!options?.includeReviewed) {
+    openKeys = openKeys.filter(key => !ctx.reviewedFields.has(key))
+  }
+
+  let keys = openKeys.filter(key => !AGENT_INTELLIGENCE_EXCLUDED.has(key))
+
+  if (!keys.includes('importMismatches')) {
+    return keys
+  }
+
+  const mismatchIds = new Set(getOutstandingImportMismatches(ctx.amounts).map(row => row.id))
+  const suppress = new Set<Phase2IssueKey>()
+
+  for (const id of mismatchIds) {
+    for (const issueKey of IMPORT_MISMATCH_COVERED_ISSUES[id] ?? []) {
+      suppress.add(issueKey)
+    }
+  }
+
+  // Schedule C expenses only apply after NEC income is on the return.
+  if (mismatchIds.has('necIncome') || !ctx.amounts.necOnReturn) {
+    suppress.add('schCExpenses')
+  }
+
+  return keys.filter(key => !suppress.has(key))
+}
+
 export function categoryForIssueKey(key: Phase2IssueKey): AiDiagnosticCategory | undefined {
   return AI_DIAGNOSTIC_CATEGORIES.find(cat => cat.issueKeys.includes(key))
 }

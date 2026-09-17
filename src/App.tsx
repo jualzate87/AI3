@@ -7,7 +7,9 @@ import FusionShell from './components/FusionShell'
 import { FUSION_CONFIG } from './navigation'
 import { repairIncomingRoute, resolveCatchAllRoute } from './lib/prototypeRoutes'
 import LaunchPointsFab from './components/LaunchPointsFab/LaunchPointsFab'
+import ReturnHandoffHost from './components/ReturnHandoffHost'
 import PrototypeToastHost from './components/PrototypeToastHost/PrototypeToastHost'
+import { ReturnWorkflowProvider } from './contexts/ReturnWorkflowContext'
 import DataReviewRoute from './pages/DataReviewRoute'
 import DataReviewPopout from './pages/DataReviewPopout'
 import SmartReturnPage from './pages/SmartReturnPage'
@@ -60,10 +62,12 @@ export default function App() {
     <ErrorBoundary>
       <HashRouter basename={ROUTER_BASENAME}>
         <FusionProvider pathPrefix={FUSION_CONFIG.pathPrefix || ''}>
-          <HashRouteNormalizer />
-          <PrototypeToastHost />
-          <LaunchPointsFab />
-          <Routes>
+          <ReturnWorkflowProvider>
+            <HashRouteNormalizer />
+            <PrototypeToastHost />
+            <LaunchPointsFab />
+            <ReturnHandoffHost />
+            <Routes>
             {/* SmartReview prototype - outside the QBO Fusion shell */}
             <Route path="/" element={<Navigate to="/smart-return" replace />} />
             <Route path="/import-hub" element={<Navigate to="/smart-return" replace />} />
@@ -89,7 +93,8 @@ export default function App() {
 
             {/* Unknown paths → role-aware landing */}
             <Route path="*" element={<CatchAllRedirect />} />
-          </Routes>
+            </Routes>
+          </ReturnWorkflowProvider>
         </FusionProvider>
       </HashRouter>
     </ErrorBoundary>

@@ -5,9 +5,9 @@ import {
 import { computeLiveReturn, type LiveAmounts, type LiveReturnTotals, SEED_AMOUNTS } from '../../data/liveReturn'
 import { REVIEWER_NAME } from '../../hooks/useSyncedReviewState'
 import { buildPhase2Issues, type IssueCard } from '../data-review/AgentReportPane'
+import { getAgentIntelligenceActiveKeys } from '../check-return/aiDiagnosticCategories'
 import {
   getOutstandingImportMismatches,
-  getPhase2Progress,
   PHASE2_DIAGNOSTIC_ORDER,
   SAFE_HARBOR_2024,
   type Phase2IssueKey,
@@ -95,6 +95,14 @@ export const CTA_VIEW_UPDATED_RETURN = 'View updated return'
 export const CTA_VIEW_SOURCE_DOCUMENTS = 'View source documents'
 export const CTA_VIEW_RETURN_SUMMARY = 'View return summary'
 
+export const CTA_UPDATED_RETURN_SHORT = 'Updated return'
+export const CTA_SOURCE_DOCUMENTS_SHORT = 'Source documents'
+
+export const INTELLIGENCE_COMPLETION_FOOTER =
+  'Jump to the documents directly, or ask me to help with your review.'
+
+export const CATCH_UP_APPROVE_RETURN = 'Approve return'
+
 export const CTA_SHOW_THINKING = 'Show thinking'
 
 export const LABEL_SUGGESTED_NEXT_STEPS = 'Recommended next steps'
@@ -110,20 +118,24 @@ export const INTELLIGENCE_LOADING_SUBTEXT =
 
 /* ── Data helpers ── */
 
-export function getActiveIntelligenceIssues(): {
+export function getActiveIntelligenceIssues(
+  ctx?: {
+    reviewedFields?: Map<string, unknown>
+    amounts?: LiveAmounts
+  },
+): {
   issues: IssueCard[]
   issueCount: number
   totalWithholding: number
   live: LiveReturnTotals
 } {
-  const live = computeLiveReturn(SEED_AMOUNTS)
-  const allIssues = buildPhase2Issues(live, SEED_AMOUNTS)
-  const progress = getPhase2Progress({
-    reviewedFields: new Map(),
-    live,
-    amounts: SEED_AMOUNTS,
-  })
-  const issues = PHASE2_DIAGNOSTIC_ORDER.filter(key => progress.activeKeys.includes(key))
+  const amounts = ctx?.amounts ?? SEED_AMOUNTS
+  const reviewedFields = ctx?.reviewedFields ?? new Map()
+  const live = computeLiveReturn(amounts)
+  const allIssues = buildPhase2Issues(live, amounts)
+  const syncCtx = { reviewedFields, live, amounts }
+  const activeKeys = getAgentIntelligenceActiveKeys(syncCtx)
+  const issues = PHASE2_DIAGNOSTIC_ORDER.filter(key => activeKeys.includes(key))
     .map(key => allIssues.find(i => i.issueKey === key))
     .filter((i): i is IssueCard => i != null)
 
@@ -338,6 +350,27 @@ export function intelligenceResultsLead(fixedCount: number): string {
     : `${fixedCount} updates applied. Here's what changed on the return.`
 }
 
+export const CATCH_UP_LOADING_TITLE = 'Summarizing the return…'
+export const CATCH_UP_LOADING_SUBTEXT =
+  'Reviewing prior preparer notes, resolved AI review items, and what still needs your sign-off.'
+
+export const CATCH_UP_REASONING_TITLE = 'Building handoff summary'
+
+export const CATCH_UP_REASONING_STEPS = [
+  {
+    title: 'Reviewing prior preparer notes',
+    body: 'Reading Sarah Chen\'s notes, resolved flags, and what she flagged for the next reviewer.',
+  },
+  {
+    title: 'Checking documents and calculations',
+    body: 'Confirming imported source documents and that federal and state calculations tie out.',
+  },
+  {
+    title: 'Drafting your summary',
+    body: 'Organizing open items, reviewer focus areas, and a final sign-off checklist.',
+  },
+] as const
+
 export const CATCH_UP_PRIOR_PREPARER = 'Sarah Chen'
 
 /** Figma catch-up summary title uses this client name (Return Summary frame). */
@@ -352,8 +385,26 @@ export type CatchUpListEntry = {
   emphasis?: boolean
 }
 
-export const CATCH_UP_PRIOR_NOTES =
+export const CATCH_UP_PRIOR_NOTES_DEFAULT =
   '"Return is in good shape. I ran the AI review and resolved all flagged items — the W-2 variance was just a mid-year raise, and the qualified dividend classification has been corrected. Withholding looks adequate. Main thing to double-check is the 1099-DIV split since the broker statement formatting was a little unusual. Everything else ties out. All source docs are in the Documents tab."'
+
+/** @deprecated Use getCatchUpPriorNotes() */
+export const CATCH_UP_PRIOR_NOTES = CATCH_UP_PRIOR_NOTES_DEFAULT
+
+export function getCatchUpPriorNotes(): string {
+  try {
+    const raw = localStorage.getItem('protoc3-notes')
+    if (!raw) return CATCH_UP_PRIOR_NOTES_DEFAULT
+    const notes = JSON.parse(raw) as { id?: string; text?: string; context?: string }[]
+    const handoff = notes.find(
+      note => note.context?.toLowerCase().includes('handoff') || note.id?.startsWith('handoff-'),
+    )
+    if (handoff?.text) return `"${handoff.text}"`
+  } catch {
+    // fall through
+  }
+  return CATCH_UP_PRIOR_NOTES_DEFAULT
+}
 
 export const CATCH_UP_HANDOFF_PARAGRAPH =
   `${CATCH_UP_PRIOR_PREPARER} completed the initial data entry and ran the AI-assisted review on this return. She resolved all items flagged by Intuit Intelligence before handing off. Employer: Tech Circle Inc. Income includes W-2 wages, 1099-INT, and 1099-DIV.`
@@ -433,12 +484,8 @@ export const CATCH_UP_CHECKLIST_ITEMS = [
   'Source documents reviewed',
 ] as const
 
-export const CATCH_UP_FOOTER_QUESTION =
-  'Would you like to view the source documents or the full review log?'
-
-export const CATCH_UP_CHIP_VIEW_DOCUMENTS = 'View documents'
-export const CATCH_UP_CHIP_SHOW_REVIEW_LOG = 'Show review log'
-export const CATCH_UP_CHIP_APPROVE_RETURN = 'Approve return'
+/** @deprecated Use INTELLIGENCE_COMPLETION_FOOTER */
+export const CATCH_UP_FOOTER_QUESTION = INTELLIGENCE_COMPLETION_FOOTER
 
 export function intelligenceProcessingIntro(
   issueCount: number,

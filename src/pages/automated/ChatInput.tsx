@@ -8,13 +8,20 @@ interface ChatInputProps {
   onSend: (text: string) => void
   placeholder?: string
   legalDisclaimer?: string
+  /** Compact composer for AI review footer — no upward fade, tighter padding */
+  variant?: 'default' | 'mini'
+  showFade?: boolean
 }
 
 export default function ChatInput({
   onSend,
   placeholder = 'Ask {Agent / product name}',
   legalDisclaimer = 'Important information about how we use generative AI',
+  variant = 'default',
+  showFade,
 }: ChatInputProps) {
+  const isMini = variant === 'mini'
+  const fadeVisible = showFade ?? !isMini
   const [value, setValue] = useState('')
 
   const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
@@ -33,10 +40,10 @@ export default function ChatInput({
   }
 
   return (
-    <div className={styles.container}>
-      <div className={styles.fade} />
+    <div className={`${styles.container} ${isMini ? styles.containerMini : ''}`}>
+      {fadeVisible && <div className={styles.fade} aria-hidden />}
 
-      <div className={styles.inputBox}>
+      <div className={`${styles.inputBox} ${isMini ? styles.inputBoxMini : ''}`}>
         {/* Text area */}
         <div className={styles.textArea}>
           <textarea

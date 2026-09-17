@@ -8,15 +8,17 @@ import styles from '../../styles/agent-review/AgentWelcomePane.module.css'
 
 interface AgentWelcomePaneProps {
   preparerName?: string
+  compact?: boolean
   onPromptClick: (prompt: string) => void
 }
 
 export default function AgentWelcomePane({
   preparerName = WELCOME_GREETING_NAME,
+  compact = false,
   onPromptClick,
 }: AgentWelcomePaneProps) {
   return (
-    <div className={styles.container}>
+    <div className={`${styles.container} ${compact ? styles.containerCompact : ''}`}>
       <div className={styles.logoWrapper}>
         <img src={intuitIntelligenceLogo} alt="" className={styles.logoGif} />
       </div>

@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import { useNavigate, useSearchParams } from 'react-router-dom'
 import LeftNavPTO from './data-review/LeftNavPTO'
 import SmartReturnHeader from './SmartReturnHeader'
@@ -19,6 +19,11 @@ import {
 } from './check-return/aiDiagnosticCategories'
 import type { AiDiagnosticsView } from './check-return/AiDiagnosticsPanel'
 import ActivityPanel from './check-return/ActivityPanel'
+import ReturnCommentsPanel from '../components/ReturnCommentsPanel'
+import ReviewerHandoffPrompt, {
+  type ReviewerPromptVariant,
+} from './handoff/ReviewerHandoffPrompt'
+import { REVIEWER_WELCOME_KEY } from '../lib/returnWorkflow'
 import { navigateToActivityTarget } from './check-return/activityNavigation'
 import type { ActivityDeepLink } from './check-return/activityTypes'
 import { openSourceDocumentReviewPopout } from '../lib/prototypeRoutes'
@@ -51,6 +56,13 @@ export default function CheckReturnPage() {
   const [selectedDiagnosticKey, setSelectedDiagnosticKey] = useState<Phase2IssueKey | null>(null)
   const [selectedAiDiagnosticSubId, setSelectedAiDiagnosticSubId] = useState<string | null>(null)
   const [reviewLogOpen, setReviewLogOpen] = useState(false)
+  const [commentsOpen, setCommentsOpen] = useState(false)
+  const aiReviewButtonRef = useRef<HTMLButtonElement | null>(null)
+  const [showReviewerWelcome, setShowReviewerWelcome] = useState(
+    () => sessionStorage.getItem(REVIEWER_WELCOME_KEY) === '1',
+  )
+  const reviewerPromptVariant: ReviewerPromptVariant =
+    searchParams.get('prompt') === 'toast' ? 'toast' : 'popover'
 
   const { amounts, reviewedFields } = useSyncedReviewState()
   const live = useMemo(() => computeLiveReturn(amounts), [amounts])
@@ -137,7 +149,17 @@ export default function CheckReturnPage() {
   const handleContextRailItem = (id: ReturnContextRailItemId) => {
     if (id === 'activity') {
       setReviewLogOpen(open => !open)
+      setCommentsOpen(false)
     }
+    if (id === 'comments') {
+      setCommentsOpen(open => !open)
+      setReviewLogOpen(false)
+    }
+  }
+
+  const dismissReviewerWelcome = () => {
+    sessionStorage.removeItem(REVIEWER_WELCOME_KEY)
+    setShowReviewerWelcome(false)
   }
 
   const handleActivityNavigate = (link: ActivityDeepLink) => {
@@ -158,9 +180,19 @@ export default function CheckReturnPage() {
           <SmartReturnHeader
             activeTab="checkreturns"
             showViewSourceDocuments
+            aiReviewButtonRef={aiReviewButtonRef}
             onViewSourceDocuments={() => openSourceDocumentReviewPopout()}
-            onAiReview={() => navigate('/ai-review')}
+            onAiReview={() =>
+              navigate('/ai-review', { state: { layoutMode: 'sidebar' } })
+            }
           />
+          {showReviewerWelcome ? (
+            <ReviewerHandoffPrompt
+              variant={reviewerPromptVariant}
+              anchorRef={aiReviewButtonRef}
+              onDismiss={dismissReviewerWelcome}
+            />
+          ) : null}
           <div className={styles.contentArea}>
             <CheckReturnNav
               contentView={contentView}
@@ -185,13 +217,19 @@ export default function CheckReturnPage() {
             />
             <ReturnContextRail
               className={styles.contextRail}
-              activeItem={reviewLogOpen ? 'activity' : undefined}
+              activeItem={
+                reviewLogOpen ? 'activity' : commentsOpen ? 'comments' : undefined
+              }
               onItemClick={handleContextRailItem}
             />
             <ActivityPanel
               isOpen={reviewLogOpen}
               onToggle={() => setReviewLogOpen(open => !open)}
               onNavigate={handleActivityNavigate}
+            />
+            <ReturnCommentsPanel
+              isOpen={commentsOpen}
+              onToggle={() => setCommentsOpen(open => !open)}
             />
           </div>
         </div>

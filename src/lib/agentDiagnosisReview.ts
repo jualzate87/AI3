@@ -1,7 +1,7 @@
 import type { DiagnosticIssueCard } from '../pages/data-review/AgentReportPane'
 import {
   badgeMetaForIssueKey,
-  getCategoryScopedActiveKeys,
+  getAgentIntelligenceActiveKeys,
 } from '../pages/check-return/aiDiagnosticCategories'
 import type { DiagnosticSyncContext } from '../pages/data-review/phase2FlagSync'
 import type { Phase2IssueKey } from '../pages/data-review/phase2FlagSync'
@@ -317,11 +317,8 @@ export function buildAgentReviewModels(
   issues: DiagnosticIssueCard[],
   options?: BuildAgentReviewModelsOptions,
 ): AgentReviewCardModel[] {
-  const activeKeys = getCategoryScopedActiveKeys(ctx)
   const openKeys = new Set(
-    options?.forDisplay
-      ? activeKeys
-      : activeKeys.filter(key => !ctx.reviewedFields.has(key)),
+    getAgentIntelligenceActiveKeys(ctx, { includeReviewed: options?.forDisplay }),
   )
 
   const issueModels = issues

@@ -1,0 +1,9 @@
+.shell {
+  padding: 0;
+}
+
+.shell > aside {
+  height: 100%;
+  border: none;
+  box-shadow: none;
+}

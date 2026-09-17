@@ -84,6 +84,10 @@ export default function ReturnContextRail({
     const Icon = item.Icon
 
     const handleClick = () => {
+      if (onItemClick && (item.id === 'comments' || item.id === 'activity')) {
+        onItemClick(item.id)
+        return
+      }
       if (item.route) {
         navigate(item.route)
         return

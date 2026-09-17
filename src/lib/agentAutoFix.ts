@@ -16,7 +16,7 @@ import {
 import { computeLiveReturn } from '../data/liveReturn'
 import type { OutputFormId } from '../pages/data-review/outputForms'
 import type { QuestionnaireResponseId } from '../pages/data-review/questionnaireData'
-import { getCategoryScopedActiveKeys } from '../pages/check-return/aiDiagnosticCategories'
+import { getAgentIntelligenceActiveKeys } from '../pages/check-return/aiDiagnosticCategories'
 import { INPUT_FIELD_PARAM, writeInputReturnParams } from '../data/inputDocTabs'
 import {
   buildHashRouteUrl,
@@ -38,6 +38,8 @@ export function getAutoFixPatchForIssue(
         rWithholding: SOURCE_AMOUNTS.rWithholding,
         taxablePension: SOURCE_AMOUNTS.taxablePension,
         qualifiedDivsToken: SOURCE_AMOUNTS.qualifiedDivsToken,
+        necIncome: NEC_SOURCE_AMOUNT,
+        necOnReturn: true,
       }
     case 'qualifiedDivClassification':
       return { qualifiedDivsToken: SOURCE_AMOUNTS.qualifiedDivsToken }
@@ -332,6 +334,26 @@ export type AgentFixPlanItem = {
   fixDetailLines: AgentFixDetailLine[]
 }
 
+export type FixedItemSummary = {
+  outcomeLabel: string
+  viewLinks: AgentViewLink[]
+  detailLines: AgentFixDetailLine[]
+}
+
+/** Progress-card row for a completed auto-fix (outcome + doc links). */
+export function buildFixedItemSummary(item: AgentFixPlanItem): FixedItemSummary {
+  const detailLines = item.fixDetailLines
+  let outcomeLabel = item.outcomeLabel
+  if (item.issueKey === 'importMismatches' && detailLines.length > 1) {
+    outcomeLabel = `${detailLines.length} Import mismatches fixed`
+  }
+  return {
+    outcomeLabel,
+    viewLinks: item.viewLinks,
+    detailLines,
+  }
+}
+
 /** Hash URL for embedding evidence in the in-app panel (iframe). */
 export function buildAgentViewLinkUrl(link: AgentViewLink): string {
   if (link.inputScreens) {
@@ -469,9 +491,7 @@ export function buildViewLinksForIssue(
 export function buildAgentFixPlan(ctx: DiagnosticSyncContext): AgentFixPlanItem[] {
   const live = ctx.live
   const amounts = ctx.amounts
-  const activeKeys = getCategoryScopedActiveKeys(ctx).filter(
-    key => !ctx.reviewedFields.has(key),
-  )
+  const activeKeys = getAgentIntelligenceActiveKeys(ctx)
   const issues = buildAllDiagnosticIssues(live, amounts)
   const issueByKey = new Map(issues.map(i => [i.issueKey, i]))
 

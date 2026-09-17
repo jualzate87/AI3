@@ -11,6 +11,11 @@
   width: 100%;
 }
 
+.containerMini {
+  padding: 0;
+  background: transparent;
+}
+
 /* Fade gradient above the input */
 .fade {
   position: absolute;
@@ -37,6 +42,13 @@
   border: 1px solid #d4d7dc;
   border-radius: 32px;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+}
+
+.inputBoxMini {
+  gap: var(--space-component-gap-medium, 8px);
+  padding: var(--space-component-inline-padding-x-large, 12px)
+    var(--space-component-inline-padding-xx-large, 16px);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.12);
 }
 
 /* Text area - grows with content */
