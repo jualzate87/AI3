@@ -5,6 +5,11 @@ import { Button } from '@ids-ts/button'
 import '@ids-ts/button/dist/main.css'
 import CoachTip from './CoachTip'
 import DocReviewProgress from './DocReviewProgress'
+import {
+  INTELLIGENCE_CONTINUE_CTA,
+  INTELLIGENCE_READY_COACH_TITLE,
+  INTELLIGENCE_STEP2_TITLE,
+} from '../agent-review/agentIntelligenceCopy'
 import styles from '../../styles/data-review/Phase1Banner.module.css'
 
 interface Phase1BannerProps {
@@ -72,7 +77,7 @@ export default function Phase1Banner({
               <span className={styles.subtitle}>
                 {flagsCleared
                   ? 'All source documents and import flags are resolved. Ready to move to Step 2?'
-                  : `${flagsRemaining} import ${flagsRemaining === 1 ? 'flag remains' : 'flags remain'} — you can continue to AI diagnostics or resolve them first.`}
+                  : `${flagsRemaining} import ${flagsRemaining === 1 ? 'flag remains' : 'flags remain'} — you can continue to ${INTELLIGENCE_STEP2_TITLE} or resolve them first.`}
               </span>
             </>
           ) : (
@@ -108,7 +113,7 @@ export default function Phase1Banner({
         {docsReviewComplete && onContinue ? (
           <CoachTip
             open={!!continueCoachOpen && complete}
-            title="Ready for AI diagnostics"
+            title={INTELLIGENCE_READY_COACH_TITLE}
             message="Source document review is complete. Continue to Step 2 for compliance, year-over-year, and planning insights."
             onClose={() => onDismissContinueCoach?.()}
             position="bottom"
@@ -122,7 +127,7 @@ export default function Phase1Banner({
                 onContinue()
               }}
             >
-              Continue to AI diagnostics <ArrowRight size="small" />
+              {INTELLIGENCE_CONTINUE_CTA} <ArrowRight size="small" />
             </Button>
           </CoachTip>
         ) : null}

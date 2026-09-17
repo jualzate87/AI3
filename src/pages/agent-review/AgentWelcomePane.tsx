@@ -1,4 +1,4 @@
-import intuitAssistSparkle from '../../assets/icons/intuit-assist-sparkle.svg'
+import intuitIntelligenceLogo from '../../assets/icons/intuit-intelligence-logo-small.svg'
 import {
   STARTER_PROMPTS,
   WELCOME_GREETING_NAME,
@@ -18,7 +18,7 @@ export default function AgentWelcomePane({
   return (
     <div className={styles.container}>
       <div className={styles.logoWrapper}>
-        <img src={intuitAssistSparkle} alt="" className={styles.logoGif} />
+        <img src={intuitIntelligenceLogo} alt="" className={styles.logoGif} />
       </div>
 
       <div className={styles.greeting}>

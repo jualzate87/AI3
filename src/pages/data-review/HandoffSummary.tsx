@@ -9,7 +9,7 @@ import '@ids-ts/typography/dist/main.css'
 import { Tabs, Tab } from '@ids-ts/tabs'
 import '@ids-ts/tabs/dist/main.css'
 import { AiSparkles, ChevronRight, CircleCheck, CircleCheckFill } from '@design-systems/icons'
-import intuitAssistIcon from '../../assets/icons/intuit-assist.svg'
+import intuitIntelligenceLogo from '../../assets/icons/intuit-intelligence-logo-small.svg'
 import type { HandoffJump, HandoffSnapshot } from '../../data/handoffSnapshot'
 import type { LiveAmounts } from '../../data/liveReturn'
 import type { ReviewChecklistState } from '../../data/reviewChecklist'
@@ -299,7 +299,7 @@ function ConversationalBriefCard({ brief, enterAnim = false }: { brief: Conversa
     return (
       <div className={styles.briefLoading} aria-busy="true" aria-live="polite">
         <div className={styles.briefLoadingIconRow}>
-          <img src={intuitAssistIcon} alt="" className={styles.briefLoadingAssistIcon} />
+          <img src={intuitIntelligenceLogo} alt="" className={styles.briefLoadingAssistIcon} />
           <span className={styles.briefLoadingSparkle} aria-hidden>
             <AiSparkles size="small" />
           </span>

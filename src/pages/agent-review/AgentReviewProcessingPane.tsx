@@ -1,6 +1,6 @@
 import { useMemo, useState } from 'react'
 import { ChevronDown, CircleCheck, Document } from '@design-systems/icons'
-import intuitAssistSparkle from '../../assets/icons/intuit-assist-sparkle.svg'
+import intuitIntelligenceLogo from '../../assets/icons/intuit-intelligence-logo-small.svg'
 import {
   CTA_SHOW_THINKING,
   CTA_VIEW_RETURN_SUMMARY,
@@ -68,7 +68,7 @@ export default function AgentReviewProcessingPane({
         <div className={styles.layout}>
           <div className={styles.mainColumn}>
             <div className={styles.lockup}>
-              <img src={intuitAssistSparkle} alt="" className={styles.sparkleIcon} />
+              <img src={intuitIntelligenceLogo} alt="" className={styles.sparkleIcon} />
               <h1 className={styles.title}>{INTELLIGENCE_SHELL_TITLE}</h1>
             </div>
 

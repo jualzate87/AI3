@@ -4,6 +4,7 @@ import { NumericBadge } from '@ids-ts/badge'
 import '@ids-ts/badge/dist/main.css'
 import { AI_DIAGNOSTIC_CATEGORIES } from './aiDiagnosticCategories'
 import intuitIntelligenceLogo from '../../assets/icons/intuit-intelligence-logo-small.svg'
+import { INTELLIGENCE_NAV_LABEL } from '../agent-review/agentIntelligenceCopy'
 import ModeSegmentedControl from '../../components/ModeSegmentedControl'
 import styles from '../../styles/check-return/CheckReturnNav.module.css'
 
@@ -130,7 +131,7 @@ function NavAiDiagnosticsHeader({
     >
       <span className={styles.navAiDiagnosticsLeading}>
         <img src={intuitIntelligenceLogo} alt="" className={styles.navAiDiagnosticsLogo} />
-        <span className={styles.navAiDiagnosticsLabel}>AI review</span>
+        <span className={styles.navAiDiagnosticsLabel}>{INTELLIGENCE_NAV_LABEL}</span>
       </span>
       <span className={styles.navAiCountBadge}>
         <NumericBadge quantity={String(count)} maxLimit={99} />

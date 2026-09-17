@@ -386,16 +386,12 @@ function InitialDiagnosisFeed({
   phase,
   fixPlan,
   collapseCards,
-  onFixIssueKey,
 }: {
   syncCtx: ReturnType<typeof getAgentFixContext>
   phase: AgentPhase
   fixPlan: AgentFixPlanItem[]
   collapseCards: boolean
-  onFixIssueKey: (issueKey: AgentFixPlanItem['issueKey']) => void
 }) {
-  const canFixActions = phase === 'ready' || phase === 'awaiting-next'
-  const fixableKeys = useMemo(() => new Set(fixPlan.map(item => item.issueKey)), [fixPlan])
   const activeIssueKeys = useMemo(() => getCategoryScopedActiveKeys(syncCtx), [syncCtx])
   const reviewCards = useMemo(() => {
     const issues = buildAllDiagnosticIssues(syncCtx.live, syncCtx.amounts)
@@ -448,12 +444,6 @@ function InitialDiagnosisFeed({
               card={card}
               expanded={!collapseCards && expandedCardId === card.id}
               onExpandedChange={next => handleToggle(card.id, next)}
-              canFix={
-                canFixActions &&
-                !!card.issueKey &&
-                fixableKeys.has(card.issueKey)
-              }
-              onFix={onFixIssueKey}
             />
           ))}
         </div>
@@ -1035,7 +1025,6 @@ export default function AgentDiagnosticsPanel() {
                           phase={phase}
                           fixPlan={fixPlan}
                           collapseCards={collapseDiagnosisCards}
-                          onFixIssueKey={handleFixByIssueKey}
                         />
                         {phase === 'ready' && diagnosisIssueCount > 0 && openCount > 0 && (
                           <div

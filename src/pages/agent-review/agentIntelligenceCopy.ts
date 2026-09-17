@@ -1,3 +1,7 @@
+import {
+  issueCardToReviewModel,
+  type AgentReviewCardModel,
+} from '../../lib/agentDiagnosisReview'
 import { computeLiveReturn, type LiveAmounts, type LiveReturnTotals, SEED_AMOUNTS } from '../../data/liveReturn'
 import { REVIEWER_NAME } from '../../hooks/useSyncedReviewState'
 import { buildPhase2Issues, type IssueCard } from '../data-review/AgentReportPane'
@@ -19,6 +23,43 @@ const fmtUsd = (n: number) => `$${n.toLocaleString()}`
 /* ── Shell & navigation ── */
 
 export const INTELLIGENCE_SHELL_TITLE = 'Return review by Intuit Intelligence'
+
+/** Panel header in DataReviewPage / AgentReportPane side rail */
+export const INTELLIGENCE_PANEL_LABEL = 'Intuit Intelligence'
+
+/** Toolbar / left-nav label paired with the Intelligence wordmark */
+export const INTELLIGENCE_NAV_LABEL = 'AI review'
+
+export const INTELLIGENCE_STEP2_TITLE = 'Intuit Intelligence'
+
+export const INTELLIGENCE_STEP2_BANNER_TITLE = 'Step 2: Intuit Intelligence'
+
+export const INTELLIGENCE_STEP2_WELCOME_TITLE = 'Intuit Intelligence'
+
+export const INTELLIGENCE_CONTINUE_CTA = 'Continue to Intuit Intelligence'
+
+export const INTELLIGENCE_READY_COACH_TITLE = 'Ready for Intuit Intelligence'
+
+export const INTELLIGENCE_CLOSE_ARIA = 'Close AI review'
+
+export function intelligenceToolbarAriaLabel(
+  reviewed?: number,
+  total?: number,
+  remaining?: number,
+): string {
+  if (remaining != null && remaining > 0 && reviewed != null && total != null) {
+    return `${INTELLIGENCE_NAV_LABEL}, ${reviewed} of ${total} reviewed, ${remaining} remaining`
+  }
+  return INTELLIGENCE_NAV_LABEL
+}
+
+export function intelligenceBannerProgressAriaLabel(
+  reviewed: number,
+  total: number,
+  remaining: number,
+): string {
+  return `Open ${INTELLIGENCE_PANEL_LABEL} — ${reviewed} of ${total} diagnostics reviewed, ${remaining} remaining`
+}
 
 export const INTELLIGENCE_SUBHEADER_CTA = 'Review return'
 
@@ -225,6 +266,49 @@ export function intelligenceTableHeaders(issue: IssueCard): string[] {
   const headers = [...issue.tableHeaders]
   if (headers.length > 0) headers[headers.length - 1] = 'Action'
   return headers
+}
+
+function intelligenceBadgeMeta(issue: IssueCard): Pick<
+  AgentReviewCardModel,
+  'badgeLabel' | 'badgeStatus' | 'badgePriority' | 'badgeCapitalization' | 'showBadgeIcon'
+> {
+  const badge = intelligenceBadge(issue)
+  return {
+    badgeLabel: badge.label,
+    badgeStatus:
+      badge.tone === 'orange' ? 'warning' : badge.tone === 'green' ? 'success' : 'info',
+    badgePriority: 'secondary',
+    badgeCapitalization: 'caps',
+    showBadgeIcon: false,
+  }
+}
+
+/** Figma-aligned card model — same table/layout as Check return agent feed. */
+export function buildIntelligenceReviewModel(
+  issue: IssueCard,
+  live: LiveReturnTotals,
+  amounts: LiveAmounts,
+  totalWithholding: number,
+): AgentReviewCardModel {
+  const model = issueCardToReviewModel(issue)
+  model.title = intelligenceCardTitle(issue, totalWithholding)
+  model.summary = intelligenceSummary(issue.issueKey, live, amounts) || issue.summary
+  model.suggestedActions = intelligenceSuggestedFixes(issue.issueKey)
+  Object.assign(model, intelligenceBadgeMeta(issue))
+
+  if (issue.issueKey === 'importMismatches') {
+    model.tableHeaders = intelligenceTableHeaders(issue)
+    const rows = intelligenceTableRows(issue)
+    model.tableRows = rows.map((row, index) => ({
+      ...model.tableRows[index],
+      id: `${issue.issueKey}-${index}`,
+      label: row.label,
+      cols: row.cols,
+      total: row.total,
+    }))
+  }
+
+  return model
 }
 
 export const INTELLIGENCE_REASONING_TITLE = 'Applying fixes'

@@ -2,16 +2,17 @@ import { useState } from 'react'
 import { ChevronDown, ChevronUp, CircleCheck, NewWindow } from '@design-systems/icons'
 import { Badge, InfoBadgeIcon } from '@ids-ts/badge'
 import '@ids-ts/badge/dist/main.css'
-import { Button } from '@ids-ts/button'
-import '@ids-ts/button/dist/main.css'
 import { Checkbox } from '@ids-ts/checkbox'
 import '@ids-ts/checkbox/dist/main.css'
 import { LinkActionButton } from '@ids-ts/link-action-button'
 import '@ids-ts/link-action-button/dist/main.css'
 import AgentSparkleIcon from '../../components/AgentSparkleIcon/AgentSparkleIcon'
 import type { AgentReviewCardModel } from '../../lib/agentDiagnosisReview'
-import { buildTableViewLinkAriaLabel, openAgentViewLinkInWindow } from '../../lib/agentAutoFix'
-import type { Phase2IssueKey } from '../data-review/phase2FlagSync'
+import {
+  buildTableViewLinkAriaLabel,
+  openAgentViewLinkInWindow,
+  type AgentViewLink,
+} from '../../lib/agentAutoFix'
 import styles from '../../styles/check-return/AgentDiagnosticExpandableCard.module.css'
 
 type Props = {
@@ -19,12 +20,12 @@ type Props = {
   /** Controlled expanded state (accordion parent owns this). */
   expanded: boolean
   onExpandedChange: (expanded: boolean) => void
-  canFix?: boolean
-  onFix?: (issueKey: Phase2IssueKey) => void
   /** When true, card is in a stacked accordion list (shared container styling). */
   inAccordionList?: boolean
   /** First/last item in accordion list for corner radius. */
   accordionPosition?: 'first' | 'middle' | 'last' | 'only'
+  /** In-app navigation (embedded panel); defaults to opening a new window. */
+  onViewLinkClick?: (link: AgentViewLink) => void
 }
 
 function badgeStatusForCard(
@@ -45,10 +46,9 @@ export default function AgentDiagnosticExpandableCard({
   card,
   expanded,
   onExpandedChange,
-  canFix = false,
-  onFix,
   inAccordionList = false,
   accordionPosition = 'only',
+  onViewLinkClick,
 }: Props) {
   const [checkedIds, setCheckedIds] = useState<Set<string>>(new Set())
 
@@ -189,7 +189,9 @@ export default function AgentDiagnosticExpandableCard({
                           size="small"
                           weight="regular"
                           alignment="right"
-                          onClick={() => openAgentViewLinkInWindow(row.viewLink!)}
+                          onClick={() =>
+                            (onViewLinkClick ?? openAgentViewLinkInWindow)(row.viewLink!)
+                          }
                           aria-label={buildTableViewLinkAriaLabel(row.viewLink)}
                         >
                           <span className={styles.viewLinkContent}>
@@ -214,7 +216,7 @@ export default function AgentDiagnosticExpandableCard({
               <div className={styles.suggestedFixHeader}>
                 <AgentSparkleIcon size="medium" className={styles.suggestedFixIcon} />
                 <span className={styles.suggestedFixTitle}>
-                  {card.variant === 'needs-review' ? 'Suggested next steps' : 'Suggested fix'}
+                  {card.variant === 'needs-review' ? 'Suggested next steps' : 'Recommended next steps'}
                 </span>
               </div>
               <ul className={styles.suggestedFixList}>
@@ -227,13 +229,6 @@ export default function AgentDiagnosticExpandableCard({
             </div>
           )}
 
-          {canFix && card.issueKey && onFix && (
-            <div className={styles.cardFooter}>
-              <Button priority="primary" size="small" onClick={() => onFix(card.issueKey!)}>
-                Fix this
-              </Button>
-            </div>
-          )}
         </div>
       )}
     </article>

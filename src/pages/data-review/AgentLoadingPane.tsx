@@ -1,6 +1,11 @@
 import { useEffect, useState, ReactNode } from 'react'
 import { Close } from '@design-systems/icons'
-import intuitAssistIcon from '../../assets/icons/intuit-assist.svg'
+import intuitIntelligenceLogo from '../../assets/icons/intuit-intelligence-logo-small.svg'
+import {
+  INTELLIGENCE_LOADING_SUBTEXT,
+  INTELLIGENCE_LOADING_TITLE,
+  INTELLIGENCE_PANEL_LABEL,
+} from '../agent-review/agentIntelligenceCopy'
 import styles from '../../styles/data-review/AgentLoadingPane.module.css'
 
 interface AgentLoadingPaneProps {
@@ -31,8 +36,8 @@ export default function AgentLoadingPane({
   closing = false,
   reportContent,
   embedded = false,
-  loadingTitle = 'Assessing the return…',
-  loadingSubtext = 'Preparing diagnostics…',
+  loadingTitle = INTELLIGENCE_LOADING_TITLE,
+  loadingSubtext = INTELLIGENCE_LOADING_SUBTEXT,
 }: AgentLoadingPaneProps) {
   const [phase, setPhase] = useState<'spinning' | 'greeting' | 'exiting'>('spinning')
 
@@ -56,8 +61,8 @@ export default function AgentLoadingPane({
         <div className={styles.header}>
           <div className={styles.headerLeft} />
           <div className={styles.headerTitle}>
-            <img src={intuitAssistIcon} alt="" className={styles.assistIcon} />
-            <span className={styles.titleText}>AI diagnostics</span>
+            <img src={intuitIntelligenceLogo} alt="" className={styles.assistIcon} />
+            <span className={styles.titleText}>{INTELLIGENCE_PANEL_LABEL}</span>
           </div>
           <div className={styles.headerRight}>
             <button className={styles.iconBtn} aria-label="Close" onClick={onClose}>
@@ -75,8 +80,8 @@ export default function AgentLoadingPane({
               <div className={styles.spinOnlyPhase}>
                 <div className={styles.spinningIcon}>
                   <img
-                    src={intuitAssistIcon}
-                    alt="AI diagnostics is assessing the return"
+                    src={intuitIntelligenceLogo}
+                    alt="Intuit Intelligence is reviewing the return"
                     className={styles.greetingIconImg}
                   />
                 </div>
@@ -86,7 +91,7 @@ export default function AgentLoadingPane({
             {(phase === 'greeting' || phase === 'exiting') && (
               <div className={phase === 'exiting' ? styles.greetingExiting : styles.greetingPhase}>
                 <div className={styles.spinningIcon}>
-                  <img src={intuitAssistIcon} alt="" className={styles.greetingIconImg} />
+                  <img src={intuitIntelligenceLogo} alt="" className={styles.greetingIconImg} />
                 </div>
                 <div className={styles.greetingText}>
                   <h2 className={styles.greetingTitle}>{loadingTitle}</h2>

@@ -12,6 +12,7 @@ import intuitWordmark from '../assets/intuit-wordmark.svg'
 import {
   INTELLIGENCE_CHAT_PLACEHOLDER,
   INTELLIGENCE_LEGAL_DISCLAIMER,
+  INTELLIGENCE_CLOSE_ARIA,
   INTELLIGENCE_LOADING_SUBTEXT,
   INTELLIGENCE_LOADING_TITLE,
   STARTER_PROMPT_CATCH_UP,
@@ -96,7 +97,7 @@ export default function AgentReviewPage() {
       <header className={styles.header}>
         <img src={intuitWordmark} alt="Intuit" className={styles.wordmark} />
         <IconControl
-          label="Close AI review"
+          label={INTELLIGENCE_CLOSE_ARIA}
           size="medium"
           shape="square"
           onClick={handleClose}
@@ -132,7 +133,6 @@ export default function AgentReviewPage() {
                 showReport={!isAssessing}
                 reportContent={
                   <AgentReviewDiagnosticsPane
-                    onFixIssue={openWorkspace}
                     onFixIndividually={() => openWorkspace()}
                     onAcceptAll={beginProcessing}
                   />

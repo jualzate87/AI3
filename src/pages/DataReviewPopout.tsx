@@ -1,8 +1,10 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { useSearchParams } from 'react-router-dom'
-import { ChevronRight, CircleCheck, Close, DotsSix } from '@design-systems/icons'
+import { ChevronRight, CircleCheck, CircleCheckFill, Close, DotsSix } from '@design-systems/icons'
 import { Button } from '@ids-ts/button'
 import '@ids-ts/button/dist/main.css'
+import ToastMessage from '@ids-ts/toast-message'
+import '@ids-ts/toast-message/dist/main.css'
 import { IconControl } from '@ids-ts/icon-control'
 import '@ids-ts/icon-control/dist/main.css'
 import ReviewTab from './data-review/ReviewTab'
@@ -73,6 +75,7 @@ import {
   SOURCE_DOC_POPOUT_NAV_CHANNEL,
   type SourceDocumentPopoutContext,
 } from '../lib/prototypeRoutes'
+import toastHostStyles from '../components/PrototypeToastHost/PrototypeToastHost.module.css'
 import dragStyles from '../styles/data-review/DragHandle.module.css'
 import styles from '../styles/data-review/DataReviewPopout.module.css'
 
@@ -132,6 +135,7 @@ export default function DataReviewPopout() {
   const [unsavedModalOpen, setUnsavedModalOpen] = useState(false)
   const [recalculatedFields, setRecalculatedFields] = useState<Set<string>>(new Set())
   const [saveStatusVisible, setSaveStatusVisible] = useState(false)
+  const [saveToastOpen, setSaveToastOpen] = useState(false)
 
   // Popout is always the editable preparer source-doc workspace, even when opened
   // from Check Return while the stored demo role is reviewer.
@@ -286,6 +290,7 @@ export default function DataReviewPopout() {
     setSessionDirty(false)
     setUnsavedModalOpen(false)
     setSaveStatusVisible(true)
+    setSaveToastOpen(true)
   }, [commitUnsavedEdits, flashRecalculatedFields, getSyncedSnapshot])
 
   useEffect(() => {
@@ -924,6 +929,21 @@ export default function DataReviewPopout() {
         onStay={handleStayEditing}
         onLeaveWithoutSaving={handleLeaveWithoutSaving}
       />
+
+      <div className={toastHostStyles.host} aria-live="polite">
+        <ToastMessage
+          open={saveToastOpen}
+          dismissible
+          showIcon
+          duration={6000}
+          actionLabel="Dismiss"
+          icon={<CircleCheckFill focusable={false} data-testid="circleCheckIcon" />}
+          onClose={() => setSaveToastOpen(false)}
+          onActionClick={() => setSaveToastOpen(false)}
+        >
+          Return recalculated. All changes saved.
+        </ToastMessage>
+      </div>
     </div>
   )
 }

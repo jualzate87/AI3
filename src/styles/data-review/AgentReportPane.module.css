@@ -381,7 +381,18 @@
   --color-action-standard-active: #174d87;
 }
 
-/* ── Expandable card bundle ── */
+/* ── Figma-aligned diagnostic accordion (AgentDiagnosticExpandableCard) ── */
+.diagnosticAccordion {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  box-sizing: border-box;
+  overflow: hidden;
+  border: 1px solid var(--color-container-border-primary, #d4d7dc);
+  border-radius: var(--radius-small, 4px);
+}
+
+/* ── Expandable card bundle (legacy) ── */
 .cardBundle {
   display: flex;
   flex-direction: column;

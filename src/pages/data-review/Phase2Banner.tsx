@@ -3,7 +3,11 @@ import { Badge, SuccessBadgeIcon } from '@ids-ts/badge'
 import '@ids-ts/badge/dist/main.css'
 import { Button } from '@ids-ts/button'
 import '@ids-ts/button/dist/main.css'
-import intuitAssistIcon from '../../assets/icons/intuit-assist.svg'
+import intuitIntelligenceLogo from '../../assets/icons/intuit-intelligence-logo-small.svg'
+import {
+  INTELLIGENCE_STEP2_BANNER_TITLE,
+  intelligenceBannerProgressAriaLabel,
+} from '../agent-review/agentIntelligenceCopy'
 import styles from '../../styles/data-review/Phase1Banner.module.css'
 
 interface Phase2BannerProps {
@@ -35,7 +39,7 @@ export default function Phase2Banner({
   return (
     <div className={`${styles.banner} ${complete ? styles.bannerComplete : ''}`}>
       <div className={styles.left}>
-        <img src={intuitAssistIcon} alt="" className={styles.icon} />
+        <img src={intuitIntelligenceLogo} alt="" className={styles.icon} />
         <div className={styles.text}>
           {complete ? (
             <>
@@ -44,7 +48,7 @@ export default function Phase2Banner({
             </>
           ) : (
             <>
-              <span className={styles.title}>Step 2: AI diagnostics</span>
+              <span className={styles.title}>{INTELLIGENCE_STEP2_BANNER_TITLE}</span>
               <span className={styles.subtitle}>
                 Filing stoppers, compliance checks, and opportunities for this return.
               </span>
@@ -61,7 +65,7 @@ export default function Phase2Banner({
               size="medium"
               className={styles.counterLink}
               onClick={onOpenDiagnostics}
-              aria-label={`Open AI diagnostics — ${reviewed} of ${total} diagnostics reviewed, ${remaining} diagnostics remaining`}
+              aria-label={intelligenceBannerProgressAriaLabel(reviewed, total, remaining)}
             >
               <strong className={styles.counterNum}>{reviewed}</strong> of {total} diagnostics reviewed
             </Button>

@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from 'react'
+import { useState, useEffect, useRef, useMemo } from 'react'
 import { Close, Plus, ChevronDown, ChevronRight, CircleCheck, Send } from '@design-systems/icons'
 import { Badge, SuccessBadgeIcon } from '@ids-ts/badge'
 import '@ids-ts/badge/dist/main.css'
@@ -8,7 +8,14 @@ import { IconControl } from '@ids-ts/icon-control'
 import '@ids-ts/icon-control/dist/main.css'
 import { ProgressBar } from '@ids-ts/progress-bar'
 import '@ids-ts/progress-bar/dist/main.css'
-import intuitAssistIcon from '../../assets/icons/intuit-assist.svg'
+import intuitIntelligenceLogo from '../../assets/icons/intuit-intelligence-logo-small.svg'
+import AgentDiagnosticExpandableCard from '../check-return/AgentDiagnosticExpandableCard'
+import {
+  buildIntelligenceReviewModel,
+  INTELLIGENCE_PANEL_LABEL,
+  intelligenceIntro,
+} from '../agent-review/agentIntelligenceCopy'
+import type { AgentViewLink } from '../../lib/agentAutoFix'
 import compareOthersIcon from '../../assets/icons/compare-others.svg'
 import federalTaxesIcon from '../../assets/icons/federal-taxes.svg'
 import scannerIcon from '../../assets/icons/scanner.svg'
@@ -421,7 +428,7 @@ function buildNecScheduleCIssue(): DiagnosticIssueCard {
         viewFormLabel: 'Schedule C',
       },
       {
-        label: 'Income plus SE tax when added',
+        label: 'Income plus SE tax when posted',
         cols: [
           fmtUsd(Math.round(NEC_SOURCE_AMOUNT * 0.4665)),
           'Rough combined cost of income tax at 35% plus self-employment tax before any expenses.',
@@ -930,7 +937,7 @@ export default function AgentReportPane({
   const [showCompletion, setShowCompletion] = useState(false)
   const prevAllReviewed = useRef(false)
   const [inputValue, setInputValue] = useState('')
-  const [expandedCard, setExpandedCard] = useState<string | null>('Filing stoppers')
+  const [expandedIssueKey, setExpandedIssueKey] = useState<IssueKey | null>(null)
   const [issueDetailOpen, setIssueDetailOpen] = useState<string | null>(null)
   const [issueDetailClosing, setIssueDetailClosing] = useState(false)
 
@@ -1006,12 +1013,65 @@ export default function AgentReportPane({
   const isLastIssue = (key: string) => activeOrder.indexOf(key as IssueKey) === activeOrder.length - 1
   const isFirstIssue = (key: string) => activeOrder.indexOf(key as IssueKey) === 0
 
-  const handleCardClick = (label: string) => {
-    setExpandedCard(prev => {
-      const next = prev === label ? null : label
-      onYoyToggle?.(false)
-      return next
-    })
+  const reviewCards = useMemo(() => {
+    const issues = buildAllDiagnosticIssues(live, amounts)
+    return activeOrder
+      .map(key => issues.find(i => i.issueKey === key))
+      .filter((issue): issue is DiagnosticIssueCard => issue != null)
+      .map(issue =>
+        buildIntelligenceReviewModel(issue, live, amounts, live.totalWithholding),
+      )
+  }, [activeOrder, live, amounts])
+
+  const accordionPosition = (
+    index: number,
+    length: number,
+  ): 'first' | 'middle' | 'last' | 'only' => {
+    if (length <= 1) return 'only'
+    if (index === 0) return 'first'
+    if (index === length - 1) return 'last'
+    return 'middle'
+  }
+
+  const handleViewLink = (link: AgentViewLink) => {
+    if (link.diagnostic) {
+      onDiagnosticFocus?.(link.diagnostic)
+      onHighlightField?.(resolveHighlightField(link.diagnostic), link.diagnostic)
+    }
+    if (link.inputScreens) {
+      onNavigateToTab?.('overview')
+      return
+    }
+    if (link.schAInterest) {
+      onNavigateToTab?.(undefined, undefined, link.field ?? 'mortgage1098', undefined, 'details')
+      return
+    }
+    if (link.formId) {
+      onOpenForm?.(link.formId)
+      return
+    }
+    if (link.tab === 'questionnaire') {
+      onNavigateToTab?.(
+        'questionnaire',
+        undefined,
+        undefined,
+        link.questionnaireResponseId,
+      )
+      return
+    }
+    if (link.tab && link.field) {
+      onNavigateToTab?.(
+        link.tab as NavigateTab,
+        undefined,
+        link.field,
+        undefined,
+        'preview',
+      )
+      return
+    }
+    if (link.tab) {
+      onNavigateToTab?.(link.tab as NavigateTab)
+    }
   }
 
   const getIssueConfig = (key: string) => ALL_ISSUES.find(i => i.issueKey === key) ?? null
@@ -1071,8 +1131,8 @@ export default function AgentReportPane({
         <div className={styles.header}>
           <div className={styles.headerLeft} />
           <div className={styles.headerTitle}>
-            <img src={intuitAssistIcon} alt="" className={styles.assistIcon} />
-            <span className={styles.titleText}>AI diagnostics</span>
+            <img src={intuitIntelligenceLogo} alt="" className={styles.assistIcon} />
+            <span className={styles.titleText}>{INTELLIGENCE_PANEL_LABEL}</span>
           </div>
           <div className={styles.headerRight}>
             <IconControl aria-label="Close" onClick={onClose}>
@@ -1086,7 +1146,7 @@ export default function AgentReportPane({
         <div className={styles.chat}>
 
           <p className={styles.agentMessage}>
-            Filing stoppers, compliance checks, and opportunities for this return.
+            {intelligenceIntro(totalActive)}
           </p>
 
           <div className={styles.scoreCard}>
@@ -1133,98 +1193,39 @@ export default function AgentReportPane({
             </div>
           )}
 
-          <div className={styles.cardBundle} style={allReviewed && showCompletion ? { display: 'none' } : {}}>
-            {REPORT_CARDS.map((card, i) => {
-              const visibleKeys = card.keys.filter(k => activeOrder.includes(k as IssueKey))
-              if (visibleKeys.length === 0) return null
-              const remaining = visibleKeys.filter(k => !reviewedFields.has(k)).length
-              const cardDone = remaining === 0
-              return (
-              <div key={card.label}>
-                <button
-                  className={`${styles.card} ${styles[`card_${card.position}`]} ${expandedCard === card.label ? styles.cardActive : ''}`}
-                  onClick={() => handleCardClick(card.label)}
-                >
-                  <div className={styles.cardIcon}>{CARD_ICONS[i]}</div>
-                  <div className={styles.cardContent}>
-                    <span className={styles.cardLabel}>{card.label}</span>
-                    {cardDone
-                      ? <span className={`${styles.badge} ${styles.badgeGreen}`}>✓</span>
-                      : <span className={`${styles.badge} ${card.badgeColor === 'red' ? styles.badgeRed : card.badgeColor === 'orange' ? styles.badgeOrange : styles.badgeBlue}`}>{remaining}</span>
-                    }
-                  </div>
-                  <ChevronDown size="small" className={`${styles.chevron} ${expandedCard === card.label ? styles.chevronUp : ''}`} />
-                </button>
-
-                {expandedCard === card.label && (
-                  <div className={styles.findingCard} style={{ gap: 12 }}>
-                    {visibleKeys.map((key) => {
-                      const issue = getIssueConfig(key)
-                      if (!issue) return null
-                      const signOff = reviewedFields.get(key)
-                      const isReviewed = !!signOff
-                      const issueNum = activeOrder.indexOf(key as IssueKey) + 1
-                      return (
-                        <div
-                          key={key}
-                          role="button"
-                          tabIndex={0}
-                          className={`${styles.findingInner} ${isReviewed ? styles.findingInnerReviewed : ''}`}
-                          onClick={() => {
-                            const field = resolveHighlightField(key)
-                            onHighlightField?.(field, key as IssueKey)
-                          }}
-                          onKeyDown={e => {
-                            if (e.key === 'Enter' || e.key === ' ') {
-                              e.preventDefault()
-                              const field = resolveHighlightField(key)
-                              onHighlightField?.(field, key as IssueKey)
-                            }
-                          }}
-                        >
-                          <div className={styles.findingTitleRow}>
-                            {isReviewed ? <span className={styles.findingCheckIcon}><CircleCheck size="small" /></span> : <span className={styles.findingDot} style={{ background: issue.dotColor === 'blue' ? '#0077c5' : issue.dotColor === 'orange' ? '#d68000' : '#c22929' }} />}
-                            <span className={styles.findingTitle}>{issue.title}</span>
-                            <span className={styles.issueChip}>{issueNum} of {activeOrder.length}</span>
-                            {isReviewed && (
-                              <Badge
-                                className={styles.findingReviewedBadge}
-                                status="success"
-                                label="Reviewed"
-                                capitalization="sentence"
-                                priority="secondary"
-                                shape="round"
-                              >
-                                <SuccessBadgeIcon />
-                              </Badge>
-                            )}
-                          </div>
-                          {signOff && <span className={styles.findingSignOff}>{signOff.by} · {signOff.at}</span>}
-                          <p className={styles.findingBody}>{issue.summary}</p>
-                          <div className={styles.findingActions} onClick={e => e.stopPropagation()}>
-                            <Tooltip text="See the root cause, tax impact, and suggested next steps for this finding">
-                              <Button priority="primary" size="small" onClick={() => openDetail(key)}>See details <ChevronRight size="small" /></Button>
-                            </Tooltip>
-                            <Tooltip text={isReviewed && signOff
-                              ? `Reviewed · ${signOff.by} · ${signOff.at}`
-                              : (isReviewed ? 'Click to unmark' : 'Mark as reviewed')}>
-                              <IconControl
-                                className={`${styles.findingMarkReviewedBtn} ${isReviewed ? styles.findingMarkReviewedBtnActive : ''}`}
-                                aria-label={isReviewed ? `Unmark ${issue.title} as reviewed` : `Mark ${issue.title} as reviewed`}
-                                onClick={() => onMarkReviewed?.(key)}
-                              >
-                                <CircleCheck size="small" />
-                              </IconControl>
-                            </Tooltip>
-                          </div>
-                        </div>
+          {reviewCards.length > 0 && (
+            <div
+              className={styles.diagnosticAccordion}
+              role="list"
+              aria-label="Diagnostic issues"
+              style={allReviewed && showCompletion ? { display: 'none' } : undefined}
+            >
+              {reviewCards.map((card, index) => (
+                <AgentDiagnosticExpandableCard
+                  key={card.id}
+                  card={card}
+                  expanded={expandedIssueKey === card.issueKey}
+                  onExpandedChange={next => {
+                    onYoyToggle?.(false)
+                    setExpandedIssueKey(next ? (card.issueKey ?? null) : null)
+                    if (next && card.issueKey) {
+                      onHighlightField?.(
+                        resolveHighlightField(card.issueKey),
+                        card.issueKey,
                       )
-                    })}
-                  </div>
-                )}
-              </div>
-            )})}
-          </div>
+                      onDiagnosticFocus?.(card.issueKey)
+                    } else {
+                      onHighlightField?.(null, null)
+                      onDiagnosticFocus?.(null)
+                    }
+                  }}
+                  inAccordionList
+                  accordionPosition={accordionPosition(index, reviewCards.length)}
+                  onViewLinkClick={handleViewLink}
+                />
+              ))}
+            </div>
+          )}
 
         </div>
       </div>

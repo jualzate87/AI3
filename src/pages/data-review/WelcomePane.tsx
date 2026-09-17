@@ -1,7 +1,8 @@
 import { ArrowRight } from '@design-systems/icons'
 import { Button } from '@ids-ts/button'
 import '@ids-ts/button/dist/main.css'
-import intuitAssistIcon from '../../assets/icons/intuit-assist.svg'
+import intuitIntelligenceLogo from '../../assets/icons/intuit-intelligence-logo-small.svg'
+import { INTELLIGENCE_STEP2_WELCOME_TITLE } from '../agent-review/agentIntelligenceCopy'
 import styles from '../../styles/data-review/WelcomePane.module.css'
 
 interface WelcomePaneProps {
@@ -15,8 +16,8 @@ interface WelcomePaneProps {
 
 /**
  * ProtoC entry / orientation screen, styled after the IDS GenUX "Welcome" pattern
- * (Intuit Assist icon + heading + subheading). Introduces the two-step sequential
- * review (import accuracy → AI diagnostics) before the CPA starts. Brief by
+ * (Intuit Intelligence icon + heading + subheading). Introduces the two-step sequential
+ * review (import accuracy → Intuit Intelligence) before the CPA starts. Brief by
  * design - no skip for this prototype.
  */
 export default function WelcomePane({ clientName, flagCount, onBegin }: WelcomePaneProps) {
@@ -24,7 +25,7 @@ export default function WelcomePane({ clientName, flagCount, onBegin }: WelcomeP
     <div className={styles.overlay}>
       <div className={styles.card}>
         <div className={styles.lockup}>
-          <img src={intuitAssistIcon} alt="" className={styles.assistIcon} />
+          <img src={intuitIntelligenceLogo} alt="" className={styles.assistIcon} />
           <h1 className={styles.title}>Reviewing {clientName}&rsquo;s return</h1>
           <p className={styles.lede}>We&rsquo;ll guide you through two steps.</p>
         </div>
@@ -43,7 +44,7 @@ export default function WelcomePane({ clientName, flagCount, onBegin }: WelcomeP
           <li className={styles.step}>
             <span className={styles.stepNum}>2</span>
             <div className={styles.stepBody}>
-              <span className={styles.stepTitle}>AI diagnostics</span>
+              <span className={styles.stepTitle}>{INTELLIGENCE_STEP2_WELCOME_TITLE}</span>
               <span className={styles.stepDesc}>
                 Once import is confirmed, we&rsquo;ll walk you through compliance flags,
                 year-over-year changes, and planning opportunities.
