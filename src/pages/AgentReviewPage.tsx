@@ -22,13 +22,14 @@ import AgentWelcomePane from './agent-review/AgentWelcomePane'
 import AgentReviewDiagnosticsPane, {
   type DiagnosticCardId,
 } from './agent-review/AgentReviewDiagnosticsPane'
+import AgentCatchUpPane from './agent-review/AgentCatchUpPane'
 import AgentReviewProcessingPane from './agent-review/AgentReviewProcessingPane'
 import AgentLoadingPane from './data-review/AgentLoadingPane'
 import ChatInput from './automated/ChatInput'
 import { openSourceDocumentReviewPopout } from '../lib/prototypeRoutes'
 import styles from '../styles/AgentReviewPage.module.css'
 
-type AgentStep = 'welcome' | 'diagnostics' | 'processing' | 'workspace'
+type AgentStep = 'welcome' | 'diagnostics' | 'processing' | 'catch-up' | 'workspace'
 
 const ASSESSING_MS = 3200
 
@@ -86,11 +87,12 @@ export default function AgentReviewPage() {
       return
     }
     if (prompt === STARTER_PROMPT_CATCH_UP) {
-      beginProcessing()
+      setStep('catch-up')
     }
   }
 
-  const showChatInput = step !== 'workspace' && !(step === 'diagnostics' && isAssessing)
+  const showChatInput =
+    step !== 'workspace' && !(step === 'diagnostics' && isAssessing)
 
   return (
     <div className={styles.shell} data-theme="intuit">
@@ -139,12 +141,19 @@ export default function AgentReviewPage() {
                 }
               />
             )}
+            {step === 'catch-up' && (
+              <AgentCatchUpPane
+                onViewDocuments={() => openSourceDocumentReviewPopout()}
+                onShowReviewLog={() => navigate('/check-return')}
+                onApproveReturn={() => openWorkspace()}
+              />
+            )}
             {step === 'processing' && (
               <AgentReviewProcessingPane
                 onViewUpdatedReturn={() => openWorkspace()}
                 onViewSourceDocuments={() => openSourceDocumentReviewPopout()}
                 onViewReturnSummary={() => navigate('/check-return')}
-                onGetCaughtUp={() => {}}
+                onGetCaughtUp={() => setStep('catch-up')}
               />
             )}
           </div>

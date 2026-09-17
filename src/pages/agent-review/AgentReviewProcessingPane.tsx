@@ -7,7 +7,6 @@ import {
   CTA_VIEW_SOURCE_DOCUMENTS,
   CTA_VIEW_UPDATED_RETURN,
   getActiveIntelligenceIssues,
-  INTELLIGENCE_CATCH_UP_SUMMARY,
   INTELLIGENCE_NEED_ACTION_COPY,
   INTELLIGENCE_PROGRESS_ITEMS,
   INTELLIGENCE_REASONING_STEPS,
@@ -38,7 +37,6 @@ export default function AgentReviewProcessingPane({
   onGetCaughtUp,
 }: AgentReviewProcessingPaneProps) {
   const [thinkingExpanded, setThinkingExpanded] = useState(false)
-  const [catchUpVisible, setCatchUpVisible] = useState(false)
 
   const { issues, issueCount, totalWithholding } = useMemo(
     () => getActiveIntelligenceIssues(),
@@ -58,7 +56,6 @@ export default function AgentReviewProcessingPane({
   } = useAgentProcessingAnimation()
 
   const handleGetCaughtUp = () => {
-    setCatchUpVisible(true)
     onGetCaughtUp()
   }
 
@@ -99,7 +96,7 @@ export default function AgentReviewProcessingPane({
                 <div
                   className={`${styles.reasoningHeader} ${reasoningHeaderVisible ? styles.revealIn : styles.revealHidden}`}
                 >
-                  <img src={intuitAssistSparkle} alt="" className={styles.reasoningSparkle} />
+                  <img src={intuitIntelligenceLogo} alt="" className={styles.reasoningSparkle} />
                   <span className={styles.reasoningTitle}>{INTELLIGENCE_REASONING_TITLE}</span>
                 </div>
                 <ol className={styles.reasoningSteps}>
@@ -200,11 +197,6 @@ export default function AgentReviewProcessingPane({
                   )}
                 </div>
 
-                {catchUpVisible && (
-                  <div className={`${styles.catchUpCard} ${styles.revealIn}`}>
-                    <p className={styles.catchUpText}>{INTELLIGENCE_CATCH_UP_SUMMARY}</p>
-                  </div>
-                )}
               </div>
             )}
           </div>

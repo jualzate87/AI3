@@ -71,7 +71,7 @@ export const INTELLIGENCE_LEGAL_DISCLAIMER =
 /* ── Welcome ── */
 
 export const STARTER_PROMPT_FULL_REVIEW = 'Review this return'
-export const STARTER_PROMPT_CATCH_UP = 'Catch me up on this return'
+export const STARTER_PROMPT_CATCH_UP = 'Get me caught up on this return'
 
 export const STARTER_PROMPTS = [
   STARTER_PROMPT_FULL_REVIEW,
@@ -334,8 +334,84 @@ export function intelligenceResultsLead(fixedCount: number): string {
     : `${fixedCount} updates applied. Here's what changed on the return.`
 }
 
-export const INTELLIGENCE_CATCH_UP_SUMMARY =
-  `Since your last session on ${CLIENT_NAME}'s return: W-2 and 1099 import fixes were applied, 1099-R withholding was restored, and Schedule A includes an estimated Form 1098 mortgage interest amount. One item still needs your sign-off before filing.`
+export const CATCH_UP_PRIOR_PREPARER = 'Sarah Chen'
+
+export function catchUpReturnSummaryTitle(clientName: string = CLIENT_NAME): string {
+  return `Return Summary — ${clientName}`
+}
+
+export const CATCH_UP_PRIOR_NOTES =
+  '"Return is in good shape. I ran the AI review and resolved all flagged items — the W-2 variance was just a mid-year raise, and the qualified dividend classification has been corrected. Withholding looks adequate. Main thing to double-check is the 1099-DIV split since the broker statement formatting was a little unusual. Everything else ties out. All source docs are in the Documents tab."'
+
+export const CATCH_UP_HANDOFF_PARAGRAPH =
+  `${CATCH_UP_PRIOR_PREPARER} completed the initial data entry and ran the AI-assisted review on this return. She resolved all items flagged by Intuit Intelligence before handing off. Employer: Tech Circle Inc. Income includes W-2 wages, 1099-INT, and 1099-DIV.`
+
+export const CATCH_UP_AI_REVIEW_INTRO =
+  `${CATCH_UP_PRIOR_PREPARER} ran the Intuit Intelligence review and resolved every flagged item:`
+
+export const CATCH_UP_AI_REVIEW_BULLETS = [
+  'W-2 income variance — Resolved',
+  'Box 1 wages from Tech Circle Inc differed from prior year due to a mid-year raise; confirmed with source document',
+  '1099-DIV qualified dividend classification — Resolved',
+  'Qualified vs. ordinary split was reclassified and corrected; amounts now match broker statement',
+  'State withholding adequacy — Resolved',
+  'Withholding elections reviewed against projected liability; no adjustment needed',
+] as const
+
+export const CATCH_UP_AI_REVIEW_CALLOUT =
+  'All three items were flagged by Intuit Intelligence and resolved by Sarah during the initial review. No open flags remain.'
+
+export const CATCH_UP_DOCUMENTS_INTRO =
+  `${CATCH_UP_PRIOR_PREPARER} imported and verified the following source documents:`
+
+export const CATCH_UP_DOCUMENTS_BULLETS = [
+  'W-2 from Tech Circle Inc — verified (checked twice)',
+  'Form 1040, line 25d — checked and reconciled',
+  '1099-INT — imported',
+  '1099-DIV — updated with corrected amounts',
+] as const
+
+export const CATCH_UP_CALCULATIONS_INTRO = 'Federal and state calculations are complete:'
+
+export const CATCH_UP_CALCULATIONS_BULLETS = [
+  'Federal income tax calculation — confirmed, no variances',
+  'All lines tie out',
+  'Return is ready for final review',
+] as const
+
+export const CATCH_UP_REVIEWER_FOCUS_INTRO = "Sarah's note calls out one area to double-check:"
+
+export const CATCH_UP_REVIEWER_FOCUS_BULLETS = [
+  '1099-DIV qualified vs. ordinary split — Sarah corrected the classification, but flagged the broker statement formatting as unusual. Verify the final amounts look right against the source PDF.',
+  'Confirm all resolved AI review items look correct — spot-check that the W-2 variance explanation (mid-year raise) and withholding adequacy hold up.',
+  'Review source documents in the Documents tab before approving.',
+] as const
+
+export const CATCH_UP_RETURN_STATUS_ITEMS = [
+  'AI review: Complete — all items resolved by Sarah Chen',
+  'Data entry: Complete — all documents imported and reconciled',
+  'Calculations: Confirmed — federal and state tie out',
+  'Open items: None',
+  'Ready for: Final reviewer sign-off',
+] as const
+
+export const CATCH_UP_RETURN_STATUS_CALLOUT =
+  "This return has been through initial prep and AI-assisted review. As the final reviewer, confirm Sarah's work is accurate and approve for filing."
+
+export const CATCH_UP_CHECKLIST_INTRO = 'Confirm before approving:'
+
+export const CATCH_UP_CHECKLIST_ITEMS = [
+  '1099-DIV split verified against broker PDF',
+  'AI review resolutions confirmed',
+  'Source documents reviewed',
+] as const
+
+export const CATCH_UP_FOOTER_QUESTION =
+  'Would you like to view the source documents or the full review log?'
+
+export const CATCH_UP_CHIP_VIEW_DOCUMENTS = 'View documents'
+export const CATCH_UP_CHIP_SHOW_REVIEW_LOG = 'Show review log'
+export const CATCH_UP_CHIP_APPROVE_RETURN = 'Approve return'
 
 export function intelligenceProcessingIntro(issueCount: number): string {
   const issuePhrase =
