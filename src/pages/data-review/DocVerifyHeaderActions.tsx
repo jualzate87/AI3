@@ -134,8 +134,8 @@ export default function DocVerifyHeaderActions({
     onVerifyDoc?.(docKey)
   }
 
-  const needsReviewerConfirm =
-    isReviewerActor && isPreparerVerified && !isReviewerConfirmed
+  /** Verification is per person, not a chain - a reviewer can verify a doc the preparer never touched. */
+  const canReviewerVerify = isReviewerActor && !isReviewerConfirmed
 
   const closeComment = useCallback(() => {
     setCommentOpen(false)
@@ -183,7 +183,7 @@ export default function DocVerifyHeaderActions({
           </Button>
         )}
 
-        {needsReviewerConfirm && (
+        {canReviewerVerify && (
           <Button size="small" priority="secondary" onClick={() => onVerifyDoc?.(docKey)}>
             Mark as verified
           </Button>

@@ -140,48 +140,6 @@
 }
 
 
-/* ── Field type legend ── */
-.legend {
-  display: flex;
-  align-items: center;
-  gap: 16px;
-  padding: 4px 10px 4px;
-  background: #f7f9fb;
-  border-bottom: 1px solid #e8eaed;
-}
-
-.legendItem {
-  display: flex;
-  align-items: center;
-  gap: 5px;
-  font-family: var(--font-family-component);
-  font-size: var(--font-size-component-x-small);
-  font-weight: var(--font-weight-component-semibold);
-  color: var(--color-text-secondary);
-  letter-spacing: 0.5px;
-  text-transform: uppercase;
-}
-
-.legendSwatch {
-  display: inline-block;
-  width: 20px;
-  height: 10px;
-  border-radius: 2px;
-  flex-shrink: 0;
-}
-
-/* Source swatch — mirrors .valueBoxSource */
-.legendSwatchSource {
-  background: #f0f6ff;
-  border: 1px solid #93c5fd;
-}
-
-/* Calc swatch — mirrors .valueBoxCalc */
-.legendSwatchCalc {
-  background: #f7f9fb;
-  border: 1px dashed #adb9c2;
-}
-
 /* ── Divider row ── */
 .dividerRow td { padding: 0; }
 .dividerLine {
@@ -951,8 +909,72 @@
   flex-direction: column;
   align-items: stretch;
   width: 100%;
-  max-width: 960px;
+  max-width: calc(960px + var(--verification-strip-width, 182px));
   min-width: 0;
+}
+
+/* Form facsimile + verification strip — strip sits outside form border */
+.formWithVerificationStrip {
+  --verification-strip-width: 182px;
+  --form-col-value: 176px;
+  --form-amount-width: 132px;
+  position: relative;
+  box-sizing: border-box;
+}
+
+.formTableHeaderRow {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) var(--verification-strip-width);
+  align-items: stretch;
+  border-top: 1px solid var(--color-divider-tertiary);
+}
+
+.verificationStripHeader {
+  display: flex;
+  align-items: flex-end;
+  justify-content: flex-end;
+  gap: var(--space-component-gap-medium, 6px);
+  padding: var(--space-component-inline-padding-small, 4px)
+    var(--space-component-inline-padding-medium, 8px);
+  border-left: 1px solid var(--color-divider-secondary);
+  background: var(--color-page-background-primary);
+  box-sizing: border-box;
+}
+
+.verificationStripCommentSpacer {
+  width: 62px;
+  flex-shrink: 0;
+}
+
+.verificationStripAttestHeaders {
+  display: flex;
+  align-items: center;
+  gap: 0;
+  flex-shrink: 0;
+}
+
+.verifyStripCell {
+  width: var(--verification-strip-width);
+  min-width: var(--verification-strip-width);
+  max-width: var(--verification-strip-width);
+  padding: var(--space-component-stack-padding-medium, 8px)
+    var(--space-component-inline-padding-medium, 8px);
+  vertical-align: middle;
+  border-left: 1px solid var(--color-divider-secondary);
+  background: var(--color-page-background-primary);
+  box-sizing: border-box;
+}
+
+.verificationStripRow {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: var(--space-component-gap-medium, 6px);
+  width: 100%;
+}
+
+.formTableColVerify {
+  width: var(--verification-strip-width);
 }
 
 .formNavLabel {
@@ -2112,14 +2134,46 @@
   /* Shared column widths — colHeaders, colgroup, and value cell must match */
   --form-col-line: 32px;
   --form-col-line-r: 44px;
-  --form-col-value: 392px;
+  --verification-strip-width: 182px;
+  --form-col-value: 176px;
   --form-amount-width: 132px;
-  --form-actions-width: 182px;
-  max-width: 960px;
+  max-width: calc(960px + var(--verification-strip-width));
   border: 1px solid var(--color-container-border-primary);
   border-radius: 0;
   box-shadow: none;
   padding-bottom: 0;
+}
+
+.formWithVerificationStrip.formDocDigitized {
+  overflow: visible;
+  border-right: none;
+}
+
+.formWithVerificationStrip.formDocDigitized .irsHeader,
+.formWithVerificationStrip.formDocDigitized .filingStatus,
+.formWithVerificationStrip.formDocDigitized .infoGrid,
+.formWithVerificationStrip.formDocDigitized .sectionBar,
+.formWithVerificationStrip.formDocDigitized .formPageFooter,
+.formWithVerificationStrip.formDocDigitized .summaryCardHeader {
+  margin-right: var(--verification-strip-width);
+  border-right: 1px solid var(--color-container-border-primary);
+  box-sizing: border-box;
+}
+
+.formWithVerificationStrip.formDocDigitized .table {
+  table-layout: fixed;
+}
+
+.formWithVerificationStrip.formDocDigitized .cellValue {
+  border-right: 1px solid var(--color-container-border-primary);
+}
+
+.formWithVerificationStrip.formDocDigitized .verifyStripCell {
+  border-right: 1px solid var(--color-divider-secondary);
+}
+
+.formWithVerificationStrip.formDocDigitized .verificationStripHeader {
+  border-right: 1px solid var(--color-divider-secondary);
 }
 
 .formTableColLine { width: var(--form-col-line); }
@@ -2395,27 +2449,21 @@
   line-height: var(--line-height-component);
 }
 
-/* Column headers — grid must match table colgroup widths */
+/* Column headers — grid must match table colgroup widths (form columns only) */
 .formDocDigitized .colHeaders {
   display: grid;
   grid-template-columns: var(--form-col-line) minmax(140px, 1fr) var(--form-col-line-r) var(--form-col-value);
   background: var(--color-container-background-primary);
   border-bottom: 1px solid var(--color-divider-secondary);
-  border-top: 1px solid var(--color-divider-tertiary);
   padding: var(--space-component-inline-padding-small) 0;
 }
 
-/* Field legend — less prominent but accessible */
-.formDocDigitized .legend {
-  background: transparent;
-  border-bottom: 1px solid #e8eaed;
-  opacity: 0.55;
-  padding: 3px 12px;
+.formWithVerificationStrip.formDocDigitized .formTableHeaderRow {
+  border-top: none;
 }
 
-.formDocDigitized .legendItem {
-  font-size: 10px;
-  letter-spacing: 0.3px;
+.formWithVerificationStrip.formDocDigitized .colHeaders {
+  border-top: none;
 }
 
 /* Income lines — blue bold line numbers, alternating row stripes */
@@ -2492,11 +2540,9 @@
 }
 
 .formDocDigitized .cellValueInner {
-  display: grid;
-  grid-template-columns: var(--form-amount-width) var(--form-actions-width);
-  column-gap: var(--space-component-gap-medium);
+  display: flex;
   align-items: center;
-  justify-content: end;
+  justify-content: flex-end;
   width: 100%;
 }
 
@@ -2509,13 +2555,8 @@
   min-width: 0;
 }
 
-.formDocDigitized .formRowActions {
-  display: flex;
-  align-items: center;
-  justify-content: flex-end;
-  gap: var(--space-component-gap-medium);
-  width: var(--form-actions-width);
-  flex-shrink: 0;
+.formWithVerificationStrip.formDocDigitized .formRowActions {
+  display: none;
 }
 
 /* Value boxes — soft input border, white bg, right-aligned, fixed width, 32px height */

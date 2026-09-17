@@ -1,4 +1,4 @@
-import { PopOut, Refresh } from '@design-systems/icons'
+import { NewWindow, Refresh } from '@design-systems/icons'
 import { Button } from '@ids-ts/button'
 import '@ids-ts/button/dist/main.css'
 import styles from '../../styles/check-return/ReviewReturnPopoutHeader.module.css'
@@ -38,8 +38,8 @@ export default function ReviewReturnPopoutHeader({
           onClick={onViewSourceDocuments}
           automationId="review-return-popout-view-source-docs"
         >
-          <PopOut size="small" aria-hidden />
           Source documents
+          <NewWindow size="small" aria-hidden />
         </Button>
         <Button
           priority="primary"

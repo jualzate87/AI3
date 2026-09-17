@@ -1,0 +1,17 @@
+.notesField {
+  width: 100%;
+  min-width: 0;
+  box-sizing: border-box;
+  padding: var(--space-container-padding-small, 16px);
+  border: 1px solid var(--color-container-border-secondary, #babec5);
+  border-radius: var(--radius-large, 8px);
+  background: var(--color-container-background-primary, #ffffff);
+}
+
+.notesField :global(div),
+.notesField :global(textarea),
+.notesField :global(label) {
+  width: 100% !important;
+  max-width: none !important;
+  box-sizing: border-box;
+}

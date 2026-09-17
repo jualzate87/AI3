@@ -12,6 +12,7 @@ import type { OutputFormId } from '../data-review/outputForms'
 import { field1040ToDetail } from '../data-review/phase1FieldSync'
 import { resolveOutputFieldFromIssueField } from '../data-review/phase2FlagSync'
 import { outputFormDisplayTitle } from './outputFormNav'
+import { VERIFICATION_LEVEL_LABELS } from '../data-review/verificationRoles'
 import styles from '../../styles/check-return/OutputReviewPanel.module.css'
 
 import type { Phase2IssueKey } from '../data-review/phase2FlagSync'
@@ -96,15 +97,15 @@ export default function OutputReviewPanel({
         <div className={styles.legend} aria-label="Verification legend">
           <span className={styles.legendItem}>
             <CircleCheck size="small" className={styles.legendIconPrep} aria-hidden />
-            L1 check
+            {VERIFICATION_LEVEL_LABELS[1]}
           </span>
           <span className={styles.legendItem}>
             <CircleCheck size="small" className={styles.legendIconRev} aria-hidden />
-            L2 check
+            {VERIFICATION_LEVEL_LABELS[2]}
           </span>
           <span className={styles.legendItem}>
             <CircleCheck size="small" className={styles.legendIconL3} aria-hidden />
-            L3 check
+            {VERIFICATION_LEVEL_LABELS[3]}
           </span>
         </div>
       </header>

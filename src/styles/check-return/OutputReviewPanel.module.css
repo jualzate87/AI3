@@ -56,6 +56,10 @@
   color: var(--color-icon-positive, #00856d);
 }
 
+.legendIconRev {
+  color: var(--color-text-primary, #393a3d);
+}
+
 .legendIconL3 {
   color: var(--color-action-selected, #7c00f6);
 }

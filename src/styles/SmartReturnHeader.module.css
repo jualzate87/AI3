@@ -348,6 +348,13 @@
 }
 .tabMeta svg { color: var(--color-text-secondary); flex-shrink: 0; }
 
+/* Source documents + AI review button pair — 12px gap per Figma */
+.headerBtnPair {
+  display: flex;
+  align-items: center;
+  gap: var(--space-small);
+}
+
 /* Leading icon/img in tab-row secondary buttons.
    Sparkle artwork fills ~83% of its 32px viewBox, so it needs the medium
    action-icon size to read at the same weight as a 16px IDS icon. */

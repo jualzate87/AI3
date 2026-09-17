@@ -5,18 +5,6 @@ import { Button } from '@ids-ts/button'
 import '@ids-ts/button/dist/main.css'
 import { LinkActionButton } from '@ids-ts/link-action-button'
 import '@ids-ts/link-action-button/dist/main.css'
-import { TextArea } from '@ids-ts/textarea'
-import '@ids-ts/textarea/dist/main.css'
-import { Badge, SuccessBadgeIcon, WarningBadgeIcon } from '@ids-ts/badge'
-import '@ids-ts/badge/dist/main.css'
-import {
-  Accordion,
-  AccordionItem,
-  AccordionItemHeader,
-  AccordionItemBody,
-} from '@ids-ts/accordion'
-import '@ids-ts/accordion/dist/main.css'
-import intuitIntelligenceLogo from '../../assets/icons/intuit-intelligence-logo-small.svg'
 import { useReturnWorkflow } from '../../contexts/ReturnWorkflowContext'
 import {
   buildDefaultHandoffNote,
@@ -25,6 +13,8 @@ import {
   handoffConfirmLabel,
   type PendingHandoff,
 } from '../../lib/returnWorkflow'
+import HandoffNotesField from './HandoffNotesField'
+import HandoffSummaryAccordion from './HandoffSummaryAccordion'
 import styles from '../../styles/handoff/HandoffAssistModal.module.css'
 
 interface HandoffAssistModalProps {
@@ -55,7 +45,6 @@ export default function HandoffAssistModal({
   const currentStatus = getReturnStatus(workflow.statusId)
   const nextStatus = getReturnStatus(handoff.suggestedStatusId)
   const statusWillChange = workflow.statusId !== handoff.suggestedStatusId
-  const sections = handoff.previewSections
   const summaryLabel = to ? `Quick summary for ${to.name}` : 'Quick summary of this return'
   const notesLabel = to ? `Leave notes for ${to.name}` : 'Leave a note on this return'
 
@@ -87,59 +76,16 @@ export default function HandoffAssistModal({
             )}
           </p>
 
-          <div className={styles.panel}>
-            <div className={styles.notesField}>
-              <TextArea
-                id="handoff-notes"
-                label={notesLabel}
-                helperText="These notes appear in Comments and the reviewer summary."
-                value={notes}
-                onChange={e => setNotes(e.target.value)}
-                rows={5}
-                width="100%"
-              />
-            </div>
-
-            <Accordion variant="text" size="small" allowZeroExpanded chevronPosition="right">
-              <AccordionItem id="handoff-summary">
-                <AccordionItemHeader className={styles.summaryHeader}>
-                  <span className={styles.summaryHeaderLabel}>
-                    <img src={intuitIntelligenceLogo} alt="" className={styles.sparkle} />
-                    {summaryLabel}
-                  </span>
-                </AccordionItemHeader>
-                <AccordionItemBody>
-                  <div className={styles.sections}>
-                    {sections.map(section => (
-                      <section key={section.id} className={styles.section}>
-                        <div className={styles.sectionHeader}>
-                          {section.id === 'heads-up' ? (
-                            <Badge shape="round" status="warning" aria-label="Needs attention">
-                              <WarningBadgeIcon />
-                            </Badge>
-                          ) : (
-                            <Badge shape="round" status="success" aria-label="Ready">
-                              <SuccessBadgeIcon />
-                            </Badge>
-                          )}
-                          <h4 className={styles.sectionTitle}>{section.title}</h4>
-                        </div>
-                        <p className={styles.sectionIntro}>{section.intro}</p>
-                        <ul className={styles.itemList}>
-                          {section.items.map(item => (
-                            <li key={item.title} className={styles.item}>
-                              <span className={styles.itemTitle}>{item.title}</span>
-                              <span className={styles.itemDetail}>{item.detail}</span>
-                            </li>
-                          ))}
-                        </ul>
-                      </section>
-                    ))}
-                  </div>
-                </AccordionItemBody>
-              </AccordionItem>
-            </Accordion>
-          </div>
+          <HandoffNotesField
+            id="handoff-notes"
+            label={notesLabel}
+            value={notes}
+            onChange={setNotes}
+          />
+          <HandoffSummaryAccordion
+            label={summaryLabel}
+            sections={handoff.previewSections}
+          />
         </div>
       </ModalContent>
       <ModalActions>

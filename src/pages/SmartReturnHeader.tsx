@@ -204,30 +204,34 @@ export default function SmartReturnHeader({
               Review return
             </Button>
           )}
-          {showViewSourceDocuments && (
-            <Button
-              priority="secondary"
-              purpose="passive"
-              onClick={onViewSourceDocuments}
-              automationId="view-source-documents-header-cta"
-            >
-              Source documents
-              <NewWindow size="small" aria-hidden />
-            </Button>
-          )}
-          {activeTab === 'checkreturns' && onAiReview && (
-            <Button
-              innerRef={aiReviewButtonRef}
-              className={styles.aiReviewBtn}
-              priority="secondary"
-              purpose="passive"
-              onClick={onAiReview}
-              automationId="ai-review-header-cta"
-            >
-              <img src={intuitIntelligenceLogo} alt="" className={styles.headerBtnIcon} aria-hidden />
-              {INTELLIGENCE_SUBHEADER_CTA}
-            </Button>
-          )}
+          {(showViewSourceDocuments || (activeTab === 'checkreturns' && onAiReview)) ? (
+            <div className={styles.headerBtnPair}>
+              {showViewSourceDocuments && (
+                <Button
+                  priority="secondary"
+                  purpose="passive"
+                  onClick={onViewSourceDocuments}
+                  automationId="view-source-documents-header-cta"
+                >
+                  Source documents
+                  <NewWindow size="small" aria-hidden />
+                </Button>
+              )}
+              {activeTab === 'checkreturns' && onAiReview && (
+                <Button
+                  innerRef={aiReviewButtonRef}
+                  className={styles.aiReviewBtn}
+                  priority="secondary"
+                  purpose="passive"
+                  onClick={onAiReview}
+                  automationId="ai-review-header-cta"
+                >
+                  <img src={intuitIntelligenceLogo} alt="" className={styles.headerBtnIcon} aria-hidden />
+                  {INTELLIGENCE_SUBHEADER_CTA}
+                </Button>
+              )}
+            </div>
+          ) : null}
         </div>
       </div>
 

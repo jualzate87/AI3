@@ -5,7 +5,10 @@ import {
   type ActivityEntry,
 } from '../../hooks/useSyncedReviewState'
 import Tooltip from './Tooltip'
+import { VERIFICATION_LEVEL_LABELS } from './verificationRoles'
 import styles from '../../styles/data-review/LeftPanel1040.module.css'
+
+export { VERIFICATION_LEVEL_LABELS } from './verificationRoles'
 
 export type ReviewLevel = 1 | 2 | 3
 
@@ -41,35 +44,34 @@ export function levelCheckTooltip(
   return `${label} check`
 }
 
-function LevelHeader({
-  level,
-  name,
-}: {
-  level: ReviewLevel
-  name?: string | null
-}) {
+function LevelHeader({ level }: { level: ReviewLevel }) {
+  const label = VERIFICATION_LEVEL_LABELS[level]
   return (
-    <span className={styles.summaryColCheckLabel}>
-      <span className={styles.levelCode}>L{level}</span>
-      {name ? <span className={styles.levelName}>{name}</span> : null}
-    </span>
+    <Tooltip text={label} placement="top">
+      <span className={styles.summaryColCheckLabel}>
+        <span className={styles.levelCode}>L{level}</span>
+      </span>
+    </Tooltip>
   )
 }
 
-export function AttestColumnHeaders({
-  l1Name,
-  l2Name,
-  l3Name,
-}: {
-  l1Name?: string | null
-  l2Name?: string | null
-  l3Name?: string | null
-}) {
+export function AttestColumnHeaders() {
   return (
     <>
-      <LevelHeader level={1} name={l1Name} />
-      <LevelHeader level={2} name={l2Name} />
-      <LevelHeader level={3} name={l3Name} />
+      <LevelHeader level={1} />
+      <LevelHeader level={2} />
+      <LevelHeader level={3} />
+    </>
+  )
+}
+
+/** Empty L1/L2/L3 slots — keeps strip rows aligned when checks are absent. */
+export function AttestColumnPlaceholders() {
+  return (
+    <>
+      <span className={styles.summaryAttestSlot} aria-hidden="true" />
+      <span className={styles.summaryAttestSlot} aria-hidden="true" />
+      <span className={styles.summaryAttestSlot} aria-hidden="true" />
     </>
   )
 }

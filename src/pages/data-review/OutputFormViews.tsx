@@ -1,4 +1,4 @@
-import { createContext, useContext, useState, type ReactNode } from 'react'
+import { useState, type ReactNode } from 'react'
 import { CircleInfo } from '@design-systems/icons'
 import type { FieldOriginSource } from '../../data/fieldOrigins'
 import type { LiveAmounts, LiveReturnTotals } from '../../data/liveReturn'
@@ -6,8 +6,7 @@ import { NIIT_AGI_THRESHOLD, SAFE_HARBOR_2210 } from '../../data/liveReturn'
 import { CLIENT_ADDRESS, formatClientCityStateZip } from '../../data/clientAddress'
 import { getScheduleLineFlyout } from '../../data/scheduleFieldOrigins'
 import type { ActivityEntry } from '../../hooks/useSyncedReviewState'
-import AttestColumns, { AttestColumnHeaders, ownerFirstName } from './AttestColumns'
-import OutputRowActions from './OutputRowActions'
+import VerificationStripCell, { VerificationStripHeader } from './VerificationStripCell'
 import { getOutputLineAttest, type OutputFormId } from './outputForms'
 import TaxControlDocPopover from './TaxControlDocPopover'
 import { getPopoverAnchorRect, OUTPUT_FORM_POPOVER_WIDTH } from './SourcePopover'
@@ -17,12 +16,6 @@ import styles from '../../styles/data-review/LeftPanel1040.module.css'
 function fmt(n: number) {
   return n.toLocaleString('en-US')
 }
-
-const AttestHeaderContext = createContext<{
-  l1Name?: string | null
-  l2Name?: string | null
-  l3Name?: string | null
-}>({})
 
 function FormHeader({
   formCode,
@@ -274,65 +267,43 @@ function LineRow({
             )}
           </div>
 
-          <div className={styles.formRowActions}>
-            <OutputRowActions
-              className={styles.outputRowEndActionsCommentFlag}
-              label={label}
-              fieldKey={flagKey}
-              contextLabel={commentContext}
-              showAnnotate={!!onAddFieldNote || !!onToggleFlagged}
-              isFlagged={isFlagged}
-              existingFlagNote={flagNote}
-              onAddNote={onAddFieldNote}
-              onToggleFlagged={onToggleFlagged}
-              onSetFlagNote={onSetFlagNote}
-            />
-            {showAttest && (
-              <AttestColumns
-                field={attestKey}
-                preparerEntry={preparerEntry}
-                reviewerEntry={reviewerEntry}
-                managerEntry={managerEntry}
-                onTogglePreparer={onTogglePreparer}
-                onToggleReviewer={onToggleReviewer}
-                onToggleManager={onToggleManager}
-                interactive={attest.toggleable}
-              />
-            )}
-          </div>
         </div>
       </td>
+      <VerificationStripCell
+        label={label}
+        field={attestKey}
+        fieldKey={flagKey}
+        contextLabel={commentContext}
+        showAnnotate={!!onAddFieldNote || !!onToggleFlagged}
+        isFlagged={isFlagged}
+        existingFlagNote={flagNote}
+        onAddNote={onAddFieldNote}
+        onToggleFlagged={onToggleFlagged}
+        onSetFlagNote={onSetFlagNote}
+        showAttest={showAttest}
+        preparerEntry={preparerEntry}
+        reviewerEntry={reviewerEntry}
+        managerEntry={managerEntry}
+        onTogglePreparer={onTogglePreparer}
+        onToggleReviewer={onToggleReviewer}
+        onToggleManager={onToggleManager}
+        interactive={attest?.toggleable ?? true}
+      />
     </tr>
   )
 }
 
 function FormTable({ children }: { children: React.ReactNode }) {
-  const { l1Name, l2Name, l3Name } = useContext(AttestHeaderContext)
   return (
     <>
-      <div className={styles.colHeaders}>
-        <div className={styles.colLine} />
-        <div className={styles.colDesc}>Description</div>
-        <div className={styles.colLineR} />
-        <div className={styles.colValWithAttest}>
-          <span className={styles.colValAmount}>Amount</span>
-          <span className={styles.colValActionGroup} aria-hidden="true">
-            <span className={styles.colValActionSpacer} />
-            <span className={styles.colValAttestGroup}>
-              <AttestColumnHeaders l1Name={l1Name} l2Name={l2Name} l3Name={l3Name} />
-            </span>
-          </span>
+      <div className={styles.formTableHeaderRow}>
+        <div className={styles.colHeaders}>
+          <div className={styles.colLine} />
+          <div className={styles.colDesc}>Description</div>
+          <div className={styles.colLineR} />
+          <div className={styles.colVal}>Amount</div>
         </div>
-      </div>
-      <div className={styles.legend}>
-        <span className={styles.legendItem}>
-          <span className={`${styles.legendSwatch} ${styles.legendSwatchSource}`} />
-          From documents / inputs
-        </span>
-        <span className={styles.legendItem}>
-          <span className={`${styles.legendSwatch} ${styles.legendSwatchCalc}`} />
-          Calculated
-        </span>
+        <VerificationStripHeader />
       </div>
       <table className={styles.table}>
         <colgroup>
@@ -340,6 +311,7 @@ function FormTable({ children }: { children: React.ReactNode }) {
           <col className={styles.formTableColDesc} />
           <col className={styles.formTableColLineR} />
           <col className={styles.formTableColValue} />
+          <col className={styles.formTableColVerify} />
         </colgroup>
         <tbody>{children}</tbody>
       </table>
@@ -362,7 +334,7 @@ function Schedule1View({ live, ssn, ...row }: { live: LiveReturnTotals; ssn: str
     <LineRow {...row} live={live} line={line} label={label} value={0} fieldId={fieldId} />
   )
   return (
-    <div className={`${styles.formDoc} ${styles.formDocDigitized}`}>
+    <div className={`${styles.formWithVerificationStrip} ${styles.formDoc} ${styles.formDocDigitized}`}>
       <FormHeader formCode="Schedule 1" title="Additional Income and Adjustments to Income" />
       <TaxpayerStrip ssn={ssn} />
       <FormTable>
@@ -423,7 +395,7 @@ function ScheduleCView({
   ...row
 }: { live: LiveReturnTotals; amounts: LiveAmounts; ssn: string } & SharedLineProps) {
   return (
-    <div className={`${styles.formDoc} ${styles.formDocDigitized}`}>
+    <div className={`${styles.formWithVerificationStrip} ${styles.formDoc} ${styles.formDocDigitized}`}>
       <FormHeader formCode="Schedule C" title="Profit or Loss From Business (Sole Proprietorship)" />
       <TaxpayerStrip ssn={ssn} />
       <div className={styles.infoGrid}>
@@ -555,7 +527,7 @@ function ScheduleAView({
   ...row
 }: { live: LiveReturnTotals; amounts: LiveAmounts; ssn: string } & SharedLineProps) {
   return (
-    <div className={`${styles.formDoc} ${styles.formDocDigitized}`}>
+    <div className={`${styles.formWithVerificationStrip} ${styles.formDoc} ${styles.formDocDigitized}`}>
       <FormHeader formCode="Schedule A" title="Itemized Deductions" />
       <TaxpayerStrip ssn={ssn} />
       <FormTable>
@@ -659,7 +631,7 @@ function ScheduleAView({
 
 function ScheduleDView({ live, ssn, ...row }: { live: LiveReturnTotals; ssn: string } & SharedLineProps) {
   return (
-    <div className={`${styles.formDoc} ${styles.formDocDigitized}`}>
+    <div className={`${styles.formWithVerificationStrip} ${styles.formDoc} ${styles.formDocDigitized}`}>
       <FormHeader formCode="Schedule D" title="Capital Gains and Losses" />
       <TaxpayerStrip ssn={ssn} />
       <FormTable>
@@ -706,7 +678,7 @@ function ScheduleDView({ live, ssn, ...row }: { live: LiveReturnTotals; ssn: str
 function Form8960View({ live, ssn, ...row }: { live: LiveReturnTotals; ssn: string } & SharedLineProps) {
   const overThreshold = live.totalIncome > NIIT_AGI_THRESHOLD
   return (
-    <div className={`${styles.formDoc} ${styles.formDocDigitized}`}>
+    <div className={`${styles.formWithVerificationStrip} ${styles.formDoc} ${styles.formDocDigitized}`}>
       <FormHeader formCode="8960" title="Net Investment Income Tax — Individuals" />
       <TaxpayerStrip ssn={ssn} />
       <FormTable>
@@ -804,7 +776,7 @@ function Form8960View({ live, ssn, ...row }: { live: LiveReturnTotals; ssn: stri
 
 function Form2210View({ live, ssn, ...row }: { live: LiveReturnTotals; ssn: string } & SharedLineProps) {
   return (
-    <div className={`${styles.formDoc} ${styles.formDocDigitized}`}>
+    <div className={`${styles.formWithVerificationStrip} ${styles.formDoc} ${styles.formDocDigitized}`}>
       <FormHeader formCode="2210" title="Underpayment of Estimated Tax by Individuals" />
       <TaxpayerStrip ssn={ssn} />
       <FormTable>
@@ -996,12 +968,6 @@ export default function OutputFormViews({
     formLabel: scheduleFormLabel(formId),
   }
 
-  const formTableProps = {
-    l1Name: ownerFirstName(checkedMeta),
-    l2Name: ownerFirstName(reviewerConfirmedMeta),
-    l3Name: ownerFirstName(managerConfirmedMeta),
-  }
-
   let body: React.ReactNode = null
   switch (formId) {
     case 'sch1':
@@ -1031,9 +997,7 @@ export default function OutputFormViews({
       {formSelector ? (
         <div className={styles.summaryCardHeader}>{formSelector}</div>
       ) : null}
-      <AttestHeaderContext.Provider value={formTableProps}>
-        {body}
-      </AttestHeaderContext.Provider>
+      {body}
       {flyout && flyoutRect && (
         <TaxControlDocPopover
           rowLabel={flyout.label}

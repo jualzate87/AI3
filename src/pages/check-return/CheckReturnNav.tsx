@@ -245,7 +245,7 @@ export default function CheckReturnNav({
   showAiReviewNav = false,
 }: CheckReturnNavProps) {
   const focused = variant === 'focused'
-  const [expandedCategory, setExpandedCategory] = useState<ExpandedCategory | null>('forms')
+  const [expandedCategory, setExpandedCategory] = useState<ExpandedCategory | null>(null)
 
   const toggleCategory = (category: ExpandedCategory) => {
     setExpandedCategory(prev => (prev === category ? null : category))

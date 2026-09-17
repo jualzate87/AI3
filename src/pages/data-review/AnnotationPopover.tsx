@@ -19,10 +19,10 @@ import {
 } from './annotationTypes'
 import styles from '../../styles/data-review/AnnotationPopover.module.css'
 
-function AnnotationTypeDot({ type }: { type: AnnotationType }) {
+function AnnotationTypeDot({ type, inTrigger }: { type: AnnotationType; inTrigger?: boolean }) {
   return (
     <span
-      className={styles.typeDot}
+      className={inTrigger ? `${styles.typeDot} ${styles.triggerDot}` : styles.typeDot}
       style={{ backgroundColor: annotationTypeDotColor(type) }}
       aria-hidden="true"
     />
@@ -122,7 +122,7 @@ export default function AnnotationPopover({
           status={chipVariant === 'flag' ? 'warning' : 'info'}
           shape="round"
           capitalization="sentence"
-          label={contextLabel}
+          label={`Comment · ${contextLabel}`}
         />
       </div>
 
@@ -132,16 +132,21 @@ export default function AnnotationPopover({
             label="Type"
             size="small"
             value={annotationType}
-            displayedLabel="label"
             width="100%"
-            addonBeforeContent={<AnnotationTypeDot type={annotationType} />}
+            addonBeforeContent={<AnnotationTypeDot type={annotationType} inTrigger />}
+            menuClass={styles.typeMenu}
             stylePosition={{ zIndex: 10001 }}
             preventMenuOverflow={{ enabled: true, padding: 8 }}
             positions={['bottom', 'top']}
             onChange={handleTypeChange}
           >
             {typeOptions.map(opt => (
-              <MenuItem key={opt.value} value={opt.value} label={opt.label}>
+              <MenuItem
+                key={opt.value}
+                value={opt.value}
+                menuItemLabel={opt.label}
+                checkmark={false}
+              >
                 <AnnotationTypeOption type={opt.value} label={opt.label} />
               </MenuItem>
             ))}
