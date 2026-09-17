@@ -336,8 +336,16 @@ export function intelligenceResultsLead(fixedCount: number): string {
 
 export const CATCH_UP_PRIOR_PREPARER = 'Sarah Chen'
 
-export function catchUpReturnSummaryTitle(clientName: string = CLIENT_NAME): string {
+/** Figma catch-up summary title uses this client name (Return Summary frame). */
+export const CATCH_UP_CLIENT_NAME = 'Jordan Wales'
+
+export function catchUpReturnSummaryTitle(clientName: string = CATCH_UP_CLIENT_NAME): string {
   return `Return Summary — ${clientName}`
+}
+
+export type CatchUpListEntry = {
+  text: string
+  emphasis?: boolean
 }
 
 export const CATCH_UP_PRIOR_NOTES =
@@ -349,14 +357,20 @@ export const CATCH_UP_HANDOFF_PARAGRAPH =
 export const CATCH_UP_AI_REVIEW_INTRO =
   `${CATCH_UP_PRIOR_PREPARER} ran the Intuit Intelligence review and resolved every flagged item:`
 
-export const CATCH_UP_AI_REVIEW_BULLETS = [
-  'W-2 income variance — Resolved',
-  'Box 1 wages from Tech Circle Inc differed from prior year due to a mid-year raise; confirmed with source document',
-  '1099-DIV qualified dividend classification — Resolved',
-  'Qualified vs. ordinary split was reclassified and corrected; amounts now match broker statement',
-  'State withholding adequacy — Resolved',
-  'Withholding elections reviewed against projected liability; no adjustment needed',
-] as const
+export const CATCH_UP_AI_REVIEW_BULLETS: CatchUpListEntry[] = [
+  { text: 'W-2 income variance — Resolved', emphasis: true },
+  {
+    text: 'Box 1 wages from Tech Circle Inc differed from prior year due to a mid-year raise; confirmed with source document',
+  },
+  { text: '1099-DIV qualified dividend classification — Resolved', emphasis: true },
+  {
+    text: 'Qualified vs. ordinary split was reclassified and corrected; amounts now match broker statement',
+  },
+  { text: 'State withholding adequacy — Resolved', emphasis: true },
+  {
+    text: 'Withholding elections reviewed against projected liability; no adjustment needed',
+  },
+]
 
 export const CATCH_UP_AI_REVIEW_CALLOUT =
   'All three items were flagged by Intuit Intelligence and resolved by Sarah during the initial review. No open flags remain.'
@@ -364,28 +378,37 @@ export const CATCH_UP_AI_REVIEW_CALLOUT =
 export const CATCH_UP_DOCUMENTS_INTRO =
   `${CATCH_UP_PRIOR_PREPARER} imported and verified the following source documents:`
 
-export const CATCH_UP_DOCUMENTS_BULLETS = [
-  'W-2 from Tech Circle Inc — verified (checked twice)',
-  'Form 1040, line 25d — checked and reconciled',
-  '1099-INT — imported',
-  '1099-DIV — updated with corrected amounts',
-] as const
+export const CATCH_UP_DOCUMENTS_BULLETS: CatchUpListEntry[] = [
+  { text: 'W-2 from Tech Circle Inc — verified (checked twice)' },
+  { text: 'Form 1040, line 25d — checked and reconciled' },
+  { text: '1099-INT — imported' },
+  { text: '1099-DIV — updated with corrected amounts' },
+]
 
 export const CATCH_UP_CALCULATIONS_INTRO = 'Federal and state calculations are complete:'
 
-export const CATCH_UP_CALCULATIONS_BULLETS = [
-  'Federal income tax calculation — confirmed, no variances',
-  'All lines tie out',
-  'Return is ready for final review',
-] as const
+export const CATCH_UP_CALCULATIONS_BULLETS: CatchUpListEntry[] = [
+  { text: 'Federal income tax calculation — confirmed, no variances', emphasis: true },
+  { text: 'All lines tie out', emphasis: true },
+  { text: 'Return is ready for final review', emphasis: true },
+]
 
 export const CATCH_UP_REVIEWER_FOCUS_INTRO = "Sarah's note calls out one area to double-check:"
 
-export const CATCH_UP_REVIEWER_FOCUS_BULLETS = [
-  '1099-DIV qualified vs. ordinary split — Sarah corrected the classification, but flagged the broker statement formatting as unusual. Verify the final amounts look right against the source PDF.',
-  'Confirm all resolved AI review items look correct — spot-check that the W-2 variance explanation (mid-year raise) and withholding adequacy hold up.',
-  'Review source documents in the Documents tab before approving.',
-] as const
+export const CATCH_UP_REVIEWER_FOCUS_BULLETS: CatchUpListEntry[] = [
+  {
+    text: '1099-DIV qualified vs. ordinary split — Sarah corrected the classification, but flagged the broker statement formatting as unusual. Verify the final amounts look right against the source PDF.',
+    emphasis: true,
+  },
+  {
+    text: 'Confirm all resolved AI review items look correct — spot-check that the W-2 variance explanation (mid-year raise) and withholding adequacy hold up.',
+    emphasis: true,
+  },
+  {
+    text: 'Review source documents in the Documents tab before approving.',
+    emphasis: true,
+  },
+]
 
 export const CATCH_UP_RETURN_STATUS_ITEMS = [
   'AI review: Complete — all items resolved by Sarah Chen',

@@ -32,6 +32,7 @@ import {
   CTA_SHOW_THINKING,
   STARTER_PROMPT_CATCH_UP,
   catchUpReturnSummaryTitle,
+  type CatchUpListEntry,
 } from './agentIntelligenceCopy'
 import styles from '../../styles/agent-review/AgentCatchUpPane.module.css'
 
@@ -41,12 +42,15 @@ interface AgentCatchUpPaneProps {
   onApproveReturn: () => void
 }
 
-function BulletList({ items }: { items: readonly string[] }) {
+function BulletList({ items }: { items: readonly CatchUpListEntry[] }) {
   return (
     <ul className={styles.bulletList}>
       {items.map(item => (
-        <li key={item} className={styles.bulletItem}>
-          {item}
+        <li
+          key={item.text}
+          className={`${styles.bulletItem} ${item.emphasis ? styles.bulletItemEmphasis : styles.bulletItemDetail}`}
+        >
+          {item.text}
         </li>
       ))}
     </ul>
@@ -104,33 +108,44 @@ export default function AgentCatchUpPane({
               <h1 className={styles.summaryTitle}>{catchUpReturnSummaryTitle()}</h1>
 
               <h2 className={styles.sectionHeading}>Notes from Sarah Chen (prior preparer)</h2>
-              <p className={styles.bodyText}>{CATCH_UP_PRIOR_NOTES}</p>
-              <p className={styles.bodyText}>{CATCH_UP_HANDOFF_PARAGRAPH}</p>
+              <div className={styles.textStack}>
+                <p className={styles.bodyText}>{CATCH_UP_PRIOR_NOTES}</p>
+                <p className={styles.bodyText}>{CATCH_UP_HANDOFF_PARAGRAPH}</p>
+              </div>
 
-              <hr className={styles.divider} />
+              <hr className={styles.divider} aria-hidden />
 
               <h2 className={styles.sectionHeading}>1. AI review — all items resolved</h2>
-              <p className={styles.bodyText}>{CATCH_UP_AI_REVIEW_INTRO}</p>
-              <BulletList items={CATCH_UP_AI_REVIEW_BULLETS} />
-              <blockquote className={styles.callout}>{CATCH_UP_AI_REVIEW_CALLOUT}</blockquote>
+              <div className={styles.listGroup}>
+                <p className={styles.bodyText}>{CATCH_UP_AI_REVIEW_INTRO}</p>
+                <BulletList items={CATCH_UP_AI_REVIEW_BULLETS} />
+                <blockquote className={styles.callout}>{CATCH_UP_AI_REVIEW_CALLOUT}</blockquote>
+              </div>
 
-              <hr className={styles.divider} />
+              <hr className={styles.divider} aria-hidden />
 
               <h2 className={styles.sectionHeading}>2. Data entry and reconciliation</h2>
-              <p className={styles.subheading}>Documents imported</p>
-              <p className={styles.bodyText}>{CATCH_UP_DOCUMENTS_INTRO}</p>
-              <BulletList items={CATCH_UP_DOCUMENTS_BULLETS} />
-              <p className={styles.subheading}>Calculations confirmed</p>
-              <p className={styles.bodyText}>{CATCH_UP_CALCULATIONS_INTRO}</p>
-              <BulletList items={CATCH_UP_CALCULATIONS_BULLETS} />
+              <div className={styles.listGroup}>
+                <p className={styles.subheading}>Documents imported</p>
+                <p className={styles.bodyText}>{CATCH_UP_DOCUMENTS_INTRO}</p>
+                <BulletList items={CATCH_UP_DOCUMENTS_BULLETS} />
+              </div>
+              <div className={styles.listGroup}>
+                <p className={styles.subheading}>Calculations confirmed</p>
+                <p className={styles.bodyText}>{CATCH_UP_CALCULATIONS_INTRO}</p>
+                <BulletList items={CATCH_UP_CALCULATIONS_BULLETS} />
+              </div>
 
-              <p className={styles.subheading}>3. Your focus as final reviewer</p>
-              <p className={styles.bodyText}>{CATCH_UP_REVIEWER_FOCUS_INTRO}</p>
-              <BulletList items={CATCH_UP_REVIEWER_FOCUS_BULLETS} />
+              <div className={styles.listGroup}>
+                <p className={styles.subheading}>3. Your focus as final reviewer</p>
+                <p className={styles.bodyText}>{CATCH_UP_REVIEWER_FOCUS_INTRO}</p>
+                <BulletList items={CATCH_UP_REVIEWER_FOCUS_BULLETS} />
+              </div>
 
-              <hr className={styles.dividerWide} />
+              <hr className={styles.dividerWide} aria-hidden />
 
               <h2 className={styles.sectionHeading}>4. Return status</h2>
+              <div className={styles.listGroup}>
               <ol className={styles.numberedList}>
                 {CATCH_UP_RETURN_STATUS_ITEMS.map(item => (
                   <li key={item} className={styles.numberedItem}>
@@ -141,8 +156,9 @@ export default function AgentCatchUpPane({
               <blockquote className={`${styles.callout} ${styles.calloutItalic}`}>
                 {CATCH_UP_RETURN_STATUS_CALLOUT}
               </blockquote>
+              </div>
 
-              <hr className={styles.dividerWide} />
+              <hr className={styles.dividerWide} aria-hidden />
 
               <h2 className={styles.sectionHeading}>Final review checklist</h2>
               <p className={styles.bodyText}>{CATCH_UP_CHECKLIST_INTRO}</p>
@@ -159,7 +175,7 @@ export default function AgentCatchUpPane({
                 ))}
               </div>
 
-              <hr className={styles.dividerWide} />
+              <hr className={styles.dividerWide} aria-hidden />
 
               <p className={styles.bodyText}>{CATCH_UP_FOOTER_QUESTION}</p>
             </article>
