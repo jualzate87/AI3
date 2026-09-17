@@ -33,3 +33,6 @@ pnpm-lock.yaml
 *.sw?
 .env
 temp/*
+
+# Playwright visual QA output
+qa-shots/

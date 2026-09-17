@@ -9,7 +9,27 @@ Read `docs/DESIGN_LANGUAGE.md`, `docs/PATTERNS.md`, and the changed TSX/CSS file
 
 ## Inspect the running UI
 
-Start or reuse the ProtoC3 preview using the port in `PROTO_C3_REQUIREMENTS.md`. Use an available browser/computer/screenshot tool to inspect the affected route. If no such tool is available, say visual inspection is blocked and do not claim pixel or interaction verification.
+Playwright is available in this repo (`node_modules/.bin/playwright`, Chromium installed). There is no excuse for skipping visual inspection — drive the UI and read the screenshots.
+
+Write a short ESM script under `scripts/` and run it with `node`:
+
+```js
+import { chromium } from 'playwright'
+const browser = await chromium.launch()
+const page = await browser.newPage({ viewport: { width: 1440, height: 900 } })
+await page.goto('http://localhost:5175/#/ai-review', { waitUntil: 'networkidle' })
+await page.screenshot({ path: 'qa-shots/name.png' })
+```
+
+Notes:
+
+- Routes are hash-based. Real paths include `/smart-return`, `/data-review`, `/check-return`, `/ai-review`. Confirm against `src/App.tsx` before assuming a route name.
+- Target controls by their real copy from `agentIntelligenceCopy.ts`, not a guess.
+- Test against the local preview (port in `PROTO_C3_REQUIREMENTS.md`) or the live Pages URL.
+- Assert state transitions by comparing `innerText` length/markers across steps, then read the screenshots to judge craft.
+- Ignore `assets.intuitcdn.net` font CORS errors on the Pages origin; they are environmental and do not affect layout logic.
+
+Only claim visual verification for what you actually screenshotted.
 
 Inspect at:
 
