@@ -44,6 +44,8 @@ import {
   getReviewActor,
   STORAGE_KEY,
 } from '../hooks/useSyncedReviewState'
+import { RETURN_NOTES_EVENT, RETURN_NOTES_KEY } from '../hooks/useReturnNotes'
+import { useReturnWorkflow } from '../contexts/ReturnWorkflowContext'
 import { openSourceDocumentById } from '../lib/sourceDocPopoutNavigation'
 import { navigateToInputFromFieldOrigin } from '../lib/inputReturnNavigation'
 import type { FieldOriginSource } from '../data/fieldOrigins'
@@ -221,12 +223,15 @@ export default function DataReviewPage() {
     summaryCheckedMeta,
     reviewerConfirmedFields,
     reviewerConfirmedMeta,
+    managerConfirmedFields,
+    managerConfirmedMeta,
     reviewerConfirmedDocs,
     reviewerConfirmedDocsMeta,
     reviewerConfirmStaleFields,
     toggleSummaryChecked,
     toggleSummaryPreparerCheck,
     toggleSummaryReviewerConfirm,
+    toggleSummaryManagerConfirm,
     summaryFlaggedFields,
     summaryFlaggedMeta,
     toggleSummaryFlagged,
@@ -349,7 +354,9 @@ export default function DataReviewPage() {
     () => entry === 'review-return' && startReviewParam,
   )
   const [focusNoteId, setFocusNoteId] = useState<string | null>(null)
-  const actorLabel = reviewRole === 'reviewer' ? REVIEWER_NAME : PREPARER_NAME
+  const [pendingOpenComments, setPendingOpenComments] = useState(false)
+  const { currentUser } = useReturnWorkflow()
+  const actorLabel = currentUser.name
   const pass1ActorLabel = PREPARER_NAME
 
   useEffect(() => {
@@ -359,8 +366,23 @@ export default function DataReviewPage() {
   }, [notes])
 
   useEffect(() => {
-    setReviewActor(actorLabel)
-  }, [actorLabel])
+    const syncNotes = (event: Event) => {
+      try {
+        const raw = localStorage.getItem(RETURN_NOTES_KEY)
+        if (!raw) return
+        const parsed = JSON.parse(raw) as Note[]
+        if (Array.isArray(parsed)) setNotes(parsed)
+      } catch { /* ignore */ }
+      const openComments = (event as CustomEvent<{ openComments?: boolean }>).detail?.openComments
+      if (openComments) setPendingOpenComments(true)
+    }
+    window.addEventListener(RETURN_NOTES_EVENT, syncNotes)
+    return () => window.removeEventListener(RETURN_NOTES_EVENT, syncNotes)
+  }, [])
+
+  useEffect(() => {
+    setReviewActor(currentUser.name)
+  }, [currentUser.name])
 
   useEffect(() => {
     setStoredDemoRole(reviewRole)
@@ -522,6 +544,12 @@ export default function DataReviewPage() {
     setRightPanelMode(mode)
     if (wasClosed) animatePanelEnter()
   }, [rightPanelMode, animatePanelEnter])
+
+  useEffect(() => {
+    if (!pendingOpenComments) return
+    openRightPanel('comments')
+    setPendingOpenComments(false)
+  }, [pendingOpenComments, openRightPanel])
 
   /** Close the unified right rail (mode-specific exit animation). */
   const closeRightPanel = useCallback(() => {
@@ -1791,7 +1819,8 @@ export default function DataReviewPage() {
   if (!entryValid) return null
 
   const summaryPanelLabel = 'Review log'
-  const isReviewerConfirmMode = reviewRole === 'reviewer'
+  const isReviewerConfirmMode =
+    reviewRole === 'reviewer' || currentUser.role === 'reviewer' || currentUser.role === 'manager'
   /** ProtoC Phase 1 banner - visible for entire preparer import phase (CTA before sources open). */
   const showPreparerImportPhase = inImportPhase && reviewRole === 'preparer'
   /** Preparer Phase 1: hide Source documents until review starts (banner CTA is the entry). */
@@ -2016,10 +2045,13 @@ export default function DataReviewPage() {
             checkedMeta={summaryCheckedMeta}
             reviewerConfirmedFields={reviewerConfirmedFields}
             reviewerConfirmedMeta={reviewerConfirmedMeta}
+            managerConfirmedFields={managerConfirmedFields}
+            managerConfirmedMeta={managerConfirmedMeta}
             reviewerConfirmStaleFields={reviewerConfirmStaleFields}
             onToggleChecked={toggleSummaryChecked}
             onTogglePreparerCheck={toggleSummaryPreparerCheck}
             onToggleReviewerConfirm={toggleSummaryReviewerConfirm}
+            onToggleManagerConfirm={toggleSummaryManagerConfirm}
             reviewRole={reviewRole}
             reviewerSignedOffForms={reviewerSignedOffForms}
             reviewerSignedOffFormsMeta={reviewerSignedOffFormsMeta}

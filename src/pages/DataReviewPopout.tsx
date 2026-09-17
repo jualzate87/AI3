@@ -53,10 +53,10 @@ import { openReviewReturnPopout } from '../lib/prototypeRoutes'
 import DocReviewProgress from './data-review/DocReviewProgress'
 import UnsavedChangesModal from './data-review/UnsavedChangesModal'
 import {
-  PREPARER_NAME,
   setReviewActor,
   useSyncedReviewState,
 } from '../hooks/useSyncedReviewState'
+import { useReturnWorkflow } from '../contexts/ReturnWorkflowContext'
 import { usePacketDocReviewControls } from '../hooks/usePacketDocReviewControls'
 import { computeLiveReturn } from '../data/liveReturn'
 import { PHASE1_FLAG_MESSAGES } from './data-review/phase1FlagMessages'
@@ -137,13 +137,13 @@ export default function DataReviewPopout() {
   const [saveStatusVisible, setSaveStatusVisible] = useState(false)
   const [saveToastOpen, setSaveToastOpen] = useState(false)
 
-  // Popout is always the editable preparer source-doc workspace, even when opened
-  // from Check Return while the stored demo role is reviewer.
-  useEffect(() => {
-    setReviewActor(PREPARER_NAME)
-  }, [])
+  const { currentUser } = useReturnWorkflow()
 
-  const isReviewerConfirmMode = false
+  useEffect(() => {
+    setReviewActor(currentUser.name)
+  }, [currentUser.name])
+
+  const isReviewerConfirmMode = currentUser.role === 'reviewer' || currentUser.role === 'manager'
 
   const {
     activeTopTab, setActiveTopTab,

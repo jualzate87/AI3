@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react'
 import { createPortal } from 'react-dom'
-import { CircleCheck, CircleInfo } from '@design-systems/icons'
+import { CircleInfo } from '@design-systems/icons'
 import { Button } from '@ids-ts/button'
 import '@ids-ts/button/dist/main.css'
 import { DropdownButton, MenuItem } from '@ids-ts/dropdown-button'
@@ -30,13 +30,13 @@ import { showSummaryImportAttention } from '../../lib/prototypeFeatureFlags'
 import { resolveFormLineHighlight, type Phase2IssueKey } from './phase2FlagSync'
 import {
   formatActivityMeta,
-  formatDualCheckTooltip,
-  getReviewActor,
-  REVIEWER_NAME,
   type ActivityEntry,
 } from '../../hooks/useSyncedReviewState'
 import { PRIOR_YEAR_1040_VALUES, buildYoyMap, yoyPercent } from './priorYear1040Data'
-import AttestColumns, { preparerCheckTooltip, reviewerCheckTooltip } from './AttestColumns'
+import AttestColumns, {
+  AttestColumnHeaders,
+  ownerFirstName,
+} from './AttestColumns'
 import OutputFormViews from './OutputFormViews'
 import OutputRowActions from './OutputRowActions'
 import FormSignOffControl from './FormSignOffControl'
@@ -54,22 +54,6 @@ function activityTooltip(primary: string, entry?: ActivityEntry | null): string 
   return meta ? `${primary}\n${meta}` : primary
 }
 
-function checkActionTooltip(
-  actorIsReviewer: boolean,
-  actorHasSlot: boolean,
-  dualTooltip: string,
-): string {
-  if (dualTooltip) {
-    const action = actorHasSlot
-      ? (actorIsReviewer ? 'Remove your confirmation' : 'Remove your verification')
-      : (actorIsReviewer ? 'Confirm for sign-off' : 'Verify against source')
-    return `${action}\n${dualTooltip}`
-  }
-  return actorIsReviewer
-    ? (actorHasSlot ? 'Remove your confirmation' : 'Confirm for sign-off')
-    : (actorHasSlot ? 'Remove your verification' : 'Verify against source')
-}
-
 function fieldCheckState(
   field: string | undefined,
   checkedFields: Set<string>,
@@ -77,24 +61,24 @@ function fieldCheckState(
   reviewerConfirmedFields: Set<string>,
   reviewerConfirmedMeta: Map<string, ActivityEntry>,
   reviewerConfirmStaleFields: Set<string>,
+  managerConfirmedFields: Set<string>,
+  managerConfirmedMeta: Map<string, ActivityEntry>,
 ) {
   const preparerEntry = field && checkedFields.has(field) ? checkedMeta.get(field) : undefined
   const reviewerEntry =
     field && reviewerConfirmedFields.has(field) ? reviewerConfirmedMeta.get(field) : undefined
+  const managerEntry =
+    field && managerConfirmedFields.has(field) ? managerConfirmedMeta.get(field) : undefined
   const needsReconfirm = !!field && reviewerConfirmStaleFields.has(field) && !!preparerEntry
-  const isReviewerActor = getReviewActor() === REVIEWER_NAME
-  const actorHasSlot = isReviewerActor ? !!reviewerEntry : !!preparerEntry
-  const hasAnyCheck = !!(preparerEntry || reviewerEntry)
+  const hasAnyCheck = !!(preparerEntry || reviewerEntry || managerEntry)
   const hasDualCheck = !!(preparerEntry && reviewerEntry)
   return {
     preparerEntry,
     reviewerEntry,
+    managerEntry,
     needsReconfirm,
-    isReviewerActor,
-    actorHasSlot,
     hasAnyCheck,
     hasDualCheck,
-    tooltip: formatDualCheckTooltip(preparerEntry, reviewerEntry),
   }
 }
 
@@ -116,6 +100,9 @@ interface LeftPanel1040Props {
   reviewerConfirmedFields?: Set<string>
   /** Who/when for reviewer confirm on each field */
   reviewerConfirmedMeta?: Map<string, ActivityEntry>
+  /** L3 (manager) checks */
+  managerConfirmedFields?: Set<string>
+  managerConfirmedMeta?: Map<string, ActivityEntry>
   /** Summary fields needing reviewer re-confirm after edit */
   reviewerConfirmStaleFields?: Set<string>
   /** Toggle check/confirm for the current actor's slot */
@@ -124,6 +111,8 @@ interface LeftPanel1040Props {
   onTogglePreparerCheck?: (fieldName: string) => void
   /** Toggle reviewer confirm slot (reviewer only) */
   onToggleReviewerConfirm?: (fieldName: string) => void
+  /** Toggle L3 manager check */
+  onToggleManagerConfirm?: (fieldName: string) => void
   /** C2 review role - drives per-form sign-off affordance */
   reviewRole?: 'preparer' | 'reviewer'
   /** Per-form reviewer sign-off keys (e.g. schedule-c, form-1040) */
@@ -231,10 +220,13 @@ export default function LeftPanel1040({
   checkedMeta = new Map(),
   reviewerConfirmedFields = new Set(),
   reviewerConfirmedMeta = new Map(),
+  managerConfirmedFields = new Set(),
+  managerConfirmedMeta = new Map(),
   reviewerConfirmStaleFields = new Set(),
   onToggleChecked,
   onTogglePreparerCheck,
   onToggleReviewerConfirm,
+  onToggleManagerConfirm,
   reviewRole = 'preparer',
   reviewerSignedOffForms = new Set(),
   reviewerSignedOffFormsMeta = new Map(),
@@ -284,6 +276,10 @@ export default function LeftPanel1040({
   const isReviewerRole = reviewRole === 'reviewer'
   const togglePreparer = onTogglePreparerCheck ?? onToggleChecked
   const toggleReviewer = onToggleReviewerConfirm ?? onToggleChecked
+  const toggleManager = onToggleManagerConfirm
+  const l1Owner = ownerFirstName(checkedMeta)
+  const l2Owner = ownerFirstName(reviewerConfirmedMeta)
+  const l3Owner = ownerFirstName(managerConfirmedMeta)
   const outputFormId = controlledOutputFormId ?? internalOutputFormId
   const currentFormLabel =
     OUTPUT_FORM_OPTIONS.find(opt => opt.id === outputFormId)?.label ?? 'Return Summary'
@@ -707,12 +703,14 @@ export default function LeftPanel1040({
       reviewerConfirmedFields,
       reviewerConfirmedMeta,
       reviewerConfirmStaleFields,
+      managerConfirmedFields,
+      managerConfirmedMeta,
     )
     const {
       preparerEntry: checkEntry,
       reviewerEntry,
+      managerEntry,
       needsReconfirm,
-      isReviewerActor,
     } = checkState
     const isPopoverOpen    = !!field && popoverField === field
     const isFlagged        = !!field && flaggedFields.has(field)
@@ -730,7 +728,7 @@ export default function LeftPanel1040({
     )
     const yoy              = field ? YOY[field] : undefined
     const clickable        = !!field
-    const showAttest       = !!field && !!kind && (togglePreparer || toggleReviewer)
+    const showAttest       = !!field && !!kind && (togglePreparer || toggleReviewer || toggleManager)
     const isDimmed =
       !!focusFields && focusFields.size > 0 && !!field && !focusFields.has(field)
 
@@ -846,9 +844,10 @@ export default function LeftPanel1040({
                   field={field!}
                   preparerEntry={checkEntry}
                   reviewerEntry={reviewerEntry}
-                  isReviewerRole={isReviewerRole}
+                  managerEntry={managerEntry}
                   onTogglePreparer={togglePreparer}
                   onToggleReviewer={toggleReviewer}
+                  onToggleManager={toggleManager}
                 />
               )}
             </div>
@@ -1018,8 +1017,7 @@ export default function LeftPanel1040({
                 <div className={`${styles.summaryColLabel} ${styles.summaryColPct}`}>Change %</div>
                 <div className={styles.summaryColCheckGroup} aria-hidden="true">
                   <span className={styles.summaryColCheckSpacer} />
-                  <span className={styles.summaryColCheckLabel}>Prep</span>
-                  <span className={styles.summaryColCheckLabel}>Rev</span>
+                  <AttestColumnHeaders l1Name={l1Owner} l2Name={l2Owner} l3Name={l3Owner} />
                 </div>
               </div>
             </div>
@@ -1118,15 +1116,15 @@ export default function LeftPanel1040({
                         reviewerConfirmedFields,
                         reviewerConfirmedMeta,
                         reviewerConfirmStaleFields,
+                        managerConfirmedFields,
+                        managerConfirmedMeta,
                       )
                       const {
                         preparerEntry: checkEntry,
                         reviewerEntry,
+                        managerEntry,
                         needsReconfirm,
-                        isReviewerActor,
-                        actorHasSlot: isChecked,
                         hasAnyCheck,
-                        tooltip: dualCheckTooltip,
                       } = rowCheck
                       const isDimmed =
                         !!focusFields &&
@@ -1158,11 +1156,6 @@ export default function LeftPanel1040({
                       const flagTooltip = activityTooltip(
                         flagTooltipPrimary,
                         isFlagged ? flagActivityEntry : undefined,
-                      )
-                      const checkTooltip = checkActionTooltip(
-                        isReviewerActor,
-                        isChecked,
-                        dualCheckTooltip,
                       )
                       const diffPos = diff !== null && diff > 0
                       const diffNeg = diff !== null && diff < 0
@@ -1279,53 +1272,19 @@ export default function LeftPanel1040({
                                 onToggleFlagged={onToggleFlagged}
                                 onSetFlagNote={onSetFlagNote}
                               />
-                              {!!row.field && (togglePreparer || toggleReviewer) ? (
-                                <>
-                                  <Tooltip text={preparerCheckTooltip(checkEntry)} placement="top">
-                                    <button
-                                      type="button"
-                                      className={[
-                                        styles.summaryAttestCol,
-                                        checkEntry
-                                          ? styles.summaryAttestColPrepActive
-                                          : `${styles.summaryAttestColEmpty} ${styles.summaryAttestColPrepEmpty}`,
-                                        isReviewerRole ? styles.summaryAttestColReadonly : '',
-                                      ].filter(Boolean).join(' ')}
-                                      aria-label={checkEntry ? `Verified by ${checkEntry.by}` : 'Preparer verify'}
-                                      disabled={isReviewerRole}
-                                      onClick={e => {
-                                        e.preventDefault()
-                                        e.stopPropagation()
-                                        if (!isReviewerRole && row.field) togglePreparer?.(row.field)
-                                      }}
-                                    >
-                                      <CircleCheck size="small" aria-hidden />
-                                    </button>
-                                  </Tooltip>
-                                  <Tooltip text={reviewerCheckTooltip(reviewerEntry)} placement="top">
-                                    <button
-                                      type="button"
-                                      className={[
-                                        styles.summaryAttestCol,
-                                        reviewerEntry
-                                          ? styles.summaryAttestColRevActive
-                                          : `${styles.summaryAttestColEmpty} ${styles.summaryAttestColRevEmpty}`,
-                                        !isReviewerRole ? styles.summaryAttestColReadonly : '',
-                                      ].filter(Boolean).join(' ')}
-                                      aria-label={reviewerEntry ? `Confirmed by ${reviewerEntry.by}` : 'Reviewer confirm'}
-                                      disabled={!isReviewerRole}
-                                      onClick={e => {
-                                        e.preventDefault()
-                                        e.stopPropagation()
-                                        if (isReviewerRole && row.field) toggleReviewer?.(row.field)
-                                      }}
-                                    >
-                                      <CircleCheck size="small" aria-hidden />
-                                    </button>
-                                  </Tooltip>
-                                </>
+                              {!!row.field && (togglePreparer || toggleReviewer || toggleManager) ? (
+                                <AttestColumns
+                                  field={row.field}
+                                  preparerEntry={checkEntry}
+                                  reviewerEntry={reviewerEntry}
+                                  managerEntry={managerEntry}
+                                  onTogglePreparer={togglePreparer}
+                                  onToggleReviewer={toggleReviewer}
+                                  onToggleManager={toggleManager}
+                                />
                               ) : (
                                 <>
+                                  <span className={styles.summaryAttestSlot} aria-hidden="true" />
                                   <span className={styles.summaryAttestSlot} aria-hidden="true" />
                                   <span className={styles.summaryAttestSlot} aria-hidden="true" />
                                 </>
@@ -1468,9 +1427,12 @@ export default function LeftPanel1040({
             reviewerConfirmedFields={reviewerConfirmedFields}
             reviewerConfirmedMeta={reviewerConfirmedMeta}
             reviewerConfirmStaleFields={reviewerConfirmStaleFields}
+            managerConfirmedFields={managerConfirmedFields}
+            managerConfirmedMeta={managerConfirmedMeta}
             reviewRole={reviewRole}
             onTogglePreparerCheck={togglePreparer}
             onToggleReviewerConfirm={toggleReviewer}
+            onToggleManagerConfirm={toggleManager}
             onNavigateSource={onNavigateSource}
             onNavigateToSourceDoc={onNavigateToSourceDoc}
             flaggedFields={flaggedFields}
@@ -1553,8 +1515,7 @@ export default function LeftPanel1040({
               <span className={styles.colValActionGroup} aria-hidden="true">
                 <span className={styles.colValActionSpacer} />
                 <span className={styles.colValAttestGroup}>
-                  <span className={styles.colValAttestLabel}>Prep</span>
-                  <span className={styles.colValAttestLabel}>Rev</span>
+                  <AttestColumnHeaders l1Name={l1Owner} l2Name={l2Owner} l3Name={l3Owner} />
                 </span>
               </span>
             </div>

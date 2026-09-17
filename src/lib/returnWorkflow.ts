@@ -33,6 +33,18 @@ export type HandoffPreviewBullet = {
   emphasis?: boolean
 }
 
+export type HandoffSummaryItem = {
+  title: string
+  detail: string
+}
+
+export type HandoffSummarySection = {
+  id: 'checked' | 'heads-up'
+  title: string
+  intro: string
+  items: HandoffSummaryItem[]
+}
+
 export type ReturnWorkflowState = {
   assigneeId: string
   statusId: ReturnStatusId
@@ -44,6 +56,7 @@ export type PendingHandoff = {
   toAssigneeId: string
   suggestedStatusId: ReturnStatusId
   previewBullets: HandoffPreviewBullet[]
+  previewSections: HandoffSummarySection[]
 }
 
 export const WORKFLOW_STORAGE_KEY = 'protoc3-return-workflow'
@@ -155,25 +168,71 @@ export function detectHandoff(
     fromAssigneeId,
     toAssigneeId,
     suggestedStatusId,
+    previewSections: buildHandoffPreviewSections(from.name, to.name),
     previewBullets: buildHandoffPreviewBullets(from.name, to.name),
   }
+}
+
+export function buildHandoffPreviewSections(
+  fromName: string,
+  toName: string,
+): HandoffSummarySection[] {
+  return [
+    {
+      id: 'checked',
+      title: 'Checked and ready',
+      intro: `A concise version of the AI review ${fromName} already completed.`,
+      items: [
+        {
+          title: 'W-2 income variance resolved',
+          detail: 'Tech Circle Box 1 differed from last year because of a mid-year raise — confirmed against the source PDF.',
+        },
+        {
+          title: '1099-DIV classification corrected',
+          detail: 'Qualified vs. ordinary split was reclassified so the amounts match the broker statement.',
+        },
+        {
+          title: 'Withholding reviewed',
+          detail: 'Federal withholding and state elections were checked against projected liability. No change needed.',
+        },
+        {
+          title: 'Source documents imported',
+          detail: 'W-2, 1099-INT, and 1099-DIV are in the packet and tied to the return.',
+        },
+      ],
+    },
+    {
+      id: 'heads-up',
+      title: `Heads up for ${toName.split(' ')[0]}`,
+      intro: 'These were not fully proven during prep. Call them out before you sign off — or leave them for the next person.',
+      items: [
+        {
+          title: '1099-DIV split still needs a second look',
+          detail: `${fromName} corrected the classification, but the broker formatting was unusual. Verify the split against the PDF.`,
+        },
+        {
+          title: 'Form 1098 mortgage interest is an estimate',
+          detail: 'The deduction is based on an estimate. Confirm the amount with the client and upload the actual form when it arrives.',
+        },
+        {
+          title: 'Form 2210 penalty is a judgment call',
+          detail: 'The underpayment shortfall is calculated, but whether to annualize income or accept the penalty is yours to decide.',
+        },
+      ],
+    },
+  ]
 }
 
 export function buildHandoffPreviewBullets(
   fromName: string,
   toName: string,
 ): HandoffPreviewBullet[] {
-  return [
-    {
-      text: 'AI review complete — 3 Intuit Intelligence items resolved during prep',
-      emphasis: true,
-    },
-    { text: 'W-2, 1099-INT, and 1099-DIV imported and verified against source PDFs' },
-    { text: 'Federal refund estimate updated after qualified dividend reclassification' },
-    {
-      text: `${fromName} flagged the 1099-DIV split for ${toName} to double-check against the broker statement`,
-    },
-  ]
+  return buildHandoffPreviewSections(fromName, toName).flatMap(section =>
+    section.items.map(item => ({
+      text: `${item.title} — ${item.detail}`,
+      emphasis: section.id === 'heads-up',
+    })),
+  )
 }
 
 export function buildDefaultHandoffNote(fromName: string, toName: string): string {

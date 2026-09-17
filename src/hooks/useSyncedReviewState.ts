@@ -16,6 +16,7 @@ import {
   AGENT_INTELLIGENCE_ACTOR,
   buildAgentIntelligenceDemoFixes,
 } from '../lib/applyAgentIntelligenceFixes'
+import { WORKFLOW_STORAGE_KEY } from '../lib/returnWorkflow'
 import {
   coerceTimestamp,
   formatActivityTimestamp,
@@ -59,6 +60,8 @@ interface SyncedState {
   reviewerConfirmedFieldsList: [string, ActivityEntry][]
   /** Docs marked verified by preparer */
   reviewerConfirmedDocsList: [string, ActivityEntry][]
+  /** Summary-row L3 (manager) checks */
+  managerConfirmedFieldsList: [string, ActivityEntry][]
   /** Per output form / schedule reviewer sign-off (e.g. schedule-c, form-1040) */
   reviewerSignedOffFormsList: [string, ActivityEntry][]
   /** Summary fields needing reviewer re-confirm after post-verify edit */
@@ -105,12 +108,13 @@ function createSyncTabId(): string {
   return `tab-${Date.now()}-${Math.random().toString(36).slice(2)}`
 }
 // Bump whenever DEFAULT_STATE shape or seed values change so stale sessions reset.
-const STATE_VERSION = 34
+const STATE_VERSION = 35
 const STORAGE_KEY = 'protoc3-data-review-state-v' + STATE_VERSION
 /** Prior keys - sessionStorage (tab-scoped) and older localStorage versions */
 const LEGACY_STORAGE_KEYS = [
   STORAGE_KEY,
   'protoc3-data-review-state-v29',
+  'protoc3-data-review-state-v34',
   'protoc3-data-review-state-v32',
   'protoc3-data-review-state-v28',
   'protoc3-data-review-state-v27',
@@ -146,6 +150,24 @@ function writePersisted(state: SyncedState): void {
   }
 }
 
+/** If Sarah never stamped docs, seed the packet she claimed as verified in the handoff. */
+export function seedPreparerDocStampsIfEmpty(preparerName = 'Sarah Chen'): void {
+  try {
+    const raw = readPersistedRaw()
+    const current = raw ? hydrateSyncedState(raw) : sanitizeSyncedState({ ...DEFAULT_STATE })
+    if (current.verifiedDocsList.length > 0) return
+    const at = formatActivityTimestamp()
+    const keys = ['techCircle', '1099-int-harborlineCredit', '1099-div-tokenFinancial']
+    const next = sanitizeSyncedState({
+      ...current,
+      verifiedDocsList: keys.map(key => [key, { by: preparerName, at }]),
+    })
+    writePersisted(next)
+  } catch {
+    // ignore prototype storage errors
+  }
+}
+
 function hydrateSyncedState(raw: string): SyncedState {
   const parsed = JSON.parse(raw) as Partial<SyncedState> & {
     verifiedDocsList?: unknown
@@ -154,6 +176,7 @@ function hydrateSyncedState(raw: string): SyncedState {
     reviewedFieldsList?: unknown
     summaryCheckedFieldsList?: unknown
     reviewerConfirmedFieldsList?: unknown
+    managerConfirmedFieldsList?: unknown
     reviewerConfirmedDocsList?: unknown
     reviewerSignedOffFormsList?: unknown
     reviewerConfirmStaleFieldsList?: unknown
@@ -181,6 +204,7 @@ function hydrateSyncedState(raw: string): SyncedState {
     reviewerConfirmStaleFieldsList: Array.isArray(parsed.reviewerConfirmStaleFieldsList)
       ? parsed.reviewerConfirmStaleFieldsList.filter((k): k is string => typeof k === 'string')
       : [],
+    managerConfirmedFieldsList: migrateActivityList(parsed.managerConfirmedFieldsList),
     docEditAfterVerifyNoticesList: Array.isArray(parsed.docEditAfterVerifyNoticesList)
       ? parsed.docEditAfterVerifyNoticesList
           .filter((k): k is string => typeof k === 'string')
@@ -205,6 +229,7 @@ export function sanitizeSyncedState(state: SyncedState): SyncedState {
   const dualSlots = {
     summaryCheckedFieldsList: migrateActivityList(state.summaryCheckedFieldsList),
     reviewerConfirmedFieldsList: migrateActivityList(state.reviewerConfirmedFieldsList),
+    managerConfirmedFieldsList: migrateActivityList(state.managerConfirmedFieldsList),
     verifiedDocsList: normalizeVerifiedDocEntries(migrateActivityList(state.verifiedDocsList)),
     reviewerConfirmedDocsList: normalizeVerifiedDocEntries(migrateActivityList(state.reviewerConfirmedDocsList)),
   }
@@ -265,6 +290,22 @@ export function setReviewActor(name: string) {
 
 export function getReviewActor(): string {
   return currentActorName
+}
+
+export function isCurrentReviewerActor(): boolean {
+  return isReviewerActor()
+}
+
+export function isCurrentManagerActor(): boolean {
+  if (currentActorName === 'Alex Rivera') return true
+  try {
+    const raw = localStorage.getItem(WORKFLOW_STORAGE_KEY)
+    if (!raw) return false
+    const parsed = JSON.parse(raw) as { currentUserId?: string }
+    return parsed.currentUserId === 'alex'
+  } catch {
+    return false
+  }
 }
 
 export { formatActivityTimestamp }
@@ -333,8 +374,21 @@ export function formatDualCheckTooltip(
   return lines.join('\n')
 }
 
+function isReviewerActorName(name: string): boolean {
+  return name === REVIEWER_NAME || name === 'Jake Morrison' || name === 'Jordan Lee'
+}
+
 function isReviewerActor(): boolean {
-  return currentActorName === REVIEWER_NAME
+  if (isReviewerActorName(currentActorName)) return true
+  try {
+    const raw = localStorage.getItem(WORKFLOW_STORAGE_KEY)
+    if (!raw) return false
+    const parsed = JSON.parse(raw) as { currentUserId?: string }
+    const id = parsed.currentUserId
+    return id === 'jake' || id === 'alex'
+  } catch {
+    return false
+  }
 }
 
 /** Split legacy single-slot checks/docs by actor into dual maps */
@@ -350,7 +404,7 @@ function migrateDualSlotLists(parsed: {
   const preparerChecks: [string, ActivityEntry][] = []
   const reviewerChecks: [string, ActivityEntry][] = []
   for (const [k, e] of migrateActivityList(parsed.summaryCheckedFieldsList)) {
-    if (e.by === REVIEWER_NAME) reviewerChecks.push([k, e])
+    if (isReviewerActorName(e.by)) reviewerChecks.push([k, e])
     else preparerChecks.push([k, e])
   }
   for (const [k, e] of migrateActivityList(parsed.reviewerConfirmedFieldsList)) {
@@ -360,7 +414,7 @@ function migrateDualSlotLists(parsed: {
   const preparerDocs: [string, ActivityEntry][] = []
   const reviewerDocs: [string, ActivityEntry][] = []
   for (const [k, e] of migrateActivityList(parsed.verifiedDocsList)) {
-    if (e.by === REVIEWER_NAME) reviewerDocs.push([k, e])
+    if (isReviewerActorName(e.by)) reviewerDocs.push([k, e])
     else preparerDocs.push([k, e])
   }
   for (const [k, e] of migrateActivityList(parsed.reviewerConfirmedDocsList)) {
@@ -484,6 +538,7 @@ const DEFAULT_STATE: SyncedState = {
   verifiedDocAutoFlagsList: [],
   summaryCheckedFieldsList: [],
   reviewerConfirmedFieldsList: [],
+  managerConfirmedFieldsList: [],
   reviewerConfirmedDocsList: [],
   reviewerSignedOffFormsList: [],
   reviewerConfirmStaleFieldsList: [],
@@ -881,6 +936,8 @@ export function useSyncedReviewState() {
   const summaryCheckedKeys = new Set(state.summaryCheckedFieldsList.map(([k]) => k))
   const reviewerConfirmedFields = new Map(state.reviewerConfirmedFieldsList)
   const reviewerConfirmedKeys = new Set(state.reviewerConfirmedFieldsList.map(([k]) => k))
+  const managerConfirmedFields = new Map(state.managerConfirmedFieldsList)
+  const managerConfirmedKeys = new Set(state.managerConfirmedFieldsList.map(([k]) => k))
   const reviewerConfirmStaleKeys = new Set(state.reviewerConfirmStaleFieldsList)
   const summaryFlaggedFields = new Map(state.summaryFlaggedFieldsList)
   const summaryFlaggedKeys = new Set(state.summaryFlaggedFieldsList.map(([k]) => k))
@@ -1000,7 +1057,9 @@ export function useSyncedReviewState() {
 
   /** Toggle Summary check/confirm - preparer vs reviewer slot based on current actor */
   const toggleSummaryChecked = (fieldName: string) => {
-    if (isReviewerActor()) {
+    if (isCurrentManagerActor()) {
+      toggleSummaryManagerConfirm(fieldName)
+    } else if (isReviewerActor()) {
       toggleSummaryReviewerConfirm(fieldName)
     } else {
       toggleSummaryPreparerCheck(fieldName)
@@ -1008,7 +1067,7 @@ export function useSyncedReviewState() {
   }
 
   const toggleSummaryPreparerCheck = (fieldName: string) => {
-    if (isReviewerActor()) return
+    if (isReviewerActor() || isCurrentManagerActor()) return
 
     const nextChecked = new Map(stateRef.current.summaryCheckedFieldsList)
     const nextFlagged = new Map(stateRef.current.summaryFlaggedFieldsList)
@@ -1025,7 +1084,7 @@ export function useSyncedReviewState() {
   }
 
   const toggleSummaryReviewerConfirm = (fieldName: string) => {
-    if (!isReviewerActor()) return
+    if (isCurrentManagerActor() || !isReviewerActor()) return
 
     const nextConfirmed = new Map(stateRef.current.reviewerConfirmedFieldsList)
     if (nextConfirmed.has(fieldName)) nextConfirmed.delete(fieldName)
@@ -1036,6 +1095,17 @@ export function useSyncedReviewState() {
     update({
       reviewerConfirmedFieldsList: Array.from(nextConfirmed.entries()),
       reviewerConfirmStaleFieldsList: nextStale,
+    })
+  }
+
+  const toggleSummaryManagerConfirm = (fieldName: string) => {
+    if (!isCurrentManagerActor()) return
+
+    const nextConfirmed = new Map(stateRef.current.managerConfirmedFieldsList)
+    if (nextConfirmed.has(fieldName)) nextConfirmed.delete(fieldName)
+    else nextConfirmed.set(fieldName, nowEntry())
+    update({
+      managerConfirmedFieldsList: Array.from(nextConfirmed.entries()),
     })
   }
 
@@ -1256,10 +1326,13 @@ export function useSyncedReviewState() {
     /** Set of reviewer-confirmed summary field keys */
     reviewerConfirmedFields: reviewerConfirmedKeys,
     reviewerConfirmedMeta: reviewerConfirmedFields,
+    managerConfirmedFields: managerConfirmedKeys,
+    managerConfirmedMeta: managerConfirmedFields,
     reviewerConfirmStaleFields: reviewerConfirmStaleKeys,
     toggleSummaryChecked,
     toggleSummaryPreparerCheck,
     toggleSummaryReviewerConfirm,
+    toggleSummaryManagerConfirm,
     /** Set of flagged summary field keys (presence) */
     summaryFlaggedFields: summaryFlaggedKeys,
     summaryFlaggedMeta: summaryFlaggedFields,

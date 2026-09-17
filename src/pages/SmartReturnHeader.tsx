@@ -202,7 +202,6 @@ export default function SmartReturnHeader({
               automationId="review-return-header-cta"
             >
               Review return
-              <NewWindow size="small" aria-hidden />
             </Button>
           )}
           {showViewSourceDocuments && (
@@ -219,6 +218,7 @@ export default function SmartReturnHeader({
           {activeTab === 'checkreturns' && onAiReview && (
             <Button
               innerRef={aiReviewButtonRef}
+              className={styles.aiReviewBtn}
               priority="secondary"
               purpose="passive"
               onClick={onAiReview}

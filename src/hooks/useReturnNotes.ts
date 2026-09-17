@@ -2,6 +2,7 @@ import { useCallback, useEffect, useState } from 'react'
 import type { Note } from '../pages/data-review/NotesPane'
 
 export const RETURN_NOTES_KEY = 'protoc3-notes'
+export const RETURN_NOTES_EVENT = 'protoc3-notes-changed'
 
 function loadNotes(): Note[] {
   try {
@@ -14,14 +15,32 @@ function loadNotes(): Note[] {
   }
 }
 
+function persistNotes(next: Note[], openComments = false) {
+  localStorage.setItem(RETURN_NOTES_KEY, JSON.stringify(next))
+  window.dispatchEvent(
+    new CustomEvent(RETURN_NOTES_EVENT, { detail: { openComments } }),
+  )
+}
+
 export function useReturnNotes() {
   const [notes, setNotes] = useState<Note[]>(() => loadNotes())
 
   useEffect(() => {
-    localStorage.setItem(RETURN_NOTES_KEY, JSON.stringify(notes))
-  }, [notes])
+    const sync = () => setNotes(loadNotes())
+    window.addEventListener(RETURN_NOTES_EVENT, sync)
+    window.addEventListener('storage', sync)
+    return () => {
+      window.removeEventListener(RETURN_NOTES_EVENT, sync)
+      window.removeEventListener('storage', sync)
+    }
+  }, [])
 
-  const addNote = useCallback((text: string, author: string, role: Note['role'] = 'preparer') => {
+  const addNote = useCallback((
+    text: string,
+    author: string,
+    role: Note['role'] = 'preparer',
+    context?: string,
+  ) => {
     const note: Note = {
       id: `note-${Date.now()}`,
       text,
@@ -34,8 +53,13 @@ export function useReturnNotes() {
       }),
       role,
       status: 'open',
+      ...(context ? { context } : {}),
     }
-    setNotes(prev => [note, ...prev])
+    setNotes(prev => {
+      const next = [note, ...prev]
+      persistNotes(next, true)
+      return next
+    })
     return note
   }, [])
 
@@ -55,25 +79,37 @@ export function useReturnNotes() {
         role: 'preparer',
         status: 'open',
       }
-      setNotes(prev => [note, ...prev])
+      setNotes(prev => {
+        const next = [note, ...prev]
+        persistNotes(next, true)
+        return next
+      })
       return note
     },
     [],
   )
 
   const editNote = useCallback((id: string, text: string) => {
-    setNotes(prev => prev.map(note => (note.id === id ? { ...note, text } : note)))
+    setNotes(prev => {
+      const next = prev.map(note => (note.id === id ? { ...note, text } : note))
+      persistNotes(next)
+      return next
+    })
   }, [])
 
   const resolveNote = useCallback((id: string) => {
-    setNotes(prev =>
-      prev.map(note => (note.id === id ? { ...note, status: 'resolved' as const } : note)),
-    )
+    setNotes(prev => {
+      const next = prev.map(note =>
+        note.id === id ? { ...note, status: 'resolved' as const } : note,
+      )
+      persistNotes(next)
+      return next
+    })
   }, [])
 
   const replyToNote = useCallback((id: string, text: string, author: string, role: Note['role']) => {
-    setNotes(prev =>
-      prev.map(note => {
+    setNotes(prev => {
+      const next = prev.map(note => {
         if (note.id !== id) return note
         const reply = {
           id: `reply-${Date.now()}`,
@@ -88,8 +124,10 @@ export function useReturnNotes() {
           role,
         }
         return { ...note, replies: [...(note.replies ?? []), reply] }
-      }),
-    )
+      })
+      persistNotes(next)
+      return next
+    })
   }, [])
 
   return {

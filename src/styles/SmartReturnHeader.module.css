@@ -358,3 +358,14 @@
   height: var(--size-action-icon-medium, 24px);
   flex-shrink: 0;
 }
+
+/* Figma 34599:32009 — 8px/6px control, left-icon slot is 4px before the 24px glyph
+   and 0 after. IDS wraps the img in a label span with 8px on both sides. */
+.aiReviewBtn {
+  min-width: 0;
+}
+
+.aiReviewBtn :global(span:has(> .headerBtnIcon)) {
+  padding-left: var(--space-component-inline-padding-x-small, 4px);
+  padding-right: 0;
+}

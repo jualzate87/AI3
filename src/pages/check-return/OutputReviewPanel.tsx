@@ -34,10 +34,13 @@ export default function OutputReviewPanel({
     summaryCheckedMeta,
     reviewerConfirmedFields,
     reviewerConfirmedMeta,
+    managerConfirmedFields,
+    managerConfirmedMeta,
     reviewerConfirmStaleFields,
     toggleSummaryChecked,
     toggleSummaryPreparerCheck,
     toggleSummaryReviewerConfirm,
+    toggleSummaryManagerConfirm,
     summaryFlaggedFields,
     summaryFlaggedMeta,
     toggleSummaryFlagged,
@@ -93,11 +96,15 @@ export default function OutputReviewPanel({
         <div className={styles.legend} aria-label="Verification legend">
           <span className={styles.legendItem}>
             <CircleCheck size="small" className={styles.legendIconPrep} aria-hidden />
-            Preparer verified
+            L1 check
           </span>
           <span className={styles.legendItem}>
             <CircleCheck size="small" className={styles.legendIconRev} aria-hidden />
-            Reviewer confirmed
+            L2 check
+          </span>
+          <span className={styles.legendItem}>
+            <CircleCheck size="small" className={styles.legendIconL3} aria-hidden />
+            L3 check
           </span>
         </div>
       </header>
@@ -116,10 +123,13 @@ export default function OutputReviewPanel({
           checkedMeta={summaryCheckedMeta}
           reviewerConfirmedFields={reviewerConfirmedFields}
           reviewerConfirmedMeta={reviewerConfirmedMeta}
+          managerConfirmedFields={managerConfirmedFields}
+          managerConfirmedMeta={managerConfirmedMeta}
           reviewerConfirmStaleFields={reviewerConfirmStaleFields}
           onToggleChecked={toggleSummaryChecked}
           onTogglePreparerCheck={toggleSummaryPreparerCheck}
           onToggleReviewerConfirm={toggleSummaryReviewerConfirm}
+          onToggleManagerConfirm={toggleSummaryManagerConfirm}
           reviewRole={reviewRole}
           reviewerSignedOffForms={reviewerSignedOffForms}
           reviewerSignedOffFormsMeta={reviewerSignedOffFormsMeta}

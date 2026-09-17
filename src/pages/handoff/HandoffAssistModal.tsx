@@ -7,6 +7,8 @@ import { LinkActionButton } from '@ids-ts/link-action-button'
 import '@ids-ts/link-action-button/dist/main.css'
 import { TextArea } from '@ids-ts/textarea'
 import '@ids-ts/textarea/dist/main.css'
+import { Badge } from '@ids-ts/badge'
+import '@ids-ts/badge/dist/main.css'
 import intuitIntelligenceLogo from '../../assets/icons/intuit-intelligence-logo-small.svg'
 import { useReturnWorkflow } from '../../contexts/ReturnWorkflowContext'
 import {
@@ -45,53 +47,78 @@ export default function HandoffAssistModal({
   const currentStatus = getReturnStatus(workflow.statusId)
   const nextStatus = getReturnStatus(handoff.suggestedStatusId)
   const statusWillChange = workflow.statusId !== handoff.suggestedStatusId
+  const sections = handoff.previewSections
 
   return (
-    <Modal open={open} onClose={onDismiss} size="medium" dismissible>
+    <Modal open={open} onClose={onDismiss} size="large" dismissible>
       <ModalHeader alignment="left" transparentBackground onClose={onDismiss}>
         <ModalTitle title="Handoff assist" />
       </ModalHeader>
-      <ModalContent alignment="left" overflow>
-        <p className={styles.lead}>
-          We noticed you&apos;re changing the assignee to <strong>{to.name}</strong>.
-          {statusWillChange ? (
-            <>
-              {' '}
-              We&apos;ll update the return status from{' '}
-              <strong>{currentStatus.label}</strong> to <strong>{nextStatus.label}</strong> to match
-              this handoff.
-            </>
-          ) : null}
-        </p>
+      <ModalContent alignment="left" overflow maxHeight="70vh">
+        <div className={styles.body}>
+          <p className={styles.lead}>
+            We noticed you&apos;re changing the assignee to <strong>{to.name}</strong>.
+            {statusWillChange ? (
+              <>
+                {' '}
+                We&apos;ll update the return status from{' '}
+                <strong>{currentStatus.label}</strong> to <strong>{nextStatus.label}</strong> to match
+                this handoff.
+              </>
+            ) : null}
+          </p>
 
-        <section className={styles.previewSection} aria-label="What the next reviewer will see">
-          <div className={styles.previewHeadingRow}>
-            <img src={intuitIntelligenceLogo} alt="" className={styles.sparkle} />
-            <h3 className={styles.previewHeading}>Quick summary for {to.name}</h3>
-          </div>
-          <div className={styles.previewCard}>
-            <ul className={styles.previewList}>
-              {handoff.previewBullets.map(bullet => (
-                <li
-                  key={bullet.text}
-                  className={bullet.emphasis ? styles.previewItemEmphasis : styles.previewItem}
+          <section className={styles.previewSection} aria-label="What the next reviewer will see">
+            <div className={styles.previewHeadingRow}>
+              <img src={intuitIntelligenceLogo} alt="" className={styles.sparkle} />
+              <h3 className={styles.previewHeading}>Quick summary for {to.name}</h3>
+            </div>
+
+            <div className={styles.cards}>
+              {sections.map(section => (
+                <article
+                  key={section.id}
+                  className={
+                    section.id === 'heads-up' ? styles.headsUpCard : styles.checkedCard
+                  }
                 >
-                  {bullet.text}
-                </li>
+                  <div className={styles.cardHeader}>
+                    <h4 className={styles.cardTitle}>{section.title}</h4>
+                    {section.id === 'heads-up' ? (
+                      <Badge status="warning" priority="secondary" capitalization="caps">
+                        Needs attention
+                      </Badge>
+                    ) : (
+                      <Badge status="success" priority="secondary" capitalization="caps">
+                        Ready
+                      </Badge>
+                    )}
+                  </div>
+                  <p className={styles.cardIntro}>{section.intro}</p>
+                  <ul className={styles.itemList}>
+                    {section.items.map(item => (
+                      <li key={item.title} className={styles.item}>
+                        <span className={styles.itemTitle}>{item.title}</span>
+                        <span className={styles.itemDetail}>{item.detail}</span>
+                      </li>
+                    ))}
+                  </ul>
+                </article>
               ))}
-            </ul>
-          </div>
-        </section>
+            </div>
+          </section>
 
-        <div className={styles.notesField}>
-          <TextArea
-            id="handoff-notes"
-            label={`Leave notes for ${to.name}`}
-            helperText="These notes appear in Comments and the reviewer summary."
-            value={notes}
-            onChange={e => setNotes(e.target.value)}
-            rows={4}
-          />
+          <div className={styles.notesField}>
+            <TextArea
+              id="handoff-notes"
+              label={`Leave notes for ${to.name}`}
+              helperText="These notes appear in Comments and the reviewer summary."
+              value={notes}
+              onChange={e => setNotes(e.target.value)}
+              rows={5}
+              width="100%"
+            />
+          </div>
         </div>
       </ModalContent>
       <ModalActions>

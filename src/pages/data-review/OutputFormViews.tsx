@@ -1,4 +1,4 @@
-import { useState, type ReactNode } from 'react'
+import { createContext, useContext, useState, type ReactNode } from 'react'
 import { CircleInfo } from '@design-systems/icons'
 import type { FieldOriginSource } from '../../data/fieldOrigins'
 import type { LiveAmounts, LiveReturnTotals } from '../../data/liveReturn'
@@ -6,7 +6,7 @@ import { NIIT_AGI_THRESHOLD, SAFE_HARBOR_2210 } from '../../data/liveReturn'
 import { CLIENT_ADDRESS, formatClientCityStateZip } from '../../data/clientAddress'
 import { getScheduleLineFlyout } from '../../data/scheduleFieldOrigins'
 import type { ActivityEntry } from '../../hooks/useSyncedReviewState'
-import AttestColumns from './AttestColumns'
+import AttestColumns, { AttestColumnHeaders, ownerFirstName } from './AttestColumns'
 import OutputRowActions from './OutputRowActions'
 import { getOutputLineAttest, type OutputFormId } from './outputForms'
 import TaxControlDocPopover from './TaxControlDocPopover'
@@ -17,6 +17,12 @@ import styles from '../../styles/data-review/LeftPanel1040.module.css'
 function fmt(n: number) {
   return n.toLocaleString('en-US')
 }
+
+const AttestHeaderContext = createContext<{
+  l1Name?: string | null
+  l2Name?: string | null
+  l3Name?: string | null
+}>({})
 
 function FormHeader({
   formCode,
@@ -77,10 +83,13 @@ type AttestContext = {
   checkedMeta: Map<string, ActivityEntry>
   reviewerConfirmedFields: Set<string>
   reviewerConfirmedMeta: Map<string, ActivityEntry>
+  managerConfirmedFields?: Set<string>
+  managerConfirmedMeta?: Map<string, ActivityEntry>
   reviewerConfirmStaleFields: Set<string>
   isReviewerRole: boolean
   onTogglePreparer?: (fieldName: string) => void
   onToggleReviewer?: (fieldName: string) => void
+  onToggleManager?: (fieldName: string) => void
 }
 
 type RowActionsContext = {
@@ -131,10 +140,12 @@ function LineRow({
   checkedMeta,
   reviewerConfirmedFields,
   reviewerConfirmedMeta,
+  managerConfirmedFields = new Set(),
+  managerConfirmedMeta = new Map(),
   reviewerConfirmStaleFields,
-  isReviewerRole,
   onTogglePreparer,
   onToggleReviewer,
+  onToggleManager,
   highlightField,
   issueField,
   flaggedFields = new Set(),
@@ -155,11 +166,15 @@ function LineRow({
     attestKey && reviewerConfirmedFields.has(attestKey)
       ? reviewerConfirmedMeta.get(attestKey)
       : undefined
+  const managerEntry =
+    attestKey && managerConfirmedFields.has(attestKey)
+      ? managerConfirmedMeta.get(attestKey)
+      : undefined
   const needsReconfirm = !!attestKey && reviewerConfirmStaleFields.has(attestKey) && !!preparerEntry
   const showAttest =
     !!attest &&
     !!attestKey &&
-    (onTogglePreparer || onToggleReviewer)
+    (onTogglePreparer || onToggleReviewer || onToggleManager)
   const flagKey = attestKey ?? fieldId
   const isFlagged = flaggedFields.has(flagKey)
   const flagNote = flagNotes[flagKey] ?? ''
@@ -277,9 +292,10 @@ function LineRow({
                 field={attestKey}
                 preparerEntry={preparerEntry}
                 reviewerEntry={reviewerEntry}
-                isReviewerRole={isReviewerRole}
+                managerEntry={managerEntry}
                 onTogglePreparer={onTogglePreparer}
                 onToggleReviewer={onToggleReviewer}
+                onToggleManager={onToggleManager}
                 interactive={attest.toggleable}
               />
             )}
@@ -291,6 +307,7 @@ function LineRow({
 }
 
 function FormTable({ children }: { children: React.ReactNode }) {
+  const { l1Name, l2Name, l3Name } = useContext(AttestHeaderContext)
   return (
     <>
       <div className={styles.colHeaders}>
@@ -302,8 +319,7 @@ function FormTable({ children }: { children: React.ReactNode }) {
           <span className={styles.colValActionGroup} aria-hidden="true">
             <span className={styles.colValActionSpacer} />
             <span className={styles.colValAttestGroup}>
-              <span className={styles.colValAttestLabel}>Prep</span>
-              <span className={styles.colValAttestLabel}>Rev</span>
+              <AttestColumnHeaders l1Name={l1Name} l2Name={l2Name} l3Name={l3Name} />
             </span>
           </span>
         </div>
@@ -869,10 +885,13 @@ export interface OutputFormViewsProps {
   checkedMeta?: Map<string, ActivityEntry>
   reviewerConfirmedFields?: Set<string>
   reviewerConfirmedMeta?: Map<string, ActivityEntry>
+  managerConfirmedFields?: Set<string>
+  managerConfirmedMeta?: Map<string, ActivityEntry>
   reviewerConfirmStaleFields?: Set<string>
   reviewRole?: 'preparer' | 'reviewer'
   onTogglePreparerCheck?: (fieldName: string) => void
   onToggleReviewerConfirm?: (fieldName: string) => void
+  onToggleManagerConfirm?: (fieldName: string) => void
   onNavigateSource?: (source: FieldOriginSource) => void
   onNavigateToSourceDoc?: (docId: string) => void
   flaggedFields?: Set<string>
@@ -896,10 +915,13 @@ export default function OutputFormViews({
   checkedMeta = new Map(),
   reviewerConfirmedFields = new Set(),
   reviewerConfirmedMeta = new Map(),
+  managerConfirmedFields = new Set(),
+  managerConfirmedMeta = new Map(),
   reviewerConfirmStaleFields = new Set(),
   reviewRole = 'preparer',
   onTogglePreparerCheck,
   onToggleReviewerConfirm,
+  onToggleManagerConfirm,
   onNavigateSource,
   onNavigateToSourceDoc,
   flaggedFields = new Set(),
@@ -959,16 +981,25 @@ export default function OutputFormViews({
     checkedMeta,
     reviewerConfirmedFields,
     reviewerConfirmedMeta,
+    managerConfirmedFields,
+    managerConfirmedMeta,
     reviewerConfirmStaleFields,
     isReviewerRole,
     onTogglePreparer: onTogglePreparerCheck,
     onToggleReviewer: onToggleReviewerConfirm,
+    onToggleManager: onToggleManagerConfirm,
     flaggedFields,
     flagNotes,
     onAddFieldNote,
     onToggleFlagged,
     onSetFlagNote,
     formLabel: scheduleFormLabel(formId),
+  }
+
+  const formTableProps = {
+    l1Name: ownerFirstName(checkedMeta),
+    l2Name: ownerFirstName(reviewerConfirmedMeta),
+    l3Name: ownerFirstName(managerConfirmedMeta),
   }
 
   let body: React.ReactNode = null
@@ -1000,7 +1031,9 @@ export default function OutputFormViews({
       {formSelector ? (
         <div className={styles.summaryCardHeader}>{formSelector}</div>
       ) : null}
-      {body}
+      <AttestHeaderContext.Provider value={formTableProps}>
+        {body}
+      </AttestHeaderContext.Provider>
       {flyout && flyoutRect && (
         <TaxControlDocPopover
           rowLabel={flyout.label}

@@ -121,7 +121,7 @@
   min-width: 0;
   margin-left: auto;
   gap: var(--space-component-gap-small, 8px);
-  max-width: min(360px, 100%);
+  max-width: min(520px, 100%);
 }
 
 .verifyStatusGroup {

@@ -21,6 +21,7 @@ import {
   setStoredDemoRole,
 } from '../../lib/prototypeRoutes'
 import { prepareReviewerHandoffLaunch, resetReturnWorkflow } from '../../lib/returnWorkflow'
+import { seedPreparerDocStampsIfEmpty } from '../../hooks/useSyncedReviewState'
 import { LAUNCH_POINTS, type LaunchPoint } from './launchPointsData'
 
 const REVIEWER_HANDOFF_PATH = '/check-return?handoff=reviewer'
@@ -111,6 +112,7 @@ export default function LaunchPointsFab() {
         prepareAgentLaunch()
       } else if (point.route === REVIEWER_HANDOFF_PATH) {
         prepareReviewerHandoffLaunch()
+        seedPreparerDocStampsIfEmpty('Sarah Chen')
         setStoredDemoRole('reviewer')
         navigate(REVIEWER_HANDOFF_PATH)
         return

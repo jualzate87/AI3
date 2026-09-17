@@ -274,9 +274,10 @@
 
 .colValAttestLabel {
   display: inline-flex;
+  flex-direction: column;
   align-items: center;
-  justify-content: center;
-  width: 32px;
+  justify-content: flex-end;
+  width: 40px;
   box-sizing: border-box;
   font-family: var(--font-family-component);
   font-size: var(--font-size-component-x-small);
@@ -749,7 +750,7 @@
   align-items: center;
   justify-content: flex-end;
   gap: 6px;
-  width: 138px;
+  width: 182px;
   flex-shrink: 0;
 }
 
@@ -1156,10 +1157,10 @@
 .summaryColPct { width: 52px; }
 .summaryColCheckGroup {
   display: flex;
-  align-items: center;
+  align-items: flex-end;
   justify-content: flex-end;
   gap: 6px;
-  width: 138px; /* comment + flag spacer + prep + rev */
+  width: 182px; /* comment + flag spacer + L1 L2 L3 */
   flex-shrink: 0;
 }
 /* Align Prep/Rev headers with the last two action slots (after comment + flag) */
@@ -1169,9 +1170,11 @@
 }
 .summaryColCheckLabel {
   display: inline-flex;
+  flex-direction: column;
   align-items: center;
-  justify-content: center;
-  width: 32px;
+  justify-content: flex-end;
+  width: 40px;
+  min-height: 28px;
   padding: 0;
   box-sizing: border-box;
   text-align: center;
@@ -1181,6 +1184,24 @@
   color: var(--color-text-secondary);
   text-transform: uppercase;
   letter-spacing: 0.6px;
+  line-height: 1.2;
+}
+
+.levelCode {
+  display: block;
+}
+
+.levelName {
+  display: block;
+  font-size: var(--font-size-component-x-small);
+  font-weight: var(--font-weight-component);
+  text-transform: none;
+  letter-spacing: 0;
+  color: var(--color-text-secondary);
+  max-width: 40px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .outputFormsSignoffBtn,
@@ -1369,7 +1390,7 @@
   align-items: center;
   justify-content: flex-end;
   gap: 6px;
-  width: 138px; /* 2 × 28px + 2 × 32px + 3 × 6px gap */
+  width: 182px; /* 2 × 28px + 3 × 32px + 4 × 6px gap */
   flex-shrink: 0;
 }
 
@@ -1411,9 +1432,12 @@
   opacity: 1;
   color: var(--color-action-success, #00856d);
 }
-.summaryAttestColRevActive {
+.summaryAttestColL3Empty {
+  color: var(--color-action-selected, #7c00f6);
+}
+.summaryAttestColL3Active {
   opacity: 1;
-  color: #205ea3;
+  color: var(--color-action-selected, #7c00f6);
 }
 .summaryAttestCol:hover:not(:disabled):not(.summaryAttestColReadonly).summaryAttestColEmpty {
   opacity: 0.75;
@@ -2088,9 +2112,9 @@
   /* Shared column widths — colHeaders, colgroup, and value cell must match */
   --form-col-line: 32px;
   --form-col-line-r: 44px;
-  --form-col-value: 348px;
+  --form-col-value: 392px;
   --form-amount-width: 132px;
-  --form-actions-width: 138px;
+  --form-actions-width: 182px;
   max-width: 960px;
   border: 1px solid var(--color-container-border-primary);
   border-radius: 0;

@@ -1,14 +1,20 @@
+import { useCallback, useState } from 'react'
 import {
   getReviewActor,
+  isCurrentReviewerActor,
   REVIEWER_NAME,
   type ActivityEntry,
 } from '../../hooks/useSyncedReviewState'
+import { useReturnNotes } from '../../hooks/useReturnNotes'
+import { useReturnWorkflow } from '../../contexts/ReturnWorkflowContext'
 import Tooltip from './Tooltip'
+import AnnotationPopover from './AnnotationPopover'
+import { formatAnnotationNote, isNoteLikeAnnotation, type AnnotationType } from './annotationTypes'
 import { Badge, SuccessBadgeIcon, WarningBadgeIcon } from '@ids-ts/badge'
 import '@ids-ts/badge/dist/main.css'
 import { Button } from '@ids-ts/button'
 import '@ids-ts/button/dist/main.css'
-import { getVerifiedDocEntry, isVerifiedInSet } from '../../data/verifiedDocKeys'
+import { getVerifiedDocEntry, isVerifiedInSet, verifiedDocLabel } from '../../data/verifiedDocKeys'
 import type { LiveAmounts } from '../../data/liveReturn'
 import {
   canVerifyDoc,
@@ -76,19 +82,27 @@ export default function DocVerifyHeaderActions({
   amounts,
   onVerifyDoc,
 }: Props) {
+  const { currentUser } = useReturnWorkflow()
+  const { addNote } = useReturnNotes()
+  const [commentOpen, setCommentOpen] = useState(false)
+  const [commentAnchor, setCommentAnchor] = useState<{ top: number; left: number } | null>(null)
+  const [commentDraft, setCommentDraft] = useState('')
+  const [commentType, setCommentType] = useState<AnnotationType>('note')
+
   const isPreparerVerified = verifiedDocs ? isVerifiedInSet(verifiedDocs, docKey) : false
   const isReviewerConfirmed = reviewerConfirmedDocs ? isVerifiedInSet(reviewerConfirmedDocs, docKey) : false
-  const isReviewerActor = getReviewActor() === REVIEWER_NAME
+  const isReviewerActor = isCurrentReviewerActor()
   const preparerMeta = getVerifiedDocEntry(verifiedDocsMeta, docKey)
   const reviewerMeta = getVerifiedDocEntry(reviewerConfirmedDocsMeta, docKey)
   const preparerName = preparerMeta?.by ?? 'preparer'
-  const reviewerName = reviewerMeta?.by ?? REVIEWER_NAME
+  const reviewerName = reviewerMeta?.by ?? (isReviewerActor ? getReviewActor() : REVIEWER_NAME)
+  const docLabel = verifiedDocLabel(docKey)
   const preparerTooltip = preparerMeta
     ? `Verified by ${preparerMeta.by} · ${preparerMeta.at}`
     : 'Click to unmark verified'
   const reviewerTooltip = reviewerMeta
-    ? `Confirmed by ${reviewerMeta.by} · ${reviewerMeta.at}`
-    : 'Click to remove confirmation'
+    ? `Verified by ${reviewerMeta.by} · ${reviewerMeta.at}`
+    : 'Click to remove your stamp'
 
   const verifyCheck = reviewedFields
     ? canVerifyDoc({
@@ -113,16 +127,44 @@ export default function DocVerifyHeaderActions({
   const needsReviewerConfirm =
     isReviewerActor && isPreparerVerified && !isReviewerConfirmed
 
+  const closeComment = useCallback(() => {
+    setCommentOpen(false)
+    setCommentAnchor(null)
+    setCommentDraft('')
+    setCommentType('note')
+  }, [])
+
+  const openComment = (btn: HTMLElement) => {
+    const rect = btn.getBoundingClientRect()
+    const popoverWidth = 300
+    let left = rect.left - popoverWidth - 8
+    if (left < 8) left = rect.right + 8
+    setCommentAnchor({ top: rect.bottom, left })
+    setCommentOpen(true)
+  }
+
+  const submitComment = () => {
+    const formatted = formatAnnotationNote(commentType, commentDraft)
+    if (isNoteLikeAnnotation(commentType) && !formatted.trim()) return
+    addNote(
+      formatted || 'Note',
+      currentUser.name,
+      currentUser.role === 'reviewer' || currentUser.role === 'manager' ? 'reviewer' : 'preparer',
+      docLabel,
+    )
+    closeComment()
+  }
+
   return (
     <div className={styles.verifyHeaderActionsCol}>
       <div className={styles.verifyStatusGroup}>
         {needsReviewerConfirm && (
-          <Tooltip text="Needs confirmation" placement="top">
+          <Tooltip text="Needs your stamp" placement="top">
             <span className={styles.needsConfirmIconWrap}>
               <Badge
                 shape="round"
                 status="warning"
-                aria-label="Needs confirmation"
+                aria-label="Needs your stamp"
               >
                 <WarningBadgeIcon />
               </Badge>
@@ -149,20 +191,33 @@ export default function DocVerifyHeaderActions({
 
         {needsReviewerConfirm && (
           <Button size="small" priority="secondary" onClick={() => onVerifyDoc?.(docKey)}>
-            Confirm document
+            Verify as {getReviewActor().split(' ')[0]}
           </Button>
         )}
 
         {isReviewerConfirmed && (
           <Tooltip text={reviewerTooltip} placement="top">
             <VerifiedBadge
-              label={`Confirmed by ${reviewerName}`}
+              label={`Verified by ${reviewerName}`}
               tooltip={reviewerTooltip}
               clickable={isReviewerActor}
               onClick={() => onVerifyDoc?.(docKey)}
             />
           </Tooltip>
         )}
+
+        <Button
+          size="small"
+          priority="tertiary"
+          onClick={e => {
+            e.stopPropagation()
+            if (commentOpen) closeComment()
+            else openComment(e.currentTarget)
+          }}
+          aria-label={`Add a comment on ${docLabel}`}
+        >
+          Comment
+        </Button>
       </div>
 
       {verifyBlocked && (
@@ -175,6 +230,21 @@ export default function DocVerifyHeaderActions({
           aria-live="polite"
         />
       )}
+
+      <AnnotationPopover
+        open={commentOpen}
+        anchor={commentAnchor}
+        contextLabel={docLabel}
+        draft={commentDraft}
+        annotationType={commentType}
+        onDraftChange={setCommentDraft}
+        onTypeChange={setCommentType}
+        onClose={closeComment}
+        onSubmit={submitComment}
+        submitLabel={isNoteLikeAnnotation(commentType) ? 'Post' : 'Save'}
+        cancelLabel={isNoteLikeAnnotation(commentType) ? 'Cancel' : 'Skip'}
+        chipVariant={commentType === 'note' ? 'default' : 'flag'}
+      />
     </div>
   )
 }

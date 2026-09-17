@@ -2,10 +2,12 @@ import {
   createContext,
   useCallback,
   useContext,
+  useEffect,
   useMemo,
   useState,
   type ReactNode,
 } from 'react'
+import { setReviewActor } from '../hooks/useSyncedReviewState'
 import {
   detectHandoff,
   getReturnStatus,
@@ -45,6 +47,10 @@ export function ReturnWorkflowProvider({ children }: { children: ReactNode }) {
     setWorkflow(next)
     saveReturnWorkflow(next)
   }, [])
+
+  useEffect(() => {
+    setReviewActor(getTeamMember(workflow.currentUserId).name)
+  }, [workflow.currentUserId])
 
   const applyWorkflowPatch = useCallback(
     (patch: Partial<ReturnWorkflowState>) => {
