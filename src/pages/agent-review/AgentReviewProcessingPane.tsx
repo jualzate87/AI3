@@ -109,11 +109,6 @@ export default function AgentReviewProcessingPane({
       return
     }
 
-    if (allFixesComplete) {
-      onFooterChipsChange(null)
-      return
-    }
-
     onFooterChipsChange(null)
   }, [
     advanceToNextFix,
