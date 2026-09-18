@@ -255,8 +255,8 @@ function headsUpTitle(to: TeamMember | null): string {
 
 function headsUpIntro(to: TeamMember | null): string {
   return to
-    ? 'These are not fully proven. Call them out before you sign off — or leave them for the next person.'
-    : 'These are not fully proven. Call them out before you sign off — or leave them for whoever picks this up.'
+    ? 'Call them out before you sign off — or leave them for the next person.'
+    : 'Call them out before you sign off — or leave them for whoever picks this up.'
 }
 
 function preparerSections(
@@ -324,7 +324,7 @@ function reviewerSections(
     {
       id: 'checked',
       title: 'Reviewed and ready',
-      intro: `Everything done on this return so far — ${firstName(preparer)}'s prep and ${firstName(from)}'s review in one place.`,
+      intro: '',
       items: [
         {
           title: 'Prep and AI review hold up',

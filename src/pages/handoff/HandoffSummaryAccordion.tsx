@@ -23,7 +23,7 @@ export default function HandoffSummaryAccordion({
   return (
     <div className={styles.summaryPanel}>
       <Accordion variant="text" size="small" allowZeroExpanded chevronPosition="right">
-        <AccordionItem id="handoff-summary" defaultExpanded={false}>
+        <AccordionItem id="handoff-summary" defaultExpanded>
           <AccordionItemHeader className={styles.summaryHeader}>
             <span className={styles.summaryHeaderLabel}>
               <img src={intuitIntelligenceLogo} alt="" className={styles.sparkle} />
@@ -46,7 +46,9 @@ export default function HandoffSummaryAccordion({
                     )}
                     <h4 className={styles.sectionTitle}>{section.title}</h4>
                   </div>
-                  <p className={styles.sectionIntro}>{section.intro}</p>
+                  {section.intro ? (
+                    <p className={styles.sectionIntro}>{section.intro}</p>
+                  ) : null}
                   <ul className={styles.itemList}>
                     {section.items.map(item => (
                       <li key={item.title} className={styles.item}>

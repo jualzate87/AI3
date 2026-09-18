@@ -8,11 +8,11 @@ export default function ReturnHandoffHost() {
   const { pendingHandoff, confirmHandoff, dismissHandoff } = useReturnWorkflow()
   const { addHandoffNote } = useReturnNotes()
 
-  const handleConfirm = (notes: string) => {
+  const handleConfirm = (notes: string, updateStatus: boolean) => {
     if (!pendingHandoff) return
     const from = getTeamMember(pendingHandoff.fromAssigneeId)
     const trimmed = notes.trim()
-    confirmHandoff(trimmed)
+    confirmHandoff(trimmed, updateStatus)
     if (!trimmed) return
 
     const context =

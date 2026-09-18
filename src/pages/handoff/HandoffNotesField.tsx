@@ -20,10 +20,12 @@ export default function HandoffNotesField({
       <TextArea
         id={id}
         label={label}
-        helperText="These notes appear in Comments and the reviewer summary."
+        aria-label={label}
+        placeholder="Add your notes"
         value={value}
         onChange={e => onChange(e.target.value)}
-        rows={5}
+        rows={3}
+        resizeTextArea={false}
         width="100%"
       />
     </div>

@@ -29,7 +29,7 @@ type ReturnWorkflowContextValue = {
   pendingHandoff: PendingHandoff | null
   requestAssigneeChange: (assigneeId: string) => void
   requestStatusChange: (statusId: ReturnStatusId) => void
-  confirmHandoff: (notes: string) => {
+  confirmHandoff: (notes: string, updateStatus?: boolean) => {
     assigneeId: string
     statusId: ReturnStatusId
     notes: string
@@ -66,7 +66,9 @@ export function ReturnWorkflowProvider({ children }: { children: ReactNode }) {
 
       const handoff = detectHandoff(workflow.assigneeId, assigneeId, workflow.statusId)
       if (handoff) {
-        setPendingHandoff(handoff)
+        // Let the select-menu click finish before mounting the modal backdrop.
+        // Otherwise the same pointer event can immediately dismiss the new dialog.
+        window.setTimeout(() => setPendingHandoff(handoff), 0)
         return
       }
 
@@ -81,7 +83,7 @@ export function ReturnWorkflowProvider({ children }: { children: ReactNode }) {
 
       const handoff = detectStatusHandoff(workflow.assigneeId, workflow.statusId, statusId)
       if (handoff) {
-        setPendingHandoff(handoff)
+        window.setTimeout(() => setPendingHandoff(handoff), 0)
         return
       }
 
@@ -91,7 +93,7 @@ export function ReturnWorkflowProvider({ children }: { children: ReactNode }) {
   )
 
   const confirmHandoff = useCallback(
-    (notes: string) => {
+    (notes: string, updateStatus = true) => {
       if (!pendingHandoff) {
         return { assigneeId: workflow.assigneeId, statusId: workflow.statusId, notes }
       }
@@ -99,7 +101,7 @@ export function ReturnWorkflowProvider({ children }: { children: ReactNode }) {
       const next: ReturnWorkflowState = {
         ...workflow,
         assigneeId: pendingHandoff.toAssigneeId,
-        statusId: pendingHandoff.suggestedStatusId,
+        statusId: updateStatus ? pendingHandoff.suggestedStatusId : workflow.statusId,
       }
       persist(next)
       setPendingHandoff(null)
@@ -116,16 +118,10 @@ export function ReturnWorkflowProvider({ children }: { children: ReactNode }) {
     [pendingHandoff, persist, workflow],
   )
 
-  /** Apply the move without a note — "change assignee only" / "change status only". */
+  /** Close the assist modal without applying the pending handoff. */
   const dismissHandoff = useCallback(() => {
-    if (!pendingHandoff) return
-    persist(
-      pendingHandoff.kind === 'status'
-        ? { ...workflow, statusId: pendingHandoff.suggestedStatusId }
-        : { ...workflow, assigneeId: pendingHandoff.toAssigneeId },
-    )
     setPendingHandoff(null)
-  }, [pendingHandoff, persist, workflow])
+  }, [])
 
   const value = useMemo(
     (): ReturnWorkflowContextValue => ({

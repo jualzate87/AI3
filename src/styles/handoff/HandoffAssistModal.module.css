@@ -1,39 +1,30 @@
 .body {
   display: flex;
   flex-direction: column;
-  gap: var(--space-row-gap-medium, 20px);
+  gap: var(--space-row-gap-medium);
   width: 100%;
   min-width: 0;
-}
-
-.intro {
-  display: flex;
-  flex-direction: column;
-  gap: var(--space-component-gap-small, 8px);
-  width: 100%;
-  min-width: 0;
-}
-
-.lead,
-.instructions {
-  margin: 0;
-  font-family: var(--font-family-body);
-  font-size: var(--font-size-body-2, 16px);
-  line-height: 1.5;
 }
 
 .lead {
-  color: var(--color-text-primary, #393a3d);
+  margin: 0;
+  font-family: var(--font-family-body);
+  font-size: var(--font-size-body-2);
+  font-weight: var(--font-weight-body);
+  line-height: var(--line-height-body);
+  color: var(--color-text-primary);
 }
 
-.instructions {
-  color: var(--color-text-secondary, #6b6c72);
+.statusSwitch {
+  display: flex;
+  align-items: center;
+  width: 100%;
 }
 
 .actionsRow {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: var(--space-column-gap-medium, 16px);
+  gap: var(--space-column-gap-medium);
   width: 100%;
 }
