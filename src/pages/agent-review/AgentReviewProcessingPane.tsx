@@ -242,45 +242,6 @@ export default function AgentReviewProcessingPane({
                   </p>
                 </div>
 
-                {showReminder && (
-                  <section
-                    className={`${styles.attentionCard} ${styles.revealIn}`}
-                    aria-labelledby="ai-review-attention-title"
-                  >
-                    <div className={styles.progressCardHeader}>
-                      <span className={styles.attentionTitleGroup}>
-                        <span id="ai-review-attention-title" className={styles.progressCardTitle}>
-                          {intelligenceAttentionTitle(INTELLIGENCE_NEEDS_ATTENTION_ITEMS.length)}
-                        </span>
-                        <Badge status="warning" priority="secondary" capitalization="caps">
-                          {LABEL_NEED_ACTION}
-                        </Badge>
-                      </span>
-                    </div>
-
-                    <div className={styles.progressCardDivider} role="separator" />
-
-                    <p className={styles.attentionIntro}>{INTELLIGENCE_ATTENTION_INTRO}</p>
-
-                    <ul className={styles.attentionList}>
-                      {INTELLIGENCE_NEEDS_ATTENTION_ITEMS.map((item) => (
-                        <li key={item.id} className={styles.attentionItem}>
-                          <span className={styles.attentionItemTitle}>{item.title}</span>
-                          <p className={styles.attentionItemDetail}>{item.detail}</p>
-                          <button
-                            type="button"
-                            className={styles.richDocLink}
-                            onClick={() => openDocLink(item)}
-                          >
-                            {item.linkLabel}
-                            <NewWindow size="small" className={styles.richDocLinkIcon} aria-hidden />
-                          </button>
-                        </li>
-                      ))}
-                    </ul>
-                  </section>
-                )}
-
                 <div className={styles.progressCard}>
                   <div className={styles.progressCardHeader}>
                     {/* The card keeps its name once complete — the count beside it
@@ -330,6 +291,46 @@ export default function AgentReviewProcessingPane({
                     )
                   })}
                 </div>
+
+                {/* What the agent settled lands first; what it could not settle closes the list. */}
+                {showReminder && (
+                  <section
+                    className={`${styles.attentionCard} ${styles.revealIn}`}
+                    aria-labelledby="ai-review-attention-title"
+                  >
+                    <div className={styles.progressCardHeader}>
+                      <span className={styles.attentionTitleGroup}>
+                        <span id="ai-review-attention-title" className={styles.progressCardTitle}>
+                          {intelligenceAttentionTitle(INTELLIGENCE_NEEDS_ATTENTION_ITEMS.length)}
+                        </span>
+                        <Badge status="warning" priority="secondary" capitalization="caps">
+                          {LABEL_NEED_ACTION}
+                        </Badge>
+                      </span>
+                    </div>
+
+                    <div className={styles.progressCardDivider} role="separator" />
+
+                    <p className={styles.attentionIntro}>{INTELLIGENCE_ATTENTION_INTRO}</p>
+
+                    <ul className={styles.attentionList}>
+                      {INTELLIGENCE_NEEDS_ATTENTION_ITEMS.map((item) => (
+                        <li key={item.id} className={styles.attentionItem}>
+                          <span className={styles.attentionItemTitle}>{item.title}</span>
+                          <p className={styles.attentionItemDetail}>{item.detail}</p>
+                          <button
+                            type="button"
+                            className={styles.richDocLink}
+                            onClick={() => openDocLink(item)}
+                          >
+                            {item.linkLabel}
+                            <NewWindow size="small" className={styles.richDocLinkIcon} aria-hidden />
+                          </button>
+                        </li>
+                      ))}
+                    </ul>
+                  </section>
+                )}
 
                 {showFooter && (
                   <div className={`${styles.revealIn}`}>
