@@ -3,8 +3,6 @@ import { useLocation, useNavigate } from 'react-router-dom'
 import { ChevronRight, Lightning, Undo } from '@design-systems/icons'
 import { Badge } from '@ids-ts/badge'
 import '@ids-ts/badge/dist/main.css'
-import SegmentedButton from '@ids-ts/segmented-button'
-import '@ids-ts/segmented-button/dist/main.css'
 import {
   resetAgentDemoReviewState,
   resetPersistedReviewState,
@@ -13,10 +11,7 @@ import {
   AGENT_MODE_SESSION_KEY,
   DEMO_RESET_TOAST_KEY,
   buildHashRouteUrl,
-  getStoredDemoRole,
-  openReviewReturnPopout,
   PREPARER_AGENT_DIAGNOSTICS_PATH,
-  PREPARER_DATA_REVIEW_PATH,
   PREPARER_DIAGNOSTICS_PATH,
   setStoredDemoRole,
 } from '../../lib/prototypeRoutes'
@@ -31,8 +26,6 @@ import { LAUNCH_POINTS, type LaunchPoint } from './launchPointsData'
 const REVIEWER_HANDOFF_PATH = '/check-return?handoff=reviewer'
 const PREPARER_HANDOFF_PATH = '/check-return?handoff=preparer'
 import styles from './LaunchPointsFab.module.css'
-
-export type DemoRole = 'preparer' | 'reviewer'
 
 function statusBadge(status: LaunchPoint['status']) {
   if (status === 'live') {
@@ -61,19 +54,11 @@ function prepareAgentLaunch(): void {
   setStoredDemoRole('preparer')
 }
 
-function resolveDemoRole(search: string): DemoRole {
-  const params = new URLSearchParams(search.startsWith('?') ? search.slice(1) : search)
-  if (params.get('role') === 'reviewer') return 'reviewer'
-  const stored = getStoredDemoRole()
-  return stored ?? 'preparer'
-}
-
 export default function LaunchPointsFab() {
   const navigate = useNavigate()
   const location = useLocation()
   const rootRef = useRef<HTMLDivElement>(null)
   const [open, setOpen] = useState(false)
-  const role = resolveDemoRole(location.search)
   const hideOnPopout = location.pathname.endsWith('-popout')
 
   useEffect(() => {
@@ -86,26 +71,6 @@ export default function LaunchPointsFab() {
     document.addEventListener('mousedown', onPointerDown)
     return () => document.removeEventListener('mousedown', onPointerDown)
   }, [open])
-
-  const handleRoleChange = useCallback(
-    (nextRole: DemoRole) => {
-      setStoredDemoRole(nextRole)
-      if (location.pathname === '/data-review') {
-        if (nextRole === 'reviewer') {
-          openReviewReturnPopout('1040')
-          navigate('/smart-return?role=reviewer', { replace: true })
-        } else {
-          window.location.assign(buildHashRouteUrl(PREPARER_DATA_REVIEW_PATH))
-        }
-        return
-      }
-      navigate(nextRole === 'reviewer' ? '/smart-return?role=reviewer' : '/smart-return', {
-        replace: true,
-      })
-      setOpen(false)
-    },
-    [location.pathname, navigate],
-  )
 
   const handleLaunchPoint = useCallback(
     (point: LaunchPoint) => {
@@ -180,26 +145,6 @@ export default function LaunchPointsFab() {
           <div className={styles.panelHeader}>
             <h2 className={styles.panelTitle}>Launch points</h2>
             <p className={styles.panelSubtitle}>AI diagnostics demo entry points</p>
-          </div>
-
-          <div className={styles.roleRow}>
-            <p className={styles.roleLabel}>Prototype demo role</p>
-            <SegmentedButton
-              ariaLabel="Demo role"
-              buttonType="mini"
-              buttonInfos={[
-                {
-                  label: 'Preparer',
-                  selected: role === 'preparer',
-                  onClick: () => handleRoleChange('preparer'),
-                },
-                {
-                  label: 'Reviewer',
-                  selected: role === 'reviewer',
-                  onClick: () => handleRoleChange('reviewer'),
-                },
-              ]}
-            />
           </div>
 
           <ul className={styles.list}>

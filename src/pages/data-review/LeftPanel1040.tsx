@@ -36,7 +36,6 @@ import { PRIOR_YEAR_1040_VALUES, buildYoyMap, yoyPercent } from './priorYear1040
 import AttestColumns, { AttestColumnHeaders } from './AttestColumns'
 import OutputRowActions from './OutputRowActions'
 import OutputFormViews from './OutputFormViews'
-import VerificationStripCell, { VerificationStripHeader } from './VerificationStripCell'
 import FormSignOffControl from './FormSignOffControl'
 import {
   OUTPUT_FORM_OPTIONS,
@@ -821,27 +820,33 @@ export default function LeftPanel1040({
               )}
             </div>
 
+            <div className={styles.formRowActions}>
+              <OutputRowActions
+                className={styles.outputRowEndActionsCommentFlag}
+                label={label}
+                fieldKey={field!}
+                contextLabel={`Form 1040 · ${label}`}
+                showAnnotate={commentable || !!onToggleFlagged}
+                isFlagged={isFlagged}
+                existingFlagNote={flagNote}
+                onAddNote={onAddFieldNote}
+                onToggleFlagged={onToggleFlagged}
+                onSetFlagNote={onSetFlagNote}
+              />
+              {showAttest && (
+                <AttestColumns
+                  field={field!}
+                  preparerEntry={checkEntry}
+                  reviewerEntry={reviewerEntry}
+                  managerEntry={managerEntry}
+                  onTogglePreparer={togglePreparer}
+                  onToggleReviewer={toggleReviewer}
+                  onToggleManager={toggleManager}
+                />
+              )}
+            </div>
           </div>
         </td>
-        <VerificationStripCell
-          label={label}
-          field={field}
-          fieldKey={field}
-          contextLabel={`Form 1040 · ${label}`}
-          showAnnotate={commentable || !!onToggleFlagged}
-          isFlagged={isFlagged}
-          existingFlagNote={flagNote}
-          onAddNote={onAddFieldNote}
-          onToggleFlagged={onToggleFlagged}
-          onSetFlagNote={onSetFlagNote}
-          showAttest={showAttest}
-          preparerEntry={checkEntry}
-          reviewerEntry={reviewerEntry}
-          managerEntry={managerEntry}
-          onTogglePreparer={togglePreparer}
-          onToggleReviewer={toggleReviewer}
-          onToggleManager={toggleManager}
-        />
       </tr>
     )
   }
@@ -849,14 +854,12 @@ export default function LeftPanel1040({
   const Section = ({ title }: { title: string }) => (
     <tr className={styles.sectionHeader}>
       <td colSpan={4} className={styles.sectionTitle}>{title}</td>
-      <td className={styles.verifyStripCell} aria-hidden="true" />
     </tr>
   )
 
   const Divider = () => (
     <tr className={styles.dividerRow}>
       <td colSpan={4}><div className={styles.dividerLine} /></td>
-      <td className={styles.verifyStripCell} aria-hidden="true" />
     </tr>
   )
 
@@ -1433,7 +1436,7 @@ export default function LeftPanel1040({
             onSetFlagNote={onSetFlagNote}
           />
         ) : (
-        <div className={`${styles.formWithVerificationStrip} ${styles.formDoc} ${styles.formDocDigitized}`}>
+        <div className={`${styles.formDoc} ${styles.formDocDigitized}`}>
           {showFormSelector && (
             <div className={styles.summaryCardHeader}>
               {outputFormDropdown}
@@ -1496,15 +1499,20 @@ export default function LeftPanel1040({
             </div>
           </div>
 
-          {/* ── Column headers (form + verification strip) ── */}
-          <div className={styles.formTableHeaderRow}>
-            <div className={styles.colHeaders}>
-              <div className={styles.colLine} />
-              <div className={styles.colDesc}>Description</div>
-              <div className={styles.colLineR} />
-              <div className={styles.colVal}>Amount</div>
+          {/* ── Column headers ── */}
+          <div className={styles.colHeaders}>
+            <div className={styles.colLine} />
+            <div className={styles.colDesc}>Description</div>
+            <div className={styles.colLineR} />
+            <div className={styles.colValWithAttest}>
+              <span className={styles.colValAmount}>Amount</span>
+              <span className={styles.colValActionGroup} aria-hidden="true">
+                <span className={styles.colValActionSpacer} />
+                <span className={styles.colValAttestGroup}>
+                  <AttestColumnHeaders />
+                </span>
+              </span>
             </div>
-            <VerificationStripHeader />
           </div>
 
           {/* ── Income table ── */}
@@ -1514,7 +1522,6 @@ export default function LeftPanel1040({
               <col className={styles.formTableColDesc} />
               <col className={styles.formTableColLineR} />
               <col className={styles.formTableColValue} />
-              <col className={styles.formTableColVerify} />
             </colgroup>
             <tbody>
               <Section title="Income" />
@@ -1564,7 +1571,6 @@ export default function LeftPanel1040({
 
               <tr className={styles.oweDividerRow}>
                 <td colSpan={4} />
-                <td className={styles.verifyStripCell} aria-hidden="true" />
               </tr>
               <Row field="amountOwed"      line="37" label="Amount you owe. Subtract line 33 from line 24"                kind="calc"   value={oweAmount} bold owe />
             </tbody>
