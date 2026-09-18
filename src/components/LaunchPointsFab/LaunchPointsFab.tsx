@@ -20,11 +20,16 @@ import {
   PREPARER_DIAGNOSTICS_PATH,
   setStoredDemoRole,
 } from '../../lib/prototypeRoutes'
-import { prepareReviewerHandoffLaunch, resetReturnWorkflow } from '../../lib/returnWorkflow'
+import {
+  preparePreparerHandoffLaunch,
+  prepareReviewerHandoffLaunch,
+  resetReturnWorkflow,
+} from '../../lib/returnWorkflow'
 import { seedPreparerDocStampsIfEmpty } from '../../hooks/useSyncedReviewState'
 import { LAUNCH_POINTS, type LaunchPoint } from './launchPointsData'
 
 const REVIEWER_HANDOFF_PATH = '/check-return?handoff=reviewer'
+const PREPARER_HANDOFF_PATH = '/check-return?handoff=preparer'
 import styles from './LaunchPointsFab.module.css'
 
 export type DemoRole = 'preparer' | 'reviewer'
@@ -115,6 +120,12 @@ export default function LaunchPointsFab() {
         seedPreparerDocStampsIfEmpty('Sarah Chen')
         setStoredDemoRole('reviewer')
         navigate(REVIEWER_HANDOFF_PATH)
+        return
+      } else if (point.route === PREPARER_HANDOFF_PATH) {
+        preparePreparerHandoffLaunch()
+        seedPreparerDocStampsIfEmpty('Sarah Chen')
+        setStoredDemoRole('preparer')
+        navigate(PREPARER_HANDOFF_PATH)
         return
       }
       navigate(point.route)

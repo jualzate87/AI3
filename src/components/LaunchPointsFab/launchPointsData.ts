@@ -38,4 +38,12 @@ export const LAUNCH_POINTS: LaunchPoint[] = [
       'Sarah hands off to Jake — proactive AI toast on Check return after ~2s; add ?prompt=popover for anchored variant',
     route: '/check-return?handoff=reviewer',
   },
+  {
+    id: 4,
+    title: 'Join as Sarah — preparer handoff',
+    status: 'live',
+    description:
+      'Jake sends the return back to Sarah with two open items — same proactive toast and catch-up summary, from her side',
+    route: '/check-return?handoff=preparer',
+  },
 ]

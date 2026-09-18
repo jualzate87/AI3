@@ -518,6 +518,142 @@ export const CATCH_UP_REVIEWER_CHECKLIST: CatchUpChecklistItem[] = [
   },
 ]
 
+export const CATCH_UP_PRIOR_REVIEWER = 'Jake Morrison'
+
+/** Everything the catch-up summary renders — one narrative per handoff direction. */
+export type CatchUpContent = {
+  fromName: string
+  notesHeading: string
+  handoffParagraph: string
+  reasoningSteps: readonly { title: string; body: string }[]
+  workHeading: string
+  workIntro: string
+  workItems: CatchUpDetailItem[]
+  workCallout: string
+  documentsIntro: string
+  documentsBullets: CatchUpListEntry[]
+  calculationsIntro: string
+  calculationsBullets: CatchUpListEntry[]
+  focusHeading: string
+  focusIntro: string
+  checklist: CatchUpChecklistItem[]
+  statusItems: readonly string[]
+  statusCallout: string
+  primaryAction: string
+}
+
+/** Jake picks up the return after Sarah's prep. */
+const CATCH_UP_FOR_REVIEWER: CatchUpContent = {
+  fromName: CATCH_UP_PRIOR_PREPARER,
+  notesHeading: `Notes from ${CATCH_UP_PRIOR_PREPARER} (prior preparer)`,
+  handoffParagraph: CATCH_UP_HANDOFF_PARAGRAPH,
+  reasoningSteps: CATCH_UP_REASONING_STEPS,
+  workHeading: '1. AI review — all items resolved',
+  workIntro: CATCH_UP_AI_REVIEW_INTRO,
+  workItems: CATCH_UP_AI_REVIEW_ITEMS,
+  workCallout: CATCH_UP_AI_REVIEW_CALLOUT,
+  documentsIntro: CATCH_UP_DOCUMENTS_INTRO,
+  documentsBullets: CATCH_UP_DOCUMENTS_BULLETS,
+  calculationsIntro: CATCH_UP_CALCULATIONS_INTRO,
+  calculationsBullets: CATCH_UP_CALCULATIONS_BULLETS,
+  focusHeading: '3. Your focus as final reviewer',
+  focusIntro: CATCH_UP_REVIEWER_FOCUS_INTRO,
+  checklist: CATCH_UP_REVIEWER_CHECKLIST,
+  statusItems: CATCH_UP_RETURN_STATUS_ITEMS,
+  statusCallout: CATCH_UP_RETURN_STATUS_CALLOUT,
+  primaryAction: CATCH_UP_APPROVE_RETURN,
+}
+
+/** Sarah picks the return back up after Jake's review. */
+const CATCH_UP_FOR_PREPARER: CatchUpContent = {
+  fromName: CATCH_UP_PRIOR_REVIEWER,
+  notesHeading: `Notes from ${CATCH_UP_PRIOR_REVIEWER} (reviewer)`,
+  handoffParagraph:
+    `${CATCH_UP_PRIOR_REVIEWER} finished the detail review and verified every source document against the return. ` +
+    'Two items came back to you before this can move to Ready to file. Employer: Tech Circle Inc. ' +
+    'Income includes W-2 wages, 1099-INT, and 1099-DIV.',
+  reasoningSteps: [
+    {
+      title: 'Reviewing reviewer notes',
+      body: `Reading ${CATCH_UP_PRIOR_REVIEWER}'s notes, what he confirmed, and what he sent back to you.`,
+    },
+    {
+      title: 'Checking documents and calculations',
+      body: 'Confirming imported source documents and that federal and state calculations tie out.',
+    },
+    {
+      title: 'Drafting your summary',
+      body: 'Organizing what came back, what is already settled, and what you need to close out.',
+    },
+  ],
+  workHeading: '1. Review complete — what Jake confirmed',
+  workIntro: `${CATCH_UP_PRIOR_REVIEWER} verified the following during the detail review:`,
+  workItems: [
+    {
+      title: 'W-2 income variance — Confirmed',
+      detail:
+        'Your mid-year raise explanation checks out against the source document; Box 1 wages tie to the return',
+      link: { docLabel: 'W-2 (PDF)', popoutTab: 'w2' },
+    },
+    {
+      title: '1099-DIV qualified dividend classification — Confirmed',
+      detail:
+        'The corrected qualified vs. ordinary split matches the broker statement line for line',
+      link: { docLabel: '1099-DIV (PDF)', popoutTab: '1099-div' },
+    },
+    {
+      title: 'Source document verification — Complete',
+      detail: 'Every imported document was verified against the return, with no unresolved flags',
+      link: { docLabel: 'Source documents' },
+    },
+  ],
+  workCallout:
+    'Nothing from the AI review reopened. The two items below are new calls that need you before sign-off.',
+  documentsIntro: 'All source documents remain imported and verified:',
+  documentsBullets: CATCH_UP_DOCUMENTS_BULLETS,
+  calculationsIntro: 'Federal and state calculations still tie out:',
+  calculationsBullets: [
+    { text: 'Federal income tax calculation — confirmed, no variances', emphasis: true },
+    { text: 'All lines tie out', emphasis: true },
+    { text: 'Two open items block Ready to file', emphasis: true },
+  ],
+  focusHeading: '3. Your focus before this moves forward',
+  focusIntro: `${CATCH_UP_PRIOR_REVIEWER}'s note calls out the items below. Close each one, then send it back for sign-off.`,
+  checklist: [
+    {
+      id: 'mortgage-interest',
+      title: 'Form 1098 mortgage interest confirmed',
+      note: 'Still an estimate — get the 1098 from the client and replace the placeholder amount',
+      link: { docLabel: 'Source documents' },
+    },
+    {
+      id: 'form-2210',
+      title: 'Form 2210 penalty call made',
+      note: 'Decide whether to request the underpayment penalty waiver or let the IRS bill it',
+    },
+    {
+      id: 'reviewer-notes',
+      title: `${CATCH_UP_PRIOR_REVIEWER}'s review notes read`,
+      note: 'Everything else he checked is confirmed — no other changes requested',
+    },
+  ],
+  statusItems: [
+    `Detail review: Complete — all lines verified by ${CATCH_UP_PRIOR_REVIEWER}`,
+    'Data entry: Complete — all documents imported and reconciled',
+    'Calculations: Confirmed — federal and state tie out',
+    'Open items: 2 — Form 1098 mortgage interest, Form 2210 penalty call',
+    'Ready for: Your updates, then reviewer sign-off',
+  ],
+  statusCallout:
+    `This return came back from review with two open items. Close them out and hand it back to ${CATCH_UP_PRIOR_REVIEWER} for final sign-off.`,
+  primaryAction: 'Send back for review',
+}
+
+/** Pick the narrative that matches who is holding the return. */
+export function getCatchUpContent(role: 'preparer' | 'reviewer' | 'manager'): CatchUpContent {
+  return role === 'preparer' ? CATCH_UP_FOR_PREPARER : CATCH_UP_FOR_REVIEWER
+}
+
 /** @deprecated Use INTELLIGENCE_COMPLETION_FOOTER */
 export const CATCH_UP_FOOTER_QUESTION = INTELLIGENCE_COMPLETION_FOOTER
 

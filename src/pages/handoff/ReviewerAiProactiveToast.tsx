@@ -6,7 +6,8 @@ import { IconControl } from '@ids-ts/icon-control'
 import '@ids-ts/icon-control/dist/main.css'
 import intuitIntelligenceLogo from '../../assets/icons/intuit-intelligence-logo-small.svg'
 import {
-  REVIEWER_AI_TOAST_CTA,
+  handoffSenderFirstName,
+  handoffToastCta,
   reviewerAiProactiveHeadline,
 } from './reviewerHandoffCopy'
 import styles from '../../styles/handoff/ReviewerAiProactiveToast.module.css'
@@ -54,7 +55,7 @@ export default function ReviewerAiProactiveToast({
 
   if (!open || !coords) return null
 
-  const headline = reviewerAiProactiveHeadline()
+  const headline = reviewerAiProactiveHeadline(handoffSenderFirstName())
 
   return (
     <div
@@ -85,7 +86,7 @@ export default function ReviewerAiProactiveToast({
               size="medium"
               onClick={onViewSummary}
             >
-              {REVIEWER_AI_TOAST_CTA}
+              {handoffToastCta()}
             </Button>
           </div>
         </div>

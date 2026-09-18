@@ -75,6 +75,8 @@ interface CheckReturnNavProps {
   onSelectAiDiagnosticSub?: (subId: string) => void
   /** Left-nav AI review accordion — off by default; use header / Launch points instead. */
   showAiReviewNav?: boolean
+  /** Starts collapsed so the sidebar AI pane leaves more room for the return. */
+  startCollapsed?: boolean
 }
 
 function NavCategoryHeader({
@@ -243,6 +245,7 @@ export default function CheckReturnNav({
   onSelectAiDiagnostics,
   onSelectAiDiagnosticSub,
   showAiReviewNav = false,
+  startCollapsed = false,
 }: CheckReturnNavProps) {
   const focused = variant === 'focused'
   const [expandedCategory, setExpandedCategory] = useState<ExpandedCategory | null>(null)
@@ -258,7 +261,7 @@ export default function CheckReturnNav({
     }
   }, [contentView])
   const [formSearch, setFormSearch] = useState('')
-  const [collapsed, setCollapsed] = useState(false)
+  const [collapsed, setCollapsed] = useState(startCollapsed)
   const [expandedJurisdictions, setExpandedJurisdictions] = useState<Record<string, boolean>>({
     US: true,
     CA: true,

@@ -1,23 +1,10 @@
 import { useState, type ReactNode } from 'react'
 import { CircleCheck, CircleCheckFill, NewWindow } from '@design-systems/icons'
 import {
-  CATCH_UP_AI_REVIEW_CALLOUT,
-  CATCH_UP_AI_REVIEW_INTRO,
-  CATCH_UP_AI_REVIEW_ITEMS,
-  CATCH_UP_CALCULATIONS_BULLETS,
-  CATCH_UP_CALCULATIONS_INTRO,
-  CATCH_UP_DOCUMENTS_BULLETS,
-  CATCH_UP_DOCUMENTS_INTRO,
   CATCH_UP_FOOTER_QUESTION,
-  CATCH_UP_HANDOFF_PARAGRAPH,
+  getCatchUpContent,
   getCatchUpPriorNotes,
-  CATCH_UP_REASONING_STEPS,
   CATCH_UP_REASONING_TITLE,
-  CATCH_UP_RETURN_STATUS_CALLOUT,
-  CATCH_UP_RETURN_STATUS_ITEMS,
-  CATCH_UP_REVIEWER_CHECKLIST,
-  CATCH_UP_REVIEWER_FOCUS_INTRO,
-  CATCH_UP_APPROVE_RETURN,
   STARTER_PROMPT_CATCH_UP,
   catchUpReturnSummaryTitle,
   type CatchUpChecklistItem,
@@ -25,6 +12,7 @@ import {
   type CatchUpDocLink,
   type CatchUpListEntry,
 } from './agentIntelligenceCopy'
+import { getCurrentUser } from '../../lib/returnWorkflow'
 import {
   AgentIntelligenceReasoningLive,
   AgentIntelligenceShowThinking,
@@ -161,6 +149,8 @@ export default function AgentCatchUpPane({
 }: AgentCatchUpPaneProps) {
   const [thinkingExpanded, setThinkingExpanded] = useState(false)
   const [checkedIds, setCheckedIds] = useState<Set<string>>(new Set())
+  /** Read once — the summary narrates the handoff as it stood when the pane opened. */
+  const [content] = useState(() => getCatchUpContent(getCurrentUser().role))
 
   const {
     isReasoning,
@@ -194,7 +184,7 @@ export default function AgentCatchUpPane({
             {isReasoning && (
               <AgentIntelligenceReasoningLive
                 title={CATCH_UP_REASONING_TITLE}
-                steps={CATCH_UP_REASONING_STEPS}
+                steps={content.reasoningSteps}
                 visibleSteps={visibleReasoningSteps}
                 headerVisible={reasoningHeaderVisible}
                 exiting={reasoningExiting}
@@ -207,7 +197,7 @@ export default function AgentCatchUpPane({
                 <AgentIntelligenceShowThinking
                   expanded={thinkingExpanded}
                   onToggle={() => setThinkingExpanded((v) => !v)}
-                  steps={CATCH_UP_REASONING_STEPS}
+                  steps={content.reasoningSteps}
                 />
 
                 <article className={styles.summaryDoc}>
@@ -217,14 +207,12 @@ export default function AgentCatchUpPane({
 
                   <RevealBlock visible={visibleBlocks >= 2}>
                     <section className={styles.section}>
-                      <h2 className={styles.sectionHeading}>
-                        Notes from Sarah Chen (prior preparer)
-                      </h2>
+                      <h2 className={styles.sectionHeading}>{content.notesHeading}</h2>
                       <div className={styles.textStack}>
                         <blockquote className={styles.handoffQuote}>
                           {getCatchUpPriorNotes()}
                         </blockquote>
-                        <p className={styles.bodyText}>{CATCH_UP_HANDOFF_PARAGRAPH}</p>
+                        <p className={styles.bodyText}>{content.handoffParagraph}</p>
                       </div>
                     </section>
                   </RevealBlock>
@@ -232,13 +220,11 @@ export default function AgentCatchUpPane({
                   <RevealBlock visible={visibleBlocks >= 3}>
                     <hr className={styles.divider} aria-hidden />
                     <section className={styles.section}>
-                      <h2 className={styles.sectionHeading}>1. AI review — all items resolved</h2>
+                      <h2 className={styles.sectionHeading}>{content.workHeading}</h2>
                       <div className={styles.listGroup}>
-                        <p className={styles.bodyText}>{CATCH_UP_AI_REVIEW_INTRO}</p>
-                        <DetailList items={CATCH_UP_AI_REVIEW_ITEMS} />
-                        <blockquote className={styles.callout}>
-                          {CATCH_UP_AI_REVIEW_CALLOUT}
-                        </blockquote>
+                        <p className={styles.bodyText}>{content.workIntro}</p>
+                        <DetailList items={content.workItems} />
+                        <blockquote className={styles.callout}>{content.workCallout}</blockquote>
                       </div>
                     </section>
                   </RevealBlock>
@@ -249,13 +235,13 @@ export default function AgentCatchUpPane({
                       <h2 className={styles.sectionHeading}>2. Data entry and reconciliation</h2>
                       <div className={styles.listGroup}>
                         <p className={styles.subheading}>Documents imported</p>
-                        <p className={styles.bodyText}>{CATCH_UP_DOCUMENTS_INTRO}</p>
-                        <SimpleBulletList items={CATCH_UP_DOCUMENTS_BULLETS} />
+                        <p className={styles.bodyText}>{content.documentsIntro}</p>
+                        <SimpleBulletList items={content.documentsBullets} />
                       </div>
                       <div className={styles.listGroup}>
                         <p className={styles.subheading}>Calculations confirmed</p>
-                        <p className={styles.bodyText}>{CATCH_UP_CALCULATIONS_INTRO}</p>
-                        <SimpleBulletList items={CATCH_UP_CALCULATIONS_BULLETS} />
+                        <p className={styles.bodyText}>{content.calculationsIntro}</p>
+                        <SimpleBulletList items={content.calculationsBullets} />
                       </div>
                     </section>
                   </RevealBlock>
@@ -263,11 +249,11 @@ export default function AgentCatchUpPane({
                   <RevealBlock visible={visibleBlocks >= 5}>
                     <hr className={styles.divider} aria-hidden />
                     <section className={styles.section}>
-                      <h2 className={styles.sectionHeading}>3. Your focus as final reviewer</h2>
+                      <h2 className={styles.sectionHeading}>{content.focusHeading}</h2>
                       <div className={styles.listGroup}>
-                        <p className={styles.bodyText}>{CATCH_UP_REVIEWER_FOCUS_INTRO}</p>
+                        <p className={styles.bodyText}>{content.focusIntro}</p>
                         <ReviewCheckList
-                          items={CATCH_UP_REVIEWER_CHECKLIST}
+                          items={content.checklist}
                           checkedIds={checkedIds}
                           onToggle={toggleCheck}
                         />
@@ -281,14 +267,14 @@ export default function AgentCatchUpPane({
                       <h2 className={styles.sectionHeading}>4. Return status</h2>
                       <div className={styles.listGroup}>
                         <ol className={styles.numberedList}>
-                          {CATCH_UP_RETURN_STATUS_ITEMS.map((item) => (
+                          {content.statusItems.map((item) => (
                             <li key={item} className={styles.numberedItem}>
                               {item}
                             </li>
                           ))}
                         </ol>
                         <blockquote className={`${styles.callout} ${styles.calloutItalic}`}>
-                          {CATCH_UP_RETURN_STATUS_CALLOUT}
+                          {content.statusCallout}
                         </blockquote>
                       </div>
                     </section>
@@ -305,7 +291,7 @@ export default function AgentCatchUpPane({
                     <AgentReviewSummaryFooter
                       showPrompt={false}
                       onPrimaryAction={onApproveReturn}
-                      primaryLabel={CATCH_UP_APPROVE_RETURN}
+                      primaryLabel={content.primaryAction}
                       actionVariant="button"
                     />
                   </div>

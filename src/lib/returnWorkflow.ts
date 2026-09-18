@@ -109,48 +109,65 @@ export function resetReturnWorkflow(): void {
   sessionStorage.removeItem(OPEN_CATCH_UP_KEY)
 }
 
-/** Launch point: join the return as Jake after Sarah's handoff. */
-export function prepareReviewerHandoffLaunch(): ReturnWorkflowState {
+/** Launch point: join the return as `toId` right after `fromId` handed it over. */
+export function prepareHandoffLaunch(fromId: string, toId: string): ReturnWorkflowState {
+  const from = getTeamMember(fromId)
+  const to = getTeamMember(toId)
   const state: ReturnWorkflowState = {
-    assigneeId: 'jake',
-    statusId: 'review',
-    currentUserId: 'jake',
+    assigneeId: to.id,
+    statusId: suggestStatusForAssignee(from, to, from.role === 'preparer' ? 'preparation' : 'review'),
+    currentUserId: to.id,
   }
   saveReturnWorkflow(state)
   sessionStorage.setItem(REVIEWER_WELCOME_KEY, '1')
-  seedHandoffNoteIfMissing()
+  seedHandoffNoteIfMissing(from.id, to.id)
   return state
+}
+
+/** Launch point: join the return as Jake after Sarah's handoff. */
+export function prepareReviewerHandoffLaunch(): ReturnWorkflowState {
+  return prepareHandoffLaunch('sarah', 'jake')
+}
+
+/** Launch point: join the return as Sarah after Jake sends it back. */
+export function preparePreparerHandoffLaunch(): ReturnWorkflowState {
+  return prepareHandoffLaunch('jake', 'sarah')
 }
 
 const RETURN_NOTES_KEY = 'protoc3-notes'
 
-/** Seed Sarah → Jake handoff note for reviewer launch when none exists yet. */
-export function seedHandoffNoteIfMissing(): void {
+/** Seed the `from` → `to` handoff note for a launch point when none exists yet. */
+export function seedHandoffNoteIfMissing(fromId = 'sarah', toId = 'jake'): void {
   try {
     const raw = localStorage.getItem(RETURN_NOTES_KEY)
     const notes = raw ? (JSON.parse(raw) as { id?: string }[]) : []
     if (notes.some(note => note.id?.startsWith('handoff-'))) return
 
-    const sarah = getTeamMember('sarah')
-    const jake = getTeamMember('jake')
+    const from = getTeamMember(fromId)
+    const to = getTeamMember(toId)
     const seeded = {
       id: 'handoff-seed',
-      text: buildDefaultHandoffNote(sarah, jake),
-      author: sarah.name,
+      text: buildDefaultHandoffNote(from, to),
+      author: from.name,
       at: new Date().toLocaleString(undefined, {
         month: 'short',
         day: 'numeric',
         hour: 'numeric',
         minute: '2-digit',
       }),
-      context: `Handoff note for ${jake.name}`,
-      role: 'preparer' as const,
+      context: `Handoff note for ${to.name}`,
+      role: from.role === 'preparer' ? ('preparer' as const) : ('reviewer' as const),
       status: 'open' as const,
     }
     localStorage.setItem(RETURN_NOTES_KEY, JSON.stringify([seeded, ...notes]))
   } catch {
     // ignore prototype storage errors
   }
+}
+
+/** Who is using the prototype right now — drives handoff-aware copy. */
+export function getCurrentUser(): TeamMember {
+  return getTeamMember(loadReturnWorkflow().currentUserId)
 }
 
 function firstName(member: TeamMember): string {

@@ -202,6 +202,7 @@ export default function CheckReturnPage({ embeddedUnderlay = false }: CheckRetur
           ) : null}
           <div className={styles.contentArea}>
             <CheckReturnNav
+              startCollapsed={embeddedUnderlay}
               contentView={contentView}
               selectedForm={selectedForm}
               aiDiagnosticCount={diagnosticOverview.total}
