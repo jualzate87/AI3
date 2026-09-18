@@ -204,7 +204,7 @@ export default function DocVerifyHeaderActions({
           disabled={commentOpen}
         >
           <IconControl
-            size="x-small"
+            size="small"
             shape="square"
             selected={commentOpen}
             onClick={e => {
@@ -214,7 +214,7 @@ export default function DocVerifyHeaderActions({
             }}
             aria-label={`${commentOpen ? 'Close' : 'Add'} comment on ${docLabel}`}
           >
-            <Comment size="small" aria-hidden />
+            <Comment size="medium" aria-hidden />
           </IconControl>
         </Tooltip>
       </div>

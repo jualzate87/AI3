@@ -154,7 +154,7 @@
   align-items: center;
   justify-content: flex-end;
   flex-shrink: 0;
-  gap: var(--space-component-gap-small, 8px);
+  gap: var(--space-component-gap-medium, 8px);
 }
 
 .verifyBlockedBadge {
