@@ -45,6 +45,7 @@ export default function HandoffAssistModal({
   const currentStatus = getReturnStatus(workflow.statusId)
   const nextStatus = getReturnStatus(handoff.suggestedStatusId)
   const statusWillChange = workflow.statusId !== handoff.suggestedStatusId
+  const toFirstName = to?.name.split(' ')[0] ?? ''
   const summaryLabel = to ? `Quick summary for ${to.name}` : 'Quick summary of this return'
   const notesLabel = to ? `Leave notes for ${to.name}` : 'Leave a note on this return'
 
@@ -55,26 +56,33 @@ export default function HandoffAssistModal({
       </ModalHeader>
       <ModalContent alignment="left" overflow maxHeight="70vh">
         <div className={styles.body}>
-          <p className={styles.lead}>
-            {to ? (
-              <>
-                We noticed you&apos;re changing the assignee to <strong>{to.name}</strong>.
-                {statusWillChange ? (
-                  <>
-                    {' '}
-                    We&apos;ll update the return status from{' '}
-                    <strong>{currentStatus.label}</strong> to <strong>{nextStatus.label}</strong> to
-                    match this handoff.
-                  </>
-                ) : null}
-              </>
-            ) : (
-              <>
-                We noticed you&apos;re moving this return from{' '}
-                <strong>{currentStatus.label}</strong> to <strong>{nextStatus.label}</strong>.
-              </>
-            )}
-          </p>
+          <div className={styles.intro}>
+            <p className={styles.lead}>
+              {to ? (
+                <>
+                  We noticed you&apos;re changing the assignee to <strong>{to.name}</strong>.
+                  {statusWillChange ? (
+                    <>
+                      {' '}
+                      We&apos;ll update the return status from{' '}
+                      <strong>{currentStatus.label}</strong> to <strong>{nextStatus.label}</strong> to
+                      match this handoff.
+                    </>
+                  ) : null}
+                </>
+              ) : (
+                <>
+                  We noticed you&apos;re moving this return from{' '}
+                  <strong>{currentStatus.label}</strong> to <strong>{nextStatus.label}</strong>.
+                </>
+              )}
+            </p>
+            <p className={styles.instructions}>
+              {to
+                ? `Add anything ${toFirstName} should know in the notes, then open the generated summary to review what we'll include with this handoff.`
+                : "Add a note on this return, then open the generated summary to review what we'll include with this status change."}
+            </p>
+          </div>
 
           <HandoffNotesField
             id="handoff-notes"

@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState, type ReactNode } from 'react'
-import { CircleCheckFill, PopOut } from '@design-systems/icons'
+import { CircleCheckFill, NewWindow } from '@design-systems/icons'
 import Badge from '@ids-ts/badge'
 import '@ids-ts/badge/dist/main.css'
 import AgentDiagnosticExpandableCard from '../check-return/AgentDiagnosticExpandableCard'
@@ -273,7 +273,7 @@ export default function AgentReviewProcessingPane({
                             onClick={() => openDocLink(item)}
                           >
                             {item.linkLabel}
-                            <PopOut size="x-small" aria-hidden />
+                            <NewWindow size="small" className={styles.richDocLinkIcon} aria-hidden />
                           </button>
                         </li>
                       ))}
@@ -320,7 +320,7 @@ export default function AgentReviewProcessingPane({
                                 onClick={() => openDocLink(link)}
                               >
                                 {link.docLabel}
-                                <PopOut size="x-small" aria-hidden />
+                                <NewWindow size="small" className={styles.richDocLinkIcon} aria-hidden />
                               </button>
                               <span className={styles.fixLinkDetail}>— {link.detail}</span>
                             </li>

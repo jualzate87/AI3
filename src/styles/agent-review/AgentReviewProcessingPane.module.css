@@ -627,6 +627,12 @@
   background: var(--color-container-background-info-hover, #c5e4f7);
 }
 
+.richDocLinkIcon {
+  flex-shrink: 0;
+  width: 1em;
+  height: 1em;
+}
+
 .fixLinkDetail {
   font-family: var(--font-family-body);
   font-size: var(--font-size-body-3, 14px);

@@ -35,6 +35,9 @@ await dialog.screenshot({ path: path.join(outDir, 'handoff-split-default.png') }
 const notes = dialog.locator('#handoff-notes')
 const summaryToggle = dialog.getByRole('button', { name: /Quick summary/ })
 const notesVisible = await notes.isVisible()
+const instructionsVisible = await dialog
+  .getByText(/Add anything Jake should know in the notes/i)
+  .isVisible()
 const summaryExpanded = await summaryToggle.getAttribute('aria-expanded')
 const reviewedReadyVisible = await dialog.getByText('Checked and ready').isVisible().catch(() => false)
 
@@ -46,6 +49,7 @@ const report = {
   formsExpanded,
   searchFormsVisible,
   notesVisible,
+  instructionsVisible,
   summaryExpandedOnOpen: summaryExpanded,
   reviewedReadyVisibleOnOpen: reviewedReadyVisible,
 }
@@ -57,6 +61,9 @@ if (formsExpanded !== 'false' || searchFormsVisible) {
 }
 if (!notesVisible) {
   throw new Error('Notes field missing')
+}
+if (!instructionsVisible) {
+  throw new Error('Opening instructions missing')
 }
 if (summaryExpanded === 'true' || reviewedReadyVisible) {
   throw new Error('Summary accordion is open by default')

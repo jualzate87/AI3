@@ -1,7 +1,5 @@
 import { useState, type ReactNode } from 'react'
-import { CircleCheck, CircleCheckFill, PopOut } from '@design-systems/icons'
-import { Link } from '@ids-ts/link'
-import '@ids-ts/link/dist/main.css'
+import { CircleCheck, CircleCheckFill, NewWindow } from '@design-systems/icons'
 import {
   CATCH_UP_AI_REVIEW_CALLOUT,
   CATCH_UP_AI_REVIEW_INTRO,
@@ -50,21 +48,18 @@ function openDocLink(link: CatchUpDocLink) {
   openSourceDocumentReviewPopout()
 }
 
+/** Blue source-link chip — same treatment as the review experience's fix results. */
 function DocLink({ link }: { link: CatchUpDocLink }) {
   return (
-    <Link
-      href="#"
-      size="component-small"
+    <button
+      type="button"
       className={styles.docLink}
       aria-label={`${link.docLabel} (opens in a new window)`}
-      onClick={(e) => {
-        e.preventDefault()
-        openDocLink(link)
-      }}
+      onClick={() => openDocLink(link)}
     >
       {link.docLabel}
-      <PopOut size="x-small" aria-hidden />
-    </Link>
+      <NewWindow size="small" className={styles.docLinkIcon} aria-hidden />
+    </button>
   )
 }
 

@@ -6,12 +6,28 @@
   min-width: 0;
 }
 
-.lead {
+.intro {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-component-gap-small, 8px);
+  width: 100%;
+  min-width: 0;
+}
+
+.lead,
+.instructions {
   margin: 0;
   font-family: var(--font-family-body);
   font-size: var(--font-size-body-2, 16px);
   line-height: 1.5;
+}
+
+.lead {
   color: var(--color-text-primary, #393a3d);
+}
+
+.instructions {
+  color: var(--color-text-secondary, #6b6c72);
 }
 
 .actionsRow {
