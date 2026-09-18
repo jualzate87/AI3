@@ -34,6 +34,7 @@ import {
 } from '../../hooks/useSyncedReviewState'
 import { PRIOR_YEAR_1040_VALUES, buildYoyMap, yoyPercent } from './priorYear1040Data'
 import AttestColumns, { AttestColumnHeaders } from './AttestColumns'
+import OutputRowActions from './OutputRowActions'
 import OutputFormViews from './OutputFormViews'
 import VerificationStripCell, { VerificationStripHeader } from './VerificationStripCell'
 import FormSignOffControl from './FormSignOffControl'

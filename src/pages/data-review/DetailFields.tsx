@@ -21,6 +21,8 @@ import { getBox12SubRowKeys, isBox12FlagResolved } from './phase1FieldSync'
 
 type FieldValuesKey = 'withholding' | 'box12' | 'taxableInterest' | 'qualifiedDivs'
 
+export type W2Employer = 'bingEquipment' | 'techCircle'
+
 export const W2_PAYER_TABS: { key: W2Employer; label: string }[] = [
   { key: 'techCircle', label: 'Tech Circle' },
   { key: 'bingEquipment', label: 'Bing Equipment' },

@@ -10,6 +10,7 @@
     "build:dev": "vite build --mode development",
     "preview:pages": "vite preview --base /SmartReview-AIc3/",
     "lint": "eslint .",
+    "typecheck": "tsc -p tsconfig.app.json --noEmit",
     "preview": "vite preview",
     "sync-tokens": "node scripts/sync-tokens.mjs",
     "preinstall": "node scripts/check-yarn.mjs",

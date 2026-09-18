@@ -137,6 +137,7 @@ import {
   SHOW_IMPORT_FLAGS,
 } from '../lib/prototypeFeatureFlags'
 import { computeLiveReturn } from '../data/liveReturn'
+import { resolveActiveVerifyDocKey } from '../data/documentImportMeta'
 import { navigationForSourceDoc } from '../data/sourceDocuments'
 import img1040PriorPage1 from '../assets/jessica-1040-2024-variant-1.png'
 import img1040PriorPage2 from '../assets/jessica-1040-2024-variant-2.png'
