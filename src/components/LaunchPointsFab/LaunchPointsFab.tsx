@@ -16,6 +16,7 @@ import {
   setStoredDemoRole,
 } from '../../lib/prototypeRoutes'
 import {
+  getCurrentUser,
   preparePreparerHandoffLaunch,
   prepareReviewerHandoffLaunch,
   resetReturnWorkflow,
@@ -125,6 +126,10 @@ export default function LaunchPointsFab() {
     return null
   }
 
+  // You can only join as somebody else, so the handoff you are already in drops off the list.
+  const currentUserId = open ? getCurrentUser().id : null
+  const visiblePoints = LAUNCH_POINTS.filter(point => point.joinAs !== currentUserId)
+
   return (
     <div className={styles.fabRoot} ref={rootRef}>
       <button
@@ -148,7 +153,7 @@ export default function LaunchPointsFab() {
           </div>
 
           <ul className={styles.list}>
-            {LAUNCH_POINTS.map(point => {
+            {visiblePoints.map((point, index) => {
               const navigable = Boolean(point.route)
               return (
                 <li key={point.id} className={styles.listItem}>
@@ -158,7 +163,7 @@ export default function LaunchPointsFab() {
                     disabled={!navigable}
                     onClick={() => handleLaunchPoint(point)}
                   >
-                    <span className={styles.itemNumber}>{point.id}</span>
+                    <span className={styles.itemNumber}>{index + 1}</span>
                     <span className={styles.itemBody}>
                       <span className={styles.itemTitleRow}>
                         <span className={styles.itemTitle}>{point.title}</span>

@@ -12,6 +12,8 @@ export type LaunchPoint = {
   description: string
   /** Hash route without # — navigates when set and status is live */
   route?: string
+  /** Team member this point joins as — hidden when you already are that person. */
+  joinAs?: string
 }
 
 export const LAUNCH_POINTS: LaunchPoint[] = [
@@ -37,6 +39,7 @@ export const LAUNCH_POINTS: LaunchPoint[] = [
     description:
       'Sarah hands off to Jake — proactive AI toast on Check return after ~2s; add ?prompt=popover for anchored variant',
     route: '/check-return?handoff=reviewer',
+    joinAs: 'jake',
   },
   {
     id: 4,
@@ -45,5 +48,6 @@ export const LAUNCH_POINTS: LaunchPoint[] = [
     description:
       'Jake sends the return back to Sarah with two open items — same proactive toast and catch-up summary, from her side',
     route: '/check-return?handoff=preparer',
+    joinAs: 'sarah',
   },
 ]
