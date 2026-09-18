@@ -49,9 +49,14 @@ export default function CheckReturnPage({ embeddedUnderlay = false }: CheckRetur
   const [searchParams] = useSearchParams()
   const initialForm = useMemo(() => resolveInitialOutputForm(searchParams), [searchParams])
   const openFormFromUrl = searchParams.get('form') != null
+  const showEmbeddedAiDiagnostics = searchParams.get('experience') === 'ai-diags'
 
   const [contentView, setContentView] = useState<ContentView>(() =>
-    openFormFromUrl ? 'form-output' : 'federal-summary',
+    showEmbeddedAiDiagnostics
+      ? 'ai-diagnostics'
+      : openFormFromUrl
+        ? 'form-output'
+        : 'federal-summary',
   )
   const [selectedForm, setSelectedForm] = useState<string | null>(() =>
     openFormFromUrl ? '1040' : null,
@@ -97,6 +102,14 @@ export default function CheckReturnPage({ embeddedUnderlay = false }: CheckRetur
     setSelectedForm('1040')
     setOutputFormId(initialForm)
   }, [openFormFromUrl, initialForm])
+
+  useEffect(() => {
+    if (!showEmbeddedAiDiagnostics) return
+    setContentView('ai-diagnostics')
+    setAiDiagnosticsView('overview')
+    setSelectedDiagnosticKey(null)
+    setSelectedAiDiagnosticSubId(null)
+  }, [showEmbeddedAiDiagnostics])
 
   const handleSelectFederal = () => {
     setContentView('federal-summary')
@@ -212,6 +225,7 @@ export default function CheckReturnPage({ embeddedUnderlay = false }: CheckRetur
               onSelectForm={handleSelectForm}
               onSelectAiDiagnostics={handleSelectAiDiagnosticsOverview}
               onSelectAiDiagnosticSub={handleSelectAiDiagnosticSub}
+              showAiReviewNav={showEmbeddedAiDiagnostics}
             />
 
             <CheckReturnMainContent

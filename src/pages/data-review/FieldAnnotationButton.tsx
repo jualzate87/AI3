@@ -21,6 +21,7 @@ export interface FieldAnnotationButtonProps {
   contextLabel: string
   variant?: Variant
   isFlagged?: boolean
+  hasComment?: boolean
   existingFlagNote?: string
   allowFlagTypes?: boolean
   onAddNote?: (text: string, context: string) => void
@@ -45,6 +46,7 @@ export default function FieldAnnotationButton({
   contextLabel,
   variant = 'detail',
   isFlagged = false,
+  hasComment = false,
   existingFlagNote = '',
   allowFlagTypes = true,
   onAddNote,
@@ -106,14 +108,22 @@ export default function FieldAnnotationButton({
   }
 
   const showFlagIcon = isFlagged && variant === 'summary'
-  const tooltip = showFlagIcon ? 'Edit flag or add note' : 'Add note or flag'
+  const commentCls =
+    hasComment && !showFlagIcon && variant === 'summary'
+      ? summaryStyles.summaryActionBtnHasComment
+      : ''
+  const tooltip = showFlagIcon
+    ? 'Edit flag or add note'
+    : hasComment
+      ? 'Comment on this line — click to add another'
+      : 'Add note or flag'
 
   return (
     <>
       <Tooltip text={tooltip} placement="top" disabled={open}>
         <button
           type="button"
-          className={[btnCls, open ? activeCls : '', showFlagIcon ? flagCls : '']
+          className={[btnCls, open ? activeCls : '', showFlagIcon ? flagCls : '', commentCls]
             .filter(Boolean)
             .join(' ')}
           aria-label={`Annotate ${contextLabel}`}

@@ -5,7 +5,6 @@ import {
   type ActivityEntry,
 } from '../../hooks/useSyncedReviewState'
 import Tooltip from './Tooltip'
-import { VERIFICATION_LEVEL_LABELS } from './verificationRoles'
 import styles from '../../styles/data-review/LeftPanel1040.module.css'
 
 export { VERIFICATION_LEVEL_LABELS } from './verificationRoles'
@@ -44,27 +43,6 @@ export function levelCheckTooltip(
   return `${label} check`
 }
 
-function LevelHeader({ level }: { level: ReviewLevel }) {
-  const label = VERIFICATION_LEVEL_LABELS[level]
-  return (
-    <Tooltip text={label} placement="top">
-      <span className={styles.summaryColCheckLabel}>
-        <span className={styles.levelCode}>L{level}</span>
-      </span>
-    </Tooltip>
-  )
-}
-
-export function AttestColumnHeaders() {
-  return (
-    <>
-      <LevelHeader level={1} />
-      <LevelHeader level={2} />
-      <LevelHeader level={3} />
-    </>
-  )
-}
-
 /** Empty L1/L2/L3 slots — keeps strip rows aligned when checks are absent. */
 export function AttestColumnPlaceholders() {
   return (
@@ -91,6 +69,12 @@ function LevelCheck({
 }) {
   const actorLevel = currentReviewLevel()
   const canToggle = interactive && actorLevel === level && !!onToggle
+
+  // Nobody checked this level and you are not the one who could — hold the space, show nothing.
+  if (!entry && !canToggle) {
+    return <span className={styles.summaryAttestSlot} aria-hidden="true" />
+  }
+
   const emptyCls =
     level === 1
       ? styles.summaryAttestColPrepEmpty
@@ -112,6 +96,7 @@ function LevelCheck({
           styles.summaryAttestCol,
           entry ? activeCls : `${styles.summaryAttestColEmpty} ${emptyCls}`,
           canToggle ? '' : styles.summaryAttestColReadonly,
+          entry ? '' : styles.rowControlOnHover,
         ]
           .filter(Boolean)
           .join(' ')}

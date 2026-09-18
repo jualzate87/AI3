@@ -228,6 +228,8 @@
   align-items: center;
   gap: 0;
   flex-shrink: 0;
+  /* Reserves the three check slots so "Amount" keeps sitting over the amounts. */
+  width: 96px;
 }
 
 .colValAttestLabel {
@@ -1390,6 +1392,10 @@
   opacity: 1;
   color: var(--color-action-success, #00856d);
 }
+.summaryAttestColRevActive {
+  opacity: 1;
+  color: #205ea3;
+}
 .summaryAttestColL3Empty {
   color: var(--color-action-selected, #7c00f6);
 }
@@ -1410,6 +1416,28 @@
 .summaryAttestCol:disabled {
   cursor: default;
 }
+/* Controls you could still use stay quiet until the row is hovered; marks already
+   left by the team render without this class and are always on screen. */
+.rowControlOnHover {
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 100ms ease;
+}
+
+.row:hover .rowControlOnHover,
+.row:focus-within .rowControlOnHover,
+.summarySubRow:hover .rowControlOnHover,
+.summarySubRow:focus-within .rowControlOnHover,
+.rowControlOnHover:has(.summaryActionBtnActive) {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.summaryActionBtnHasComment {
+  color: var(--color-action-primary, #0077c5);
+  border-color: var(--color-action-primary, #0077c5);
+}
+
 .summaryAttestSlot {
   display: inline-flex;
   width: 32px;

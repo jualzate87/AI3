@@ -1,4 +1,5 @@
 import {
+  EMBEDDED_AI_DIAGNOSTICS_PATH,
   PREPARER_AGENT_DIAGNOSTICS_PATH,
   PREPARER_DIAGNOSTICS_PATH,
 } from '../../lib/prototypeRoutes'
@@ -27,13 +28,21 @@ export const LAUNCH_POINTS: LaunchPoint[] = [
   },
   {
     id: 2,
+    title: 'AI Diags',
+    status: 'live',
+    description:
+      'Earlier embedded Intuit Intelligence review with the AI review navigation and diagnostic overview',
+    route: EMBEDDED_AI_DIAGNOSTICS_PATH,
+  },
+  {
+    id: 3,
     title: 'Smart review — Agent mode',
     status: 'live',
     description: 'AI agent fixes diagnostics automatically with full reasoning trail',
     route: PREPARER_AGENT_DIAGNOSTICS_PATH,
   },
   {
-    id: 3,
+    id: 4,
     title: 'Join as Jake — reviewer handoff',
     status: 'live',
     description:
@@ -42,7 +51,7 @@ export const LAUNCH_POINTS: LaunchPoint[] = [
     joinAs: 'jake',
   },
   {
-    id: 4,
+    id: 5,
     title: 'Join as Sarah — preparer handoff',
     status: 'live',
     description:

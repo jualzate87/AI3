@@ -6,7 +6,8 @@ import { NIIT_AGI_THRESHOLD, SAFE_HARBOR_2210 } from '../../data/liveReturn'
 import { CLIENT_ADDRESS, formatClientCityStateZip } from '../../data/clientAddress'
 import { getScheduleLineFlyout } from '../../data/scheduleFieldOrigins'
 import type { ActivityEntry } from '../../hooks/useSyncedReviewState'
-import AttestColumns, { AttestColumnHeaders } from './AttestColumns'
+import { useCommentedContexts } from '../../hooks/useReturnNotes'
+import AttestColumns from './AttestColumns'
 import OutputRowActions from './OutputRowActions'
 import { getOutputLineAttest, type OutputFormId } from './outputForms'
 import TaxControlDocPopover from './TaxControlDocPopover'
@@ -192,6 +193,8 @@ function LineRow({
     onOpenFlyout(fieldId, btn)
   }
 
+  const commentedContexts = useCommentedContexts()
+
   const rowCls = [
     styles.row,
     bold ? styles.rowBold : '',
@@ -276,6 +279,7 @@ function LineRow({
               contextLabel={commentContext}
               showAnnotate={!!onAddFieldNote || !!onToggleFlagged}
               isFlagged={isFlagged}
+              hasComment={commentedContexts.has(commentContext)}
               existingFlagNote={flagNote}
               onAddNote={onAddFieldNote}
               onToggleFlagged={onToggleFlagged}
@@ -311,9 +315,7 @@ function FormTable({ children }: { children: React.ReactNode }) {
           <span className={styles.colValAmount}>Amount</span>
           <span className={styles.colValActionGroup} aria-hidden="true">
             <span className={styles.colValActionSpacer} />
-            <span className={styles.colValAttestGroup}>
-              <AttestColumnHeaders />
-            </span>
+            <span className={styles.colValAttestGroup} />
           </span>
         </div>
       </div>

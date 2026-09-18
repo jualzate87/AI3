@@ -16,6 +16,9 @@ export const PREPARER_DIAGNOSTICS_PATH =
 /** Launch point - agent-mode auto-fix diagnostics on Check return (session-gated). */
 export const PREPARER_AGENT_DIAGNOSTICS_PATH = '/check-return/agent'
 
+/** Launch point - earlier embedded AI diagnostics experience inside Check return. */
+export const EMBEDDED_AI_DIAGNOSTICS_PATH = '/check-return?experience=ai-diags'
+
 /** sessionStorage key — set only from Launch Points agent entry. */
 export const AGENT_MODE_SESSION_KEY = 'protoc3-agent-mode'
 

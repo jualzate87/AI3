@@ -22,6 +22,39 @@ function persistNotes(next: Note[], openComments = false) {
   )
 }
 
+let cachedNotesRaw: string | null = null
+let cachedContexts = new Set<string>()
+
+/** Contexts carrying an unresolved comment — cached so every form row can ask cheaply. */
+function readCommentedContexts(): Set<string> {
+  const raw = localStorage.getItem(RETURN_NOTES_KEY)
+  if (raw === cachedNotesRaw) return cachedContexts
+  cachedNotesRaw = raw
+  cachedContexts = new Set(
+    loadNotes()
+      .filter(note => note.status !== 'resolved' && note.context)
+      .map(note => note.context as string),
+  )
+  return cachedContexts
+}
+
+/** Lets a form row show its comment marker at rest instead of only on hover. */
+export function useCommentedContexts(): Set<string> {
+  const [contexts, setContexts] = useState<Set<string>>(readCommentedContexts)
+
+  useEffect(() => {
+    const sync = () => setContexts(readCommentedContexts())
+    window.addEventListener(RETURN_NOTES_EVENT, sync)
+    window.addEventListener('storage', sync)
+    return () => {
+      window.removeEventListener(RETURN_NOTES_EVENT, sync)
+      window.removeEventListener('storage', sync)
+    }
+  }, [])
+
+  return contexts
+}
+
 export function useReturnNotes() {
   const [notes, setNotes] = useState<Note[]>(() => loadNotes())
 

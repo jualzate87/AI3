@@ -32,8 +32,9 @@ import {
   formatActivityMeta,
   type ActivityEntry,
 } from '../../hooks/useSyncedReviewState'
+import { useCommentedContexts } from '../../hooks/useReturnNotes'
 import { PRIOR_YEAR_1040_VALUES, buildYoyMap, yoyPercent } from './priorYear1040Data'
-import AttestColumns, { AttestColumnHeaders } from './AttestColumns'
+import AttestColumns from './AttestColumns'
 import OutputRowActions from './OutputRowActions'
 import OutputFormViews from './OutputFormViews'
 import FormSignOffControl from './FormSignOffControl'
@@ -271,6 +272,7 @@ export default function LeftPanel1040({
   const [popoverField, setPopoverField] = useState<string | null>(null)
   const [popoverRect, setPopoverRect]   = useState<DOMRect | null>(null)
   const isReviewerRole = reviewRole === 'reviewer'
+  const commentedContexts = useCommentedContexts()
   const togglePreparer = onTogglePreparerCheck ?? onToggleChecked
   const toggleReviewer = onToggleReviewerConfirm ?? onToggleChecked
   const toggleManager = onToggleManagerConfirm
@@ -828,6 +830,7 @@ export default function LeftPanel1040({
                 contextLabel={`Form 1040 · ${label}`}
                 showAnnotate={commentable || !!onToggleFlagged}
                 isFlagged={isFlagged}
+                hasComment={commentedContexts.has(`Form 1040 · ${label}`)}
                 existingFlagNote={flagNote}
                 onAddNote={onAddFieldNote}
                 onToggleFlagged={onToggleFlagged}
@@ -1011,7 +1014,7 @@ export default function LeftPanel1040({
                 <div className={`${styles.summaryColLabel} ${styles.summaryColPct}`}>Change %</div>
                 <div className={styles.summaryColCheckGroup} aria-hidden="true">
                   <span className={styles.summaryColCheckSpacer} />
-                  <AttestColumnHeaders />
+                  <span className={styles.colValAttestGroup} />
                 </div>
               </div>
             </div>
@@ -1261,6 +1264,7 @@ export default function LeftPanel1040({
                                 contextLabel={`Return Summary · ${row.label}`}
                                 showAnnotate={!!row.field && (!!onAddFieldNote || !!onToggleFlagged)}
                                 isFlagged={isFlagged}
+                                hasComment={commentedContexts.has(`Return Summary · ${row.label}`)}
                                 existingFlagNote={flagNote}
                                 onAddNote={onAddFieldNote}
                                 onToggleFlagged={onToggleFlagged}
@@ -1508,9 +1512,7 @@ export default function LeftPanel1040({
               <span className={styles.colValAmount}>Amount</span>
               <span className={styles.colValActionGroup} aria-hidden="true">
                 <span className={styles.colValActionSpacer} />
-                <span className={styles.colValAttestGroup}>
-                  <AttestColumnHeaders />
-                </span>
+                <span className={styles.colValAttestGroup} />
               </span>
             </div>
           </div>
