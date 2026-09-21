@@ -72,6 +72,7 @@ export const OPEN_CATCH_UP_KEY = 'protoc3-open-catch-up'
 export const JOINED_AS_KEY = 'protoc3-joined-as'
 export const WORKFLOW_CHANGED_EVENT = 'protoc3-workflow-changed'
 export const JOINED_AS_EVENT = 'protoc3-joined-as'
+export const JOINED_AS_DISMISSED_EVENT = 'protoc3-joined-as-dismissed'
 
 const DEFAULT_WORKFLOW: ReturnWorkflowState = {
   assigneeId: 'sarah',
@@ -125,7 +126,13 @@ export function announceJoinedAs(userId: string): void {
 export function consumeJoinedAs(): string | null {
   const userId = sessionStorage.getItem(JOINED_AS_KEY)
   sessionStorage.removeItem(JOINED_AS_KEY)
+  window.dispatchEvent(new Event(JOINED_AS_DISMISSED_EVENT))
   return userId
+}
+
+/** True while the 'Joined as' modal is still waiting to be acknowledged. */
+export function isJoinedAsPending(): boolean {
+  return sessionStorage.getItem(JOINED_AS_KEY) !== null
 }
 
 /** Launch point: join the return as `toId` right after `fromId` handed it over. */

@@ -1,6 +1,11 @@
 import { useCallback, useEffect, useState, type RefObject } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { OPEN_CATCH_UP_KEY, REVIEWER_WELCOME_KEY } from '../../lib/returnWorkflow'
+import {
+  isJoinedAsPending,
+  JOINED_AS_DISMISSED_EVENT,
+  OPEN_CATCH_UP_KEY,
+  REVIEWER_WELCOME_KEY,
+} from '../../lib/returnWorkflow'
 import ReviewerAiDynamicPopover from './ReviewerAiDynamicPopover'
 import ReviewerAiProactiveToast from './ReviewerAiProactiveToast'
 
@@ -30,6 +35,14 @@ export default function ReviewerHandoffPrompt({
   }, [anchorRef, open])
 
   useEffect(() => {
+    // After a role switch the 'Joined as' modal is on screen — hold the nudge
+    // until it closes instead of firing it behind the dialog.
+    if (isJoinedAsPending()) {
+      const openNow = () => setOpen(true)
+      window.addEventListener(JOINED_AS_DISMISSED_EVENT, openNow)
+      return () => window.removeEventListener(JOINED_AS_DISMISSED_EVENT, openNow)
+    }
+
     const timer = window.setTimeout(() => setOpen(true), REVIEWER_PROMPT_DELAY_MS)
     return () => window.clearTimeout(timer)
   }, [])

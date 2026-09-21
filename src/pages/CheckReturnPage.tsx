@@ -23,7 +23,7 @@ import ReturnCommentsPanel from '../components/ReturnCommentsPanel'
 import ReviewerHandoffPrompt, {
   type ReviewerPromptVariant,
 } from './handoff/ReviewerHandoffPrompt'
-import { REVIEWER_WELCOME_KEY } from '../lib/returnWorkflow'
+import { JOINED_AS_EVENT, REVIEWER_WELCOME_KEY } from '../lib/returnWorkflow'
 import { navigateToActivityTarget } from './check-return/activityNavigation'
 import type { ActivityDeepLink } from './check-return/activityTypes'
 import { openSourceDocumentReviewPopout } from '../lib/prototypeRoutes'
@@ -110,6 +110,16 @@ export default function CheckReturnPage({ embeddedUnderlay = false }: CheckRetur
     setSelectedDiagnosticKey(null)
     setSelectedAiDiagnosticSubId(null)
   }, [showEmbeddedAiDiagnostics])
+
+  // Switching roles while already on Check return does not remount the page,
+  // so re-arm the handoff nudge when someone joins as the other person.
+  useEffect(() => {
+    const onJoined = () => {
+      setShowReviewerWelcome(sessionStorage.getItem(REVIEWER_WELCOME_KEY) === '1')
+    }
+    window.addEventListener(JOINED_AS_EVENT, onJoined)
+    return () => window.removeEventListener(JOINED_AS_EVENT, onJoined)
+  }, [])
 
   const handleSelectFederal = () => {
     setContentView('federal-summary')
