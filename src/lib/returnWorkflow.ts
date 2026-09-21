@@ -69,6 +69,9 @@ export type PendingHandoff = {
 export const WORKFLOW_STORAGE_KEY = 'protoc3-return-workflow'
 export const REVIEWER_WELCOME_KEY = 'protoc3-reviewer-welcome'
 export const OPEN_CATCH_UP_KEY = 'protoc3-open-catch-up'
+export const JOINED_AS_KEY = 'protoc3-joined-as'
+export const WORKFLOW_CHANGED_EVENT = 'protoc3-workflow-changed'
+export const JOINED_AS_EVENT = 'protoc3-joined-as'
 
 const DEFAULT_WORKFLOW: ReturnWorkflowState = {
   assigneeId: 'sarah',
@@ -101,12 +104,28 @@ export function loadReturnWorkflow(): ReturnWorkflowState {
 
 export function saveReturnWorkflow(state: ReturnWorkflowState): void {
   localStorage.setItem(WORKFLOW_STORAGE_KEY, JSON.stringify(state))
+  window.dispatchEvent(new Event(WORKFLOW_CHANGED_EVENT))
 }
 
 export function resetReturnWorkflow(): void {
   localStorage.removeItem(WORKFLOW_STORAGE_KEY)
   sessionStorage.removeItem(REVIEWER_WELCOME_KEY)
   sessionStorage.removeItem(OPEN_CATCH_UP_KEY)
+  sessionStorage.removeItem(JOINED_AS_KEY)
+  // Reset can land on the same hash route, so nothing reloads — tell the app
+  // to drop back to Sarah.
+  window.dispatchEvent(new Event(WORKFLOW_CHANGED_EVENT))
+}
+
+export function announceJoinedAs(userId: string): void {
+  sessionStorage.setItem(JOINED_AS_KEY, userId)
+  window.dispatchEvent(new CustomEvent(JOINED_AS_EVENT, { detail: userId }))
+}
+
+export function consumeJoinedAs(): string | null {
+  const userId = sessionStorage.getItem(JOINED_AS_KEY)
+  sessionStorage.removeItem(JOINED_AS_KEY)
+  return userId
 }
 
 /** Launch point: join the return as `toId` right after `fromId` handed it over. */
@@ -170,7 +189,7 @@ export function getCurrentUser(): TeamMember {
   return getTeamMember(loadReturnWorkflow().currentUserId)
 }
 
-function firstName(member: TeamMember): string {
+export function firstName(member: TeamMember): string {
   return member.name.split(' ')[0]
 }
 

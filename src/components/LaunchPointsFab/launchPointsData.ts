@@ -7,19 +7,38 @@ import {
 export type LaunchPointStatus = 'live' | 'stub'
 
 export type LaunchPoint = {
-  id: number
+  id: string
   title: string
   status: LaunchPointStatus
   description: string
   /** Hash route without # — navigates when set and status is live */
   route?: string
-  /** Team member this point joins as — hidden when you already are that person. */
+  /** Team member this point joins as — shown only when you are not that person. */
   joinAs?: string
 }
 
-export const LAUNCH_POINTS: LaunchPoint[] = [
+export const ROLE_SWITCH_POINTS: LaunchPoint[] = [
   {
-    id: 1,
+    id: 'join-jake',
+    title: 'Switch to Jake',
+    status: 'live',
+    description: 'Join the return as Jake after Sarah hands it off',
+    route: '/check-return?handoff=reviewer',
+    joinAs: 'jake',
+  },
+  {
+    id: 'join-sarah',
+    title: 'Switch to Sarah',
+    status: 'live',
+    description: 'Join the return as Sarah after Jake sends it back',
+    route: '/check-return?handoff=preparer',
+    joinAs: 'sarah',
+  },
+]
+
+export const OTHER_FLOWS: LaunchPoint[] = [
+  {
+    id: 'ai-review',
     title: 'AI review',
     status: 'live',
     description:
@@ -27,7 +46,7 @@ export const LAUNCH_POINTS: LaunchPoint[] = [
     route: PREPARER_DIAGNOSTICS_PATH,
   },
   {
-    id: 2,
+    id: 'ai-diags',
     title: 'AI Diags',
     status: 'live',
     description:
@@ -35,28 +54,10 @@ export const LAUNCH_POINTS: LaunchPoint[] = [
     route: EMBEDDED_AI_DIAGNOSTICS_PATH,
   },
   {
-    id: 3,
+    id: 'agent-mode',
     title: 'Smart review — Agent mode',
     status: 'live',
     description: 'AI agent fixes diagnostics automatically with full reasoning trail',
     route: PREPARER_AGENT_DIAGNOSTICS_PATH,
-  },
-  {
-    id: 4,
-    title: 'Join as Jake — reviewer handoff',
-    status: 'live',
-    description:
-      'Sarah hands off to Jake — proactive AI toast on Check return after ~2s; add ?prompt=popover for anchored variant',
-    route: '/check-return?handoff=reviewer',
-    joinAs: 'jake',
-  },
-  {
-    id: 5,
-    title: 'Join as Sarah — preparer handoff',
-    status: 'live',
-    description:
-      'Jake sends the return back to Sarah with two open items — same proactive toast and catch-up summary, from her side',
-    route: '/check-return?handoff=preparer',
-    joinAs: 'sarah',
   },
 ]

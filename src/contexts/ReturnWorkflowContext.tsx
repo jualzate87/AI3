@@ -16,6 +16,7 @@ import {
   loadReturnWorkflow,
   saveReturnWorkflow,
   REVIEWER_WELCOME_KEY,
+  WORKFLOW_CHANGED_EVENT,
   type PendingHandoff,
   type ReturnStatusId,
   type ReturnWorkflowState,
@@ -52,6 +53,12 @@ export function ReturnWorkflowProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     setReviewActor(getTeamMember(workflow.currentUserId).name)
   }, [workflow.currentUserId])
+
+  useEffect(() => {
+    const sync = () => setWorkflow(loadReturnWorkflow())
+    window.addEventListener(WORKFLOW_CHANGED_EVENT, sync)
+    return () => window.removeEventListener(WORKFLOW_CHANGED_EVENT, sync)
+  }, [])
 
   const applyWorkflowPatch = useCallback(
     (patch: Partial<ReturnWorkflowState>) => {

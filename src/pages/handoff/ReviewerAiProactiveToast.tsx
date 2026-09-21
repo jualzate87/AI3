@@ -75,7 +75,7 @@ export default function ReviewerAiProactiveToast({
                 {headline}
               </p>
             </div>
-            <IconControl label="Dismiss" size="small" shape="square" onClick={onClose}>
+            <IconControl aria-label="Dismiss" size="small" shape="square" onClick={onClose}>
               <Close size="small" />
             </IconControl>
           </div>

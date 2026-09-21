@@ -8,6 +8,7 @@ import { FUSION_CONFIG } from './navigation'
 import { repairIncomingRoute, resolveCatchAllRoute } from './lib/prototypeRoutes'
 import LaunchPointsFab from './components/LaunchPointsFab/LaunchPointsFab'
 import ReturnHandoffHost from './components/ReturnHandoffHost'
+import JoinedAsHost from './components/JoinedAsHost'
 import PrototypeToastHost from './components/PrototypeToastHost/PrototypeToastHost'
 import { ReturnWorkflowProvider } from './contexts/ReturnWorkflowContext'
 import DataReviewRoute from './pages/DataReviewRoute'
@@ -67,6 +68,7 @@ export default function App() {
             <PrototypeToastHost />
             <LaunchPointsFab />
             <ReturnHandoffHost />
+            <JoinedAsHost />
             <Routes>
             {/* SmartReview prototype - outside the QBO Fusion shell */}
             <Route path="/" element={<Navigate to="/smart-return" replace />} />

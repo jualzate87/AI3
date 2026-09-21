@@ -19,12 +19,13 @@ async function openHandoff(fromId, toName, expectedStatus) {
   await page.getByRole('button', { name: 'Select assignee' }).click()
   await page.getByRole('option', { name: toName }).click()
 
-  await page.getByRole('heading', { name: `Hand off return to ${toName}` }).waitFor()
+  await page.getByText(`Hand off return to ${toName}`).waitFor()
   await page.getByText(`Add optional notes for ${toName} and review the AI summary before you send.`).waitFor()
   await page.getByText(`Update return status to ${expectedStatus}`).waitFor()
-  await page.getByLabel(`Leave notes for ${toName}. They appear in comments and reviewer summary.`).waitFor()
+  await page.getByLabel(`Notes for ${toName.split(' ')[0]}`).waitFor()
+  await page.getByText('Notes appear in comments and the reviewer summary.').waitFor()
   await page.getByText(`Quick summary for ${toName}`).waitFor()
-  await page.getByRole('button', { name: 'Assign without notes' }).waitFor()
+  await page.getByRole('button', { name: 'Cancel handoff' }).waitFor()
   await page.getByRole('button', { name: 'Hand off return' }).waitFor()
 }
 
@@ -39,7 +40,7 @@ if (afterCancel.assigneeId !== 'jake') throw new Error('Close applied the handof
 
 await openHandoff('sarah', 'Jake Morrison', 'review')
 await page.screenshot({ path: 'qa-shots/handoff-modal-jake.png' })
-await page.getByRole('button', { name: 'Assign without notes' }).click()
+await page.getByRole('button', { name: 'Hand off return' }).click()
 const afterAssign = await page.evaluate(() =>
   JSON.parse(localStorage.getItem('protoc3-return-workflow')),
 )

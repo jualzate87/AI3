@@ -6,6 +6,7 @@ import '@ids-ts/badge/dist/main.css'
 import {
   resetAgentDemoReviewState,
   resetPersistedReviewState,
+  seedPreparerDocStampsIfEmpty,
 } from '../../hooks/useSyncedReviewState'
 import {
   AGENT_MODE_SESSION_KEY,
@@ -16,17 +17,17 @@ import {
   setStoredDemoRole,
 } from '../../lib/prototypeRoutes'
 import {
+  announceJoinedAs,
   getCurrentUser,
   preparePreparerHandoffLaunch,
   prepareReviewerHandoffLaunch,
   resetReturnWorkflow,
 } from '../../lib/returnWorkflow'
-import { seedPreparerDocStampsIfEmpty } from '../../hooks/useSyncedReviewState'
-import { LAUNCH_POINTS, type LaunchPoint } from './launchPointsData'
+import { OTHER_FLOWS, ROLE_SWITCH_POINTS, type LaunchPoint } from './launchPointsData'
+import styles from './LaunchPointsFab.module.css'
 
 const REVIEWER_HANDOFF_PATH = '/check-return?handoff=reviewer'
 const PREPARER_HANDOFF_PATH = '/check-return?handoff=preparer'
-import styles from './LaunchPointsFab.module.css'
 
 function statusBadge(status: LaunchPoint['status']) {
   if (status === 'live') {
@@ -60,13 +61,19 @@ export default function LaunchPointsFab() {
   const location = useLocation()
   const rootRef = useRef<HTMLDivElement>(null)
   const [open, setOpen] = useState(false)
+  const [otherFlowsOpen, setOtherFlowsOpen] = useState(false)
   const hideOnPopout = location.pathname.endsWith('-popout')
+
+  useEffect(() => {
+    if (!open) setOtherFlowsOpen(false)
+  }, [open])
 
   useEffect(() => {
     if (!open) return
     const onPointerDown = (event: MouseEvent) => {
       if (rootRef.current && !rootRef.current.contains(event.target as Node)) {
         setOpen(false)
+        setOtherFlowsOpen(false)
       }
     }
     document.addEventListener('mousedown', onPointerDown)
@@ -77,6 +84,7 @@ export default function LaunchPointsFab() {
     (point: LaunchPoint) => {
       if (!point.route) return
       setOpen(false)
+      setOtherFlowsOpen(false)
       if (point.route === PREPARER_DIAGNOSTICS_PATH) {
         prepareDiagnosticsLaunch()
       } else if (point.route === PREPARER_AGENT_DIAGNOSTICS_PATH) {
@@ -85,12 +93,14 @@ export default function LaunchPointsFab() {
         prepareReviewerHandoffLaunch()
         seedPreparerDocStampsIfEmpty('Sarah Chen')
         setStoredDemoRole('reviewer')
+        announceJoinedAs('jake')
         navigate(REVIEWER_HANDOFF_PATH)
         return
       } else if (point.route === PREPARER_HANDOFF_PATH) {
         preparePreparerHandoffLaunch()
         seedPreparerDocStampsIfEmpty('Sarah Chen')
         setStoredDemoRole('preparer')
+        announceJoinedAs('sarah')
         navigate(PREPARER_HANDOFF_PATH)
         return
       }
@@ -114,6 +124,7 @@ export default function LaunchPointsFab() {
     resetReturnWorkflow()
     setStoredDemoRole('preparer')
     setOpen(false)
+    setOtherFlowsOpen(false)
     try {
       sessionStorage.setItem(DEMO_RESET_TOAST_KEY, '1')
     } catch {
@@ -126,9 +137,36 @@ export default function LaunchPointsFab() {
     return null
   }
 
-  // You can only join as somebody else, so the handoff you are already in drops off the list.
   const currentUserId = open ? getCurrentUser().id : null
-  const visiblePoints = LAUNCH_POINTS.filter(point => point.joinAs !== currentUserId)
+  const roleSwitch = ROLE_SWITCH_POINTS.find(point => point.joinAs !== currentUserId)
+
+  const renderPoint = (point: LaunchPoint, index: number) => {
+    const navigable = Boolean(point.route)
+    return (
+      <li key={point.id} className={styles.listItem}>
+        <button
+          type="button"
+          className={styles.itemBtn}
+          disabled={!navigable}
+          onClick={() => handleLaunchPoint(point)}
+        >
+          <span className={styles.itemNumber}>{index + 1}</span>
+          <span className={styles.itemBody}>
+            <span className={styles.itemTitleRow}>
+              <span className={styles.itemTitle}>{point.title}</span>
+              {statusBadge(point.status)}
+            </span>
+            <p className={styles.itemDescription}>{point.description}</p>
+          </span>
+          {navigable && (
+            <span className={styles.itemChevron} aria-hidden>
+              <ChevronRight size="small" />
+            </span>
+          )}
+        </button>
+      </li>
+    )
+  }
 
   return (
     <div className={styles.fabRoot} ref={rootRef}>
@@ -146,53 +184,62 @@ export default function LaunchPointsFab() {
       </button>
 
       {open && (
-        <div className={styles.panel} role="dialog" aria-label="Launch points">
-          <div className={styles.panelHeader}>
-            <h2 className={styles.panelTitle}>Launch points</h2>
-            <p className={styles.panelSubtitle}>AI diagnostics demo entry points</p>
-          </div>
+        <div className={styles.menuCluster}>
+          <div className={styles.panel} role="dialog" aria-label="Launch points">
+            <div className={styles.panelHeader}>
+              <h2 className={styles.panelTitle}>Launch points</h2>
+              <p className={styles.panelSubtitle}>Switch roles or open another demo flow</p>
+            </div>
 
-          <ul className={styles.list}>
-            {visiblePoints.map((point, index) => {
-              const navigable = Boolean(point.route)
-              return (
-                <li key={point.id} className={styles.listItem}>
-                  <button
-                    type="button"
-                    className={styles.itemBtn}
-                    disabled={!navigable}
-                    onClick={() => handleLaunchPoint(point)}
-                  >
-                    <span className={styles.itemNumber}>{index + 1}</span>
-                    <span className={styles.itemBody}>
-                      <span className={styles.itemTitleRow}>
-                        <span className={styles.itemTitle}>{point.title}</span>
-                        {statusBadge(point.status)}
-                      </span>
-                      <p className={styles.itemDescription}>{point.description}</p>
+            <ul className={styles.list}>
+              {roleSwitch ? renderPoint(roleSwitch, 0) : null}
+              <li className={styles.listItem}>
+                <button
+                  type="button"
+                  className={`${styles.itemBtn} ${otherFlowsOpen ? styles.itemBtnActive : ''}`}
+                  aria-expanded={otherFlowsOpen}
+                  onClick={() => setOtherFlowsOpen(prev => !prev)}
+                >
+                  <span className={styles.itemNumber}>2</span>
+                  <span className={styles.itemBody}>
+                    <span className={styles.itemTitleRow}>
+                      <span className={styles.itemTitle}>Other flows</span>
                     </span>
-                    {navigable && (
-                      <span className={styles.itemChevron} aria-hidden>
-                        <ChevronRight size="small" />
-                      </span>
-                    )}
-                  </button>
-                </li>
-              )
-            })}
-          </ul>
+                    <p className={styles.itemDescription}>
+                      AI review, diagnostics, and agent mode
+                    </p>
+                  </span>
+                  <span className={styles.itemChevron} aria-hidden>
+                    <ChevronRight size="small" />
+                  </span>
+                </button>
+              </li>
+            </ul>
 
-          <div className={styles.panelFooter}>
-            <button type="button" className={styles.resetBtn} onClick={handleResetDemo}>
-              <span className={styles.resetIcon} aria-hidden>
-                <Undo size="small" />
-              </span>
-              <span>
-                <p className={styles.resetTitle}>Reset demo</p>
-                <p className={styles.resetSubtitle}>back to &apos;Send client request&apos;</p>
-              </span>
-            </button>
+            <div className={styles.panelFooter}>
+              <button type="button" className={styles.resetBtn} onClick={handleResetDemo}>
+                <span className={styles.resetIcon} aria-hidden>
+                  <Undo size="small" />
+                </span>
+                <span>
+                  <p className={styles.resetTitle}>Reset demo</p>
+                  <p className={styles.resetSubtitle}>back to &apos;Send client request&apos;</p>
+                </span>
+              </button>
+            </div>
           </div>
+
+          {otherFlowsOpen ? (
+            <div className={styles.flyup} role="dialog" aria-label="Other flows">
+              <div className={styles.panelHeader}>
+                <h2 className={styles.panelTitle}>Other flows</h2>
+                <p className={styles.panelSubtitle}>AI diagnostics demo entry points</p>
+              </div>
+              <ul className={styles.list}>
+                {OTHER_FLOWS.map((point, index) => renderPoint(point, index))}
+              </ul>
+            </div>
+          ) : null}
         </div>
       )}
     </div>

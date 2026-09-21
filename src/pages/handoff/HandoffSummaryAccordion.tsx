@@ -23,7 +23,7 @@ export default function HandoffSummaryAccordion({
   return (
     <div className={styles.summaryPanel}>
       <Accordion variant="text" size="small" allowZeroExpanded chevronPosition="right">
-        <AccordionItem id="handoff-summary" defaultExpanded>
+        <AccordionItem id="handoff-summary">
           <AccordionItemHeader className={styles.summaryHeader}>
             <span className={styles.summaryHeaderLabel}>
               <img src={intuitIntelligenceLogo} alt="" className={styles.sparkle} />

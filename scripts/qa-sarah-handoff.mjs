@@ -13,7 +13,13 @@ async function runHandoff(label, launchTitle, shot) {
   await page.goto(`${BASE}/#/smart-return`, { waitUntil: 'networkidle' })
 
   await page.getByRole('button', { name: /Launch points/ }).click()
+  if (launchTitle === 'Switch to Sarah') {
+    await page.getByText('Switch to Jake', { exact: false }).first().click()
+    await page.getByRole('button', { name: 'Continue' }).click()
+    await page.getByRole('button', { name: /Launch points/ }).click()
+  }
   await page.getByText(launchTitle, { exact: false }).first().click()
+  await page.getByRole('button', { name: 'Continue' }).click()
   await page.waitForTimeout(3000)
 
   const toast = await page.getByRole('dialog').filter({ hasText: 'handed off' }).first()
@@ -34,8 +40,8 @@ async function runHandoff(label, launchTitle, shot) {
   return { toastText, summary }
 }
 
-const jake = await runHandoff('JAKE', 'Join as Jake', 'jake-handoff')
-const sarah = await runHandoff('SARAH', 'Join as Sarah', 'sarah-handoff')
+const jake = await runHandoff('JAKE', 'Switch to Jake', 'jake-handoff')
+const sarah = await runHandoff('SARAH', 'Switch to Sarah', 'sarah-handoff')
 
 await browser.close()
 

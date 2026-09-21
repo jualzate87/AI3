@@ -7,8 +7,8 @@ import { LinkActionButton } from '@ids-ts/link-action-button'
 import '@ids-ts/link-action-button/dist/main.css'
 import Switch from '@ids-ts/switch'
 import '@ids-ts/switch/dist/main.css'
-import { useReturnWorkflow } from '../../contexts/ReturnWorkflowContext'
 import {
+  firstName,
   getReturnStatus,
   getTeamMember,
   handoffConfirmLabel,
@@ -33,28 +33,24 @@ export default function HandoffAssistModal({
 }: HandoffAssistModalProps) {
   const [notes, setNotes] = useState('')
   const [updateStatus, setUpdateStatus] = useState(true)
-  const { workflow } = useReturnWorkflow()
 
   useEffect(() => {
     if (!open || !handoff) return
     setNotes('')
-    setUpdateStatus(workflow.statusId !== handoff.suggestedStatusId)
-  }, [open, handoff, workflow.statusId])
+    setUpdateStatus(true)
+  }, [open, handoff])
 
   // Keep the IDS modal mounted while closed so its transition and focus manager
   // can respond when a handoff is requested.
   if (!handoff) return <Modal open={false} onClose={onDismiss} />
   const to = handoff.kind === 'assignee' ? getTeamMember(handoff.toAssigneeId) : null
   const nextStatus = getReturnStatus(handoff.suggestedStatusId)
-  const statusWillChange = workflow.statusId !== handoff.suggestedStatusId
   const summaryLabel = to ? `Quick summary for ${to.name}` : 'Quick summary of this return'
   const title = to ? `Hand off return to ${to.name}` : `Move return to ${nextStatus.label}`
   const intro = to
     ? `Add optional notes for ${to.name} and review the AI summary before you send.`
     : 'Add an optional note and review the AI summary before you update the return.'
-  const notesLabel = to
-    ? `Leave notes for ${to.name}. They appear in comments and reviewer summary.`
-    : 'Leave a note on this return. It will appear in comments and the reviewer summary.'
+  const notesLabel = to ? `Notes for ${firstName(to)}` : 'Notes'
 
   return (
     <Modal open={open} onClose={onDismiss} size="large" dismissible>
@@ -65,13 +61,13 @@ export default function HandoffAssistModal({
         <div className={styles.body}>
           <p className={styles.lead}>{intro}</p>
 
-          {to && statusWillChange ? (
+          {to ? (
             <div className={styles.statusSwitch}>
               <Switch
                 checked={updateStatus}
                 onChange={() => setUpdateStatus(current => !current)}
               >
-                Update return status to {nextStatus.label.toLowerCase()}
+                Update return status to <strong>{nextStatus.label.toLowerCase()}</strong>
               </Switch>
             </div>
           ) : null}
@@ -79,6 +75,7 @@ export default function HandoffAssistModal({
           <HandoffNotesField
             id="handoff-notes"
             label={notesLabel}
+            helperText="Notes appear in comments and the reviewer summary."
             value={notes}
             onChange={setNotes}
           />
@@ -94,9 +91,9 @@ export default function HandoffAssistModal({
             size="small"
             weight="regular"
             alignment="left"
-            onClick={() => onConfirm('', updateStatus)}
+            onClick={onDismiss}
           >
-            {to ? 'Assign without notes' : 'Update without a note'}
+            {to ? 'Cancel handoff' : 'Cancel'}
           </LinkActionButton>
           <Button priority="primary" onClick={() => onConfirm(notes.trim(), updateStatus)}>
             {to ? 'Hand off return' : handoffConfirmLabel(handoff)}

@@ -5,6 +5,7 @@ import styles from '../../styles/handoff/HandoffNotesField.module.css'
 interface HandoffNotesFieldProps {
   id: string
   label: string
+  helperText?: string
   value: string
   onChange: (value: string) => void
 }
@@ -12,6 +13,7 @@ interface HandoffNotesFieldProps {
 export default function HandoffNotesField({
   id,
   label,
+  helperText,
   value,
   onChange,
 }: HandoffNotesFieldProps) {
@@ -21,6 +23,7 @@ export default function HandoffNotesField({
         id={id}
         label={label}
         aria-label={label}
+        helperText={helperText}
         placeholder="Add your notes"
         value={value}
         onChange={e => onChange(e.target.value)}
