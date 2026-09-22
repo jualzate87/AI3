@@ -295,12 +295,12 @@
 
 .badgeVerification {
   --activity-dot-color: var(--color-green-200, #2ca01c);
-  --activity-badge-bg: var(--color-green-100, #108000);
+  --activity-badge-bg: var(--color-container-background-positive, #e5f4d9);
 }
 
 .badgeModification {
   --activity-dot-color: var(--color-yellow-100, #ffad00);
-  --activity-badge-bg: var(--color-yellow-100, #ffad00);
+  --activity-badge-bg: var(--color-input-background-warning, rgba(255, 187, 0, 0.25));
 }
 
 .statusDot {
@@ -451,8 +451,8 @@
   padding: 2px 8px;
   border-radius: var(--radius-medium, 8px);
   white-space: nowrap;
-  color: var(--color-text-inverse, #ffffff);
-  background: var(--activity-badge-bg, var(--color-text-tertiary));
+  color: var(--color-text-primary, #393a3d);
+  background: var(--activity-badge-bg, var(--color-container-background-secondary));
 }
 
 .entryAuthor {
