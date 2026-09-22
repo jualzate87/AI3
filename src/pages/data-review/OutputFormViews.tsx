@@ -240,7 +240,6 @@ function LineRow({
           )}
         </div>
       </td>
-      <td className={styles.cellLineRight}>{line}</td>
       <td className={styles.cellValue}>
         <div className={styles.cellValueInner}>
           <div className={styles.cellValueAmountGroup}>
@@ -310,7 +309,6 @@ function FormTable({ children }: { children: React.ReactNode }) {
       <div className={styles.colHeaders}>
         <div className={styles.colLine} />
         <div className={styles.colDesc}>Description</div>
-        <div className={styles.colLineR} />
         <div className={styles.colValWithAttest}>
           <span className={styles.colValAmount}>Amount</span>
           <span className={styles.colValActionGroup} aria-hidden="true">
@@ -323,7 +321,6 @@ function FormTable({ children }: { children: React.ReactNode }) {
         <colgroup>
           <col className={styles.formTableColLine} />
           <col className={styles.formTableColDesc} />
-          <col className={styles.formTableColLineR} />
           <col className={styles.formTableColValue} />
         </colgroup>
         <tbody>{children}</tbody>

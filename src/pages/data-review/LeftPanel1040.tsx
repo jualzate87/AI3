@@ -787,7 +787,6 @@ export default function LeftPanel1040({
             )}
           </div>
         </td>
-        <td className={styles.cellLineRight}>{line}</td>
         <td className={styles.cellValue}>
           <div className={styles.cellValueInner}>
             <div className={styles.cellValueAmountGroup}>
@@ -856,13 +855,13 @@ export default function LeftPanel1040({
 
   const Section = ({ title }: { title: string }) => (
     <tr className={styles.sectionHeader}>
-      <td colSpan={4} className={styles.sectionTitle}>{title}</td>
+      <td colSpan={3} className={styles.sectionTitle}>{title}</td>
     </tr>
   )
 
   const Divider = () => (
     <tr className={styles.dividerRow}>
-      <td colSpan={4}><div className={styles.dividerLine} /></td>
+      <td colSpan={3}><div className={styles.dividerLine} /></td>
     </tr>
   )
 
@@ -1507,7 +1506,6 @@ export default function LeftPanel1040({
           <div className={styles.colHeaders}>
             <div className={styles.colLine} />
             <div className={styles.colDesc}>Description</div>
-            <div className={styles.colLineR} />
             <div className={styles.colValWithAttest}>
               <span className={styles.colValAmount}>Amount</span>
               <span className={styles.colValActionGroup} aria-hidden="true">
@@ -1522,7 +1520,6 @@ export default function LeftPanel1040({
             <colgroup>
               <col className={styles.formTableColLine} />
               <col className={styles.formTableColDesc} />
-              <col className={styles.formTableColLineR} />
               <col className={styles.formTableColValue} />
             </colgroup>
             <tbody>
@@ -1572,7 +1569,7 @@ export default function LeftPanel1040({
               <Row field="totalPayments"   line="33"  label="Total payments"                                               kind="calc"   value={withholding1040} bold />
 
               <tr className={styles.oweDividerRow}>
-                <td colSpan={4} />
+                <td colSpan={3} />
               </tr>
               <Row field="amountOwed"      line="37" label="Amount you owe. Subtract line 33 from line 24"                kind="calc"   value={oweAmount} bold owe />
             </tbody>

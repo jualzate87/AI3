@@ -151,13 +151,13 @@
 /* ── Column headers ── */
 .colHeaders {
   display: grid;
-  grid-template-columns: 28px minmax(140px, 1fr) 40px minmax(260px, 320px);
+  grid-template-columns: 28px minmax(140px, 1fr) minmax(260px, 320px);
   padding: 3px 0;
   background: #f7f9fb;
   border-bottom: 1px solid #d4d7dc;
 }
 
-.colLine, .colLineR {
+.colLine {
   font-family: var(--font-family-component);
   font-size: var(--font-size-component-x-small);
   font-weight: var(--font-weight-component-semibold);
@@ -334,7 +334,6 @@
   padding-bottom: 8px;
 }
 .rowOwe .cellLine,
-.rowOwe .cellLineRight,
 .rowOwe .cellValue {
   padding-top: 8px;
   padding-bottom: 8px;
@@ -360,18 +359,6 @@
 /* ── Cells ── */
 .cellLine {
   width: 28px;
-  font-family: var(--font-family-component);
-  font-size: var(--font-size-body-3);
-  font-weight: var(--font-weight-component);
-  color: var(--color-text-tertiary);
-  text-align: center;
-  padding: 5px 2px;
-  vertical-align: top;
-  white-space: nowrap;
-}
-
-.cellLineRight {
-  width: 40px;
   font-family: var(--font-family-component);
   font-size: var(--font-size-body-3);
   font-weight: var(--font-weight-component);
@@ -2097,10 +2084,14 @@
 .formDocDigitized {
   /* Shared column widths — colHeaders, colgroup, and value cell must match */
   --form-col-line: 32px;
-  --form-col-line-r: 44px;
-  --form-col-value: 392px;
+  --form-col-value: 346px;
   --form-amount-width: 132px;
-  --form-actions-width: 182px;
+  /* amount box + 12px + info icon */
+  --form-amount-group-width: 160px;
+  /* comment button + 12px + three check slots */
+  --form-actions-width: 136px;
+  /* Designer spec: 34px separates the amount from the annotate/check controls. */
+  --form-actions-gap: 34px;
   max-width: 960px;
   border: 1px solid var(--color-container-border-primary);
   border-radius: 0;
@@ -2110,7 +2101,6 @@
 
 .formTableColLine { width: var(--form-col-line); }
 .formTableColDesc { width: auto; }
-.formTableColLineR { width: var(--form-col-line-r); }
 .formTableColValue { width: var(--form-col-value); }
 
 .formDocDigitized .summaryCardHeader {
@@ -2220,9 +2210,10 @@
   background: transparent;
 }
 
-.formDocDigitized .sectionTitle {
-  display: block;
-  width: 100%;
+.formDocDigitized .sectionHeader td.sectionTitle {
+  /* Stays a table cell so the spanned row keeps the table's full width. */
+  width: auto;
+  white-space: nowrap;
   padding: 8px 12px;
   font-size: 13px;
   font-weight: var(--font-weight-component-semibold);
@@ -2384,16 +2375,41 @@
 /* Column headers — grid must match table colgroup widths */
 .formDocDigitized .colHeaders {
   display: grid;
-  grid-template-columns: var(--form-col-line) minmax(140px, 1fr) var(--form-col-line-r) var(--form-col-value);
+  grid-template-columns: var(--form-col-line) minmax(140px, 1fr) var(--form-col-value);
   background: var(--color-container-background-primary);
   border-bottom: 1px solid var(--color-divider-secondary);
   border-top: 1px solid var(--color-divider-tertiary);
   padding: var(--space-component-inline-padding-small) 0;
 }
 
+/* Amount / action headers line up with the row grid below them */
+.formDocDigitized .colValWithAttest {
+  display: grid;
+  grid-template-columns: var(--form-amount-group-width) var(--form-actions-width);
+  column-gap: var(--form-actions-gap);
+  align-items: center;
+  justify-content: end;
+  padding: 0 var(--space-component-inline-padding-medium);
+}
+
+.formDocDigitized .colValAmount {
+  /* Clears the info icon so "Amount" sits over the value boxes. */
+  padding-right: calc(var(--size-action-icon-small, 16px) + var(--space-component-gap-large));
+}
+
+.formDocDigitized .colValActionGroup {
+  display: grid;
+  grid-template-columns: 28px auto;
+  column-gap: var(--space-component-gap-large);
+  width: var(--form-actions-width);
+}
+
+.formDocDigitized .colValActionSpacer {
+  width: 28px;
+}
+
 /* Income lines — blue bold line numbers, alternating row stripes */
-.formDocDigitized .cellLine,
-.formDocDigitized .cellLineRight {
+.formDocDigitized .cellLine {
   color: var(--color-action-standard, #205ea3);
   font-weight: var(--font-weight-component-bold);
   font-size: var(--font-size-component-small);
@@ -2466,8 +2482,8 @@
 
 .formDocDigitized .cellValueInner {
   display: grid;
-  grid-template-columns: var(--form-amount-width) var(--form-actions-width);
-  column-gap: var(--space-component-gap-medium);
+  grid-template-columns: var(--form-amount-group-width) var(--form-actions-width);
+  column-gap: var(--form-actions-gap);
   align-items: center;
   justify-content: end;
   width: 100%;
@@ -2475,20 +2491,57 @@
 
 .formDocDigitized .cellValueAmountGroup {
   display: grid;
-  grid-template-columns: 1fr 24px;
-  column-gap: var(--space-component-gap-x-small);
+  grid-template-columns: var(--form-amount-width) var(--size-action-icon-small, 16px);
+  column-gap: var(--space-component-gap-large);
   align-items: center;
   justify-items: end;
   min-width: 0;
 }
 
 .formDocDigitized .formRowActions {
-  display: flex;
+  display: grid;
+  /* Fixed tracks: the annotate button holds one column on every row, and the
+     checks land flush against the right edge of the next. */
+  grid-template-columns: 28px 96px;
+  column-gap: var(--space-component-gap-large);
   align-items: center;
-  justify-content: flex-end;
-  gap: var(--space-component-gap-medium);
+  justify-items: end;
+  justify-content: end;
   width: var(--form-actions-width);
   flex-shrink: 0;
+}
+
+/* Levels nobody can sign at this moment collapse so the checks stay right-aligned. */
+.formDocDigitized .summaryAttestSlot {
+  display: none;
+}
+
+/* One annotate control per row — no reserved slot for the retired flag button. */
+.formDocDigitized .outputRowEndActionsCommentFlag {
+  width: 28px;
+}
+
+/* The grid owns the gap to the amount box. */
+.formDocDigitized .summaryInfoBtn {
+  margin-left: 0;
+}
+
+/* Reviewers scan for what is already checked, so the controls stay on screen
+   instead of waiting for hover. Unsigned checks stay muted so they never read
+   as someone's sign-off. */
+.formDocDigitized .rowControlOnHover {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.formDocDigitized .summaryAttestColEmpty,
+.formDocDigitized .row:hover .summaryAttestColEmpty,
+.formDocDigitized .row:focus-within .summaryAttestColEmpty {
+  opacity: 0.4;
+}
+
+.formDocDigitized .summaryAttestCol:hover:not(:disabled):not(.summaryAttestColReadonly).summaryAttestColEmpty {
+  opacity: 0.75;
 }
 
 /* Value boxes — soft input border, white bg, right-aligned, fixed width, 32px height */
