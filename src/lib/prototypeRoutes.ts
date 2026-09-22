@@ -101,12 +101,47 @@ export type SourceDocumentPopoutContext = {
   field?: string
 }
 
+/** Copy sometimes uses singular form names; the popout tabs are plural. */
+const SOURCE_TAB_ALIASES: Record<string, string> = {
+  w2: 'w2s',
+  '1099-div': '1099-divs',
+  '1099-int': '1099-ints',
+  '1099-r': '1099-rs',
+  '1099-nec': '1099-necs',
+}
+
+export function normalizeSourceDocTab(tab: string | undefined): string | undefined {
+  if (!tab) return tab
+  return SOURCE_TAB_ALIASES[tab] ?? tab
+}
+
+export type DocOrFormLink = SourceDocumentPopoutContext & {
+  formId?: string
+  diagnostic?: string
+}
+
+/** Open a source PDF in the documents popout, or a return form in the review popout. */
+export function openDocOrFormLink(link: DocOrFormLink): void {
+  if (link.formId) {
+    openReviewReturnPopout({ form: link.formId, diagnostic: link.diagnostic })
+    return
+  }
+  openSourceDocumentReviewPopout({
+    tab: normalizeSourceDocTab(link.tab),
+    subTab: link.subTab,
+    divPayer: link.divPayer,
+    intPayer: link.intPayer,
+    field: link.field,
+  })
+}
+
 /** Build hash route for the detached source-document review window. */
 export function buildSourceDocumentPopoutRoute(context?: SourceDocumentPopoutContext): string {
   const params = new URLSearchParams()
   // Popout is always the editable preparer workspace — not reviewer confirm mode.
   params.set('role', 'preparer')
-  if (context?.tab) params.set('tab', context.tab)
+  const tab = normalizeSourceDocTab(context?.tab)
+  if (tab) params.set('tab', tab)
   if (context?.subTab) params.set('subTab', context.subTab)
   if (context?.divPayer) params.set('divPayer', context.divPayer)
   if (context?.intPayer) params.set('intPayer', context.intPayer)

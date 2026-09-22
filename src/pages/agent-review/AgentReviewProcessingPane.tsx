@@ -6,7 +6,10 @@ import AgentDiagnosticExpandableCard from '../check-return/AgentDiagnosticExpand
 import AgentReviewSummaryFooter from './AgentReviewSummaryFooter'
 import intuitIntelligenceLogo from '../../assets/icons/intuit-intelligence-logo-small.svg'
 import { SEED_AMOUNTS } from '../../data/liveReturn'
-import { openSourceDocumentReviewPopout } from '../../lib/prototypeRoutes'
+import {
+  openDocOrFormLink,
+  type DocOrFormLink,
+} from '../../lib/prototypeRoutes'
 import {
   buildIntelligenceReviewModel,
   CTA_CONTINUE_NEXT_FIX,
@@ -46,12 +49,23 @@ interface AgentReviewProcessingPaneProps {
   resumed?: boolean
 }
 
-function openDocLink(link: { popoutTab?: string; popoutSubTab?: string }) {
-  if (link.popoutTab) {
-    openSourceDocumentReviewPopout({ tab: link.popoutTab, subTab: link.popoutSubTab })
-    return
+function openDocLink(link: {
+  popoutTab?: string
+  popoutSubTab?: string
+  divPayer?: string
+  field?: string
+  formId?: string
+  diagnostic?: string
+}) {
+  const dest: DocOrFormLink = {
+    tab: link.popoutTab,
+    subTab: link.popoutSubTab,
+    divPayer: link.divPayer,
+    field: link.field,
+    formId: link.formId,
+    diagnostic: link.diagnostic,
   }
-  openSourceDocumentReviewPopout()
+  openDocOrFormLink(dest)
 }
 
 export default function AgentReviewProcessingPane({

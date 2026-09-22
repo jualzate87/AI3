@@ -19,7 +19,7 @@ import {
 } from './AgentIntelligenceReasoning'
 import AgentReviewSummaryFooter from './AgentReviewSummaryFooter'
 import { useCatchUpAnimation } from './useCatchUpAnimation'
-import { openSourceDocumentReviewPopout } from '../../lib/prototypeRoutes'
+import { openDocOrFormLink } from '../../lib/prototypeRoutes'
 import styles from '../../styles/agent-review/AgentCatchUpPane.module.css'
 
 interface AgentCatchUpPaneProps {
@@ -29,11 +29,13 @@ interface AgentCatchUpPaneProps {
 }
 
 function openDocLink(link: CatchUpDocLink) {
-  if (link.popoutTab) {
-    openSourceDocumentReviewPopout({ tab: link.popoutTab, subTab: link.popoutSubTab })
-    return
-  }
-  openSourceDocumentReviewPopout()
+  openDocOrFormLink({
+    tab: link.popoutTab,
+    subTab: link.popoutSubTab,
+    divPayer: link.divPayer,
+    field: link.field,
+    formId: link.formId,
+  })
 }
 
 /** Blue source-link chip — same treatment as the review experience's fix results. */

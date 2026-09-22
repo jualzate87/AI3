@@ -400,6 +400,9 @@ export type CatchUpDocLink = {
   docLabel: string
   popoutTab?: string
   popoutSubTab?: string
+  divPayer?: string
+  field?: string
+  formId?: string
 }
 
 export type CatchUpDetailItem = {
@@ -447,18 +450,18 @@ export const CATCH_UP_AI_REVIEW_ITEMS: CatchUpDetailItem[] = [
     title: 'W-2 income variance — Resolved',
     detail:
       'Box 1 wages from Tech Circle Inc differed from prior year due to a mid-year raise; confirmed with source document',
-    link: { docLabel: 'W-2 (PDF)', popoutTab: 'w2' },
+    link: { docLabel: 'W-2 (PDF)', popoutTab: 'w2s', popoutSubTab: 'techCircle' },
   },
   {
     title: '1099-DIV qualified dividend classification — Resolved',
     detail:
       'Qualified vs. ordinary split was reclassified and corrected; amounts now match broker statement',
-    link: { docLabel: '1099-DIV (PDF)', popoutTab: '1099-div' },
+    link: { docLabel: '1099-DIV (PDF)', popoutTab: '1099-divs', divPayer: 'tokenFinancial' },
   },
   {
     title: 'State withholding adequacy — Resolved',
     detail: 'Withholding elections reviewed against projected liability; no adjustment needed',
-    link: { docLabel: 'W-2 (PDF)', popoutTab: 'w2' },
+    link: { docLabel: 'W-2 (PDF)', popoutTab: 'w2s', popoutSubTab: 'techCircle' },
   },
 ]
 
@@ -502,13 +505,13 @@ export const CATCH_UP_REVIEWER_CHECKLIST: CatchUpChecklistItem[] = [
     id: '1099-div-split',
     title: '1099-DIV split verified against broker PDF',
     note: 'Sarah flagged unusual broker formatting — double-check the split',
-    link: { docLabel: '1099-DIV (PDF)', popoutTab: '1099-div' },
+    link: { docLabel: '1099-DIV (PDF)', popoutTab: '1099-divs', divPayer: 'tokenFinancial' },
   },
   {
     id: 'ai-resolutions',
     title: 'AI review resolutions spot-checked',
     note: 'Confirm the W-2 variance explanation and withholding adequacy still hold up',
-    link: { docLabel: 'W-2 (PDF)', popoutTab: 'w2' },
+    link: { docLabel: 'W-2 (PDF)', popoutTab: 'w2s', popoutSubTab: 'techCircle' },
   },
   {
     id: 'source-docs',
@@ -593,13 +596,13 @@ const CATCH_UP_FOR_PREPARER: CatchUpContent = {
       title: 'W-2 income variance — Confirmed',
       detail:
         'Your mid-year raise explanation checks out against the source document; Box 1 wages tie to the return',
-      link: { docLabel: 'W-2 (PDF)', popoutTab: 'w2' },
+      link: { docLabel: 'W-2 (PDF)', popoutTab: 'w2s', popoutSubTab: 'techCircle' },
     },
     {
       title: '1099-DIV qualified dividend classification — Confirmed',
       detail:
         'The corrected qualified vs. ordinary split matches the broker statement line for line',
-      link: { docLabel: '1099-DIV (PDF)', popoutTab: '1099-div' },
+      link: { docLabel: '1099-DIV (PDF)', popoutTab: '1099-divs', divPayer: 'tokenFinancial' },
     },
     {
       title: 'Source document verification — Complete',
@@ -677,9 +680,14 @@ export function intelligenceProcessingIntro(
 export type IntelligenceFixLink = {
   docLabel: string
   detail: string
-  /** Source-doc popout tab hint */
+  /** Source-doc popout tab — use ReviewTab keys: w2s, 1099-divs, 1099-rs, 1099-necs */
   popoutTab?: string
   popoutSubTab?: string
+  divPayer?: string
+  field?: string
+  /** Output-form popout (1040, f2210, schA) */
+  formId?: string
+  diagnostic?: string
 }
 
 export type IntelligenceFixSection = {
@@ -694,22 +702,28 @@ export const INTELLIGENCE_FIX_PROGRESS_SECTIONS: readonly IntelligenceFixSection
       {
         docLabel: 'W-2 (PDF)',
         detail: 'Box 1 wages corrected ($118,940 → $148,940); employee SSN restored',
-        popoutTab: 'w2',
+        popoutTab: 'w2s',
+        popoutSubTab: 'techCircle',
+        field: 'wages',
       },
       {
         docLabel: '1099-DIV (PDF)',
         detail: 'Box 1b dividends and Box 4 withholding updated',
-        popoutTab: '1099-div',
+        popoutTab: '1099-divs',
+        divPayer: 'tokenFinancial',
+        field: 'fedTaxWithheld',
       },
       {
         docLabel: '1099-R (PDF)',
         detail: 'Box 2a taxable amount and Box 4 withholding restored',
-        popoutTab: '1099-r',
+        popoutTab: '1099-rs',
+        field: 'r-taxableAmt',
       },
       {
         docLabel: '1099-NEC (PDF)',
         detail: 'Box 1 nonemployee comp added ($24,000)',
-        popoutTab: '1099-nec',
+        popoutTab: '1099-necs',
+        field: 'nec-box1',
       },
     ],
   },
@@ -719,15 +733,20 @@ export const INTELLIGENCE_FIX_PROGRESS_SECTIONS: readonly IntelligenceFixSection
       {
         docLabel: '1099-R (PDF)',
         detail: 'Box 4 federal withholding restored ($30,000)',
-        popoutTab: '1099-r',
+        popoutTab: '1099-rs',
+        field: 'withholding1099',
       },
       {
         docLabel: 'Form 2210',
         detail: 'Underpayment penalty calculated ($40,826 shortfall)',
+        formId: 'f2210',
+        diagnostic: 'underpaymentRisk',
       },
       {
         docLabel: 'Form 1040',
         detail: 'Updated withholding on lines 25a/25b',
+        formId: '1040',
+        diagnostic: 'underpaymentRisk',
       },
     ],
   },
@@ -737,6 +756,7 @@ export const INTELLIGENCE_FIX_PROGRESS_SECTIONS: readonly IntelligenceFixSection
       {
         docLabel: 'Form 1098 (PDF)',
         detail: 'Mortgage interest deduction applied',
+        formId: 'schA',
       },
     ],
   },
@@ -771,9 +791,12 @@ export type IntelligenceAttentionItem = {
   detail: string
   /** Label for the review link on this item */
   linkLabel: string
-  /** Source-doc popout tab hint */
   popoutTab?: string
   popoutSubTab?: string
+  divPayer?: string
+  field?: string
+  formId?: string
+  diagnostic?: string
 }
 
 export const INTELLIGENCE_ATTENTION_TITLE = 'Needs your attention'
@@ -790,6 +813,7 @@ export const INTELLIGENCE_NEEDS_ATTENTION_ITEMS: readonly IntelligenceAttentionI
     detail:
       'The deduction is based on an estimated amount. Confirm it with the client and upload the actual form before filing.',
     linkLabel: 'Review Form 1098',
+    formId: 'schA',
   },
   {
     id: 'div-split',
@@ -797,7 +821,9 @@ export const INTELLIGENCE_NEEDS_ATTENTION_ITEMS: readonly IntelligenceAttentionI
     detail:
       'The broker statement formatting was unusual, so the split is worth verifying against the source PDF.',
     linkLabel: 'Review 1099-DIV',
-    popoutTab: '1099-div',
+    popoutTab: '1099-divs',
+    divPayer: 'tokenFinancial',
+    field: 'qualifiedDivs',
   },
   {
     id: 'form-2210-penalty',
@@ -805,6 +831,8 @@ export const INTELLIGENCE_NEEDS_ATTENTION_ITEMS: readonly IntelligenceAttentionI
     detail:
       'I calculated the $40,826 shortfall, but whether to annualize income or accept the penalty is a judgment call.',
     linkLabel: 'Review Form 2210',
+    formId: 'f2210',
+    diagnostic: 'underpaymentRisk',
   },
 ]
 
