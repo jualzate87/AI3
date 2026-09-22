@@ -4,6 +4,7 @@ import {
   getVerifiedDocEntry,
   intVerifiedDocKey,
   isDocShownVerified,
+  isDocVerifiedByViewer,
   isVerifiedInSet,
   normalizeVerifiedDocKey,
   normalizeVerifiedDocEntries,
@@ -39,6 +40,23 @@ describe('isDocShownVerified', () => {
 
     const reviewerOnly = new Set(['1099-div-tokenFinancial'])
     expect(isDocShownVerified(new Set(), divVerifiedDocKey('tokenFinancial'), reviewerOnly)).toBe(true)
+  })
+})
+
+describe('isDocVerifiedByViewer', () => {
+  const docKey = divVerifiedDocKey('tokenFinancial')
+
+  it('does not let the preparer verification complete the reviewer pass', () => {
+    const preparer = new Set([docKey])
+    const reviewer = new Set<string>()
+    expect(isDocVerifiedByViewer(preparer, docKey, reviewer, true)).toBe(false)
+    expect(isDocVerifiedByViewer(preparer, docKey, reviewer, false)).toBe(true)
+  })
+
+  it('completes the reviewer pass once the reviewer stamps the doc', () => {
+    const preparer = new Set([docKey])
+    const reviewer = new Set(['1099-div-token'])
+    expect(isDocVerifiedByViewer(preparer, docKey, reviewer, true)).toBe(true)
   })
 })
 

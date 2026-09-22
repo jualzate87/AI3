@@ -14,6 +14,9 @@ import {
 type UsePacketDocReviewControlsArgs = {
   reviewedFields: Map<string, unknown>
   verifiedDocs: Set<string>
+  /** Reviewer pass: only the reviewer's own confirms clear a doc from their queue. */
+  reviewerConfirmedDocs?: Set<string>
+  isReviewer?: boolean
   activeTopTab: TopTab
   activeSubTab: W2Employer
   activeDivPayer: DivPayer
@@ -37,6 +40,8 @@ type UsePacketDocReviewControlsArgs = {
 export function usePacketDocReviewControls({
   reviewedFields,
   verifiedDocs,
+  reviewerConfirmedDocs,
+  isReviewer = false,
   activeTopTab,
   activeSubTab,
   activeDivPayer,
@@ -68,8 +73,14 @@ export function usePacketDocReviewControls({
   )
 
   const unreviewedSourceDocs = useMemo(
-    () => buildUnreviewedSourceDocs({ verifiedDocs, reviewedFields }),
-    [verifiedDocs, reviewedFields],
+    () =>
+      buildUnreviewedSourceDocs({
+        verifiedDocs,
+        reviewedFields,
+        reviewerConfirmedDocs,
+        isReviewer,
+      }),
+    [verifiedDocs, reviewedFields, reviewerConfirmedDocs, isReviewer],
   )
 
   const unreviewedDocCount = unreviewedSourceDocs.length

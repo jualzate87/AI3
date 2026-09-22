@@ -145,6 +145,23 @@ export function isDocShownVerified(
   return false
 }
 
+/**
+ * Verification is per person: a doc only counts as done for the viewer when the
+ * viewer's own slot is stamped. The preparer's verification stays visible to the
+ * reviewer as context, but never completes the reviewer's pass.
+ */
+export function isDocVerifiedByViewer(
+  verifiedDocs: Set<string>,
+  docKey: string,
+  reviewerConfirmedDocs: Set<string> | undefined,
+  isReviewer: boolean,
+): boolean {
+  if (isReviewer) {
+    return !!reviewerConfirmedDocs && isVerifiedInSet(reviewerConfirmedDocs, docKey)
+  }
+  return isVerifiedInSet(verifiedDocs, docKey)
+}
+
 /** Normalize every entry in a verified-docs map (session migration). */
 export function normalizeVerifiedDocEntries(
   entries: [string, import('../hooks/useSyncedReviewState').ActivityEntry][],

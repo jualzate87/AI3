@@ -85,7 +85,7 @@ import { usePacketDocReviewControls } from '../hooks/usePacketDocReviewControls'
 import { buildUnreviewedSourceDocs } from './data-review/packetDocNavigation'
 import {
   getVerifiedDocEntry,
-  isDocShownVerified,
+  isDocVerifiedByViewer,
   navigationForVerifiedDocKey,
 } from '../data/verifiedDocKeys'
 import DetailFields1099R, { R_PAYER_TABS } from './data-review/DetailFields1099R'
@@ -444,15 +444,21 @@ export default function DataReviewPage() {
     W2_PAYER_TABS.map(({ key: p }) => [p, countPhase1FlagsForW2Payer(p, reviewedFields)])
   ) as Record<W2Employer, number>
   const tabVerifiedKeys = buildTabVerifiedKeys()
+  /** Each person completes a doc with their own mark - the reviewer never inherits the preparer's. */
+  const viewerIsReviewer = reviewRole === 'reviewer'
+  const docVerifiedByViewer = (docKey: string) =>
+    isDocVerifiedByViewer(verifiedDocs, docKey, reviewerConfirmedDocs, viewerIsReviewer)
   const tabUnreviewedCounts = buildTabUnreviewedCounts({
     verifiedDocs,
     reviewerConfirmedDocs,
     tabVerifiedKeys,
+    isReviewer: viewerIsReviewer,
   })
   const tabReviewCounts = buildTabReviewCounts({
     verifiedDocs,
     reviewerConfirmedDocs,
     tabVerifiedKeys,
+    isReviewer: viewerIsReviewer,
   })
   const typeReviewed = buildTypeReviewed({
     verifiedDocs,
@@ -461,6 +467,7 @@ export default function DataReviewPage() {
     divCounts: divPayerFieldCounts,
     intCounts: intPayerFieldCounts,
     rRemaining: tabFlagCounts['1099-rs'] ?? 0,
+    isReviewer: viewerIsReviewer,
   })
   const tabConfirmStatus = buildTabConfirmStatus({
     verifiedDocs,
@@ -508,11 +515,14 @@ export default function DataReviewPage() {
   const unreviewedSourceDocs = buildUnreviewedSourceDocs({
     verifiedDocs,
     reviewedFields,
+    reviewerConfirmedDocs,
+    isReviewer: viewerIsReviewer,
   })
   const unreviewedDocCount = unreviewedSourceDocs.length
   const { verified: verifiedDocCount, total: totalDocCount } = countVerifiedPacketDocs({
     verifiedDocs,
     reviewerConfirmedDocs,
+    isReviewer: viewerIsReviewer,
   })
   const flagsCleared = phase1Complete
   const docsReviewComplete = unreviewedDocCount === 0
@@ -673,6 +683,8 @@ export default function DataReviewPage() {
   } = usePacketDocReviewControls({
     reviewedFields,
     verifiedDocs,
+    reviewerConfirmedDocs,
+    isReviewer: viewerIsReviewer,
     activeTopTab,
     activeSubTab,
     activeDivPayer,
@@ -2304,9 +2316,9 @@ export default function DataReviewPage() {
                 <PeelTab
                   tabs={DIV_PAYER_TABS.map(t => ({
                     ...t,
-                    needsReview: !isDocShownVerified(verifiedDocs, divVerifiedDocKey(t.key), reviewerConfirmedDocs),
+                    needsReview: !docVerifiedByViewer(divVerifiedDocKey(t.key)),
                     flagCount: importFlagCountForDisplay(divPayerFieldCounts[t.key]),
-                    showClearedCheck: isDocShownVerified(verifiedDocs, divVerifiedDocKey(t.key), reviewerConfirmedDocs),
+                    showClearedCheck: docVerifiedByViewer(divVerifiedDocKey(t.key)),
                     confirmStatus: peelDocConfirmStatus(divVerifiedDocKey(t.key)),
                     statusTooltip: docApprovalTooltip(
                       divVerifiedDocKey(t.key),
@@ -2321,9 +2333,9 @@ export default function DataReviewPage() {
                 <PeelTab
                   tabs={INT_PAYER_TABS.map(t => ({
                     ...t,
-                    needsReview: !isDocShownVerified(verifiedDocs, intVerifiedDocKey(t.key), reviewerConfirmedDocs),
+                    needsReview: !docVerifiedByViewer(intVerifiedDocKey(t.key)),
                     flagCount: importFlagCountForDisplay(intPayerFieldCounts[t.key]),
-                    showClearedCheck: isDocShownVerified(verifiedDocs, intVerifiedDocKey(t.key), reviewerConfirmedDocs),
+                    showClearedCheck: docVerifiedByViewer(intVerifiedDocKey(t.key)),
                     confirmStatus: peelDocConfirmStatus(intVerifiedDocKey(t.key)),
                     statusTooltip: docApprovalTooltip(
                       intVerifiedDocKey(t.key),
@@ -2338,9 +2350,9 @@ export default function DataReviewPage() {
                 <PeelTab
                   tabs={W2_PAYER_TABS.map(t => ({
                     ...t,
-                    needsReview: !isDocShownVerified(verifiedDocs, t.key, reviewerConfirmedDocs),
+                    needsReview: !docVerifiedByViewer(t.key),
                     flagCount: importFlagCountForDisplay(w2PayerFieldCounts[t.key]),
-                    showClearedCheck: isDocShownVerified(verifiedDocs, t.key, reviewerConfirmedDocs),
+                    showClearedCheck: docVerifiedByViewer(t.key),
                     confirmStatus: peelDocConfirmStatus(t.key),
                     statusTooltip: docApprovalTooltip(
                       t.key,
@@ -2355,9 +2367,9 @@ export default function DataReviewPage() {
                 <PeelTab
                   tabs={R_PAYER_TABS.map(t => ({
                     ...t,
-                    needsReview: !isDocShownVerified(verifiedDocs, '1099-r', reviewerConfirmedDocs),
+                    needsReview: !docVerifiedByViewer('1099-r'),
                     flagCount: importFlagCountForDisplay(countPhase1FlagsForRPayer(reviewedFields)),
-                    showClearedCheck: isDocShownVerified(verifiedDocs, '1099-r', reviewerConfirmedDocs),
+                    showClearedCheck: docVerifiedByViewer('1099-r'),
                     confirmStatus: peelDocConfirmStatus('1099-r'),
                     statusTooltip: docApprovalTooltip(
                       '1099-r',
@@ -2372,9 +2384,9 @@ export default function DataReviewPage() {
                 <PeelTab
                   tabs={NEC_PAYER_TABS.map(t => ({
                     ...t,
-                    needsReview: !isDocShownVerified(verifiedDocs, '1099-nec', reviewerConfirmedDocs),
+                    needsReview: !docVerifiedByViewer('1099-nec'),
                     flagCount: importFlagCountForDisplay(countPhase1FlagsForNecPayer(t.key, reviewedFields)),
-                    showClearedCheck: isDocShownVerified(verifiedDocs, '1099-nec', reviewerConfirmedDocs),
+                    showClearedCheck: docVerifiedByViewer('1099-nec'),
                     confirmStatus: peelDocConfirmStatus('1099-nec'),
                     statusTooltip: docApprovalTooltip(
                       '1099-nec',

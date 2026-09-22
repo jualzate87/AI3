@@ -18,7 +18,11 @@ import type { TopTab } from './ReviewTab'
 import { QUESTIONNAIRE_DOC_KEY, QUESTIONNAIRE_HUB_LABEL } from './questionnaireData'
 import { isManualImportDoc } from '../../data/documentImportMeta'
 import { SHOW_VERIFY_IDENTITY_GATES } from '../../lib/prototypeFeatureFlags'
-import { isDocShownVerified, isVerifiedInSet, normalizeVerifiedDocKey } from '../../data/verifiedDocKeys'
+import {
+  isDocVerifiedByViewer,
+  isVerifiedInSet,
+  normalizeVerifiedDocKey,
+} from '../../data/verifiedDocKeys'
 
 export type IdentityField = 'ssn' | 'ein'
 
@@ -107,10 +111,16 @@ export function getDocVerifyIdentityBlockedMessage(missing: IdentityField[]): st
 export function countVerifiedPacketDocs(args: {
   verifiedDocs: Set<string>
   reviewerConfirmedDocs?: Set<string>
+  isReviewer?: boolean
 }): { verified: number; total: number } {
   const docs = listPacketSourceDocs()
   const verified = docs.filter(d =>
-    isDocShownVerified(args.verifiedDocs, d.key, args.reviewerConfirmedDocs),
+    isDocVerifiedByViewer(
+      args.verifiedDocs,
+      d.key,
+      args.reviewerConfirmedDocs,
+      !!args.isReviewer,
+    ),
   ).length
   return { verified, total: docs.length }
 }
@@ -161,11 +171,18 @@ export function buildTabUnreviewedCounts(args: {
   verifiedDocs: Set<string>
   reviewerConfirmedDocs?: Set<string>
   tabVerifiedKeys: Record<string, string[]>
+  isReviewer?: boolean
 }): Record<string, number> {
   const out: Record<string, number> = {}
   for (const [tabKey, keys] of Object.entries(args.tabVerifiedKeys)) {
     const unreviewed = keys.filter(
-      k => !isDocShownVerified(args.verifiedDocs, k, args.reviewerConfirmedDocs),
+      k =>
+        !isDocVerifiedByViewer(
+          args.verifiedDocs,
+          k,
+          args.reviewerConfirmedDocs,
+          !!args.isReviewer,
+        ),
     ).length
     if (unreviewed > 0) out[tabKey] = unreviewed
   }
@@ -177,12 +194,18 @@ export function buildTabReviewCounts(args: {
   verifiedDocs: Set<string>
   reviewerConfirmedDocs?: Set<string>
   tabVerifiedKeys: Record<string, string[]>
+  isReviewer?: boolean
 }): Record<string, { reviewed: number; total: number }> {
   const out: Record<string, { reviewed: number; total: number }> = {}
   for (const [tabKey, keys] of Object.entries(args.tabVerifiedKeys)) {
     const total = keys.length
     const reviewed = keys.filter(k =>
-      isDocShownVerified(args.verifiedDocs, k, args.reviewerConfirmedDocs),
+      isDocVerifiedByViewer(
+        args.verifiedDocs,
+        k,
+        args.reviewerConfirmedDocs,
+        !!args.isReviewer,
+      ),
     ).length
     out[tabKey] = { reviewed, total }
   }
@@ -194,8 +217,9 @@ export function unreviewedDocBadge(
   verifiedDocs: Set<string>,
   docKey: string,
   reviewerConfirmedDocs?: Set<string>,
+  isReviewer = false,
 ): number {
-  return isDocShownVerified(verifiedDocs, docKey, reviewerConfirmedDocs) ? 0 : 1
+  return isDocVerifiedByViewer(verifiedDocs, docKey, reviewerConfirmedDocs, isReviewer) ? 0 : 1
 }
 
 /**
@@ -208,8 +232,9 @@ export function isDocReviewed(
   remainingFlagCount: number,
   initialFlagCount: number,
   reviewerConfirmedDocs?: Set<string>,
+  isReviewer = false,
 ): boolean {
-  if (isDocShownVerified(verifiedDocs, docKey, reviewerConfirmedDocs)) return true
+  if (isDocVerifiedByViewer(verifiedDocs, docKey, reviewerConfirmedDocs, isReviewer)) return true
   return initialFlagCount > 0 && remainingFlagCount === 0
 }
 
@@ -256,14 +281,14 @@ export function buildTabConfirmStatus(args: {
   return out
 }
 
-/** First packet doc key still awaiting reviewer confirmation (or preparer verify). */
+/** First packet doc key still awaiting reviewer confirmation. */
 export function getFirstDocNeedingReviewerAttention(args: {
   verifiedDocs: Set<string>
   reviewerConfirmedDocs: Set<string>
   docKeys: readonly string[]
 }): string | undefined {
   return args.docKeys.find(
-    k => !isDocShownVerified(args.verifiedDocs, k, args.reviewerConfirmedDocs),
+    k => !isDocVerifiedByViewer(args.verifiedDocs, k, args.reviewerConfirmedDocs, true),
   )
 }
 
@@ -286,24 +311,21 @@ export function buildTypeReviewed(args: {
   intCounts: Record<IntPayer, number>
   rRemaining: number
   reviewerConfirmedDocs?: Set<string>
+  isReviewer?: boolean
 }): Record<string, boolean> {
   const { verifiedDocs, w2Counts, divCounts, intCounts, rRemaining, reviewerConfirmedDocs } = args
+  const verified = (docKey: string) =>
+    isDocVerifiedByViewer(verifiedDocs, docKey, reviewerConfirmedDocs, !!args.isReviewer)
 
-  const w2s = W2_PAYER_TABS.every(t =>
-    isDocShownVerified(verifiedDocs, t.key, reviewerConfirmedDocs),
-  )
+  const w2s = W2_PAYER_TABS.every(t => verified(t.key))
 
-  const divs = DIV_PAYER_TABS.every(t =>
-    isDocShownVerified(verifiedDocs, divVerifiedDocKey(t.key), reviewerConfirmedDocs),
-  )
+  const divs = DIV_PAYER_TABS.every(t => verified(divVerifiedDocKey(t.key)))
 
-  const ints = INT_PAYER_TABS.every(t =>
-    isDocShownVerified(verifiedDocs, intVerifiedDocKey(t.key), reviewerConfirmedDocs),
-  )
+  const ints = INT_PAYER_TABS.every(t => verified(intVerifiedDocKey(t.key)))
 
-  const rs = isDocShownVerified(verifiedDocs, '1099-r', reviewerConfirmedDocs)
+  const rs = verified('1099-r')
 
-  const necs = isDocShownVerified(verifiedDocs, '1099-nec', reviewerConfirmedDocs)
+  const necs = verified('1099-nec')
 
   return {
     w2s,
@@ -311,7 +333,7 @@ export function buildTypeReviewed(args: {
     '1099-ints': ints,
     '1099-rs': rs,
     '1099-necs': necs,
-    questionnaire: isDocShownVerified(verifiedDocs, QUESTIONNAIRE_DOC_KEY, reviewerConfirmedDocs),
+    questionnaire: verified(QUESTIONNAIRE_DOC_KEY),
   }
 }
 
@@ -370,9 +392,14 @@ export function getUnreviewedSourceDocs(args: {
   divCounts: Record<DivPayer, number>
   intCounts: Record<IntPayer, number>
   rRemaining: number
+  reviewerConfirmedDocs?: Set<string>
+  isReviewer?: boolean
 }): PacketSourceDoc[] {
-  const { verifiedDocs } = args
-  return listPacketSourceDocs().filter(doc => !isVerifiedInSet(verifiedDocs, doc.key))
+  const { verifiedDocs, reviewerConfirmedDocs } = args
+  return listPacketSourceDocs().filter(
+    doc =>
+      !isDocVerifiedByViewer(verifiedDocs, doc.key, reviewerConfirmedDocs, !!args.isReviewer),
+  )
 }
 
 /** Cycle to the next unreviewed packet doc after the one matching current tab/payer. */

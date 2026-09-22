@@ -69,6 +69,8 @@ export function navigateToPeelDocKey(
 export function buildUnreviewedSourceDocs(args: {
   verifiedDocs: Set<string>
   reviewedFields: Map<string, unknown>
+  reviewerConfirmedDocs?: Set<string>
+  isReviewer?: boolean
 }): PacketSourceDoc[] {
   const tabFlagCounts = getTabFlagCounts(args.reviewedFields)
   const divPayerFieldCounts: Record<DivPayer, number> = Object.fromEntries(
@@ -83,6 +85,8 @@ export function buildUnreviewedSourceDocs(args: {
 
   return getUnreviewedSourceDocs({
     verifiedDocs: args.verifiedDocs,
+    reviewerConfirmedDocs: args.reviewerConfirmedDocs,
+    isReviewer: args.isReviewer,
     w2Counts: w2PayerFieldCounts,
     divCounts: divPayerFieldCounts,
     intCounts: intPayerFieldCounts,
