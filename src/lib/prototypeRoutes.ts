@@ -22,9 +22,6 @@ export const EMBEDDED_AI_DIAGNOSTICS_PATH = '/check-return?experience=ai-diags'
 /** sessionStorage key — set only from Launch Points agent entry. */
 export const AGENT_MODE_SESSION_KEY = 'protoc3-agent-mode'
 
-/** sessionStorage flag — show demo-reset success toast on next page load. */
-export const DEMO_RESET_TOAST_KEY = 'protoc3-demo-reset-toast'
-
 export function isAgentModeEnabled(): boolean {
   try {
     return sessionStorage.getItem(AGENT_MODE_SESSION_KEY) === '1'

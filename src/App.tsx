@@ -9,7 +9,6 @@ import { repairIncomingRoute, resolveCatchAllRoute } from './lib/prototypeRoutes
 import LaunchPointsFab from './components/LaunchPointsFab/LaunchPointsFab'
 import ReturnHandoffHost from './components/ReturnHandoffHost'
 import JoinedAsHost from './components/JoinedAsHost'
-import PrototypeToastHost from './components/PrototypeToastHost/PrototypeToastHost'
 import { ReturnWorkflowProvider } from './contexts/ReturnWorkflowContext'
 import DataReviewRoute from './pages/DataReviewRoute'
 import DataReviewPopout from './pages/DataReviewPopout'
@@ -65,7 +64,6 @@ export default function App() {
         <FusionProvider pathPrefix={FUSION_CONFIG.pathPrefix || ''}>
           <ReturnWorkflowProvider>
             <HashRouteNormalizer />
-            <PrototypeToastHost />
             <LaunchPointsFab />
             <ReturnHandoffHost />
             <JoinedAsHost />
