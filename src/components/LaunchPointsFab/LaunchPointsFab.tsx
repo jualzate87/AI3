@@ -6,7 +6,6 @@ import '@ids-ts/badge/dist/main.css'
 import {
   resetAgentDemoReviewState,
   resetPersistedReviewState,
-  seedPreparerDocStampsIfEmpty,
 } from '../../hooks/useSyncedReviewState'
 import {
   AGENT_MODE_SESSION_KEY,
@@ -91,14 +90,12 @@ export default function LaunchPointsFab() {
         prepareAgentLaunch()
       } else if (point.route === REVIEWER_HANDOFF_PATH) {
         prepareReviewerHandoffLaunch()
-        seedPreparerDocStampsIfEmpty('Sarah Chen')
         setStoredDemoRole('reviewer')
         announceJoinedAs('jake')
         navigate(REVIEWER_HANDOFF_PATH)
         return
       } else if (point.route === PREPARER_HANDOFF_PATH) {
         preparePreparerHandoffLaunch()
-        seedPreparerDocStampsIfEmpty('Sarah Chen')
         setStoredDemoRole('preparer')
         announceJoinedAs('sarah')
         navigate(PREPARER_HANDOFF_PATH)

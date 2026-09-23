@@ -150,24 +150,6 @@ function writePersisted(state: SyncedState): void {
   }
 }
 
-/** If Sarah never stamped docs, seed the packet she claimed as verified in the handoff. */
-export function seedPreparerDocStampsIfEmpty(preparerName = 'Sarah Chen'): void {
-  try {
-    const raw = readPersistedRaw()
-    const current = raw ? hydrateSyncedState(raw) : sanitizeSyncedState({ ...DEFAULT_STATE })
-    if (current.verifiedDocsList.length > 0) return
-    const at = formatActivityTimestamp()
-    const keys = ['techCircle', '1099-int-harborlineCredit', '1099-div-tokenFinancial']
-    const next = sanitizeSyncedState({
-      ...current,
-      verifiedDocsList: keys.map(key => [key, { by: preparerName, at }]),
-    })
-    writePersisted(next)
-  } catch {
-    // ignore prototype storage errors
-  }
-}
-
 function hydrateSyncedState(raw: string): SyncedState {
   const parsed = JSON.parse(raw) as Partial<SyncedState> & {
     verifiedDocsList?: unknown
