@@ -1,4 +1,4 @@
-import { CircleCheck } from '@design-systems/icons'
+import { CircleCheck, PersonCheckDouble } from '@design-systems/icons'
 import AttentionCountBadge from './AttentionCountBadge'
 import Tooltip from './Tooltip'
 import type { DocConfirmStatus } from './docReviewStatus'
@@ -81,11 +81,10 @@ export default function PeelTab({ tabs, activeKey, onChange }: PeelTabProps) {
             )}
             {confirmStatus === 'confirmed' && (
               <span
-                className={`${styles.clearedCheck} ${styles.clearedCheckConfirmed} ${isActive ? styles.clearedCheckActive : ''}`}
+                className={`${styles.clearedCheck} ${isActive ? styles.clearedCheckActive : ''}`}
                 aria-hidden
               >
-                <CircleCheck size="small" />
-                <CircleCheck size="small" />
+                <PersonCheckDouble size="small" />
               </span>
             )}
             {!confirmStatus && tab.showClearedCheck && (
